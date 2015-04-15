@@ -1,11 +1,17 @@
-package crowdtrip.com.croudtrip;
+package crowdtrip.com.croudtrip.activities;
 
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import crowdtrip.com.croudtrip.R;
 
+
+/**
+ * We will probably use fragments, so this activity works as a container for all these fragments and will probably do
+ * some initialization and stuff
+ */
 public class MainActivity extends ActionBarActivity {
 
     @Override
