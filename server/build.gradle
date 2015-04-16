@@ -1,0 +1,19 @@
+apply plugin: 'application'
+apply plugin: 'java'
+apply plugin: 'war'
+
+sourceCompatibility = 1.7
+version = '1.0'
+
+mainClassName = "org.crowdtrip.app.CrowdTripApplication"
+
+run() {
+    args 'server', 'configuration.yml'
+}
+
+dependencies {
+    compile 'io.dropwizard:dropwizard-core:0.8.0'
+    compile 'be.fluid-it.tools.dropwizard:wizard-in-a-box:0.8-1-1'
+
+    testCompile 'junit:junit:4.11'
+}

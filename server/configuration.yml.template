@@ -1,0 +1,4 @@
+dummyValue: some value
+
+server:
+  type: bridge
