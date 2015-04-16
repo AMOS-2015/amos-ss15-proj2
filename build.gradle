@@ -4,8 +4,15 @@ buildscript {
     }
 }
 
-allprojects {
+
+subprojects {
+	// default repository
     repositories {
         jcenter()
     }
+
+	// default gradle wrapper
+	task wrapper(type: Wrapper) {
+		gradleVersion = '2.3'
+	}
 }

@@ -1,17 +1,14 @@
+# generated files
 *.class
+build
 
-# Mobile Tools for Java (J2ME)
-.mtj.tmp/
+# gradle files
+.gradle
 
-# Package Files #
-*.jar
-*.war
-*.ear
+# IDE files
+.idea
+*.iml
+*.swp
 
-# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
-hs_err_pid*
-
-client/CroudTrip/.idea/
-client/CroudTrip/CroudTrip.iml
-client/CroudTrip/app/app.iml
-client/CroudTrip/gradle/
+# android files
+local.properties
