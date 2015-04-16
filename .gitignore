@@ -1,6 +1,7 @@
 # generated files
 *.class
 build
+java-gen
 
 # gradle files
 .gradle

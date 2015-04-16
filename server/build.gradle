@@ -14,6 +14,7 @@ run() {
 dependencies {
     compile 'io.dropwizard:dropwizard-core:0.8.0'
     compile 'be.fluid-it.tools.dropwizard:wizard-in-a-box:0.8-1-1'
+    compile project(':models')
 
     testCompile 'junit:junit:4.11'
 }

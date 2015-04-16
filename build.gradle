@@ -15,4 +15,10 @@ subprojects {
 	task wrapper(type: Wrapper) {
 		gradleVersion = '2.3'
 	}
+
+    // setup generated sources
+    ext {
+        mainSourcesDir = 'src/main/java'
+        generatedSourcesDir = 'src/main/java-gen'
+    }
 }

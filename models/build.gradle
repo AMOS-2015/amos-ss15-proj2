@@ -1,0 +1,9 @@
+apply plugin: 'java'
+
+dependencies {
+    compile('com.fasterxml.jackson.core:jackson-databind:2.5.1') {
+        exclude module: 'jackson-annotations'
+    }
+    compile 'com.fasterxml.jackson.core:jackson-annotations:2.5.1'
+    testCompile 'junit:junit:4.11'
+}
