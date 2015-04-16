@@ -10,3 +10,8 @@
 
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
+
+client/CroudTrip/.idea/
+client/CroudTrip/CroudTrip.iml
+client/CroudTrip/app/app.iml
+client/CroudTrip/gradle/
