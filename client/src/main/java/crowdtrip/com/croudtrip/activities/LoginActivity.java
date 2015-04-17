@@ -9,9 +9,12 @@ import android.widget.Toast;
 
 import org.crowdtrip.HelloWorld;
 import org.crowdtrip.HelloWorldResource;
+import org.crowdtrip.RegisterUserResource;
+import org.crowdtrip.User;
 
 import crowdtrip.com.croudtrip.R;
 import retrofit.RestAdapter;
+import retrofit.client.Response;
 import retrofit.converter.JacksonConverter;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
@@ -61,6 +64,24 @@ public class LoginActivity extends Activity {
                         Log.e("CrowdTrip", throwable.getMessage());
                     }
                 });
+
+        // Just for testing sending a push rest request to the server.
+        User user = new User("Frederik", "Simon", "1234");
+        RegisterUserResource register = new RestAdapter.Builder().setEndpoint(serverAddress).setConverter(new JacksonConverter()).build().create(RegisterUserResource.class);
+        register.registerUser(user).subscribeOn(Schedulers.io())
+                                    .observeOn(AndroidSchedulers.mainThread())
+                                    .subscribe(new Action1<Response>() {
+                                        @Override
+                                        public void call(Response respone) {
+                                            Toast.makeText(LoginActivity.this, "register success", Toast.LENGTH_SHORT).show();
+                                        }
+                                    }, new Action1<Throwable>() {
+                                        @Override
+                                        public void call(Throwable throwable) {
+                                            Toast.makeText(LoginActivity.this, "Hello world failed", Toast.LENGTH_SHORT).show();
+                                            Log.e("CrowdTrip", throwable.getMessage());
+                                        }
+                                    });
     }
 
 }
