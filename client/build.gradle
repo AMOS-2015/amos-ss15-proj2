@@ -7,7 +7,7 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath 'de.bitdroid.jaxrs2retrofit:plugin:0.2.0'
+        classpath 'de.bitdroid.jaxrs2retrofit:plugin:0.3.0'
         classpath 'com.android.tools.build:gradle:1.1.0'
     }
 }
@@ -62,8 +62,10 @@ dependencies {
 
 
 // create retrofit interfaces from server resources
-jaxRs2Retrofit {
-    inputDir = file(project(':server').projectDir.toString() + '/' + mainSourcesDir)
-    outputDir = file(generatedSourcesDir)
-    packageName = 'org.crowdtrip'
+afterEvaluate {
+    project.tasks.matching { it.name.startsWith('jaxRs2Retrofit') }.each {
+        it.inputDir = file(project(':server').projectDir.toString() + '/' + mainSourcesDir)
+        it.outputDir = file(generatedSourcesDir)
+        it.packageName = 'org.crowdtrip'
+    }
 }
