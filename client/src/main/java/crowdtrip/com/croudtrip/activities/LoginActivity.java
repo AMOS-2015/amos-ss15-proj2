@@ -65,8 +65,9 @@ public class LoginActivity extends Activity {
                     }
                 });
 
+
         // Just for testing sending a push rest request to the server.
-        User user = new User("Frederik", "Simon", "1234");
+        User user = new User("Frederik", "Simon", "12345");
         RegisterUserResource register = new RestAdapter.Builder().setEndpoint(serverAddress).setConverter(new JacksonConverter()).build().create(RegisterUserResource.class);
         register.registerUser(user).subscribeOn(Schedulers.io())
                                     .observeOn(AndroidSchedulers.mainThread())
