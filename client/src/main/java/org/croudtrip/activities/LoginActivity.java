@@ -123,17 +123,27 @@ public class LoginActivity extends Activity {
                         Log.e("CroudTrip", throwable.getMessage());
                     }
                 });
+    }
 
+    private void registerUserByEmail( String firstName, String lastName, String email, String password )
+    {
+        // TODO: Get server's address from global strings.xml -- server must be online to do so.
+        final String serverAddress = "";
 
-        // Just for testing sending a push rest request to the server.
-        User user = new User("Frederik", "Simon", "12345");
-        RegisterUserResource register = new RestAdapter.Builder().setEndpoint(serverAddress).setConverter(new JacksonConverter()).build().create(RegisterUserResource.class);
+        // create user
+        User user = new User(firstName, lastName, email, password);
+
+        RegisterUserResource register = new RestAdapter.Builder().setEndpoint(serverAddress)
+                                                                 .setConverter(new JacksonConverter())
+                                                                 .build()
+                                                                 .create(RegisterUserResource.class);
+
         register.registerUser(user).subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Action1<Response>() {
                     @Override
                     public void call(Response response) {
-                        Toast.makeText(LoginActivity.this, "register success", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(LoginActivity.this, "registering user successful", Toast.LENGTH_SHORT).show();
                     }
                 }, new Action1<Throwable>() {
                     @Override

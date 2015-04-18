@@ -11,16 +11,21 @@ public class User {
 
     private final String firstName;
     private final String lastName;
+    private final String email;
     private final String password;
 
     @JsonCreator
     public User(
             @JsonProperty("firstName") String firstName,
             @JsonProperty("lastName") String lastName,
+            @JsonProperty("email") String email,
             @JsonProperty("password") String password) {
 
         this.firstName = firstName;
         this.lastName = lastName;
+        this.email = email;
+
+        /* TODO: Don't send password as clear text to server, but only use hash values. But sufficient for first release.*/
         this.password = password;
     }
 
