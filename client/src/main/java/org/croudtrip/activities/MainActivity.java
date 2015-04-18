@@ -1,12 +1,11 @@
-package crowdtrip.com.croudtrip.activities;
+package org.croudtrip.activities;
 
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import crowdtrip.com.croudtrip.R;
-
+import org.croudtrip.R;
 
 /**
  * We will probably use fragments, so this activity works as a container for all these fragments and will probably do

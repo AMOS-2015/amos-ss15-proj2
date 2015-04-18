@@ -1,7 +1,7 @@
-package org.crowdtrip.rest;
+package org.croudtrip.rest;
 
 
-import org.crowdtrip.HelloWorld;
+import org.croudtrip.HelloWorld;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;

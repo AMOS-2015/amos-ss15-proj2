@@ -1,6 +1,6 @@
-package org.crowdtrip.rest;
+package org.croudtrip.rest;
 
-import org.crowdtrip.User;
+import org.croudtrip.User;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;

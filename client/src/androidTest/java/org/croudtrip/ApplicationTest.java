@@ -1,4 +1,4 @@
-package crowdtrip.com.croudtrip;
+package org.croudtrip;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;

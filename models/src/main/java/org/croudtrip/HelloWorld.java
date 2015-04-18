@@ -1,4 +1,4 @@
-package org.crowdtrip;
+package org.croudtrip;
 
 
 import com.fasterxml.jackson.annotation.JsonCreator;

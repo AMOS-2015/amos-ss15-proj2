@@ -1,6 +1,6 @@
-# CrowdTrip Server
+# CroudTrip Server
 
-This repo contains the server used by the CrowdTrip android application.
+This repo contains the server used by the CroudTrip android application.
 
 ## Running locally
 

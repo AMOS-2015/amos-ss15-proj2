@@ -1,4 +1,4 @@
-package crowdtrip.com.croudtrip.activities;
+package org.croudtrip.activities;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -8,15 +8,14 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.RelativeLayout;
 import android.widget.Toast;
 
-import org.crowdtrip.HelloWorld;
-import org.crowdtrip.HelloWorldResource;
-import org.crowdtrip.RegisterUserResource;
-import org.crowdtrip.User;
+import org.croudtrip.HelloWorld;
+import org.croudtrip.HelloWorldResource;
+import org.croudtrip.R;
+import org.croudtrip.RegisterUserResource;
+import org.croudtrip.User;
 
-import crowdtrip.com.croudtrip.R;
 import retrofit.RestAdapter;
 import retrofit.client.Response;
 import retrofit.converter.JacksonConverter;
@@ -121,7 +120,7 @@ public class LoginActivity extends Activity {
                     @Override
                     public void call(Throwable throwable) {
                         Toast.makeText(LoginActivity.this, "Hello world failed", Toast.LENGTH_SHORT).show();
-                        Log.e("CrowdTrip", throwable.getMessage());
+                        Log.e("CroudTrip", throwable.getMessage());
                     }
                 });
 
@@ -130,19 +129,19 @@ public class LoginActivity extends Activity {
         User user = new User("Frederik", "Simon", "12345");
         RegisterUserResource register = new RestAdapter.Builder().setEndpoint(serverAddress).setConverter(new JacksonConverter()).build().create(RegisterUserResource.class);
         register.registerUser(user).subscribeOn(Schedulers.io())
-                                    .observeOn(AndroidSchedulers.mainThread())
-                                    .subscribe(new Action1<Response>() {
-                                        @Override
-                                        public void call(Response respone) {
-                                            Toast.makeText(LoginActivity.this, "register success", Toast.LENGTH_SHORT).show();
-                                        }
-                                    }, new Action1<Throwable>() {
-                                        @Override
-                                        public void call(Throwable throwable) {
-                                            Toast.makeText(LoginActivity.this, "Hello world failed", Toast.LENGTH_SHORT).show();
-                                            Log.e("CrowdTrip", throwable.getMessage());
-                                        }
-                                    });
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Action1<Response>() {
+                    @Override
+                    public void call(Response response) {
+                        Toast.makeText(LoginActivity.this, "register success", Toast.LENGTH_SHORT).show();
+                    }
+                }, new Action1<Throwable>() {
+                    @Override
+                    public void call(Throwable throwable) {
+                        Toast.makeText(LoginActivity.this, "Hello world failed", Toast.LENGTH_SHORT).show();
+                        Log.e("CroudTrip", throwable.getMessage());
+                    }
+                });
     }
 
 }

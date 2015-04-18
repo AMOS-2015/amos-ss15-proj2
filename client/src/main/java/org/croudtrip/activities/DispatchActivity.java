@@ -1,4 +1,4 @@
-package crowdtrip.com.croudtrip.activities;
+package org.croudtrip.activities;
 
 
 import android.app.Activity;
