@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * A model class to have a unified user that is shared between server and client.
  * Created by Frederik Simon on 17.04.2015.
  */
-public class User {
+public class BasicUser {
 
     private final String firstName;
     private final String lastName;
@@ -15,7 +15,7 @@ public class User {
     private final String password;
 
     @JsonCreator
-    public User(
+    public BasicUser(
             @JsonProperty("firstName") String firstName,
             @JsonProperty("lastName") String lastName,
             @JsonProperty("email") String email,

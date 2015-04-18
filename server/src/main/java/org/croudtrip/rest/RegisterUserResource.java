@@ -1,6 +1,6 @@
 package org.croudtrip.rest;
 
-import org.croudtrip.User;
+import org.croudtrip.BasicUser;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
@@ -18,7 +18,7 @@ import javax.ws.rs.core.MediaType;
 public class RegisterUserResource {
 
     @POST
-    public void registerUser( User user ) {
+    public void registerUser( BasicUser user ) {
 
         System.out.println( user.getFirstName() + " " + user.getLastName() + " registered." );
 

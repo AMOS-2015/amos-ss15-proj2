@@ -10,11 +10,11 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import org.croudtrip.BasicUser;
 import org.croudtrip.HelloWorld;
 import org.croudtrip.HelloWorldResource;
 import org.croudtrip.R;
 import org.croudtrip.RegisterUserResource;
-import org.croudtrip.User;
 
 import retrofit.RestAdapter;
 import retrofit.client.Response;
@@ -131,7 +131,7 @@ public class LoginActivity extends Activity {
         final String serverAddress = "";
 
         // create user
-        User user = new User(firstName, lastName, email, password);
+        BasicUser user = new BasicUser(firstName, lastName, email, password);
 
         RegisterUserResource register = new RestAdapter.Builder().setEndpoint(serverAddress)
                                                                  .setConverter(new JacksonConverter())
