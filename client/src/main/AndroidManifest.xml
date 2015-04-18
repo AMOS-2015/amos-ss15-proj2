@@ -26,6 +26,10 @@
             android:name=".activities.LoginActivity"
             android:label="@string/app_name" >
         </activity>
+        <activity
+            android:name=".activities.DB_DummyActivity"
+            android:label="@string/app_name" >
+        </activity>
     </application>
 
 </manifest>

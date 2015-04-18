@@ -17,6 +17,10 @@ public class MainActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        // Try the database with DB_Dummy objects:
+        //Intent intent = new Intent(this, DB_DummyActivity.class);
+        //startActivity(intent);
     }
 
 
