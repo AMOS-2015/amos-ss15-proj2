@@ -1,14 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Everything works just fine"/>
-
-    <EditText
+    <!--<EditText
         android:id="@+id/input_server"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -22,17 +18,82 @@
         android:layout_width="match_parent"
         android:layout_margin="10dp"
         android:text="Get Hello World"
-        />
+        />-->
+
+    <LinearLayout
+        android:id="@+id/layout_register"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center_vertical|center_horizontal">
+
+        <EditText
+            android:id="@+id/et_email"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="email"/>
+
+        <EditText
+            android:id="@+id/et_firstName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="firstname"/>
+
+        <EditText
+            android:id="@+id/et_lastName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="lastname"/>
+
+        <Button
+            android:id="@+id/btn_register"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Register"/>
+
+        </LinearLayout>
+
+    <RelativeLayout
+        android:id="@+id/layout_choose"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="150dp"
+            android:gravity="center_vertical|center_horizontal">
+
+            <Button
+                android:id="@+id/btn_login_email"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Login with email"/>
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Login with Facebook"/>
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Login with G+"/>
+
+            </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/default_margin"
+            android:text="Skip for now"
+            android:gravity="bottom"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true" />
 
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/tv_login_google"/>
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/tv_login_facebook"/>
+        </RelativeLayout>
 
-</LinearLayout>
+</FrameLayout>
