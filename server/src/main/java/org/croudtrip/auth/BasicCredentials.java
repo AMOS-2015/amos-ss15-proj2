@@ -8,25 +8,40 @@ import java.util.Arrays;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 /**
- * Set of basic auth credentials (username + password).
+ * Set of basic auth credentials.
  */
-@Entity
+@Entity(name = BasicCredentials.ENTITY_NAME)
 @Table(name = "credentials")
-class BasicCredentials {
+@NamedQueries({
+		@NamedQuery(
+				name = BasicCredentials.QUERY_NAME_FIND_BY_USER_ID,
+				query = "SELECT c FROM " + BasicCredentials.ENTITY_NAME + " c WHERE c.user.id = :" + BasicCredentials.QUERY_PARAM_USER_ID
+		)
+})
+public class BasicCredentials {
+
+	public static final String
+			ENTITY_NAME = "BasicCredentials",
+			COLUMN_ID = "credentials_id",
+			QUERY_NAME_FIND_BY_USER_ID = "org.croudtrip.auth.BasicCredentials.findByUserId",
+			QUERY_PARAM_USER_ID = "user_id";
 
 	@Id
-	@Column(name = "credentails_id")
-	@GeneratedValue
+	@Column(name = COLUMN_ID)
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long id;
 
 	@OneToOne
-	@JoinColumn(name = User.COLUMN_ID)
+	@JoinColumn(name = User.COLUMN_ID, nullable = false)
 	private User user;
 
 	@Column(name = "encryptedPassword", nullable = false)

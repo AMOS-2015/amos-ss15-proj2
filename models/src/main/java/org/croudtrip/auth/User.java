@@ -26,7 +26,7 @@ import javax.validation.constraints.NotNull;
                 query = "SELECT u FROM " + User.ENTITY_NAME + " u"
         ),
         @NamedQuery(
-                name = User.QUERY_NAME_FIND_MAIL,
+                name = User.QUERY_NAME_FIND_BY_EMAIL,
                 query = "SELECT u FROM " + User.ENTITY_NAME + " u WHERE u.email = :" + User.QUERY_PARAM_MAIL
 )
 })
@@ -36,8 +36,8 @@ public class User {
             ENTITY_NAME = "User",
             COLUMN_ID = "user_id",
             QUERY_NAME_FIND_ALL = "org.croudtrip.auth.User.findAll",
-            QUERY_NAME_FIND_MAIL = "org.croudtrip.auth.User.findMail",
-            QUERY_PARAM_MAIL = "foo";
+            QUERY_NAME_FIND_BY_EMAIL = "org.croudtrip.auth.User.findMail",
+            QUERY_PARAM_MAIL = "email";
 
 
     @Id

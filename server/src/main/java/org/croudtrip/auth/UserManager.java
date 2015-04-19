@@ -3,6 +3,7 @@ package org.croudtrip.auth;
 
 import com.google.common.base.Optional;
 
+import org.croudtrip.db.BasicCredentialsDAO;
 import org.croudtrip.db.UserDAO;
 import org.croudtrip.utils.Assert;
 
@@ -20,12 +21,13 @@ public class UserManager {
 	private final UserDAO userDAO;
 
 	// basic authentication
-	// private final Map<String, BasicCredentials> credentialsMap = new HashMap<>();
+	private final BasicCredentialsDAO credentialsDAO;
 	private final BasicAuthenticationUtils authenticationUtils;
 
 	@Inject
-	UserManager(UserDAO userDAO, BasicAuthenticationUtils authenticationUtils) {
+	UserManager(UserDAO userDAO, BasicCredentialsDAO credentialsDAO, BasicAuthenticationUtils authenticationUtils) {
 		this.userDAO = userDAO;
+		this.credentialsDAO = credentialsDAO;
 		this.authenticationUtils = authenticationUtils;
 	}
 
@@ -40,13 +42,11 @@ public class UserManager {
 		User user = new User(0, userDescription.getEmail(), userDescription.getFirstName(), userDescription.getLastName());
 		userDAO.save(user);
 
-		/*
 		// store credentials
 		byte[] salt = authenticationUtils.generateSalt();
 		byte[] encryptedPassword = authenticationUtils.getEncryptedPassword(userDescription.getPassword(), salt);
-		BasicCredentials credentials = new BasicCredentials(user.getId(), encryptedPassword, salt);
-		credentialsMap.put(userId, credentials);
-		*/
+		BasicCredentials credentials = new BasicCredentials(user, encryptedPassword, salt);
+		credentialsDAO.save(credentials);
 
 		return user;
 	}
@@ -63,6 +63,7 @@ public class UserManager {
 
 
 	public void deleteUser(User user) {
+		credentialsDAO.delete(credentialsDAO.findByUserId(user.getId()).get());
 		userDAO.delete(user);
 	}
 

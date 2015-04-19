@@ -4,6 +4,7 @@ package org.croudtrip.app;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 
+import org.croudtrip.auth.BasicCredentials;
 import org.croudtrip.auth.User;
 import org.croudtrip.db.DbModule;
 import org.croudtrip.rest.HelloWorldResource;
@@ -41,7 +42,7 @@ public final class CroudTripApplication extends Application<CroudTripConfig> {
 	}
 
 
-	private final HibernateBundle<CroudTripConfig> hibernateBundle = new HibernateBundle<CroudTripConfig>(User.class) {
+	private final HibernateBundle<CroudTripConfig> hibernateBundle = new HibernateBundle<CroudTripConfig>(User.class, BasicCredentials.class) {
 		@Override
 		public DataSourceFactory getDataSourceFactory(CroudTripConfig configuration) {
 			return configuration.getDatabase();

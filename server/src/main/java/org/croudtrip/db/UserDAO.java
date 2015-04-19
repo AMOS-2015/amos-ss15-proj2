@@ -33,7 +33,7 @@ public class UserDAO extends AbstractDAO<User> {
 	public Optional<User> findByEmail(String email) {
 		return Optional.fromNullable(
 				uniqueResult(
-						namedQuery(User.QUERY_NAME_FIND_MAIL).setParameter(User.QUERY_PARAM_MAIL, email)));
+						namedQuery(User.QUERY_NAME_FIND_BY_EMAIL).setParameter(User.QUERY_PARAM_MAIL, email)));
 	}
 
 
