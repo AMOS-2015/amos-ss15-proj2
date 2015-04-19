@@ -7,7 +7,6 @@ import com.google.inject.Injector;
 import org.croudtrip.auth.BasicCredentials;
 import org.croudtrip.auth.User;
 import org.croudtrip.db.DbModule;
-import org.croudtrip.rest.HelloWorldResource;
 import org.croudtrip.rest.UserResource;
 
 import io.dropwizard.Application;
@@ -37,7 +36,6 @@ public final class CroudTripApplication extends Application<CroudTripConfig> {
 		Injector injector = Guice.createInjector(
 				new DbModule(hibernateBundle.getSessionFactory()));
 
-		environment.jersey().register(injector.getInstance(HelloWorldResource.class));
         environment.jersey().register(injector.getInstance(UserResource.class));
 	}
 

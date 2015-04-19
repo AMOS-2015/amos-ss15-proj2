@@ -10,8 +10,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import org.croudtrip.HelloWorld;
-import org.croudtrip.HelloWorldResource;
 import org.croudtrip.R;
 import org.croudtrip.UserResource;
 import org.croudtrip.auth.User;
@@ -129,32 +127,7 @@ public class LoginActivity extends Activity {
     }
 
 
-    private void getHelloWorld(String serverAddress) {
-        HelloWorldResource resource = new RestAdapter.Builder()
-                .setEndpoint(serverAddress)
-                .setConverter(new JacksonConverter())
-                .build()
-                .create(HelloWorldResource.class);
-
-        resource.getHelloWorld()
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Action1<HelloWorld>() {
-                    @Override
-                    public void call(HelloWorld helloWorld) {
-                        Toast.makeText(LoginActivity.this, helloWorld.getGreeting() + " " + helloWorld.getTarget(), Toast.LENGTH_SHORT).show();
-                    }
-                }, new Action1<Throwable>() {
-                    @Override
-                    public void call(Throwable throwable) {
-                        Toast.makeText(LoginActivity.this, "Hello world failed", Toast.LENGTH_SHORT).show();
-                        Log.e("CroudTrip", throwable.getMessage());
-                    }
-                });
-    }
-
-    private void registerUserByEmail( String firstName, String lastName, String email, String password )
-    {
+    private void registerUserByEmail( String firstName, String lastName, String email, String password ) {
         // TODO: Get server's address from global strings.xml -- server must be online to do so.
         final String serverAddress = "";
 
