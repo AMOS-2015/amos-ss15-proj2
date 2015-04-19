@@ -3,4 +3,14 @@
 
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
+
+
+    <string name="login_email">Login with email</string>
+    <string name="skip">Skip for now</string>
+    <string name="hint_email">your@email.com</string>
+    <string name="hint_firstname">First name</string>
+    <string name="hint_lastname">Last name</string>
+    <string name="register">Register</string>
+
+
 </resources>

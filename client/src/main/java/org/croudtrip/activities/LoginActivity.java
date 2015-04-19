@@ -32,6 +32,8 @@ public class LoginActivity extends Activity {
     private View layoutRegister, layoutChoose;
     private int animationDuration;
 
+    private boolean registerViewVisible = false;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,18 +67,44 @@ public class LoginActivity extends Activity {
                 //TODO
             }
         });
+    }
 
+    @Override
+    public void onBackPressed() {
+        if (registerViewVisible) {
+            showChooseView();
+        } else {
+            super.onBackPressed();
+        }
+    }
 
-        /*final EditText serverInput = (EditText) findViewById(R.id.input_server);
-        findViewById(R.id.hello_world).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                getHelloWorld(serverInput.getText().toString());
-            }
-        });*/
+    private void showChooseView() {
+        registerViewVisible = false;
+        layoutChoose.setAlpha(0f);
+        layoutChoose.setVisibility(View.VISIBLE);
+
+        //layoutRegister.setTranslationY(-100);
+        layoutChoose.animate()
+                .setStartDelay(animationDuration/2)
+                .alpha(1f)
+                .translationY(0)
+                .setDuration(animationDuration)
+                .setListener(null);
+
+        layoutRegister.animate()
+                .alpha(0f)
+                //.translationY(200)
+                .setDuration(animationDuration)
+                .setListener(new AnimatorListenerAdapter() {
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        layoutRegister.setVisibility(View.GONE);
+                    }
+                });
     }
 
     private void showRegisterView() {
+        registerViewVisible = true;
         layoutRegister.setAlpha(0f);
         layoutRegister.setVisibility(View.VISIBLE);
 
