@@ -32,6 +32,10 @@ database:
   # whether or not idle connections should be validated
   checkConnectionWhileIdle: false
 
+  # create tables as needed
+  properties:
+    hibernate.hbm2ddl.auto: create
+
 # required when putting Dropwizard in a war file, remove when running via main method
 server:
   type: bridge

@@ -10,9 +10,12 @@ import javax.validation.constraints.NotNull;
 /**
  * A user which can be (but has not been) registered.
  */
-public class UserDescription extends AbstractUser {
+public class UserDescription {
 
     @NotNull private final String password;
+    @NotNull public final String email;
+    @NotNull private final  String firstName;
+    @NotNull private final String lastName;
 
     @JsonCreator
     public UserDescription(
@@ -21,8 +24,25 @@ public class UserDescription extends AbstractUser {
             @JsonProperty("lastName") String lastName,
             @JsonProperty("password") String password) {
 
-        super(email, firstName, lastName);
+        this.email = email;
+        this.firstName = firstName;
+        this.lastName = lastName;
         this.password = password;
+    }
+
+
+    public String getEmail() {
+        return email;
+    }
+
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+
+    public String getLastName() {
+        return lastName;
     }
 
 
@@ -33,15 +53,18 @@ public class UserDescription extends AbstractUser {
 
     @Override
     public boolean equals(Object other) {
-        if (!super.equals(other) || !(other instanceof UserDescription)) return false;
+        if (other == null || !(other instanceof UserDescription)) return false;
         UserDescription user = (UserDescription) other;
-        return Objects.equal(password, user.password);
+        return Objects.equal(password, user.password)
+                && Objects.equal(email, user.email)
+                && Objects.equal(firstName, user.firstName)
+                && Objects.equal(lastName, user.lastName);
     }
 
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(super.hashCode(), password);
+        return Objects.hashCode(email, firstName, lastName, password);
     }
 
 }

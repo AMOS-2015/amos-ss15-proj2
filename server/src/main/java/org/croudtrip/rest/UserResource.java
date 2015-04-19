@@ -1,5 +1,7 @@
 package org.croudtrip.rest;
 
+import com.google.common.base.Optional;
+
 import org.croudtrip.auth.User;
 import org.croudtrip.auth.UserDescription;
 import org.croudtrip.auth.UserManager;
@@ -7,6 +9,7 @@ import org.croudtrip.auth.UserManager;
 import java.util.List;
 
 import javax.inject.Inject;
+import javax.validation.Valid;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -15,6 +18,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+
+import io.dropwizard.hibernate.UnitOfWork;
 
 /**
  * Resource for managing users.
@@ -33,8 +38,9 @@ public class UserResource {
 
 
     @POST
-    public User registerUser(UserDescription description) {
-        if (userManager.findUserByEmail(description.getEmail()) != null) {
+    @UnitOfWork
+    public User registerUser(@Valid UserDescription description) {
+        if (userManager.findUserByEmail(description.getEmail()).isPresent()) {
             throw RestUtils.createJsonFormattedException("email already registered", 409);
         }
 
@@ -44,12 +50,14 @@ public class UserResource {
 
     @GET
     @Path("/{userId}")
-    public User getUser(@PathParam("userId") String userId) {
+    @UnitOfWork
+    public User getUser(@PathParam("userId") long userId) {
         return assertUserExists(userId);
     }
 
 
     @GET
+    @UnitOfWork
     public List<User> getAllUsers() {
         return userManager.getAllUsers();
     }
@@ -57,14 +65,15 @@ public class UserResource {
 
     @DELETE
     @Path("/{userId}")
-    public void removeUser(@PathParam("userId") String userId) {
-        userManager.removeUser(assertUserExists(userId));
+    @UnitOfWork
+    public void removeUser(@PathParam("userId") long userId) {
+        userManager.deleteUser(assertUserExists(userId));
     }
 
 
-    private User assertUserExists(String userId) {
-        User user = userManager.getUser(userId);
-        if (user == null) throw RestUtils.createNotFoundException();
-        else return user;
+    private User assertUserExists(long userId) {
+        Optional<User> user = userManager.getUser(userId);
+        if (user.isPresent()) return user.get();
+        else throw RestUtils.createNotFoundException();
     }
 }
