@@ -5,7 +5,10 @@ dependencies {
         exclude module: 'jackson-annotations'
     }
     compile 'com.fasterxml.jackson.core:jackson-annotations:2.5.1'
-    testCompile 'junit:junit:4.11'
+    compile 'com.google.guava:guava:18.0'
+    compile 'javax.validation:validation-api:1.1.0.Final'
     compile 'com.j256.ormlite:ormlite-android:4.48'
     compile 'javax.persistence:persistence-api:1.0'
+
+    testCompile 'junit:junit:4.11'
 }

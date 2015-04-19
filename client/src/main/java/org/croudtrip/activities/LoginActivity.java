@@ -10,14 +10,14 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import org.croudtrip.BasicUser;
 import org.croudtrip.HelloWorld;
 import org.croudtrip.HelloWorldResource;
 import org.croudtrip.R;
-import org.croudtrip.RegisterUserResource;
+import org.croudtrip.UserResource;
+import org.croudtrip.auth.User;
+import org.croudtrip.auth.UserDescription;
 
 import retrofit.RestAdapter;
-import retrofit.client.Response;
 import retrofit.converter.JacksonConverter;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
@@ -159,19 +159,19 @@ public class LoginActivity extends Activity {
         final String serverAddress = "";
 
         // create user
-        BasicUser user = new BasicUser(firstName, lastName, email, password);
+        UserDescription userDescription = new UserDescription(email, firstName, lastName, password);
 
-        RegisterUserResource register = new RestAdapter.Builder().setEndpoint(serverAddress)
+        UserResource userResource = new RestAdapter.Builder().setEndpoint(serverAddress)
                                                                  .setConverter(new JacksonConverter())
                                                                  .build()
-                                                                 .create(RegisterUserResource.class);
+                                                                 .create(UserResource.class);
 
-        register.registerUser(user).subscribeOn(Schedulers.io())
+        userResource.registerUser(userDescription).subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Action1<Response>() {
+                .subscribe(new Action1<User>() {
                     @Override
-                    public void call(Response response) {
-                        Toast.makeText(LoginActivity.this, "registering user successful", Toast.LENGTH_SHORT).show();
+                    public void call(User user) {
+                        Toast.makeText(LoginActivity.this, "registering user successful (id " + user.getId() + ")", Toast.LENGTH_SHORT).show();
                     }
                 }, new Action1<Throwable>() {
                     @Override

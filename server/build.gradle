@@ -13,6 +13,10 @@ run() {
 
 dependencies {
     compile 'io.dropwizard:dropwizard-core:0.8.0'
+    compile 'io.dropwizard:dropwizard-hibernate:0.8.0'
+    compile 'com.google.inject:guice:4.0-beta5'
+    compile 'com.google.inject.extensions:guice-assistedinject:4.0-beta5'
+    compile 'org.postgresql:postgresql:9.4-1201-jdbc41'
     compile 'be.fluid-it.tools.dropwizard:wizard-in-a-box:0.8-1-1'
     compile project(':models')
 
