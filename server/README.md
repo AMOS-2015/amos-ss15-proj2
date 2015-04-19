@@ -2,6 +2,12 @@
 
 This repo contains the server used by the CroudTrip android application.
 
+
+## PostgreSQL setup
+
+Before running the server make sure to update the username and password of the db connector
+which is defined in `configuration.yml` under `database`.
+
 ## Running locally
 
 To run the server locally copy the `configuration.yml.template` file to `configuration.yml` 
