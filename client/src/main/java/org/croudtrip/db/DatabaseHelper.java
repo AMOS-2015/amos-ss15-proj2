@@ -29,7 +29,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
     private static final int DATABASE_VERSION = 1;
 
     // The DAO object we use to access the DB_Dummy table
-    private Dao<DB_Dummy, Integer> dummyDAO = null;
+    private Dao<DB_Dummy, Long> dummyDAO = null;
 
     //*********************** Constructor ***********************//
 
@@ -79,7 +79,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
      * Returns the Dao (Database Access Object) for the DB_Dummy class. It will create it or just
      * give the cached value.
      */
-    public Dao<DB_Dummy, Integer> getDB_DummyDao() throws SQLException{
+    public Dao<DB_Dummy, Long> getDB_DummyDao() throws SQLException{
         if (dummyDAO == null) {
             dummyDAO = getDao(DB_Dummy.class);
         }

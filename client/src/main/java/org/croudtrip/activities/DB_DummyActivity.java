@@ -25,7 +25,7 @@ public class DB_DummyActivity extends ActionBarActivity{
         super.onCreate(savedInstanceState);
 
         try {
-            Dao<DB_Dummy, Integer> dummyDao = ((MainApplication) getApplicationContext()).getHelper().getDB_DummyDao();
+            Dao<DB_Dummy, Long> dummyDao = ((MainApplication) getApplicationContext()).getHelper().getDB_DummyDao();
 
             // Create some entries to demonstrate how this is working
             DB_Dummy brother = new DB_Dummy("Brother", null);
@@ -37,6 +37,7 @@ public class DB_DummyActivity extends ActionBarActivity{
             // Query db for all DB_Dummies
             List<DB_Dummy> dummies = dummyDao.queryForAll();
             Log.i("DB_DummyActivity", "Found these dummies in DB: " + Arrays.toString(dummies.toArray()));
+            Log.i("DB_DummyActivity", "Found DB_Dummy with id 1: " + dummyDao.queryForId(1L).toString());
 
         } catch (SQLException e) {
             throw new RuntimeException(e);
