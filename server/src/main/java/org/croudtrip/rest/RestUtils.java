@@ -16,6 +16,12 @@ class RestUtils {
 		return createJsonFormattedException("not found", 404);
 	}
 
+
+	public static WebApplicationException createUnauthorizedException() {
+		return createJsonFormattedException("not authorized", 401);
+	}
+
+
 	public static WebApplicationException createJsonFormattedException(String message, int code) {
 		return new WebApplicationException(
 				Response

@@ -4,12 +4,15 @@ package org.croudtrip.app;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 
+import org.croudtrip.auth.BasicAuthenticator;
 import org.croudtrip.auth.BasicCredentials;
 import org.croudtrip.auth.User;
 import org.croudtrip.db.DbModule;
 import org.croudtrip.rest.UserResource;
 
 import io.dropwizard.Application;
+import io.dropwizard.auth.AuthFactory;
+import io.dropwizard.auth.basic.BasicAuthFactory;
 import io.dropwizard.db.DataSourceFactory;
 import io.dropwizard.hibernate.HibernateBundle;
 import io.dropwizard.setup.Bootstrap;
@@ -37,6 +40,10 @@ public final class CroudTripApplication extends Application<CroudTripConfig> {
 				new DbModule(hibernateBundle.getSessionFactory()));
 
         environment.jersey().register(injector.getInstance(UserResource.class));
+		environment.jersey().register(AuthFactory.binder(new BasicAuthFactory<>(
+				injector.getInstance(BasicAuthenticator.class),
+				"all secret",
+				User.class)));
 	}
 
 

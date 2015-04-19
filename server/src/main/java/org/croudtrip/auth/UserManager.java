@@ -52,13 +52,18 @@ public class UserManager {
 	}
 
 
-	public Optional<User> getUser(long userId) {
+	public Optional<User> findUserById(long userId) {
 		return userDAO.findById(userId);
 	}
 
 
-	public List<User> getAllUsers() {
+	public List<User> findAllUsers() {
 		return userDAO.findAll();
+	}
+
+
+	public Optional<User> findUserByEmail(String email) {
+		return userDAO.findByEmail(email);
 	}
 
 
@@ -68,8 +73,8 @@ public class UserManager {
 	}
 
 
-	public Optional<User> findUserByEmail(String email) {
-		return userDAO.findByEmail(email);
+	public Optional<BasicCredentials> findCredentialsByUserId(long userId) {
+		return credentialsDAO.findByUserId(userId);
 	}
 
 }

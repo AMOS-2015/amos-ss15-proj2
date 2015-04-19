@@ -19,6 +19,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
+import io.dropwizard.auth.Auth;
 import io.dropwizard.hibernate.UnitOfWork;
 
 /**
@@ -59,20 +60,21 @@ public class UserResource {
     @GET
     @UnitOfWork
     public List<User> getAllUsers() {
-        return userManager.getAllUsers();
+        return userManager.findAllUsers();
     }
 
 
     @DELETE
     @Path("/{userId}")
     @UnitOfWork
-    public void removeUser(@PathParam("userId") long userId) {
+    public void removeUser(@Auth User user, @PathParam("userId") long userId) {
+        if (user.getId() != userId) throw RestUtils.createUnauthorizedException();
         userManager.deleteUser(assertUserExists(userId));
     }
 
 
     private User assertUserExists(long userId) {
-        Optional<User> user = userManager.getUser(userId);
+        Optional<User> user = userManager.findUserById(userId);
         if (user.isPresent()) return user.get();
         else throw RestUtils.createNotFoundException();
     }
