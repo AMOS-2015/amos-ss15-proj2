@@ -1,13 +1,12 @@
 package org.croudtrip.activities;
 
-import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.app.ActionBarActivity;
-import android.view.Menu;
-import android.view.MenuItem;
 
 import org.croudtrip.R;
-import org.croudtrip.fragments.MainFragment;
+import org.croudtrip.fragments.JoinTripFragment;
+import org.croudtrip.fragments.OfferTripFragment;
+import org.croudtrip.fragments.ProfileFragment;
+import org.croudtrip.fragments.SettingsFragment;
 
 import it.neokree.materialnavigationdrawer.MaterialNavigationDrawer;
 
@@ -27,12 +26,15 @@ public class MainActivity extends MaterialNavigationDrawer {
 
 
         // create sections
-        this.addSection(newSection("Main", R.drawable.ic_settings, new MainFragment()));
+        this.addSection(newSection(getString(R.string.menu_join_trip), R.drawable.ic_settings, new JoinTripFragment()));
+        this.addSection(newSection(getString(R.string.menu_offer_trip), R.drawable.ic_settings, new OfferTripFragment()));
+        this.addSection(newSection(getString(R.string.menu_profile), R.drawable.ic_settings, new ProfileFragment()));
+
 
 
 
         // create bottom section
-        this.addBottomSection(newSection(getString(R.string.action_settings),R.drawable.ic_settings,new Intent(this,MainActivity.class)));
+        this.addBottomSection(newSection(getString(R.string.menu_settings),R.drawable.ic_settings, new SettingsFragment()));
 
 
 

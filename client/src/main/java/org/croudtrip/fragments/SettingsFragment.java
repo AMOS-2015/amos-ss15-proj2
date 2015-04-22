@@ -16,7 +16,7 @@ import it.neokree.materialnavigationdrawer.MaterialNavigationDrawer;
 /**
  * Created by alex on 22.04.15.
  */
-public class MainFragment extends Fragment {
+public class SettingsFragment extends Fragment {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -30,7 +30,7 @@ public class MainFragment extends Fragment {
                              Bundle savedInstanceState) {
 
         setHasOptionsMenu(true);
-        View view = inflater.inflate(R.layout.fragment_offer_trip, container, false);
+        View view = inflater.inflate(R.layout.fragment_settings, container, false);
 
 
         return view;
