@@ -18,6 +18,18 @@ import it.neokree.materialnavigationdrawer.MaterialNavigationDrawer;
  */
 public class OfferTripFragment extends Fragment {
 
+    private static OfferTripFragment instance;
+
+    public static OfferTripFragment get() {
+        synchronized (OfferTripFragment.class) {
+            if (instance == null) {
+                instance = new OfferTripFragment();
+            }
+            return instance;
+        }
+    }
+
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

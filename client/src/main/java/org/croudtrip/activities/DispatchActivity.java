@@ -10,7 +10,7 @@ import android.os.Bundle;
  */
 public class DispatchActivity extends Activity {
 
-    boolean loggedIn = false; //TODO: Implement functionality to detect, wether the user is currently logged in
+    boolean loggedIn = true; //TODO: Implement functionality to detect, wether the user is currently logged in
 
 
     @Override
