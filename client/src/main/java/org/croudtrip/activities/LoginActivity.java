@@ -128,7 +128,6 @@ public class LoginActivity extends Activity {
 
 
     private void registerUserByEmail( String firstName, String lastName, String email, String password ) {
-        // TODO: Get server's address from global strings.xml -- server must be online to do so.
         final String serverAddress = getResources().getString(R.string.server_address);
 
         // create user
