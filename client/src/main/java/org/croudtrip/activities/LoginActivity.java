@@ -5,7 +5,6 @@ import android.animation.AnimatorListenerAdapter;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -22,6 +21,7 @@ import retrofit.converter.JacksonConverter;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
 import rx.schedulers.Schedulers;
+import timber.log.Timber;
 
 /**
  * Login functionality will not be in a fragment, but in an extra activity, just to have it completely separated to the business logic
@@ -166,7 +166,7 @@ public class LoginActivity extends Activity {
                             message = getString(R.string.registration_error_general);
                         }
                         Toast.makeText(LoginActivity.this, message, Toast.LENGTH_LONG).show();
-                        Log.e("CroudTrip", throwable.getMessage());
+                        Timber.e(throwable.getMessage());
                     }
                 });
     }

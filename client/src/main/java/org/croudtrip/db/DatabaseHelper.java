@@ -2,7 +2,6 @@ package org.croudtrip.db;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
-import android.util.Log;
 
 import com.j256.ormlite.android.apptools.OrmLiteSqliteOpenHelper;
 import com.j256.ormlite.dao.Dao;
@@ -12,6 +11,8 @@ import com.j256.ormlite.table.TableUtils;
 import org.croudtrip.DB_Dummy;
 
 import java.sql.SQLException;
+
+import timber.log.Timber;
 
 /**
  * Database helper class used to manage the creation and upgrading of the database. This class also
@@ -46,10 +47,10 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
     public void onCreate(SQLiteDatabase db, ConnectionSource connectionSource) {
 
         try {
-            Log.i(DatabaseHelper.class.getName(), "onCreate");
+            Timber.i("onCreate");
             TableUtils.createTable(connectionSource, DB_Dummy.class);
         } catch (SQLException e) {
-            Log.e(DatabaseHelper.class.getName(), "Can't create tables", e);
+            Timber.e("Can't create tables", e);
             throw new RuntimeException(e);
         }
     }
@@ -62,14 +63,14 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, ConnectionSource connectionSource, int oldVersion, int newVersion) {
 
         try {
-            Log.i(DatabaseHelper.class.getName(), "onUpgrade");
+            Timber.i("onUpgrade");
             TableUtils.dropTable(connectionSource, DB_Dummy.class, true);
 
             // After the old tables have been dropped, simply create the new ones
             onCreate(db, connectionSource);
 
         } catch (SQLException e) {
-            Log.e(DatabaseHelper.class.getName(), "Can't drop tables", e);
+            Timber.e("Can't drop tables", e);
             throw new RuntimeException(e);
         }
     }

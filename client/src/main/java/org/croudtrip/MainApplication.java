@@ -6,6 +6,8 @@ import com.j256.ormlite.android.apptools.OpenHelperManager;
 
 import org.croudtrip.db.DatabaseHelper;
 
+import timber.log.Timber;
+
 /**
  * Use this place to initialize frameworks etc.
  */
@@ -18,6 +20,7 @@ public class MainApplication extends Application {
     public void onCreate() {
         super.onCreate();
         OpenHelperManager.setOpenHelperClass(DatabaseHelper.class);
+        Timber.plant(new Timber.DebugTree());
     }
 
 
