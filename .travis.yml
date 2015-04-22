@@ -1,13 +1,18 @@
 language: android
-
 android:
   components:
   - build-tools-22.0.1
   - android-22
   - extra-android-m2repository
-
 script: ./gradlew build
-
 notifications:
   slack:
     secure: KsOb+qM3B5u7zcV+ELu4lVPUdkqFVX6rEuK1Alf0mwTCdkL0taIoRFaNsPB0GcJPyG5y70if33cpNBmb1bTz6tGWzp5jx8TWNg7WxpNK19VV8KlUa9+DZ/2CqFjuqY7kcL5gGWeIjFJi9pVWVWvZ7h5cSmWtWu4SSS5j7IKmSes=
+deploy:
+  provider: releases
+  api_key:
+    secure: DqSR0jOordroNccU1VUaGmRJgKQdM1L3Jr37/3FDftuQDpuYlLIOyP9nSFZtLfy480NiC+F9clCbYh9NLF339VbVhkdrwtNBAaDp3JVE8cg0ehi9H9XxjlaPFnnumt46uWB33PXVII9rjfLOtFhE1n6eH1ly1Gj4cRXCvx2D9G4=
+  file: ./client/build/outputs/apk/client-debug.apk
+  on:
+    repo: AMOS-2015/amos-ss15-proj2
+    tags: true
