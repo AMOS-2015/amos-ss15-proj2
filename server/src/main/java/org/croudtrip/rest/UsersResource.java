@@ -28,12 +28,12 @@ import io.dropwizard.hibernate.UnitOfWork;
 @Path("/users")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-public class UserResource {
+public class UsersResource {
 
     private final UserManager userManager;
 
     @Inject
-    UserResource(UserManager userManager) {
+    UsersResource(UserManager userManager) {
         this.userManager = userManager;
     }
 
@@ -54,6 +54,14 @@ public class UserResource {
     @UnitOfWork
     public User getUser(@PathParam("userId") long userId) {
         return assertUserExists(userId);
+    }
+
+
+    @GET
+    @Path("/me")
+    @UnitOfWork
+    public User getUser(@Auth User user) {
+        return user;
     }
 
 

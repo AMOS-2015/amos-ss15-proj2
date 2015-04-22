@@ -8,7 +8,7 @@ import org.croudtrip.auth.BasicAuthenticator;
 import org.croudtrip.auth.BasicCredentials;
 import org.croudtrip.auth.User;
 import org.croudtrip.db.DbModule;
-import org.croudtrip.rest.UserResource;
+import org.croudtrip.rest.UsersResource;
 
 import io.dropwizard.Application;
 import io.dropwizard.auth.AuthFactory;
@@ -39,7 +39,7 @@ public final class CroudTripApplication extends Application<CroudTripConfig> {
 		Injector injector = Guice.createInjector(
 				new DbModule(hibernateBundle.getSessionFactory()));
 
-        environment.jersey().register(injector.getInstance(UserResource.class));
+        environment.jersey().register(injector.getInstance(UsersResource.class));
 		environment.jersey().register(AuthFactory.binder(new BasicAuthFactory<>(
 				injector.getInstance(BasicAuthenticator.class),
 				"all secret",
