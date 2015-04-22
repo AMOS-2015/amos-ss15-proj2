@@ -5,8 +5,11 @@ This repo contains the server used by the CroudTrip android application.
 
 ## PostgreSQL setup
 
-Before running the server make sure to update the username and password of the db connector
-which is defined in `configuration.yml` under `database`.
+Before running the server make sure to update the following db connector fields in
+`configuration.yml` under `database`.
+- `username`
+- `password`
+- `url`: when running on the course console use `jdbc:postgresql://localhost:5432/amos-ss15-proj2`
 
 ## Running locally
 
