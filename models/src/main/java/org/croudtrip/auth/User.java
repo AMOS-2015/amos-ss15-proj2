@@ -2,8 +2,11 @@ package org.croudtrip.auth;
 
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Objects;
+
+import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -46,17 +49,31 @@ public class User {
     @NotNull
     private long id;
 
-    @NotNull
     @Column(name = "email", nullable = false)
+    @NotNull
     public String email;
 
-    @NotNull
     @Column(name = "firstName", nullable = false)
+    @NotNull
     private String firstName;
 
-    @NotNull
     @Column(name = "lastName", nullable = false)
+    @NotNull
     private String lastName;
+
+    @Column(name = "phoneNumber", nullable = true)
+    private String phoneNumber;
+
+    @Column(name = "isMale", nullable = true)
+    private Boolean isMale;
+
+    @Column(name = "birthDay", nullable = true)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern="yyyy-MM-dd")
+    private Date birthDay;
+
+    @Column(name = "address", nullable = true)
+    private String address;
+
 
     User() { }
 
@@ -65,12 +82,20 @@ public class User {
             @JsonProperty("id") long id,
             @JsonProperty("email") String email,
             @JsonProperty("firstName") String firstName,
-            @JsonProperty("lastName") String lastName) {
+            @JsonProperty("lastName") String lastName,
+            @JsonProperty("phoneNumber") String phoneNumber,
+            @JsonProperty("isMale") Boolean isMale,
+            @JsonProperty("birthDay") Date birthDay,
+            @JsonProperty("address") String address) {
 
         this.id = id;
         this.email = email;
         this.firstName = firstName;
         this.lastName = lastName;
+        this.phoneNumber = phoneNumber;
+        this.isMale = isMale;
+        this.birthDay = birthDay;
+        this.address = address;
     }
 
 
@@ -94,6 +119,26 @@ public class User {
     }
 
 
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+
+    public Boolean getIsMale() {
+        return isMale;
+    }
+
+
+    public Date getBirthDay() {
+        return birthDay;
+    }
+
+
+    public String getAddress() {
+        return address;
+    }
+
+
     @Override
     public boolean equals(Object other) {
         if (other == null || !(other instanceof User)) return false;
@@ -101,13 +146,17 @@ public class User {
         return Objects.equal(id, user.id)
                 && Objects.equal(email, user.email)
                 && Objects.equal(firstName, user.firstName)
-                && Objects.equal(lastName, user.lastName);
+                && Objects.equal(lastName, user.lastName)
+                && Objects.equal(phoneNumber, user.phoneNumber)
+                && Objects.equal(isMale, user.isMale)
+                && Objects.equal(birthDay, user.birthDay)
+                && Objects.equal(address, user.address);
     }
 
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(id, email, firstName, lastName);
+        return Objects.hashCode(id, email, firstName, lastName, phoneNumber, isMale, birthDay, address);
     }
 
 }

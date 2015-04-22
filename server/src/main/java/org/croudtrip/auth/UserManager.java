@@ -39,7 +39,7 @@ public class UserManager {
 				"user with email " + userDescription.getEmail() + " already registered");
 
 		// store new user
-		User user = new User(0, userDescription.getEmail(), userDescription.getFirstName(), userDescription.getLastName());
+		User user = new User(0, userDescription.getEmail(), userDescription.getFirstName(), userDescription.getLastName(), null, null, null, null);
 		userDAO.save(user);
 
 		// store credentials
@@ -48,6 +48,12 @@ public class UserManager {
 		BasicCredentials credentials = new BasicCredentials(user, encryptedPassword, salt);
 		credentialsDAO.save(credentials);
 
+		return user;
+	}
+
+
+	public User updateUser(User user) {
+		userDAO.update(user);
 		return user;
 	}
 
