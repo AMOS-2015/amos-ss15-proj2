@@ -3,6 +3,7 @@ package org.croudtrip.activities;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -16,6 +17,7 @@ import org.croudtrip.auth.User;
 import org.croudtrip.auth.UserDescription;
 
 import retrofit.RestAdapter;
+import retrofit.RetrofitError;
 import retrofit.converter.JacksonConverter;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
@@ -63,6 +65,13 @@ public class LoginActivity extends Activity {
             @Override
             public void onClick(View v) {
                 registerUserByEmail(firstName.getText().toString(), lastName.getText().toString(), email.getText().toString(), "1234");
+            }
+        });
+
+        findViewById(R.id.skip).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(LoginActivity.this, DummyActivity.class));
             }
         });
     }
@@ -143,11 +152,20 @@ public class LoginActivity extends Activity {
                 .subscribe(new Action1<User>() {
                     @Override
                     public void call(User user) {
-                        Toast.makeText(LoginActivity.this, "registering user successful (id " + user.getId() + ")", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(LoginActivity.this, getString(R.string.registration_success), Toast.LENGTH_SHORT).show();
+                        startActivity(new Intent(LoginActivity.this, DummyActivity.class));
                     }
                 }, new Action1<Throwable>() {
                     @Override
                     public void call(Throwable throwable) {
+						RetrofitError retrofitError = (RetrofitError) throwable;
+                        String message;
+                        if (retrofitError.getResponse() != null && retrofitError.getResponse().getStatus() == 409) {
+                            message = getString(R.string.registration_error_conflict);
+                        } else {
+                            message = getString(R.string.registration_error_general);
+                        }
+                        Toast.makeText(LoginActivity.this, message, Toast.LENGTH_LONG).show();
                         Log.e("CroudTrip", throwable.getMessage());
                     }
                 });

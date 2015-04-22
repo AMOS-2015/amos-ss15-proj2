@@ -13,6 +13,10 @@
     <string name="hint_password">Password</string>
     <string name="register">Register</string>
 
+    <string name="registration_success">Registration success</string>
+    <string name="registration_error_general">Sorry, there was an error, please retry</string>
+    <string name="registration_error_conflict">Email has already been registered</string>
+
     <string name="server_address">http://osr-amos.cs.fau.de/ss15/proj2/application/</string>
 
 
