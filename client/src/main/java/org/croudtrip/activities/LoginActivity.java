@@ -62,7 +62,7 @@ public class LoginActivity extends Activity {
         register.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //TODO
+                registerUserByEmail(firstName.getText().toString(), lastName.getText().toString(), email.getText().toString(), "1234");
             }
         });
     }
@@ -129,7 +129,7 @@ public class LoginActivity extends Activity {
 
     private void registerUserByEmail( String firstName, String lastName, String email, String password ) {
         // TODO: Get server's address from global strings.xml -- server must be online to do so.
-        final String serverAddress = "";
+        final String serverAddress = getResources().getString(R.string.server_address);
 
         // create user
         UserDescription userDescription = new UserDescription(email, firstName, lastName, password);
@@ -149,7 +149,6 @@ public class LoginActivity extends Activity {
                 }, new Action1<Throwable>() {
                     @Override
                     public void call(Throwable throwable) {
-                        Toast.makeText(LoginActivity.this, "Hello world failed", Toast.LENGTH_SHORT).show();
                         Log.e("CroudTrip", throwable.getMessage());
                     }
                 });

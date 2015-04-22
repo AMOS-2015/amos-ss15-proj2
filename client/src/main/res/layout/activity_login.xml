@@ -39,6 +39,14 @@
                 android:layout_height="wrap_content"
                 android:hint="@string/hint_lastname"/>
 
+            <EditText
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:inputType="textPassword"
+                android:width="200dp"
+                android:id="@+id/et_password"
+                android:hint="@string/hint_password"/>
+
             <Button
                 android:id="@+id/btn_register"
                 android:layout_width="wrap_content"

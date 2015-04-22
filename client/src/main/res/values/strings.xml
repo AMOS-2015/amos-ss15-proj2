@@ -10,7 +10,10 @@
     <string name="hint_email">your@email.com</string>
     <string name="hint_firstname">First name</string>
     <string name="hint_lastname">Last name</string>
+    <string name="hint_password">Password</string>
     <string name="register">Register</string>
+
+    <string name="server_address">http://osr-amos.cs.fau.de/ss15/proj2/application/</string>
 
 
 </resources>
