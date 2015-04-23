@@ -1,8 +1,12 @@
-package org.croudtrip.auth;
+package org.croudtrip.user;
 
 
 import com.google.common.base.Optional;
 
+import org.croudtrip.auth.BasicAuthenticationUtils;
+import org.croudtrip.auth.BasicCredentials;
+import org.croudtrip.auth.User;
+import org.croudtrip.auth.UserDescription;
 import org.croudtrip.db.BasicCredentialsDAO;
 import org.croudtrip.db.UserDAO;
 import org.croudtrip.utils.Assert;
@@ -39,7 +43,7 @@ public class UserManager {
 				"user with email " + userDescription.getEmail() + " already registered");
 
 		// store new user
-		User user = new User(0, userDescription.getEmail(), userDescription.getFirstName(), userDescription.getLastName(), null, null, null, null);
+		User user = new User(0, userDescription.getEmail(), userDescription.getFirstName(), userDescription.getLastName(), null, null, null, null, null);
 		userDAO.save(user);
 
 		// store credentials
@@ -82,5 +86,6 @@ public class UserManager {
 	public Optional<BasicCredentials> findCredentialsByUserId(long userId) {
 		return credentialsDAO.findByUserId(userId);
 	}
+
 
 }

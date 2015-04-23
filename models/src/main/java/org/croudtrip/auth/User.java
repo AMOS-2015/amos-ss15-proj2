@@ -74,6 +74,8 @@ public class User {
     @Column(name = "address", nullable = true)
     private String address;
 
+    @Column(name = "avatar_url", nullable = true)
+    private String avatarUrl;
 
     User() { }
 
@@ -86,7 +88,8 @@ public class User {
             @JsonProperty("phoneNumber") String phoneNumber,
             @JsonProperty("isMale") Boolean isMale,
             @JsonProperty("birthDay") Date birthDay,
-            @JsonProperty("address") String address) {
+            @JsonProperty("address") String address,
+            @JsonProperty("avatarUrl") String avatarUrl) {
 
         this.id = id;
         this.email = email;
@@ -96,6 +99,7 @@ public class User {
         this.isMale = isMale;
         this.birthDay = birthDay;
         this.address = address;
+        this.avatarUrl = avatarUrl;
     }
 
 
@@ -139,6 +143,11 @@ public class User {
     }
 
 
+    public String getAvatarUrl() {
+        return avatarUrl;
+    }
+
+
     @Override
     public boolean equals(Object other) {
         if (other == null || !(other instanceof User)) return false;
@@ -150,13 +159,14 @@ public class User {
                 && Objects.equal(phoneNumber, user.phoneNumber)
                 && Objects.equal(isMale, user.isMale)
                 && Objects.equal(birthDay, user.birthDay)
-                && Objects.equal(address, user.address);
+                && Objects.equal(address, user.address)
+                && Objects.equal(avatarUrl, user.avatarUrl);
     }
 
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(id, email, firstName, lastName, phoneNumber, isMale, birthDay, address);
+        return Objects.hashCode(id, email, firstName, lastName, phoneNumber, isMale, birthDay, address, avatarUrl);
     }
 
 }

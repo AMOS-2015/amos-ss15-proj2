@@ -8,12 +8,15 @@ import org.croudtrip.auth.BasicAuthenticator;
 import org.croudtrip.auth.BasicCredentials;
 import org.croudtrip.auth.User;
 import org.croudtrip.db.DbModule;
+import org.croudtrip.rest.AvatarsResource;
 import org.croudtrip.rest.UsersResource;
+import org.croudtrip.user.Avatar;
 
 import io.dropwizard.Application;
 import io.dropwizard.auth.AuthFactory;
 import io.dropwizard.auth.basic.BasicAuthFactory;
 import io.dropwizard.db.DataSourceFactory;
+import io.dropwizard.forms.MultiPartBundle;
 import io.dropwizard.hibernate.HibernateBundle;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
@@ -31,6 +34,7 @@ public final class CroudTripApplication extends Application<CroudTripConfig> {
 	@Override
 	public void initialize(Bootstrap<CroudTripConfig> bootstrap) {
 		bootstrap.addBundle(hibernateBundle);
+		bootstrap.addBundle(new MultiPartBundle());
 	}
 
 
@@ -40,6 +44,7 @@ public final class CroudTripApplication extends Application<CroudTripConfig> {
 				new DbModule(hibernateBundle.getSessionFactory()));
 
         environment.jersey().register(injector.getInstance(UsersResource.class));
+		environment.jersey().register(injector.getInstance(AvatarsResource.class));
 		environment.jersey().register(AuthFactory.binder(new BasicAuthFactory<>(
 				injector.getInstance(BasicAuthenticator.class),
 				"all secret",
@@ -47,7 +52,10 @@ public final class CroudTripApplication extends Application<CroudTripConfig> {
 	}
 
 
-	private final HibernateBundle<CroudTripConfig> hibernateBundle = new HibernateBundle<CroudTripConfig>(User.class, BasicCredentials.class) {
+	private final HibernateBundle<CroudTripConfig> hibernateBundle = new HibernateBundle<CroudTripConfig>(
+			User.class,
+			BasicCredentials.class,
+			Avatar.class) {
 		@Override
 		public DataSourceFactory getDataSourceFactory(CroudTripConfig configuration) {
 			return configuration.getDatabase();
