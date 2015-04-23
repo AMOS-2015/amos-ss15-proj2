@@ -4,7 +4,7 @@ android:
   - build-tools-22.0.1
   - android-22
   - extra-android-m2repository
-script: ./gradlew build
+script: ./gradlew build --stacktrace
 notifications:
   slack:
     secure: KsOb+qM3B5u7zcV+ELu4lVPUdkqFVX6rEuK1Alf0mwTCdkL0taIoRFaNsPB0GcJPyG5y70if33cpNBmb1bTz6tGWzp5jx8TWNg7WxpNK19VV8KlUa9+DZ/2CqFjuqY7kcL5gGWeIjFJi9pVWVWvZ7h5cSmWtWu4SSS5j7IKmSes=
