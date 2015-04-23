@@ -1,0 +1,124 @@
+\documentclass[ngerman, 10pt, a4paper]{scrartcl}
+
+\usepackage[english]{babel}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lastpage}
+\usepackage{natbib}
+\usepackage{times}
+\usepackage{siunitx}
+
+\usepackage{a4wide}
+\usepackage{graphicx}
+\usepackage{epstopdf}
+\usepackage{color}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{sidecap}
+
+%\usepackage{textcomp}
+\usepackage{amsmath}
+\usepackage{url}
+
+\usepackage{fancyhdr}   % Fuer Kopfzeilen
+\usepackage[left=2.3cm,right=2.3cm,top=2.5cm,bottom=2.5cm]{geometry}
+
+\usepackage{color}
+\definecolor{bl}{RGB}{33,68,120} 
+\definecolor{lbl}{RGB}{54,111,196} 
+\usepackage{lmodern} %Type1-Schriftart für nicht-englische Texte
+
+\usepackage{listings}
+
+\usepackage{sectsty}
+\usepackage[compact]{titlesec} 
+\allsectionsfont{\color{bl}\scshape\selectfont}
+
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+
+% color of section names
+\addtokomafont{disposition}{\rmfamily}
+\addtokomafont{sectionentry}{\rmfamily}
+\addtokomafont{pagenumber}{\oldstylenums}
+
+% no indentations for new paragraphs
+%\setlength{\parindent}{0cm}
+
+% output of title and author
+\makeatletter							
+\def\printtitle{ {\color{bl} \centering \huge \sc \textbf{\@title}\par}}
+\makeatother
+
+\makeatletter
+\def\printauthor{{\color{bl} \centering \small \@author}}
+\makeatother
+
+\setlength{\parindent}{0pt}
+
+
+% Custom headers and footers
+\pagestyle{fancy}
+\lhead{}
+\chead{}
+\rhead{}
+\lfoot{}
+\cfoot{}
+\rfoot{}
+
+\renewcommand{\headrulewidth}{0.0pt}
+\renewcommand{\footrulewidth}{0.0pt} 
+
+% Change the abstract environment
+\usepackage[runin]{abstract}	
+\setlength\absleftindent{30pt}	
+\setlength\absrightindent{30pt}
+\abslabeldelim{\quad}						% 
+\setlength{\abstitleskip}{-10pt}
+\renewcommand{\abstractname}{}
+\renewcommand{\abstracttextfont}{\small \slshape}
+
+\titleformat{\section}{\Large\bfseries\color{bl}}{\thesection\hspace{5pt}\vline}{5pt}{}
+
+\title{ Architecture Description\huge \vspace{1pt} }
+\author{ of the Croud Trip project\\ }
+
+\begin{document}
+
+\clearpage
+\printtitle
+\printauthor 
+
+\section{Server architecture}
+We use \emph{DropWizard 0.8.0} \cite{DropWizard} as our main server framework and build the server application as a war-file using \emph{WizardInABox 0.8-1-1} \cite{WizardInABox}  that is deployed on the chair's tomcat server. DropWizard uses the Apache v2.0 license.
+
+DropWizard as a server framework provides us:
+\begin{itemize}
+\item \emph{Jersey} to provide a RESTful Web service
+\item \emph{Jackson} as a JSON converter
+\item \emph{Metrics} for behaviour measuring.
+\end{itemize} 
+On server side we use additionally \emph{Google Guice 4.0-beta5} \cite{GGuice} as our framework for dependency injection (Apache v2.0) and \emph{Hibernate 4.3.5} \cite{Hibernate} as object-relational mapper (LGPL v2.1).
+
+\section{Client architecture}
+On client side we use Android SDK version 21 as target platform and support version 16 as minimal SDK version.
+
+As REST client we use \emph{Retrofit 1.9.0} \cite{Retrofit} (Apache v2.0) which allows us simple access to the REST service provided by our server. It gets even more simple by using \emph{JaxRs2Retrofit 0.3.0} \cite{JRR} (Apache v2.0, written by one of our team members) which automatically generates classes for the REST client from the given Jersey classes. So we can use the same classes for the REST service and the client.
+
+As object-relational mapper on our Android client we use \emph{ORMLite 4.48} \cite{ORMLite} (Creative Commons Attribution-Share Alike 3.0 License). To save some additional work we want to use the Java Persistance API to share classes for server and client database tables.
+
+To improve the workflow even more we are currently evaluating \emph{Timber 3.0.1} \cite{Timber} (Apache v2.0) as a advanced logging tool and \emph{RxJava 1.0.8} \cite{RxJava} (Apache v2.0) for reactive programming.
+
+To get a clean and modern UI design on android devices we use additionally \emph{FloatingActionButton 1.9.0} \cite{AFAB} and \emph{MaterialNavigationDrawer 1.3.3} \cite{MND} (both Apache v2.0)
+
+\section{Other tools}
+As programming language we use Java 7 for both client and server. Our project is hosted on Github \cite{github} and we use Travis CI \cite{Travis} as continuous integration tool that builds our project after every push and automatically deploys our releases to Github.
+
+{\small
+\bibliographystyle{unsrt}
+\bibliography{bibliography}
+}
+
+
+
+\end{document}

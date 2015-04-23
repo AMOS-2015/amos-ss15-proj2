@@ -13,3 +13,10 @@ java-gen
 
 # android files
 local.properties
+
+# tex files
+*.aux
+*.bbl
+*.blg
+*.log
+*.gz
