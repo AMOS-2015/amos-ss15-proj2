@@ -8,7 +8,6 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 
 import org.croudtrip.R;
 
@@ -17,7 +16,7 @@ import it.neokree.materialnavigationdrawer.MaterialNavigationDrawer;
 /**
  * Created by alex on 22.04.15.
  */
-public class ProfileFragment extends Fragment {
+public class EditProfileFragment extends Fragment {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -31,16 +30,7 @@ public class ProfileFragment extends Fragment {
                              Bundle savedInstanceState) {
 
         setHasOptionsMenu(true);
-        final Fragment _this = this;
-        View view = inflater.inflate(R.layout.fragment_profile, container, false);
-
-        Button editProfile = (Button) view.findViewById(R.id.btn_edit_profile);
-        editProfile.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                ((MaterialNavigationDrawer)_this.getActivity()).setFragmentChild(new EditProfileFragment(), getString(R.string.menu_edit_profile));
-            }
-        });
+        View view = inflater.inflate(R.layout.fragment_edit_profile, container, false);
 
 
         return view;
