@@ -3,6 +3,8 @@ package org.croudtrip.auth;
 
 import com.google.common.base.Optional;
 
+import org.croudtrip.user.UserManager;
+
 import javax.inject.Inject;
 
 import io.dropwizard.auth.AuthenticationException;

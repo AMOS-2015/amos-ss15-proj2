@@ -42,8 +42,14 @@ public class UserDAO extends AbstractDAO<User> {
 	}
 
 
+	public void update(User user) {
+		currentSession().merge(user);
+	}
+
+
 	public void delete(User user) {
 		currentSession().delete(user);
 	}
+
 
 }

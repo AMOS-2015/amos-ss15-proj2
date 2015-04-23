@@ -16,7 +16,7 @@ import com.j256.ormlite.dao.Dao;
 import org.croudtrip.DB_Dummy;
 import org.croudtrip.MainApplication;
 import org.croudtrip.R;
-import org.croudtrip.UserResource;
+import org.croudtrip.UsersResource;
 import org.croudtrip.auth.User;
 
 import java.sql.SQLException;
@@ -61,12 +61,12 @@ public class DummyActivity extends ActionBarActivity{
         final UserListAdapter listAdapter = new UserListAdapter();
                 ((ListView) findViewById(R.id.list)).setAdapter(listAdapter);
 
-        UserResource userResource = new RestAdapter.Builder()
+        UsersResource usersResource = new RestAdapter.Builder()
                 .setEndpoint(getString(R.string.server_address))
                 .build()
-                .create(UserResource.class);
+                .create(UsersResource.class);
 
-        userResource.getAllUsers()
+        usersResource.getAllUsers()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Action1<List<User>>() {

@@ -11,7 +11,7 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import org.croudtrip.R;
-import org.croudtrip.UserResource;
+import org.croudtrip.UsersResource;
 import org.croudtrip.auth.User;
 import org.croudtrip.auth.UserDescription;
 
@@ -142,12 +142,12 @@ public class LoginActivity extends Activity {
         // create user
         UserDescription userDescription = new UserDescription(email, firstName, lastName, password);
 
-        UserResource userResource = new RestAdapter.Builder().setEndpoint(serverAddress)
+        UsersResource usersResource = new RestAdapter.Builder().setEndpoint(serverAddress)
                                                                  .setConverter(new JacksonConverter())
                                                                  .build()
-                                                                 .create(UserResource.class);
+                                                                 .create(UsersResource.class);
 
-        userResource.registerUser(userDescription).subscribeOn(Schedulers.io())
+        usersResource.registerUser(userDescription).subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Action1<User>() {
                     @Override

@@ -1,3 +1,7 @@
+import com.squareup.javapoet.ClassName
+import de.bitdroid.jaxrs2retrofit.converter.IgnoreConverter
+import io.dropwizard.auth.Auth;
+
 apply plugin: 'com.android.application'
 apply plugin: 'de.bitdroid.jaxrs2retrofit'
 
@@ -8,6 +12,9 @@ buildscript {
     }
     dependencies {
         classpath 'de.bitdroid.jaxrs2retrofit:plugin:0.3.0'
+        classpath ('io.dropwizard:dropwizard-auth:0.8.0') {
+			exclude group: 'com.google.guava'
+		}
         classpath 'com.android.tools.build:gradle:1.1.0'
     }
 }
@@ -71,5 +78,7 @@ afterEvaluate {
         it.inputDir = file(project(':server').projectDir.toString() + '/' + mainSourcesDir)
         it.outputDir = file(generatedSourcesDir)
         it.packageName = 'org.croudtrip'
+        it.paramConverterManager.registerConverter(ClassName.get(Auth.class), new IgnoreConverter())
+        it.excludedClassNamesRegex = 'AvatarsResource'
     }
 }

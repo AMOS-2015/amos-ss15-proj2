@@ -13,7 +13,7 @@ import javax.crypto.spec.PBEKeySpec;
 /**
  * Helper methods for dealing with basic authentication.
  */
-class BasicAuthenticationUtils {
+public class BasicAuthenticationUtils {
 
 	public byte[] generateSalt() {
 		try {
