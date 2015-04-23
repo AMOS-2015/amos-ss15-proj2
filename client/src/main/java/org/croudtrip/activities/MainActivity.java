@@ -9,6 +9,7 @@ import org.croudtrip.fragments.ProfileFragment;
 import org.croudtrip.fragments.SettingsFragment;
 
 import it.neokree.materialnavigationdrawer.MaterialNavigationDrawer;
+import it.neokree.materialnavigationdrawer.elements.MaterialSection;
 
 /**
  * We will probably use fragments, so this activity works as a container for all these fragments and will probably do
@@ -21,6 +22,7 @@ public class MainActivity extends MaterialNavigationDrawer {
     public void init(Bundle savedInstanceState) {
 
         this.disableLearningPattern();
+        this.allowArrowAnimation();
         this.setBackPattern(MaterialNavigationDrawer.BACKPATTERN_BACK_TO_FIRST);
         this.setDrawerHeaderImage(R.drawable.background_drawer);
 
@@ -30,11 +32,13 @@ public class MainActivity extends MaterialNavigationDrawer {
         this.addSection(newSection(getString(R.string.menu_offer_trip), R.drawable.ic_settings, new OfferTripFragment()));
         this.addSection(newSection(getString(R.string.menu_profile), R.drawable.ic_settings, new ProfileFragment()));
 
+        ((MaterialSection) getSectionList().get(0)).setNotifications(3);
+
 
 
 
         // create bottom section
-        this.addBottomSection(newSection(getString(R.string.menu_settings),R.drawable.ic_settings, new SettingsFragment()));
+        this.addBottomSection(newSection(getString(R.string.menu_settings), R.drawable.ic_settings, new SettingsFragment()));
 
 
 

@@ -16,19 +16,7 @@ import it.neokree.materialnavigationdrawer.MaterialNavigationDrawer;
 /**
  * Created by alex on 22.04.15.
  */
-public class OfferTripFragment extends Fragment {
-
-    private static OfferTripFragment instance;
-
-    public static OfferTripFragment get() {
-        synchronized (OfferTripFragment.class) {
-            if (instance == null) {
-                instance = new OfferTripFragment();
-            }
-            return instance;
-        }
-    }
-
+public class EditProfileFragment extends Fragment {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -42,7 +30,7 @@ public class OfferTripFragment extends Fragment {
                              Bundle savedInstanceState) {
 
         setHasOptionsMenu(true);
-        View view = inflater.inflate(R.layout.fragment_offer_trip, container, false);
+        View view = inflater.inflate(R.layout.fragment_edit_profile, container, false);
 
 
         return view;
