@@ -1,4 +1,4 @@
-\documentclass[ngerman, 10pt, a4paper]{scrartcl}
+\documentclass[ngerman, 11pt, a4paper]{scrartcl}
 
 \usepackage[english]{babel}
 \usepackage[T1]{fontenc}
@@ -15,6 +15,7 @@
 \usepackage{booktabs}
 \usepackage{multirow}
 \usepackage{sidecap}
+\usepackage{multicol}
 
 %\usepackage{textcomp}
 \usepackage{amsmath}
@@ -114,9 +115,14 @@ To get a clean and modern UI design on android devices we use additionally \emph
 \section{Other tools}
 As programming language we use Java 7 for both client and server. Our project is hosted on Github \cite{github} and we use Travis CI \cite{Travis} as continuous integration tool that builds our project after every push and automatically deploys our releases to Github.
 
-{\small
+We decided to use gradle 2.3 \cite{gradle} as build automation system.\\
+
+{\footnotesize
+\begin{multicols}{2}
+\renewcommand{\section}[2]{}%
 \bibliographystyle{unsrt}
 \bibliography{bibliography}
+\end{multicols}
 }
 
 
