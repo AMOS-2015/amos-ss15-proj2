@@ -34,7 +34,7 @@ database:
 
   # create tables as needed
   properties:
-    hibernate.hbm2ddl.auto: create
+    hibernate.hbm2ddl.auto: update
 
 # required when putting Dropwizard in a war file, remove when running via main method
 server:
