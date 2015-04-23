@@ -1,6 +1,10 @@
 # CroudTrip Server
 
-This repo contains the server used by the CroudTrip android application.
+This repo contains the server used by the CroudTrip android application. The server
+is hosted at:
+
+- Production: [http://osr-amos.cs.fau.de/ss15/proj2/application](http://osr-amos.cs.fau.de/ss15/proj2/application)
+- Testing: [http://osr-amos.cs.fau.de/ss15/proj2-test/application](http://osr-amos.cs.fau.de/ss15/proj2-test/application)
 
 
 ## PostgreSQL setup
