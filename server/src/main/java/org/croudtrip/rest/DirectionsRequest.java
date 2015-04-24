@@ -45,7 +45,7 @@ public class DirectionsRequest {
 
     @GET
     @UnitOfWork
-    public Route[] directions() { //TODO: add parameters to customize directions request
+    public Route directions() { //TODO: add parameters to customize directions request
         DirectionsRoute[] routes = new DirectionsRoute[0];
         try {
             routes = DirectionsApi.getDirections(context, "Nuremberg, DE", "Erlangen, DE").await();
@@ -95,7 +95,7 @@ public class DirectionsRequest {
             resultRoutes[i] = new Route(route.summary, legs, route.waypointOrder, route.overviewPolyline.getEncodedPath(), route.copyrights, route.warnings);
         }
 
-        return resultRoutes;
+        return resultRoutes[0];
     }
 
 }
