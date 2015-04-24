@@ -20,7 +20,7 @@ public class DispatchActivity extends Activity {
         if (loggedIn) {
             startActivity(new Intent(this, MainActivity.class));
         } else {
-            startActivity(new Intent(this, LoginActivity.class));
+            startActivity(new Intent(this, RegistrationActivity.class));
         }
     }
 

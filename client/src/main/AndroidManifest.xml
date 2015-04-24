@@ -24,7 +24,7 @@
             android:label="@string/app_name" >
         </activity>
         <activity
-            android:name=".activities.LoginActivity"
+            android:name=".activities.RegistrationActivity"
             android:label="@string/app_name" >
         </activity>
         <activity

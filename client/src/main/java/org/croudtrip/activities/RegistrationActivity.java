@@ -27,7 +27,7 @@ import timber.log.Timber;
  * Login functionality will not be in a fragment, but in an extra activity, just to have it completely separated to the business logic
  * (recommended by google)
  */
-public class LoginActivity extends Activity {
+public class RegistrationActivity extends Activity {
 
     private View layoutRegister, layoutChoose;
     private int animationDuration;
@@ -71,7 +71,7 @@ public class LoginActivity extends Activity {
         findViewById(R.id.skip).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(LoginActivity.this, DummyActivity.class));
+                startActivity(new Intent(RegistrationActivity.this, DummyActivity.class));
             }
         });
     }
@@ -152,8 +152,8 @@ public class LoginActivity extends Activity {
                 .subscribe(new Action1<User>() {
                     @Override
                     public void call(User user) {
-                        Toast.makeText(LoginActivity.this, getString(R.string.registration_success), Toast.LENGTH_SHORT).show();
-                        startActivity(new Intent(LoginActivity.this, DummyActivity.class));
+                        Toast.makeText(RegistrationActivity.this, getString(R.string.registration_success), Toast.LENGTH_SHORT).show();
+                        startActivity(new Intent(RegistrationActivity.this, DummyActivity.class));
                     }
                 }, new Action1<Throwable>() {
                     @Override
@@ -165,7 +165,7 @@ public class LoginActivity extends Activity {
                         } else {
                             message = getString(R.string.registration_error_general);
                         }
-                        Toast.makeText(LoginActivity.this, message, Toast.LENGTH_LONG).show();
+                        Toast.makeText(RegistrationActivity.this, message, Toast.LENGTH_LONG).show();
                         Timber.e(throwable.getMessage());
                     }
                 });
