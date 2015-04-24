@@ -12,7 +12,9 @@ Before running the server make sure to update the following db connector fields 
 `configuration.yml` under `database`.
 - `username`
 - `password`
-- `url`: when running on the course console use `jdbc:postgresql://localhost:5432/amos-ss15-proj2`
+- `url`: when running on the course console use:
+    - Production: `jdbc:postgresql://localhost:5432/amos-ss15-proj2`
+    - Testing: `jdbc:postgresql://localhost:5432/amos-ss15-proj2-test`
 
 ## Google API Key setup
 In order to do directions request to get routes you have to provide a specific Google API-Key.
