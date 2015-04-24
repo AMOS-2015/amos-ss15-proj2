@@ -12,6 +12,8 @@ import io.dropwizard.db.DataSourceFactory;
 public class CroudTripConfig extends Configuration {
 
 	@NotNull @Valid DataSourceFactory database;
+    @NotNull @Valid String apiKey;
+
 
 	@JsonCreator
 	public CroudTripConfig(@JsonProperty("database") DataSourceFactory database) {
@@ -22,5 +24,15 @@ public class CroudTripConfig extends Configuration {
 	public DataSourceFactory getDatabase() {
 		return database;
 	}
+
+    @JsonProperty("googleKey")
+    public String getGoogleAPIKey() {
+        return apiKey;
+    }
+
+    @JsonProperty("googleKey")
+    public void setGoogleAPIKey( String googleAPIKey ) {
+        this.apiKey = googleAPIKey;
+    }
 
 }

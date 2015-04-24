@@ -39,3 +39,6 @@ database:
 # required when putting Dropwizard in a war file, remove when running via main method
 server:
   type: bridge
+
+# google server API key
+googleKey: DUMMY_API_KEY

@@ -4,6 +4,9 @@ import com.google.maps.DirectionsApi;
 import com.google.maps.GeoApiContext;
 import com.google.maps.model.DirectionsRoute;
 
+import org.croudtrip.app.CroudTripConfig;
+
+import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -17,12 +20,20 @@ import io.dropwizard.hibernate.UnitOfWork;
 @Path("/directions")
 public class DirectionsRequest {
 
+    GeoApiContext context;
+
+    @Inject
+    DirectionsRequest( CroudTripConfig config ) {
+        context = new GeoApiContext();
+        context.setApiKey(config.getGoogleAPIKey());
+        System.out.println(config.getGoogleAPIKey());
+    }
+
+
     @GET
     @UnitOfWork
     public void directions() { //TODO: add parameters to customize directions request
-
         //TODO: Insert API-Key (already created, but not commited.
-        GeoApiContext context = new GeoApiContext().setApiKey("");
         try {
             DirectionsRoute[] routes = DirectionsApi.getDirections(context, "Nuremberg, DE", "Erlangen, DE").await();
             System.out.println(routes[0].summary);

@@ -8,6 +8,7 @@ import org.croudtrip.auth.BasicAuthenticator;
 import org.croudtrip.auth.BasicCredentials;
 import org.croudtrip.auth.User;
 import org.croudtrip.db.DbModule;
+import org.croudtrip.directions.DirectionsModule;
 import org.croudtrip.rest.AvatarsResource;
 import org.croudtrip.rest.DirectionsRequest;
 import org.croudtrip.rest.UsersResource;
@@ -42,7 +43,8 @@ public final class CroudTripApplication extends Application<CroudTripConfig> {
 	@Override
 	public void run(CroudTripConfig configuration, Environment environment) throws Exception {
 		Injector injector = Guice.createInjector(
-				new DbModule(hibernateBundle.getSessionFactory()));
+				new DbModule(hibernateBundle.getSessionFactory()),
+                new DirectionsModule( configuration ));
 
         environment.jersey().register(injector.getInstance(UsersResource.class));
 		environment.jersey().register(injector.getInstance(AvatarsResource.class));
