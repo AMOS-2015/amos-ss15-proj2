@@ -20,6 +20,7 @@ dependencies {
     compile 'com.google.inject.extensions:guice-assistedinject:4.0-beta5'
     compile 'org.postgresql:postgresql:9.4-1201-jdbc41'
     compile 'be.fluid-it.tools.dropwizard:wizard-in-a-box:0.8-1-1'
+    compile 'com.google.maps:google-maps-services:0.1.6'
     compile project(':models')
 
     testCompile 'junit:junit:4.11'

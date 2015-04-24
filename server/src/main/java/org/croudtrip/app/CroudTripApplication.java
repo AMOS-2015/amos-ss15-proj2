@@ -9,6 +9,7 @@ import org.croudtrip.auth.BasicCredentials;
 import org.croudtrip.auth.User;
 import org.croudtrip.db.DbModule;
 import org.croudtrip.rest.AvatarsResource;
+import org.croudtrip.rest.DirectionsRequest;
 import org.croudtrip.rest.UsersResource;
 import org.croudtrip.user.Avatar;
 
@@ -45,6 +46,7 @@ public final class CroudTripApplication extends Application<CroudTripConfig> {
 
         environment.jersey().register(injector.getInstance(UsersResource.class));
 		environment.jersey().register(injector.getInstance(AvatarsResource.class));
+        environment.jersey().register(injector.getInstance(DirectionsRequest.class));
 		environment.jersey().register(AuthFactory.binder(new BasicAuthFactory<>(
 				injector.getInstance(BasicAuthenticator.class),
 				"all secret",
