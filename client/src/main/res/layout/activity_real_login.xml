@@ -58,5 +58,13 @@
 
         </LinearLayout>
 
- </RelativeLayout>
+    </RelativeLayout>
+    <ProgressBar
+        android:id="@+id/pb_login"
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity = "center_vertical|center_horizontal"
+        android:visibility="gone">
+    </ProgressBar>
 </FrameLayout>

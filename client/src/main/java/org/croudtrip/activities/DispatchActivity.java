@@ -17,7 +17,7 @@ public class DispatchActivity extends Activity {
         if (LoginActivity.isUserLoggedIn(this)) {
             startActivity(new Intent(this, MainActivity.class));
         } else {
-            startActivity(new Intent(this, RegistrationActivity.class));
+            startActivity(new Intent(this, LoginActivity.class));
         }
     }
 

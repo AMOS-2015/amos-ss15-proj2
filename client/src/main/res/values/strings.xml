@@ -29,6 +29,8 @@
     <string name="login_success">Login successful</string>
     <string name="login_error_general">An unexpected error occured, please retry</string>
 
+    <string name="logout">Logout</string>
+
     <string name="server_address">http://osr-amos.cs.fau.de/ss15/proj2/application/</string>
 
 
