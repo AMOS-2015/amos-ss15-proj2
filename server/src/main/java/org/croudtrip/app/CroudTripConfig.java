@@ -16,23 +16,17 @@ public class CroudTripConfig extends Configuration {
 
 
 	@JsonCreator
-	public CroudTripConfig(@JsonProperty("database") DataSourceFactory database) {
+	public CroudTripConfig(@JsonProperty("database") DataSourceFactory database, @JsonProperty("googleKey") String apiKey) {
 		this.database = database;
+        this.apiKey = apiKey;
 	}
 
 
 	public DataSourceFactory getDatabase() {
 		return database;
 	}
-
-    @JsonProperty("googleKey")
     public String getGoogleAPIKey() {
         return apiKey;
-    }
-
-    @JsonProperty("googleKey")
-    public void setGoogleAPIKey( String googleAPIKey ) {
-        this.apiKey = googleAPIKey;
     }
 
 }
