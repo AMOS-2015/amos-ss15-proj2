@@ -10,17 +10,14 @@ import android.os.Bundle;
  */
 public class DispatchActivity extends Activity {
 
-    boolean loggedIn = true; //TODO: Implement functionality to detect, wether the user is currently logged in
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (loggedIn) {
+        if (LoginActivity.isUserLoggedIn(this)) {
             startActivity(new Intent(this, MainActivity.class));
         } else {
-            startActivity(new Intent(this, RegistrationActivity.class));
+            startActivity(new Intent(this, LoginActivity.class));
         }
     }
 

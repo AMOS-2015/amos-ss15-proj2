@@ -17,11 +17,19 @@
     <string name="hint_firstname">First name</string>
     <string name="hint_lastname">Last name</string>
     <string name="hint_password">Password</string>
-    <string name="register">Register</string>
 
+    <string name="register">Register</string>
     <string name="registration_success">Registration success</string>
     <string name="registration_error_general">Sorry, there was an error, please retry</string>
     <string name="registration_error_conflict">Email has already been registered</string>
+
+    <string name="login">Login</string>
+    <string name="forgot_pwd">Forgot password?</string>
+    <string name="invalid_login">Invalid Login</string>
+    <string name="login_success">Login successful</string>
+    <string name="login_error_general">An unexpected error occured, please retry</string>
+
+    <string name="logout">Logout</string>
 
     <string name="server_address">http://osr-amos.cs.fau.de/ss15/proj2/application/</string>
 

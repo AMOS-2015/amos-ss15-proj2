@@ -34,13 +34,11 @@ public class MainActivity extends MaterialNavigationDrawer {
 
         ((MaterialSection) getSectionList().get(0)).setNotifications(3);
 
-
-
-
         // create bottom section
         this.addBottomSection(newSection(getString(R.string.menu_settings), R.drawable.ic_settings, new SettingsFragment()));
 
-
-
+        // TODO: somehow call LoginActivity.logout(this); to logout the user
+        // this.addBottomSection(newSection(getString(R.string.logout), R.drawable.ic_settings));
     }
+
 }
