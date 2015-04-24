@@ -38,7 +38,7 @@ public class RegistrationActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_login);
+        setContentView(R.layout.activity_registration);
 
         animationDuration = getResources().getInteger(android.R.integer.config_shortAnimTime);
 
