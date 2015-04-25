@@ -31,9 +31,15 @@
 
     <string name="logout">Logout</string>
 
+    <string name="profile_edit">Edit profile</string>
     <string name="profile_address">Address</string>
     <string name="profile_gender">Gender</string>
     <string name="profile_birthyear">Year of Birth</string>
+    <string name="profile_male">Male</string>
+    <string name="profile_female">Female</string>
+    <string name="profile_unknown"><i>unknown</i></string>
+    <string name="profile_image_description">Profile image</string>
+    <string name="profile_error_general">Your profile could not be loaded</string>
 
     <string name="server_address">http://osr-amos.cs.fau.de/ss15/proj2/application/</string>
 
