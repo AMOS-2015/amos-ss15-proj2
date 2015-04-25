@@ -32,8 +32,9 @@ import timber.log.Timber;
 /**
  * Login functionality will not be in a fragment, but in an extra activity, just to have it completely separated to the business logic
  * (recommended by google)
+ * @author Frederik Simon, Vanessa Lange
  */
-public class RegistrationActivity extends Activity {
+public class LoginActivity extends Activity {
 
     //************************** Variables ******************************//
 
@@ -58,7 +59,7 @@ public class RegistrationActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_registration);
+        setContentView(R.layout.activity_login);
 
         animationDuration = getResources().getInteger(android.R.integer.config_shortAnimTime);
 
@@ -121,7 +122,7 @@ public class RegistrationActivity extends Activity {
         findViewById(R.id.skip).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(RegistrationActivity.this, DummyActivity.class));
+                startActivity(new Intent(LoginActivity.this, DummyActivity.class));
             }
         });
     }
@@ -243,8 +244,8 @@ public class RegistrationActivity extends Activity {
                 .subscribe(new Action1<User>() {
                     @Override
                     public void call(User user) {
-                        Toast.makeText(RegistrationActivity.this, getString(R.string.registration_success), Toast.LENGTH_SHORT).show();
-                        startActivity(new Intent(RegistrationActivity.this, DummyActivity.class));
+                        Toast.makeText(LoginActivity.this, getString(R.string.registration_success), Toast.LENGTH_SHORT).show();
+                        startActivity(new Intent(LoginActivity.this, DummyActivity.class));
                     }
                 }, new Action1<Throwable>() {
                     @Override
@@ -256,7 +257,7 @@ public class RegistrationActivity extends Activity {
                         } else {
                             message = getString(R.string.registration_error_general);
                         }
-                        Toast.makeText(RegistrationActivity.this, message, Toast.LENGTH_LONG).show();
+                        Toast.makeText(LoginActivity.this, message, Toast.LENGTH_LONG).show();
                         Timber.e(throwable.getMessage());
                     }
                 });
@@ -300,7 +301,7 @@ public class RegistrationActivity extends Activity {
                 progressBar.setVisibility(View.GONE);
 
                 // Remember the login data
-                SharedPreferences prefs = RegistrationActivity.this.getSharedPreferences(SHARED_PREF_FILE_USER, Context.MODE_PRIVATE);
+                SharedPreferences prefs = LoginActivity.this.getSharedPreferences(SHARED_PREF_FILE_USER, Context.MODE_PRIVATE);
 
                 SharedPreferences.Editor editor = prefs.edit();
                 editor.putString(SHARED_PREF_KEY_EMAIL, email);
@@ -308,7 +309,7 @@ public class RegistrationActivity extends Activity {
                 editor.apply();
 
                 // Redirect the user to the MainActivity
-                startActivity(new Intent(RegistrationActivity.this.getApplicationContext(), MainActivity.class));
+                startActivity(new Intent(LoginActivity.this.getApplicationContext(), MainActivity.class));
 
                 // Finish the LoginActivity
                 finish();
@@ -332,7 +333,7 @@ public class RegistrationActivity extends Activity {
                     errorTextView.setVisibility(View.VISIBLE);
                 } else {
                     // Show an error for general errors e.g. connection issues
-                    Toast.makeText(RegistrationActivity.this, RegistrationActivity.this.getString(R.string.login_error_general), Toast.LENGTH_LONG).show();
+                    Toast.makeText(LoginActivity.this, LoginActivity.this.getString(R.string.login_error_general), Toast.LENGTH_LONG).show();
                 }
             }
         });

@@ -17,7 +17,7 @@ import com.getbase.floatingactionbutton.FloatingActionButton;
 
 import org.croudtrip.R;
 import org.croudtrip.UsersResource;
-import org.croudtrip.activities.RegistrationActivity;
+import org.croudtrip.activities.LoginActivity;
 import org.croudtrip.auth.User;
 
 import it.neokree.materialnavigationdrawer.MaterialNavigationDrawer;
@@ -109,7 +109,7 @@ public class ProfileFragment extends Fragment {
 
                 @Override
                 public void intercept(RequestFacade request) {
-                    RegistrationActivity.addAuthorizationHeader(getActivity().getApplicationContext(), request);
+                    LoginActivity.addAuthorizationHeader(getActivity().getApplicationContext(), request);
                 }
             })
             .build()

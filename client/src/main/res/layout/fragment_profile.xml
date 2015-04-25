@@ -147,7 +147,6 @@
         style="?android:attr/progressBarStyleLarge"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity = "center_vertical|center_horizontal"
-        android:visibility="gone">
+        android:layout_gravity = "center_vertical|center_horizontal">
     </ProgressBar>
 </FrameLayout>
