@@ -27,7 +27,7 @@
     <string name="forgot_pwd">Forgot password?</string>
     <string name="invalid_login">Invalid Login</string>
     <string name="login_success">Login successful</string>
-    <string name="login_error_general">An unexpected error occured, please retry</string>
+    <string name="login_error_general">An unexpected error occurred, please retry</string>
 
     <string name="logout">Logout</string>
 
