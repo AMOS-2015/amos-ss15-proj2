@@ -7,6 +7,7 @@
 
     <RelativeLayout
         android:id="@+id/layout_register"
+        android:visibility="gone"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
@@ -54,10 +55,75 @@
                 android:text="@string/register"/>
 
         </LinearLayout>
+    </RelativeLayout>
 
+    <FrameLayout
+        android:id="@+id/layout_login"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone">
 
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:gravity="center_vertical|center_horizontal">
+
+                <EditText
+                    android:id="@+id/et_login_email"
+                    android:width="200dp"
+                    android:inputType="textEmailAddress"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/hint_email"/>
+
+                <EditText
+                    android:id="@+id/et_login_password"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:inputType="textPassword"
+                    android:width="200dp"
+                    android:hint="@string/hint_password"/>
+
+                <TextView
+                    android:id="@+id/tv_invalid_login"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone"
+                    android:text="@string/invalid_login"
+                    android:textColor="@color/error"
+                    />
+
+                <Button
+                    android:id="@+id/btn_login"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/login"/>
+
+                <Button
+                    android:id="@+id/btn_forgot_pwd"
+                    android:layout_marginTop="20dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/forgot_pwd"
+                    android:background="@android:color/transparent"/>
+
+            </LinearLayout>
 
         </RelativeLayout>
+        <ProgressBar
+            android:id="@+id/pb_login"
+            style="?android:attr/progressBarStyleLarge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity = "center_vertical|center_horizontal"
+            android:visibility="gone">
+        </ProgressBar>
+    </FrameLayout>
 
 
 
@@ -74,7 +140,7 @@
             android:gravity="center_vertical|center_horizontal">
 
             <Button
-                android:id="@+id/btn_login_email"
+                android:id="@+id/btn_login_with_email"
                 android:layout_width="200dp"
                 android:background="@color/text"
                 android:layout_height="wrap_content"
@@ -97,7 +163,17 @@
                 android:scaleType="fitCenter"
                 android:adjustViewBounds="true"
                 android:src="@drawable/loginwithgoogle"
-                android:paddingTop="@dimen/default_margin" />
+                android:paddingTop="@dimen/default_margin"
+                android:paddingBottom="@dimen/default_margin"/>
+
+            <Button
+                android:id="@+id/btn_register_email"
+                android:layout_width="200dp"
+                android:background="@color/text"
+                android:layout_height="wrap_content"
+                android:textColor="@color/white"
+                android:text="@string/register"
+                android:layout_marginTop="@dimen/activity_vertical_margin"/>
 
             </LinearLayout>
 

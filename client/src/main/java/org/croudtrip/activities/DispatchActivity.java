@@ -14,10 +14,10 @@ public class DispatchActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (LoginActivity.isUserLoggedIn(this)) {
+        if (RegistrationActivity.isUserLoggedIn(this)) {
             startActivity(new Intent(this, MainActivity.class));
         } else {
-            startActivity(new Intent(this, LoginActivity.class));
+            startActivity(new Intent(this, RegistrationActivity.class));
         }
     }
 

@@ -17,7 +17,7 @@ import com.getbase.floatingactionbutton.FloatingActionButton;
 
 import org.croudtrip.R;
 import org.croudtrip.UsersResource;
-import org.croudtrip.activities.LoginActivity;
+import org.croudtrip.activities.RegistrationActivity;
 import org.croudtrip.auth.User;
 
 import it.neokree.materialnavigationdrawer.MaterialNavigationDrawer;
@@ -103,17 +103,17 @@ public class ProfileFragment extends Fragment {
 
         // Get profile from server
         UsersResource usersResource = new RestAdapter.Builder()
-                .setEndpoint(serverAddress)
-                .setConverter(new JacksonConverter())
-                .setRequestInterceptor(new RequestInterceptor() {
+            .setEndpoint(serverAddress)
+            .setConverter(new JacksonConverter())
+            .setRequestInterceptor(new RequestInterceptor() {
 
-                    @Override
-                    public void intercept(RequestFacade request) {
-                        LoginActivity.addAuthorizationHeader(getActivity().getApplicationContext(), request);
-                    }
-                })
-                .build()
-                .create(UsersResource.class);
+                @Override
+                public void intercept(RequestFacade request) {
+                    RegistrationActivity.addAuthorizationHeader(getActivity().getApplicationContext(), request);
+                }
+            })
+            .build()
+            .create(UsersResource.class);
 
         usersResource.getUser().subscribeOn( Schedulers.io() )
             .observeOn(AndroidSchedulers.mainThread())
@@ -132,7 +132,7 @@ public class ProfileFragment extends Fragment {
                     setTextViewContent(phone, user.getPhoneNumber());
                     setTextViewContent(address, user.getAddress());
                     setTextViewContent(gender, (user.getIsMale()) ? getString(R.string.profile_male) : getString(R.string.profile_female));
-                    setTextViewContent(birthyear, user.getBirthDay().getYear() + "");
+                    setTextViewContent(birthyear, /*user.getBirthDay().getYear()*/ "todo"); // TODO
 
                     // TODO: image
                 }
