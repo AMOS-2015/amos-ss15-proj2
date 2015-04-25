@@ -30,15 +30,16 @@ public class MainActivity extends MaterialNavigationDrawer {
         // create sections
         this.addSection(newSection(getString(R.string.menu_join_trip), R.drawable.ic_settings, new JoinTripFragment()));
         this.addSection(newSection(getString(R.string.menu_offer_trip), R.drawable.ic_settings, new OfferTripFragment()));
-        this.addSection(newSection(getString(R.string.menu_profile), R.drawable.ic_settings, new ProfileFragment()));
+
+        if(LoginActivity.isUserLoggedIn(this)) {
+            // only logged-in users can view their profile
+            this.addSection(newSection(getString(R.string.menu_profile), R.drawable.ic_settings, new ProfileFragment()));
+        }
 
         ((MaterialSection) getSectionList().get(0)).setNotifications(3);
 
         // create bottom section
         this.addBottomSection(newSection(getString(R.string.menu_settings), R.drawable.ic_settings, new SettingsFragment()));
-
-        // TODO: somehow call LoginActivity.logout(this); to logout the user
-        // this.addBottomSection(newSection(getString(R.string.logout), R.drawable.ic_settings));
     }
 
 }

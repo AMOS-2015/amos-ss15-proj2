@@ -72,6 +72,13 @@ public class LoginActivity extends Activity {
             @Override
             public void onClick(View v) {
                 showLoginView();
+
+                // convenience debug login (not checked by server)
+                /*
+                login("a@a.de", "1234");
+                startActivity(new Intent(LoginActivity.this.getApplicationContext(), MainActivity.class));
+                finish();
+                */
             }
         });
 
@@ -122,7 +129,7 @@ public class LoginActivity extends Activity {
         findViewById(R.id.skip).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(LoginActivity.this, DummyActivity.class));
+                startActivity(new Intent(LoginActivity.this, MainActivity.class));
             }
         });
     }
@@ -228,7 +235,7 @@ public class LoginActivity extends Activity {
     }
 
 
-    private void registerUserByEmail( String firstName, String lastName, String email, String password ) {
+    private void registerUserByEmail( String firstName, String lastName, final String email, final String password ) {
         final String serverAddress = getResources().getString(R.string.server_address);
 
         // create user
@@ -244,13 +251,16 @@ public class LoginActivity extends Activity {
                 .subscribe(new Action1<User>() {
                     @Override
                     public void call(User user) {
+                        login(email, password);
                         Toast.makeText(LoginActivity.this, getString(R.string.registration_success), Toast.LENGTH_SHORT).show();
                         startActivity(new Intent(LoginActivity.this, DummyActivity.class));
+                        finish();
+
                     }
                 }, new Action1<Throwable>() {
                     @Override
                     public void call(Throwable throwable) {
-						RetrofitError retrofitError = (RetrofitError) throwable;
+                        RetrofitError retrofitError = (RetrofitError) throwable;
                         String message;
                         if (retrofitError.getResponse() != null && retrofitError.getResponse().getStatus() == 409) {
                             message = getString(R.string.registration_error_conflict);
@@ -294,49 +304,42 @@ public class LoginActivity extends Activity {
 
                 @Override
                 public void call(User user) {
-                // LOGIN SUCCESS
+                    // LOGIN SUCCESS
 
-                // ---- UI ----
-                // Hide progress bar
-                progressBar.setVisibility(View.GONE);
+                    // ---- UI ----
+                    // Hide progress bar
+                    progressBar.setVisibility(View.GONE);
 
-                // Remember the login data
-                SharedPreferences prefs = LoginActivity.this.getSharedPreferences(SHARED_PREF_FILE_USER, Context.MODE_PRIVATE);
+                    // Remember the login data = login
+                    login(email, password);
 
-                SharedPreferences.Editor editor = prefs.edit();
-                editor.putString(SHARED_PREF_KEY_EMAIL, email);
-                editor.putString(SHARED_PREF_KEY_PWD, password); // TODO: save only encrypted passwort?
-                editor.apply();
-
-                // Redirect the user to the MainActivity
-                startActivity(new Intent(LoginActivity.this.getApplicationContext(), MainActivity.class));
-
-                // Finish the LoginActivity
-                finish();
-                    }
+                    // Redirect the user to the MainActivity and finish the LoginActivity
+                    startActivity(new Intent(LoginActivity.this.getApplicationContext(), MainActivity.class));
+                    finish();
+                }
 
             }, new Action1<Throwable>() {
 
                 @Override
                 public void call(Throwable throwable) {
 
-                // ---- UI ----
-                // Hide progress bar, enable login button
-                progressBar.setVisibility(View.GONE);
-                loginButton.setEnabled(true);
+                    // ---- UI ----
+                    // Hide progress bar, enable login button
+                    progressBar.setVisibility(View.GONE);
+                    loginButton.setEnabled(true);
 
-                Timber.e(throwable.getMessage());
-                RetrofitError retrofitError = (RetrofitError) throwable;
+                    Timber.e(throwable.getMessage());
+                    RetrofitError retrofitError = (RetrofitError) throwable;
 
-                if (retrofitError.getResponse() != null && retrofitError.getResponse().getStatus() == 401) {
-                    // Show error message for invalid login
-                    errorTextView.setVisibility(View.VISIBLE);
-                } else {
-                    // Show an error for general errors e.g. connection issues
-                    Toast.makeText(LoginActivity.this, LoginActivity.this.getString(R.string.login_error_general), Toast.LENGTH_LONG).show();
+                    if (retrofitError.getResponse() != null && retrofitError.getResponse().getStatus() == 401) {
+                        // Show error message for invalid login
+                        errorTextView.setVisibility(View.VISIBLE);
+                    } else {
+                        // Show an error for general errors e.g. connection issues
+                        Toast.makeText(LoginActivity.this, LoginActivity.this.getString(R.string.login_error_general), Toast.LENGTH_LONG).show();
+                    }
                 }
-            }
-        });
+            });
 
     }
 
@@ -346,13 +349,31 @@ public class LoginActivity extends Activity {
      * the user can be regarded as "logged out".
      * @param context application context
      */
-    /*
     public static void logout(Context context){
 
+        // remove any saved login data
         SharedPreferences prefs = context.getSharedPreferences(SHARED_PREF_FILE_USER, Context.MODE_PRIVATE);
         prefs.edit().clear().apply();
+
+        // redirect to login screen and delete any activities "before"
+        Intent intent = new Intent(context, LoginActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        context.startActivity(intent);
     }
-    */
+
+
+    /**
+     * Remembering the email and password is equivalent to logging in
+     */
+    private void login(String email, String password){
+        SharedPreferences prefs = LoginActivity.this.getSharedPreferences(SHARED_PREF_FILE_USER, Context.MODE_PRIVATE);
+
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString(SHARED_PREF_KEY_EMAIL, email);
+        editor.putString(SHARED_PREF_KEY_PWD, password); // TODO: save only encrypted passwort?
+        editor.apply();
+    }
+
 
     /**
      * Checks if the user is currently logged in.
