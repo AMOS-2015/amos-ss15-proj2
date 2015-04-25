@@ -8,7 +8,8 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
+
+import com.getbase.floatingactionbutton.FloatingActionButton;
 
 import org.croudtrip.R;
 
@@ -34,7 +35,7 @@ public class ProfileFragment extends Fragment {
         final Fragment _this = this;
         View view = inflater.inflate(R.layout.fragment_profile, container, false);
 
-        Button editProfile = (Button) view.findViewById(R.id.btn_edit_profile);
+        FloatingActionButton editProfile = (FloatingActionButton) view.findViewById(R.id.btn_edit_profile);
         editProfile.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
