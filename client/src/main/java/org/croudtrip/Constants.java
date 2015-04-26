@@ -10,4 +10,6 @@ public class Constants {
     public final static String SHARED_PREF_KEY_PWD = "password";
     public final static String SHARED_PREF_KEY_FIRSTNAME = "firstname";
     public final static String SHARED_PREF_KEY_LASTNAME = "lastname";
+    public final static String SHARED_PREF_KEY_WAITING_TIME = "waitingTime";
+
 }

@@ -2,7 +2,9 @@ package org.croudtrip.fragments;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.text.Html;
@@ -13,13 +15,16 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.getbase.floatingactionbutton.FloatingActionButton;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.ui.PlacePicker;
+import com.rengwuxian.materialedittext.MaterialEditText;
 
+import org.croudtrip.Constants;
 import org.croudtrip.R;
 
 import it.neokree.materialnavigationdrawer.MaterialNavigationDrawer;
@@ -72,6 +77,22 @@ public class JoinTripFragment extends Fragment {
             }
         });
 
+        final MaterialEditText maxWaitingTime = (MaterialEditText) view.findViewById(R.id.waitingTime);
+        final SharedPreferences prefs = getActivity().getSharedPreferences(Constants.SHARED_PREF_FILE_USER, Context.MODE_PRIVATE);
+        int waitingTime = prefs.getInt(Constants.SHARED_PREF_KEY_WAITING_TIME, 10);
+        maxWaitingTime.setText("" + waitingTime);
+
+
+        Button btn_join = (Button) view.findViewById(R.id.join);
+        btn_join.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                SharedPreferences.Editor editor = prefs.edit();
+                editor.putInt(Constants.SHARED_PREF_KEY_WAITING_TIME, Integer.valueOf(maxWaitingTime.getText().toString()));
+                editor.apply();
+                Toast.makeText(getActivity().getApplicationContext(), "Join Trip", Toast.LENGTH_SHORT).show();
+            }
+        });
 
 
         FloatingActionButton btn_offer = (FloatingActionButton) view.findViewById(R.id.btn_offer_trip);
@@ -102,11 +123,15 @@ public class JoinTripFragment extends Fragment {
             // The user has selected a place. Extract the tv_name and tv_address.
             final Place place = PlacePicker.getPlace(data, getActivity());
 
-            final CharSequence name = place.getName();
-            final CharSequence address = place.getAddress();
+            String name = place.getName().toString();
+            String address = place.getAddress().toString();
             String attributions = PlacePicker.getAttributions(data);
             if (attributions == null) {
                 attributions = "";
+            }
+
+            if (address.contains(name)) {
+                name = "";
             }
 
             tv_name.setText(name);
