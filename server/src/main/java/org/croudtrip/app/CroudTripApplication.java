@@ -46,6 +46,7 @@ public final class CroudTripApplication extends Application<CroudTripConfig> {
 				new DbModule(hibernateBundle.getSessionFactory()),
                 new DirectionsModule( configuration ));
 
+
         environment.jersey().register(injector.getInstance(UsersResource.class));
 		environment.jersey().register(injector.getInstance(AvatarsResource.class));
         environment.jersey().register(injector.getInstance(DirectionsRequest.class));

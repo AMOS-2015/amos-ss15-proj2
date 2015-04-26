@@ -34,12 +34,13 @@ import io.dropwizard.hibernate.UnitOfWork;
 public class DirectionsRequest {
 
     GeoApiContext context;
+    String apiKey;
 
     @Inject
     DirectionsRequest( CroudTripConfig config ) {
         context = new GeoApiContext();
         context.setApiKey(config.getGoogleAPIKey());
-        System.out.println(config.getGoogleAPIKey());
+        apiKey = config.getGoogleAPIKey();
     }
 
 
@@ -47,12 +48,17 @@ public class DirectionsRequest {
     @UnitOfWork
     public Route directions() { //TODO: add parameters to customize directions request
         DirectionsRoute[] routes = new DirectionsRoute[0];
+
         try {
             routes = DirectionsApi.getDirections(context, "Nuremberg, DE", "Erlangen, DE").await();
-            System.out.println("ROUTE COMPUTED: " + routes.length + " " + routes[0].summary+ " " + routes[0].legs.length + " " + routes[0].waypointOrder.length);
+            //System.out.println("ROUTE COMPUTED: " + routes.length + " " + routes[0].summary+ " " + routes[0].legs.length + " " + routes[0].waypointOrder.length);
         } catch (Exception e) {
             e.printStackTrace();
+            return new Route(e.getMessage(), null, null, "ploy", "copy", null);
         }
+
+        if( routes.length == 0)
+            return new Route("Test", null, null, "ploy", "copy", null);
 
         Route[] resultRoutes = new Route[routes.length];
 
