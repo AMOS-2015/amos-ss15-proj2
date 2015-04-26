@@ -16,6 +16,7 @@ local.properties
 
 # android api key
 keys.xml
+debug.keystore
 
 # tex files
 *.aux
