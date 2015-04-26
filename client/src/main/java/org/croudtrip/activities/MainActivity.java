@@ -7,6 +7,7 @@ import android.os.Bundle;
 import org.croudtrip.Constants;
 import org.croudtrip.R;
 import org.croudtrip.fragments.JoinTripFragment;
+import org.croudtrip.fragments.NavigationFragment;
 import org.croudtrip.fragments.OfferTripFragment;
 import org.croudtrip.fragments.ProfileFragment;
 import org.croudtrip.fragments.SettingsFragment;
@@ -41,11 +42,11 @@ public class MainActivity extends MaterialNavigationDrawer {
         // create sections
         this.addSection(newSection(getString(R.string.menu_join_trip), R.drawable.ic_settings, new JoinTripFragment()));
         this.addSection(newSection(getString(R.string.menu_offer_trip), R.drawable.ic_settings, new OfferTripFragment()));
-
         if(LoginActivity.isUserLoggedIn(this)) {
             // only logged-in users can view their profile
             this.addSection(newSection(getString(R.string.menu_profile), R.drawable.ic_settings, new ProfileFragment()));
         }
+        this.addSection(newSection(getString(R.string.navigation), R.drawable.ic_settings, new NavigationFragment()));
 
         ((MaterialSection) getSectionList().get(0)).setNotifications(3);
 
