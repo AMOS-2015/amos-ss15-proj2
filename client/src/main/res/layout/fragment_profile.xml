@@ -57,6 +57,7 @@
                 android:drawablePadding="5dp"
                 android:layout_marginBottom="@dimen/activity_vertical_margin"
                 android:textAppearance="@android:style/TextAppearance.Large"
+                android:text="@string/profile_unknown"
                 />
 
             <TextView
@@ -70,6 +71,7 @@
                 android:drawablePadding="5dp"
                 android:textAppearance="@android:style/TextAppearance.Medium"
                 android:layout_marginBottom="5dp"
+                android:text="@string/profile_unknown"
                 />
 
             <TextView
@@ -83,6 +85,7 @@
                 android:drawablePadding="5dp"
                 android:textAppearance="@android:style/TextAppearance.Medium"
                 android:layout_marginBottom="@dimen/activity_vertical_margin"
+                android:text="@string/profile_unknown"
                 />
 
             <TextView
@@ -100,6 +103,7 @@
                 android:layout_height="wrap_content"
                 android:gravity="center_vertical"
                 android:layout_below="@id/tv_profile_gender_title"
+                android:text="@string/profile_unknown"
                 />
 
             <TextView
@@ -117,6 +121,7 @@
                 android:layout_height="wrap_content"
                 android:gravity="center_vertical"
                 android:layout_below="@id/tv_profile_birthyear_title"
+                android:text="@string/profile_unknown"
                 />
 
             <TextView
@@ -134,18 +139,11 @@
                 android:layout_height="wrap_content"
                 android:gravity="center_vertical"
                 android:layout_below="@id/tv_profile_address_title"
+                android:text="@string/profile_unknown"
                 />
 
 
         </RelativeLayout>
         </ScrollView>
     </LinearLayout>
-
-    <ProgressBar
-        android:id="@+id/pb_profile"
-        style="?android:attr/progressBarStyleLarge"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity = "center_vertical|center_horizontal">
-    </ProgressBar>
 </FrameLayout>

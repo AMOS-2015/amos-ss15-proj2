@@ -6,10 +6,18 @@ package org.croudtrip;
 public class Constants {
 
     public final static String SHARED_PREF_FILE_USER = "org.croudtrip.user";
+
     public final static String SHARED_PREF_KEY_EMAIL = "email";
     public final static String SHARED_PREF_KEY_PWD = "password";
     public final static String SHARED_PREF_KEY_FIRSTNAME = "firstname";
     public final static String SHARED_PREF_KEY_LASTNAME = "lastname";
+    public final static String SHARED_PREF_KEY_ADDRESS = "address";
+    public final static String SHARED_PREF_KEY_PHONE = "phone";
+    public final static String SHARED_PREF_KEY_BIRTHDAY = "birthday";
+    public final static String SHARED_PREF_KEY_ID = "id";
+    public final static String SHARED_PREF_KEY_MALE = "male";
+    public final static String SHARED_PREF_KEY_AVATAR_URL = "avatar";
+
     public final static String SHARED_PREF_KEY_WAITING_TIME = "waitingTime";
     public final static String SHARED_PREF_KEY_DIVERSION = "maxDiversion";
 

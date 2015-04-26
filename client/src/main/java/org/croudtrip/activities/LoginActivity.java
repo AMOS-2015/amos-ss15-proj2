@@ -21,6 +21,8 @@ import org.croudtrip.UsersResource;
 import org.croudtrip.auth.User;
 import org.croudtrip.auth.UserDescription;
 
+import java.util.Date;
+
 import retrofit.RequestInterceptor;
 import retrofit.RestAdapter;
 import retrofit.RetrofitError;
@@ -67,13 +69,6 @@ public class LoginActivity extends Activity {
             @Override
             public void onClick(View v) {
                 showLoginView();
-
-                // convenience debug login (not checked by server)
-                /*
-                login("a@a.de", "1234");
-                startActivity(new Intent(LoginActivity.this.getApplicationContext(), MainActivity.class));
-                finish();
-                */
             }
         });
 
@@ -145,7 +140,7 @@ public class LoginActivity extends Activity {
 
         //layoutRegister.setTranslationY(-100);
         layoutChoose.animate()
-                .setStartDelay(animationDuration/2)
+                .setStartDelay(animationDuration / 2)
                 .alpha(1f)
                 .translationY(0)
                 .setDuration(animationDuration)
@@ -253,7 +248,7 @@ public class LoginActivity extends Activity {
                         editor.putString(Constants.SHARED_PREF_KEY_LASTNAME, lastName);
                         editor.apply();
 
-                        login(email, password);
+                        login(user, password);
                         Toast.makeText(LoginActivity.this, getString(R.string.registration_success), Toast.LENGTH_SHORT).show();
                         startActivity(new Intent(LoginActivity.this, DummyActivity.class));
                         finish();
@@ -313,7 +308,7 @@ public class LoginActivity extends Activity {
                     progressBar.setVisibility(View.GONE);
 
                     // Remember the login data = login
-                    login(email, password);
+                    login(user, password);
 
                     // Redirect the user to the MainActivity and finish the LoginActivity
                     startActivity(new Intent(LoginActivity.this.getApplicationContext(), MainActivity.class));
@@ -365,26 +360,63 @@ public class LoginActivity extends Activity {
 
 
     /**
-     * Remembering the email and password is equivalent to logging in
+     * Remember the user and his password
      */
-    private void login(String email, String password){
-        SharedPreferences prefs = LoginActivity.this.getSharedPreferences(Constants.SHARED_PREF_FILE_USER, Context.MODE_PRIVATE);
+    private void login(User user, String password){
 
+        SharedPreferences prefs = LoginActivity.this.getSharedPreferences(Constants.SHARED_PREF_FILE_USER, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
-        editor.putString(Constants.SHARED_PREF_KEY_EMAIL, email);
-        editor.putString(Constants.SHARED_PREF_KEY_PWD, password); // TODO: save only encrypted passwort?
+
+        editor.putString(Constants.SHARED_PREF_KEY_PWD, password); // TODO: save only encrypted password?
+        editor.putLong(Constants.SHARED_PREF_KEY_ID, user.getId());
+
+        if(user.getEmail() != null) editor.putString(Constants.SHARED_PREF_KEY_EMAIL, user.getEmail());
+        if(user.getAddress() != null) editor.putString(Constants.SHARED_PREF_KEY_ADDRESS, user.getAddress());
+        if(user.getFirstName() != null) editor.putString(Constants.SHARED_PREF_KEY_FIRSTNAME, user.getFirstName());
+        if(user.getLastName() != null) editor.putString(Constants.SHARED_PREF_KEY_LASTNAME, user.getLastName());
+        if(user.getPhoneNumber() != null) editor.putString(Constants.SHARED_PREF_KEY_PHONE, user.getPhoneNumber());
+        if(user.getBirthDay() != null) editor.putLong(Constants.SHARED_PREF_KEY_BIRTHDAY, user.getBirthDay().getTime());
+        if(user.getIsMale() != null) editor.putBoolean(Constants.SHARED_PREF_KEY_MALE, user.getIsMale());
+        if(user.getAvatarUrl() != null) editor.putString(Constants.SHARED_PREF_KEY_AVATAR_URL, user.getAvatarUrl());
+
         editor.apply();
     }
 
 
     /**
-     * Checks if the user is currently logged in.
+     * Returns the currently logged-in user. If no user is logged in, null is returned.
+     * Every attribute not filled in by the user is null or -1 for numbers, default gender is male.
      * @param context application context
-     * @return true if the user is currently logged in, otherwise false
+     * @return the currently logged-in user or null
      */
-    public static boolean isUserLoggedIn(Context context){
+    public static User getLoggedInUser(Context context){
         SharedPreferences prefs = context.getSharedPreferences(Constants.SHARED_PREF_FILE_USER, Context.MODE_PRIVATE);
-        return prefs.contains(Constants.SHARED_PREF_KEY_EMAIL) && prefs.contains(Constants.SHARED_PREF_KEY_PWD);
+
+        if(!prefs.contains(Constants.SHARED_PREF_KEY_PWD)){
+            return null;
+        }
+
+        Date birthday = null;
+        if(prefs.contains(Constants.SHARED_PREF_KEY_BIRTHDAY)){
+            new Date(prefs.getLong(Constants.SHARED_PREF_KEY_BIRTHDAY, 0));
+        }
+
+        User user = new User(
+                prefs.getLong(Constants.SHARED_PREF_KEY_ID, -1),
+                prefs.getString(Constants.SHARED_PREF_KEY_EMAIL, null),
+                prefs.getString(Constants.SHARED_PREF_KEY_FIRSTNAME, null),
+                prefs.getString(Constants.SHARED_PREF_KEY_LASTNAME, null),
+                prefs.getString(Constants.SHARED_PREF_KEY_PHONE, null),
+                prefs.getBoolean(Constants.SHARED_PREF_KEY_MALE, true),
+                birthday,
+                prefs.getString(Constants.SHARED_PREF_KEY_ADDRESS, null),
+                prefs.getString(Constants.SHARED_PREF_KEY_AVATAR_URL, null)
+        );
+        return user;
+    }
+
+    public static boolean isUserLoggedIn(Context context){
+        return LoginActivity.getLoggedInUser(context) != null;
     }
 
 
