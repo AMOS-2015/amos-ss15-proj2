@@ -26,4 +26,3 @@ deploy:
   skip_cleanup: true
   on:
     repo: AMOS-2015/amos-ss15-proj2
-    tags: true
