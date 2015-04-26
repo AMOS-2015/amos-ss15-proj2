@@ -11,7 +11,8 @@ android:
 before_script:
   - openssl aes-256-cbc -K $encrypted_29bfa70e3117_key -iv $encrypted_29bfa70e3117_iv -in ./client/keys.tar.enc -out ./client/keys.tar -d
   - tar xvf ./client/keys.tar
-  - ls ./client
+  - mv ./keys.xml ./client/src/main/res/values/keys.xml
+  - mv ./debug.keystore ./client/debug.keystore
 script: ./gradlew build --stacktrace
 notifications:
   slack:
