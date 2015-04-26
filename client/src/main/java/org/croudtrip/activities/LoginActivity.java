@@ -15,6 +15,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.croudtrip.Constants;
 import org.croudtrip.R;
 import org.croudtrip.UsersResource;
 import org.croudtrip.auth.User;
@@ -35,15 +36,6 @@ import timber.log.Timber;
  * @author Frederik Simon, Vanessa Lange
  */
 public class LoginActivity extends Activity {
-
-    //************************** Variables ******************************//
-
-    public final static String SHARED_PREF_FILE_USER = "org.croudtrip.user";
-    public final static String SHARED_PREF_KEY_EMAIL = "email";
-    public final static String SHARED_PREF_KEY_PWD = "password";
-    public final static String SHARED_PREF_KEY_FIRSTNAME = "firstname";
-    public final static String SHARED_PREF_KEY_LASTNAME = "lastname";
-
 
 
     private Button loginButton;
@@ -254,11 +246,11 @@ public class LoginActivity extends Activity {
                 .subscribe(new Action1<User>() {
                     @Override
                     public void call(User user) {
-                        SharedPreferences prefs = LoginActivity.this.getSharedPreferences(SHARED_PREF_FILE_USER, Context.MODE_PRIVATE);
+                        SharedPreferences prefs = LoginActivity.this.getSharedPreferences(Constants.SHARED_PREF_FILE_USER, Context.MODE_PRIVATE);
 
                         SharedPreferences.Editor editor = prefs.edit();
-                        editor.putString(SHARED_PREF_KEY_FIRSTNAME, firstName);
-                        editor.putString(SHARED_PREF_KEY_LASTNAME, lastName);
+                        editor.putString(Constants.SHARED_PREF_KEY_FIRSTNAME, firstName);
+                        editor.putString(Constants.SHARED_PREF_KEY_LASTNAME, lastName);
                         editor.apply();
 
                         login(email, password);
@@ -362,7 +354,7 @@ public class LoginActivity extends Activity {
     public static void logout(Context context){
 
         // remove any saved login data
-        SharedPreferences prefs = context.getSharedPreferences(SHARED_PREF_FILE_USER, Context.MODE_PRIVATE);
+        SharedPreferences prefs = context.getSharedPreferences(Constants.SHARED_PREF_FILE_USER, Context.MODE_PRIVATE);
         prefs.edit().clear().apply();
 
         // redirect to login screen and delete any activities "before"
@@ -376,11 +368,11 @@ public class LoginActivity extends Activity {
      * Remembering the email and password is equivalent to logging in
      */
     private void login(String email, String password){
-        SharedPreferences prefs = LoginActivity.this.getSharedPreferences(SHARED_PREF_FILE_USER, Context.MODE_PRIVATE);
+        SharedPreferences prefs = LoginActivity.this.getSharedPreferences(Constants.SHARED_PREF_FILE_USER, Context.MODE_PRIVATE);
 
         SharedPreferences.Editor editor = prefs.edit();
-        editor.putString(SHARED_PREF_KEY_EMAIL, email);
-        editor.putString(SHARED_PREF_KEY_PWD, password); // TODO: save only encrypted passwort?
+        editor.putString(Constants.SHARED_PREF_KEY_EMAIL, email);
+        editor.putString(Constants.SHARED_PREF_KEY_PWD, password); // TODO: save only encrypted passwort?
         editor.apply();
     }
 
@@ -391,8 +383,8 @@ public class LoginActivity extends Activity {
      * @return true if the user is currently logged in, otherwise false
      */
     public static boolean isUserLoggedIn(Context context){
-        SharedPreferences prefs = context.getSharedPreferences(SHARED_PREF_FILE_USER, Context.MODE_PRIVATE);
-        return prefs.contains(SHARED_PREF_KEY_EMAIL) && prefs.contains(SHARED_PREF_KEY_PWD);
+        SharedPreferences prefs = context.getSharedPreferences(Constants.SHARED_PREF_FILE_USER, Context.MODE_PRIVATE);
+        return prefs.contains(Constants.SHARED_PREF_KEY_EMAIL) && prefs.contains(Constants.SHARED_PREF_KEY_PWD);
     }
 
 
@@ -405,9 +397,9 @@ public class LoginActivity extends Activity {
      */
     public static boolean addAuthorizationHeader( Context context, RequestInterceptor.RequestFacade request ) {
 
-        SharedPreferences prefs = context.getSharedPreferences(SHARED_PREF_FILE_USER, Context.MODE_PRIVATE);
-        String email = prefs.getString(SHARED_PREF_KEY_EMAIL, null);
-        String password = prefs.getString(SHARED_PREF_KEY_PWD, null);
+        SharedPreferences prefs = context.getSharedPreferences(Constants.SHARED_PREF_FILE_USER, Context.MODE_PRIVATE);
+        String email = prefs.getString(Constants.SHARED_PREF_KEY_EMAIL, null);
+        String password = prefs.getString(Constants.SHARED_PREF_KEY_PWD, null);
 
         return addAuthorizationHeader( email, password, request );
     }
