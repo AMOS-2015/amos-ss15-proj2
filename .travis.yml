@@ -8,7 +8,7 @@ android:
   - extra-google-google_play_services
   - extra-android-support
 
-
+before_script: mv ./client/src/main/res/values/keys.xml.template ./client/src/main/res/values/keys.xml
 script: ./gradlew build --stacktrace
 
 notifications:
