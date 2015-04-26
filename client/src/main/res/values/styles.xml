@@ -5,7 +5,8 @@
         <item name="colorPrimaryDark">@color/primary_dark</item>
         <item name="colorAccent">@color/accent</item>
 
-        <item name="drawerType">@integer/DRAWERTYPE_IMAGE</item>
+        <item name="singleAccount">true</item>
+        <!--<item name="drawerType">@integer/DRAWERTYPE_IMAGE</item>-->
     </style>
 
 </resources>

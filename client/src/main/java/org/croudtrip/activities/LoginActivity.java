@@ -38,9 +38,12 @@ public class LoginActivity extends Activity {
 
     //************************** Variables ******************************//
 
-    private final static String SHARED_PREF_FILE_USER = "org.croudtrip.user";
-    private final static String SHARED_PREF_KEY_EMAIL = "email";
-    private final static String SHARED_PREF_KEY_PWD = "password";
+    public final static String SHARED_PREF_FILE_USER = "org.croudtrip.user";
+    public final static String SHARED_PREF_KEY_EMAIL = "email";
+    public final static String SHARED_PREF_KEY_PWD = "password";
+    public final static String SHARED_PREF_KEY_FIRSTNAME = "firstname";
+    public final static String SHARED_PREF_KEY_LASTNAME = "lastname";
+
 
 
     private Button loginButton;
@@ -235,7 +238,7 @@ public class LoginActivity extends Activity {
     }
 
 
-    private void registerUserByEmail( String firstName, String lastName, final String email, final String password ) {
+    private void registerUserByEmail( final String firstName, final String lastName, final String email, final String password ) {
         final String serverAddress = getResources().getString(R.string.server_address);
 
         // create user
@@ -251,6 +254,13 @@ public class LoginActivity extends Activity {
                 .subscribe(new Action1<User>() {
                     @Override
                     public void call(User user) {
+                        SharedPreferences prefs = LoginActivity.this.getSharedPreferences(SHARED_PREF_FILE_USER, Context.MODE_PRIVATE);
+
+                        SharedPreferences.Editor editor = prefs.edit();
+                        editor.putString(SHARED_PREF_KEY_FIRSTNAME, firstName);
+                        editor.putString(SHARED_PREF_KEY_LASTNAME, lastName);
+                        editor.apply();
+
                         login(email, password);
                         Toast.makeText(LoginActivity.this, getString(R.string.registration_success), Toast.LENGTH_SHORT).show();
                         startActivity(new Intent(LoginActivity.this, DummyActivity.class));

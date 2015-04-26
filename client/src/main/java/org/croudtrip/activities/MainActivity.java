@@ -1,5 +1,7 @@
 package org.croudtrip.activities;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import org.croudtrip.R;
@@ -9,6 +11,7 @@ import org.croudtrip.fragments.ProfileFragment;
 import org.croudtrip.fragments.SettingsFragment;
 
 import it.neokree.materialnavigationdrawer.MaterialNavigationDrawer;
+import it.neokree.materialnavigationdrawer.elements.MaterialAccount;
 import it.neokree.materialnavigationdrawer.elements.MaterialSection;
 
 /**
@@ -25,6 +28,13 @@ public class MainActivity extends MaterialNavigationDrawer {
         this.allowArrowAnimation();
         this.setBackPattern(MaterialNavigationDrawer.BACKPATTERN_BACK_TO_FIRST);
         this.setDrawerHeaderImage(R.drawable.background_drawer);
+
+        SharedPreferences prefs = getSharedPreferences(LoginActivity.SHARED_PREF_FILE_USER, Context.MODE_PRIVATE);
+        String firstName = prefs.getString(LoginActivity.SHARED_PREF_KEY_FIRSTNAME, "");
+        String lastName = prefs.getString(LoginActivity.SHARED_PREF_KEY_LASTNAME, "");
+        String email = prefs.getString(LoginActivity.SHARED_PREF_KEY_EMAIL, "");
+        MaterialAccount account = new MaterialAccount(this.getResources(),firstName+ " " + lastName,email,R.drawable.dummy_profile, R.drawable.background_drawer);
+        this.addAccount(account);
 
 
         // create sections

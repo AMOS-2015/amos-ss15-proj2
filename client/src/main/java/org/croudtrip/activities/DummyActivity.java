@@ -1,6 +1,7 @@
 package org.croudtrip.activities;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.view.LayoutInflater;
@@ -40,6 +41,8 @@ public class DummyActivity extends ActionBarActivity{
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dummy);
+
+
 
         setupDb();
         findViewById(R.id.db).setOnClickListener(new View.OnClickListener() {
