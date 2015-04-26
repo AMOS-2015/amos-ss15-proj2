@@ -14,6 +14,9 @@ java-gen
 # android files
 local.properties
 
+# android api key
+keys.xml
+
 # tex files
 *.aux
 *.bbl
