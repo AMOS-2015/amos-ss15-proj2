@@ -20,6 +20,7 @@ import org.croudtrip.R;
 import org.croudtrip.UsersResource;
 import org.croudtrip.auth.User;
 import org.croudtrip.auth.UserDescription;
+import org.croudtrip.utils.DefaultTransformer;
 
 import java.util.Date;
 
@@ -27,9 +28,7 @@ import retrofit.RequestInterceptor;
 import retrofit.RestAdapter;
 import retrofit.RetrofitError;
 import retrofit.converter.JacksonConverter;
-import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
-import rx.schedulers.Schedulers;
 import timber.log.Timber;
 
 /**
@@ -236,8 +235,8 @@ public class LoginActivity extends Activity {
                                                                  .build()
                                                                  .create(UsersResource.class);
 
-        usersResource.registerUser(userDescription).subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
+        usersResource.registerUser(userDescription)
+                .compose(new DefaultTransformer<User>())
                 .subscribe(new Action1<User>() {
                     @Override
                     public void call(User user) {
@@ -295,48 +294,48 @@ public class LoginActivity extends Activity {
                 .build()
                 .create(UsersResource.class);
 
-        usersResource.getUser().subscribeOn( Schedulers.io() )
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(new Action1<User>() {
+        usersResource.getUser()
+                .compose(new DefaultTransformer<User>())
+                .subscribe(new Action1<User>() {
 
-                @Override
-                public void call(User user) {
-                    // LOGIN SUCCESS
+                    @Override
+                    public void call(User user) {
+                        // LOGIN SUCCESS
 
-                    // ---- UI ----
-                    // Hide progress bar
-                    progressBar.setVisibility(View.GONE);
+                        // ---- UI ----
+                        // Hide progress bar
+                        progressBar.setVisibility(View.GONE);
 
-                    // Remember the login data = login
-                    login(user, password);
+                        // Remember the login data = login
+                        login(user, password);
 
-                    // Redirect the user to the MainActivity and finish the LoginActivity
-                    startActivity(new Intent(LoginActivity.this.getApplicationContext(), MainActivity.class));
-                    finish();
-                }
-
-            }, new Action1<Throwable>() {
-
-                @Override
-                public void call(Throwable throwable) {
-
-                    // ---- UI ----
-                    // Hide progress bar, enable login button
-                    progressBar.setVisibility(View.GONE);
-                    loginButton.setEnabled(true);
-
-                    Timber.e(throwable.getMessage());
-                    RetrofitError retrofitError = (RetrofitError) throwable;
-
-                    if (retrofitError.getResponse() != null && retrofitError.getResponse().getStatus() == 401) {
-                        // Show error message for invalid login
-                        errorTextView.setVisibility(View.VISIBLE);
-                    } else {
-                        // Show an error for general errors e.g. connection issues
-                        Toast.makeText(LoginActivity.this, LoginActivity.this.getString(R.string.login_error_general), Toast.LENGTH_LONG).show();
+                        // Redirect the user to the MainActivity and finish the LoginActivity
+                        startActivity(new Intent(LoginActivity.this.getApplicationContext(), MainActivity.class));
+                        finish();
                     }
-                }
-            });
+
+                }, new Action1<Throwable>() {
+
+                    @Override
+                    public void call(Throwable throwable) {
+
+                        // ---- UI ----
+                        // Hide progress bar, enable login button
+                        progressBar.setVisibility(View.GONE);
+                        loginButton.setEnabled(true);
+
+                        Timber.e(throwable.getMessage());
+                        RetrofitError retrofitError = (RetrofitError) throwable;
+
+                        if (retrofitError.getResponse() != null && retrofitError.getResponse().getStatus() == 401) {
+                            // Show error message for invalid login
+                            errorTextView.setVisibility(View.VISIBLE);
+                        } else {
+                            // Show an error for general errors e.g. connection issues
+                            Toast.makeText(LoginActivity.this, LoginActivity.this.getString(R.string.login_error_general), Toast.LENGTH_LONG).show();
+                        }
+                    }
+                });
 
     }
 

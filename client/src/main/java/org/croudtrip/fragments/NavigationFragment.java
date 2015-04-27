@@ -1,36 +1,29 @@
 package org.croudtrip.fragments;
 
 
-import android.os.Bundle;
 import android.app.Fragment;
+import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.maps.android.PolyUtil;
 
 import org.croudtrip.DirectionsResource;
 import org.croudtrip.R;
-import org.croudtrip.UsersResource;
 import org.croudtrip.directions.Route;
+import org.croudtrip.utils.DefaultTransformer;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import retrofit.RestAdapter;
 import retrofit.converter.JacksonConverter;
-import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
-import rx.schedulers.Schedulers;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -67,20 +60,19 @@ public class NavigationFragment extends Fragment {
 
             final GoogleMap googleMap = map;
             directionsResource.getDirections(from, to)
-                              .subscribeOn(Schedulers.io())
-                              .observeOn(AndroidSchedulers.mainThread())
-                              .subscribe( new Action1<List<Route>>() {
+                    .compose(new DefaultTransformer<List<Route>>())
+                    .subscribe(new Action1<List<Route>>() {
 
-                                  @Override
-                                  public void call(List<Route> routes) {
-                                    if( routes == null || routes.isEmpty() )
-                                        Toast.makeText(getActivity(), R.string.no_route_found, Toast.LENGTH_SHORT);
+                        @Override
+                        public void call(List<Route> routes) {
+                            if (routes == null || routes.isEmpty())
+                                Toast.makeText(getActivity(), R.string.no_route_found, Toast.LENGTH_SHORT);
 
-                                    for( Route r : routes ) {
-                                        googleMap.addPolyline( new PolylineOptions().addAll( PolyUtil.decode( r.getPolyline() ) ) );
-                                    }
-                                  }
-                              });
+                            for (Route r : routes) {
+                                googleMap.addPolyline(new PolylineOptions().addAll(PolyUtil.decode(r.getPolyline())));
+                            }
+                        }
+                    });
         }
     }
 }
