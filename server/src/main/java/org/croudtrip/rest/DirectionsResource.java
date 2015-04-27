@@ -1,5 +1,6 @@
 package org.croudtrip.rest;
 
+import com.google.common.collect.Lists;
 import com.google.maps.DirectionsApi;
 import com.google.maps.GeoApiContext;
 import com.google.maps.model.DirectionsLeg;
@@ -13,6 +14,9 @@ import org.croudtrip.directions.RouteDistance;
 import org.croudtrip.directions.RouteDuration;
 import org.croudtrip.directions.Step;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -24,7 +28,6 @@ import io.dropwizard.hibernate.UnitOfWork;
 
 /**
  * Handles direction requests over the REST-API by the server
- * Created by Frederik Simon on 24.04.2015.
  */
 @Path("/directions")
 @Produces(MediaType.APPLICATION_JSON)
@@ -41,62 +44,57 @@ public class DirectionsResource {
 
     @GET
     @UnitOfWork
-    public Route directions() { //TODO: add parameters to customize directions request
-        DirectionsRoute[] routes = new DirectionsRoute[0];
+    public List<Route> getDirections() throws Exception {
+        DirectionsRoute[] googleRoutes = DirectionsApi.getDirections(geoApiContext, "Nuremberg, DE", "Erlangen, DE").await();
+        List<Route> resultRoutes = new ArrayList<>();
 
-        try {
-            routes = DirectionsApi.getDirections(geoApiContext, "Nuremberg, DE", "Erlangen, DE").await();
-            //System.out.println("ROUTE COMPUTED: " + routes.length + " " + routes[0].summary+ " " + routes[0].legs.length + " " + routes[0].waypointOrder.length);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return new Route(e.getMessage(), null, null, "ploy", "copy", null);
+        for (DirectionsRoute googleRoute : googleRoutes) {
+            resultRoutes.add(createRoute(googleRoute));
         }
 
-        if( routes.length == 0)
-            return new Route("Test", null, null, "ploy", "copy", null);
+        return resultRoutes;
+    }
 
-        Route[] resultRoutes = new Route[routes.length];
 
-        // step through all routes, legs and steps and create JSON output for these information
-        for( int i = 0; i < resultRoutes.length; ++i )
-        {
+    private Route createRoute(DirectionsRoute googleRoute) {
+        List<Leg> legs = new ArrayList<>();
+        for (DirectionsLeg googleLeg : googleRoute.legs) {
 
-            Leg[] legs = new Leg[routes[i].legs.length];
-            for( int j = 0; j < legs.length; ++j ) {
+            List<Step> steps = new ArrayList<>();
+            for (DirectionsStep googleStep : googleLeg.steps) {
 
-                DirectionsLeg currentLeg = routes[i].legs[j];
-
-                Step[] steps = new Step[currentLeg.steps.length];
-                for( int k = 0; k < steps.length; ++k ) {
-                    DirectionsStep currentStep = currentLeg.steps[k];
-
-                    // every step has a distance, duration, startLocation and endLocation -> create objects for all of theses
-                    RouteDistance distance = new RouteDistance( currentStep.distance.inMeters, currentStep.distance.humanReadable );
-                    RouteDuration duration = new RouteDuration( currentStep.duration.inSeconds, currentStep.duration.humanReadable );
-                    Location startLocation = new Location( currentStep.startLocation.lat, currentStep.startLocation.lng );
-                    Location endLocation = new Location( currentStep.endLocation.lat, currentStep.endLocation.lng );
-                    steps[k] = new Step( currentStep.htmlInstructions, distance, duration, startLocation, endLocation, currentStep.polyline.getEncodedPath() );
-                }
-
-                // create distance, duration, durationInTraffic, startLocation, endLocation for the current leg of the route
-                RouteDistance distance = new RouteDistance( currentLeg.distance.inMeters, currentLeg.distance.humanReadable );
-
-                RouteDuration duration = new RouteDuration( currentLeg.duration.inSeconds, currentLeg.duration.humanReadable );
-                RouteDuration durationInTraffic = new RouteDuration( 0, "NO_TRAFFIC_INFORMATION" );
-                if( currentLeg.durationInTraffic != null )
-                     durationInTraffic = new RouteDuration( currentLeg.durationInTraffic.inSeconds, currentLeg.durationInTraffic.humanReadable );
-
-                Location startLocation = new Location( currentLeg.startLocation.lat, currentLeg.startLocation.lng );
-                Location endLocation = new Location( currentLeg.endLocation.lat, currentLeg.endLocation.lng );
-                legs[j] = new Leg( steps, distance, duration, durationInTraffic, startLocation, endLocation, currentLeg.startAddress, currentLeg.endAddress );
-
+                // every step has a distance, duration, startLocation and endLocation -> create objects for all of theses
+                RouteDistance distance = new RouteDistance(googleStep.distance.inMeters, googleStep.distance.humanReadable);
+                RouteDuration duration = new RouteDuration(googleStep.duration.inSeconds, googleStep.duration.humanReadable);
+                Location startLocation = new Location(googleStep.startLocation.lat, googleStep.startLocation.lng);
+                Location endLocation = new Location(googleStep.endLocation.lat, googleStep.endLocation.lng);
+                steps.add(new Step(googleStep.htmlInstructions, distance, duration, startLocation, endLocation, googleStep.polyline.getEncodedPath()));
             }
 
-            DirectionsRoute route = routes[i];
-            resultRoutes[i] = new Route(route.summary, legs, route.waypointOrder, route.overviewPolyline.getEncodedPath(), route.copyrights, route.warnings);
+            // create distance, duration, durationInTraffic, startLocation, endLocation for the current leg of the route
+            RouteDistance distance = new RouteDistance(googleLeg.distance.inMeters, googleLeg.distance.humanReadable);
+
+            RouteDuration duration = new RouteDuration(googleLeg.duration.inSeconds, googleLeg.duration.humanReadable);
+            RouteDuration durationInTraffic = new RouteDuration(0, "NO_TRAFFIC_INFORMATION");
+            if (googleLeg.durationInTraffic != null)
+                durationInTraffic = new RouteDuration(googleLeg.durationInTraffic.inSeconds, googleLeg.durationInTraffic.humanReadable);
+
+            Location startLocation = new Location(googleLeg.startLocation.lat, googleLeg.startLocation.lng);
+            Location endLocation = new Location(googleLeg.endLocation.lat, googleLeg.endLocation.lng);
+            legs.add(new Leg(steps, distance, duration, durationInTraffic, startLocation, endLocation, googleLeg.startAddress, googleLeg.endAddress));
         }
 
-        return resultRoutes[0];
+        List<Integer> wayPointOrder = new ArrayList<>();
+        for (int order : googleRoute.waypointOrder) wayPointOrder.add(order);
+
+        return new Route(
+                googleRoute.summary,
+                legs,
+                wayPointOrder,
+                googleRoute.overviewPolyline.getEncodedPath(),
+                googleRoute.copyrights,
+                Lists.newArrayList(googleRoute.warnings));
     }
+
 
 }
