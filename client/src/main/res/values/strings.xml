@@ -54,9 +54,6 @@
     <string name="offer_max_diversion">Max diversion (in minutes)</string>
     <string name="offer_trip">Offer Trip</string>
 
-
-
-
-
     <string name="navigation">Navigation</string>
+    <string name="no_route_found">No route could be found for your request.</string>
 </resources>
