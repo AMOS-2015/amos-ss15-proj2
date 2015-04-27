@@ -1,4 +1,4 @@
-\documentclass[ngerman, 11pt, a4paper]{scrartcl}
+\documentclass[ngerman, 10pt, a4paper]{scrartcl}
 
 \usepackage[english]{babel}
 \usepackage[T1]{fontenc}
@@ -95,9 +95,10 @@ We use \emph{DropWizard 0.8.0} \cite{DropWizard} as our main server framework an
 
 DropWizard as a server framework provides us:
 \begin{itemize}
+\setlength\itemsep{0em}
 \item \emph{Jersey} to provide a RESTful Web service
 \item \emph{Jackson} as a JSON converter
-\item \emph{Metrics} for behaviour measuring.
+\item \emph{Metrics} for behaviour measuring
 \end{itemize} 
 On server side we use additionally \emph{Google Guice 4.0-beta5} \cite{GGuice} as our framework for dependency injection (Apache v2.0) and \emph{Hibernate 4.3.5} \cite{Hibernate} as object-relational mapper (LGPL v2.1).
 
@@ -111,6 +112,8 @@ As object-relational mapper on our Android client we use \emph{ORMLite 4.48} \ci
 To improve the workflow even more we are currently evaluating \emph{Timber 3.0.1} \cite{Timber} (Apache v2.0) as a advanced logging tool and \emph{RxJava 1.0.8} \cite{RxJava} (Apache v2.0) for reactive programming.
 
 To get a clean and modern UI design on android devices we use additionally \emph{FloatingActionButton 1.9.0} \cite{AFAB} and \emph{MaterialNavigationDrawer 1.3.3} \cite{MND} (both Apache v2.0)
+
+Since we have to provide route computation and evaluation for our application we use the \emph{Google Play Services v7.0} \cite{PlayServices}. From these we mainly use the Google Maps APIs. To extract the downloaded route we use the \emph{Google Maps Android API utility library (v0.3.4)} \cite{MapsUtility}. We plan to do our route computation on the server and the client has to send a request to get this computed route. So we do not access the Directions API directly from the client, but from the server using \emph{Google Maps Services for Java (v0.1.6)} \cite{MapsJava}.
 
 \section{Other tools}
 As programming language we use Java 7 for both client and server. Our project is hosted on Github \cite{github} and we use Travis CI \cite{Travis} as continuous integration tool that builds our project after every push and automatically deploys our releases to Github.
