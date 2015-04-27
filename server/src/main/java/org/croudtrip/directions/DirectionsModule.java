@@ -4,7 +4,7 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 
 import org.croudtrip.app.CroudTripConfig;
-import org.croudtrip.rest.DirectionsRequest;
+import org.croudtrip.rest.DirectionsResource;
 
 /**
  *
@@ -19,7 +19,7 @@ public class DirectionsModule extends AbstractModule {
 
     @Override
     protected void configure() {
-        bind(DirectionsRequest.class);
+        bind(DirectionsResource.class);
     }
 
     @Provides

@@ -31,13 +31,13 @@ import io.dropwizard.hibernate.UnitOfWork;
 @Path("/directions")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-public class DirectionsRequest {
+public class DirectionsResource {
 
     GeoApiContext context;
     String apiKey;
 
     @Inject
-    DirectionsRequest( CroudTripConfig config ) {
+    DirectionsResource(CroudTripConfig config) {
         context = new GeoApiContext();
         context.setApiKey(config.getGoogleAPIKey());
         apiKey = config.getGoogleAPIKey();
