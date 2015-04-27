@@ -54,11 +54,11 @@ public class DirectionsRequest {
             //System.out.println("ROUTE COMPUTED: " + routes.length + " " + routes[0].summary+ " " + routes[0].legs.length + " " + routes[0].waypointOrder.length);
         } catch (Exception e) {
             e.printStackTrace();
-            return new Route(e.getMessage(), null, null, "ploy", "copy", null);
+            return new Route(e.getMessage(), null, null, null, null, null);
         }
 
         if( routes.length == 0)
-            return new Route("Test", null, null, "ploy", "copy", null);
+            return Route.NO_ROUTE;
 
         Route[] resultRoutes = new Route[routes.length];
 

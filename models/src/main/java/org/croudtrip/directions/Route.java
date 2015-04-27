@@ -8,6 +8,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * Created by Frederik Simon on 24.04.2015.
  */
 public class Route {
+    public static Route NO_ROUTE = new Route("NO_ROUTE", null, null, null, null, null);
+
     public String summary;
     public Leg[] legs;
     public int[] waypointOrder;
