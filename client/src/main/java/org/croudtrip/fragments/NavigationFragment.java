@@ -21,18 +21,20 @@ import org.croudtrip.utils.DefaultTransformer;
 
 import java.util.List;
 
-import retrofit.RestAdapter;
-import retrofit.converter.JacksonConverter;
+import javax.inject.Inject;
+
+import roboguice.fragment.provided.RoboFragment;
 import rx.functions.Action1;
 
 /**
  * A simple {@link Fragment} subclass.
  */
-public class NavigationFragment extends Fragment {
+public class NavigationFragment extends RoboFragment {
+
+    @Inject DirectionsResource directionsResource;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_maps, container, false);
 
         MapFragment map = (MapFragment) getFragmentManager().findFragmentById(R.id.location_map);
@@ -44,7 +46,7 @@ public class NavigationFragment extends Fragment {
     class MapReady implements OnMapReadyCallback {
 
         @Override
-        public void onMapReady(GoogleMap map) {
+        public void onMapReady(final GoogleMap map) {
             map.setMyLocationEnabled(true);
 
             // get some test direction from the server
@@ -52,13 +54,6 @@ public class NavigationFragment extends Fragment {
             String to = "Erlangen, DE";
 
             // TODO: call the server and do a directions request and read the polyline out of it and draw it on the map
-            DirectionsResource directionsResource = new RestAdapter.Builder().setEndpoint(getResources().getString( R.string.server_address ))
-                    .setConverter(new JacksonConverter())
-                    .build()
-                    .create(DirectionsResource.class);
-
-
-            final GoogleMap googleMap = map;
             directionsResource.getDirections(from, to)
                     .compose(new DefaultTransformer<List<Route>>())
                     .subscribe(new Action1<List<Route>>() {
@@ -69,7 +64,7 @@ public class NavigationFragment extends Fragment {
                                 Toast.makeText(getActivity(), R.string.no_route_found, Toast.LENGTH_SHORT);
 
                             for (Route r : routes) {
-                                googleMap.addPolyline(new PolylineOptions().addAll(PolyUtil.decode(r.getPolyline())));
+                                map.addPolyline(new PolylineOptions().addAll(PolyUtil.decode(r.getPolyline())));
                             }
                         }
                     });
