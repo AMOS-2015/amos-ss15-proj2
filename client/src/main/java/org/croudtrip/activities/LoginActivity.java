@@ -26,6 +26,7 @@ import java.util.Date;
 import javax.inject.Inject;
 
 import retrofit.RequestInterceptor;
+import retrofit.RestAdapter;
 import retrofit.RetrofitError;
 import roboguice.activity.RoboActivity;
 import roboguice.inject.ContentView;
@@ -57,6 +58,7 @@ public class LoginActivity extends RoboActivity {
     @InjectView(R.id.btn_register) Button register;
     @InjectView(R.id.et_firstName) EditText registerFirstName;
     @InjectView(R.id.et_lastName) EditText registerLastName;
+    @InjectView(R.id.et_password) EditText registerPassword;
     @InjectView(R.id.et_email) EditText email;
 
     @InjectView(R.id.et_login_email) EditText loginEmail;
@@ -92,7 +94,7 @@ public class LoginActivity extends RoboActivity {
         register.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                registerUserByEmail(registerFirstName.getText().toString(), registerLastName.getText().toString(), email.getText().toString(), "1234");
+                registerUserByEmail(registerFirstName.getText().toString(), registerLastName.getText().toString(), email.getText().toString(), registerPassword.getText().toString());
             }
         });
 
@@ -259,8 +261,18 @@ public class LoginActivity extends RoboActivity {
         progressBar.setVisibility(View.VISIBLE);
         errorTextView.setVisibility(View.GONE);
 
+        // create new adapter to set "custom" auth header (user not officially logged in yet)
+        UsersResource usersResource = new RestAdapter.Builder()
+                .setEndpoint(getString(R.string.server_address))
+                .setRequestInterceptor(new RequestInterceptor() {
+                    @Override
+                    public void intercept(RequestFacade request) {
+                        addAuthorizationHeader(email, password, request);
+                    }
+                })
+                .build()
+                .create(UsersResource.class);
 
-        // Server authenticates the user
         usersResource.getUser()
                 .compose(new DefaultTransformer<User>())
                 .subscribe(new Action1<User>() {

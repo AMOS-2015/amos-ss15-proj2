@@ -33,9 +33,7 @@ public class ServerModule implements Module {
 				.setRequestInterceptor(new RequestInterceptor() {
 					@Override
 					public void intercept(RequestFacade request) {
-						if (LoginActivity.isUserLoggedIn(context)) {
-							LoginActivity.addAuthorizationHeader(context, request);
-						}
+						LoginActivity.addAuthorizationHeader(context, request);
 					}
 				})
 				.build();
