@@ -51,6 +51,10 @@ android {
         exclude 'META-INF/NOTICE'
     }
 
+	lintOptions {
+		ignore 'InvalidPackage'
+	}
+
     // mark generated files as sources
     sourceSets {
         main {
