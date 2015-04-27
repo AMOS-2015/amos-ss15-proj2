@@ -232,7 +232,7 @@ public class LoginActivity extends RoboActivity {
 
                         login(user, password);
                         Toast.makeText(LoginActivity.this, getString(R.string.registration_success), Toast.LENGTH_SHORT).show();
-                        startActivity(new Intent(LoginActivity.this, DummyActivity.class));
+                        startActivity(new Intent(LoginActivity.this, MainActivity.class));
                         finish();
 
                     }
