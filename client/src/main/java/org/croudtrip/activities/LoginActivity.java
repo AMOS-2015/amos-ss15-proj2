@@ -2,7 +2,6 @@ package org.croudtrip.activities;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -24,10 +23,13 @@ import org.croudtrip.utils.DefaultTransformer;
 
 import java.util.Date;
 
+import javax.inject.Inject;
+
 import retrofit.RequestInterceptor;
-import retrofit.RestAdapter;
 import retrofit.RetrofitError;
-import retrofit.converter.JacksonConverter;
+import roboguice.activity.RoboActivity;
+import roboguice.inject.ContentView;
+import roboguice.inject.InjectView;
 import rx.functions.Action1;
 import timber.log.Timber;
 
@@ -36,14 +38,30 @@ import timber.log.Timber;
  * (recommended by google)
  * @author Frederik Simon, Vanessa Lange
  */
-public class LoginActivity extends Activity {
+@ContentView(R.layout.activity_login)
+public class LoginActivity extends RoboActivity {
 
+    @Inject UsersResource usersResource;
 
-    private Button loginButton;
-    private ProgressBar progressBar;
-    private TextView errorTextView;
+    @InjectView(R.id.btn_login) Button loginButton;
+    @InjectView(R.id.pb_login) ProgressBar progressBar;
+    @InjectView(R.id.tv_invalid_login) TextView errorTextView;
 
-    private View layoutChoose, layoutRegister, layoutLogin;
+    @InjectView(R.id.layout_choose) View layoutChoose;
+    @InjectView(R.id.layout_register) View layoutRegister;
+    @InjectView(R.id.layout_login) View layoutLogin;
+
+    @InjectView(R.id.btn_login_with_email) Button chooseLogin;
+    @InjectView(R.id.btn_register_email) Button chooseRegister;
+
+    @InjectView(R.id.btn_register) Button register;
+    @InjectView(R.id.et_firstName) EditText registerFirstName;
+    @InjectView(R.id.et_lastName) EditText registerLastName;
+    @InjectView(R.id.et_email) EditText email;
+
+    @InjectView(R.id.et_login_email) EditText loginEmail;
+    @InjectView(R.id.et_login_password) EditText loginPassword;
+
     private int animationDuration;
 
     private boolean registerViewVisible = false;
@@ -55,23 +73,14 @@ public class LoginActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_login);
-
         animationDuration = getResources().getInteger(android.R.integer.config_shortAnimTime);
 
-        layoutChoose = findViewById(R.id.layout_choose);
-        layoutRegister = findViewById(R.id.layout_register);
-        layoutLogin = findViewById(R.id.layout_login);
-
-        Button chooseLogin = (Button) findViewById(R.id.btn_login_with_email);
         chooseLogin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 showLoginView();
             }
         });
-
-        Button chooseRegister = (Button) findViewById(R.id.btn_register_email);
         chooseRegister.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -79,13 +88,7 @@ public class LoginActivity extends Activity {
             }
         });
 
-
         // REGISTER LAYOUT
-        final EditText registerFirstName = (EditText) findViewById(R.id.et_firstName);
-        final EditText registerLastName = (EditText) findViewById(R.id.et_lastName);
-        final EditText email = (EditText) findViewById(R.id.et_email);
-
-        Button register = (Button) findViewById(R.id.btn_register);
         register.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -93,18 +96,7 @@ public class LoginActivity extends Activity {
             }
         });
 
-
         // LOGIN LAYOUT
-        // User is authenticated by email and password
-        final EditText loginEmail = (EditText) findViewById(R.id.et_login_email);
-        final EditText loginPassword = (EditText) findViewById(R.id.et_login_password);
-
-        // Initialize GUI elements
-        errorTextView = (TextView) findViewById(R.id.tv_invalid_login);
-        progressBar = (ProgressBar) findViewById( R.id.pb_login);
-
-
-        loginButton = (Button) findViewById(R.id.btn_login);
         loginButton.setOnClickListener(new View.OnClickListener() {
 
             @Override
@@ -112,7 +104,6 @@ public class LoginActivity extends Activity {
                 loginUserByEmail(loginEmail.getText().toString(), loginPassword.getText().toString());
             }
         });
-
 
         // SKIP
         findViewById(R.id.skip).setOnClickListener(new View.OnClickListener() {
@@ -225,16 +216,8 @@ public class LoginActivity extends Activity {
 
 
     private void registerUserByEmail( final String firstName, final String lastName, final String email, final String password ) {
-        final String serverAddress = getResources().getString(R.string.server_address);
-
         // create user
         UserDescription userDescription = new UserDescription(email, firstName, lastName, password);
-
-        UsersResource usersResource = new RestAdapter.Builder().setEndpoint(serverAddress)
-                                                                 .setConverter(new JacksonConverter())
-                                                                 .build()
-                                                                 .create(UsersResource.class);
-
         usersResource.registerUser(userDescription)
                 .compose(new DefaultTransformer<User>())
                 .subscribe(new Action1<User>() {
@@ -270,8 +253,6 @@ public class LoginActivity extends Activity {
     }
 
     private void loginUserByEmail( final String email, final String password ) {
-        final String serverAddress = getResources().getString( R.string.server_address );
-
         // ---- UI ----
         // Show progress bar, disable login button
         loginButton.setEnabled(false);
@@ -280,20 +261,6 @@ public class LoginActivity extends Activity {
 
 
         // Server authenticates the user
-        UsersResource usersResource = new RestAdapter.Builder()
-                .setEndpoint(serverAddress)
-                .setConverter(new JacksonConverter())
-                .setRequestInterceptor(new RequestInterceptor() {
-
-                    @Override
-                    public void intercept(RequestFacade request) {
-                        // Put email and password in header for authorization
-                        addAuthorizationHeader(email, password, request);
-                    }
-                })
-                .build()
-                .create(UsersResource.class);
-
         usersResource.getUser()
                 .compose(new DefaultTransformer<User>())
                 .subscribe(new Action1<User>() {
@@ -432,7 +399,7 @@ public class LoginActivity extends Activity {
         String email = prefs.getString(Constants.SHARED_PREF_KEY_EMAIL, null);
         String password = prefs.getString(Constants.SHARED_PREF_KEY_PWD, null);
 
-        return addAuthorizationHeader( email, password, request );
+        return addAuthorizationHeader(email, password, request);
     }
 
 
