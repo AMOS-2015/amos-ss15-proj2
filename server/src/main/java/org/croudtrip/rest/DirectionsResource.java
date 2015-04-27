@@ -3,6 +3,7 @@ package org.croudtrip.rest;
 import com.google.common.collect.Lists;
 import com.google.maps.DirectionsApi;
 import com.google.maps.GeoApiContext;
+import com.google.maps.errors.NotFoundException;
 import com.google.maps.model.DirectionsLeg;
 import com.google.maps.model.DirectionsRoute;
 import com.google.maps.model.DirectionsStep;
@@ -13,6 +14,7 @@ import org.croudtrip.directions.Route;
 import org.croudtrip.directions.RouteDistance;
 import org.croudtrip.directions.RouteDuration;
 import org.croudtrip.directions.Step;
+import org.hibernate.validator.constraints.NotEmpty;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,6 +24,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
 import io.dropwizard.hibernate.UnitOfWork;
@@ -44,15 +47,33 @@ public class DirectionsResource {
 
     @GET
     @UnitOfWork
-    public List<Route> getDirections() throws Exception {
-        DirectionsRoute[] googleRoutes = DirectionsApi.getDirections(geoApiContext, "Nuremberg, DE", "Erlangen, DE").await();
+    public List<Route> getDirections(
+            @QueryParam("from") String fromLocation,
+            @NotEmpty @QueryParam("to") String toLocation) throws Exception {
+
         List<Route> resultRoutes = new ArrayList<>();
+        try {
+            DirectionsRoute[] googleRoutes = DirectionsApi.getDirections(
+                    geoApiContext,
+                    assertValidLocationParam("from", fromLocation),
+                    assertValidLocationParam("to", toLocation))
+                    .await();
 
-        for (DirectionsRoute googleRoute : googleRoutes) {
-            resultRoutes.add(createRoute(googleRoute));
+            for (DirectionsRoute googleRoute : googleRoutes) {
+                resultRoutes.add(createRoute(googleRoute));
+            }
+            return resultRoutes;
+        } catch (NotFoundException nfe) {
+            throw RestUtils.createJsonFormattedException("location not found", 404);
         }
+    }
 
-        return resultRoutes;
+
+    private String assertValidLocationParam(String paramName, String location) {
+        if (location == null || location.length() == 0) {
+            throw RestUtils.createJsonFormattedException("query param \"" + paramName + "\" cannot be emtpy", 400);
+        }
+        return location;
     }
 
 
