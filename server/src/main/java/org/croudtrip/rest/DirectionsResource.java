@@ -6,7 +6,6 @@ import com.google.maps.model.DirectionsLeg;
 import com.google.maps.model.DirectionsRoute;
 import com.google.maps.model.DirectionsStep;
 
-import org.croudtrip.app.CroudTripConfig;
 import org.croudtrip.directions.Leg;
 import org.croudtrip.directions.Location;
 import org.croudtrip.directions.Route;
@@ -17,7 +16,6 @@ import org.croudtrip.directions.Step;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
-import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
@@ -33,14 +31,11 @@ import io.dropwizard.hibernate.UnitOfWork;
 @Consumes(MediaType.APPLICATION_JSON)
 public class DirectionsResource {
 
-    GeoApiContext context;
-    String apiKey;
+    private final GeoApiContext geoApiContext;
 
     @Inject
-    DirectionsResource(CroudTripConfig config) {
-        context = new GeoApiContext();
-        context.setApiKey(config.getGoogleAPIKey());
-        apiKey = config.getGoogleAPIKey();
+    DirectionsResource(GeoApiContext geoApiContext) {
+        this.geoApiContext = geoApiContext;
     }
 
 
@@ -50,7 +45,7 @@ public class DirectionsResource {
         DirectionsRoute[] routes = new DirectionsRoute[0];
 
         try {
-            routes = DirectionsApi.getDirections(context, "Nuremberg, DE", "Erlangen, DE").await();
+            routes = DirectionsApi.getDirections(geoApiContext, "Nuremberg, DE", "Erlangen, DE").await();
             //System.out.println("ROUTE COMPUTED: " + routes.length + " " + routes[0].summary+ " " + routes[0].legs.length + " " + routes[0].waypointOrder.length);
         } catch (Exception e) {
             e.printStackTrace();

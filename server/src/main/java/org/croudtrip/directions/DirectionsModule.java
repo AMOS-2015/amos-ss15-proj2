@@ -2,28 +2,32 @@ package org.croudtrip.directions;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
+import com.google.maps.GeoApiContext;
 
 import org.croudtrip.app.CroudTripConfig;
-import org.croudtrip.rest.DirectionsResource;
 
-/**
- *
- * Created by Frederik Simon on 24.04.2015.
- */
-public class DirectionsModule extends AbstractModule {
-    private final CroudTripConfig config;
 
-    public DirectionsModule( CroudTripConfig config ) {
-        this.config = config;
+public final class DirectionsModule extends AbstractModule {
+
+
+    private final GeoApiContext geoApiContext;
+
+
+    public DirectionsModule(CroudTripConfig config) {
+        this.geoApiContext = new GeoApiContext();
+        this.geoApiContext.setApiKey(config.getGoogleAPIKey());
     }
+
 
     @Override
     protected void configure() {
-        bind(DirectionsResource.class);
+        // nothing to do for now
     }
 
+
     @Provides
-    CroudTripConfig getConfig() {
-        return config;
+    public GeoApiContext provideGeoApiContext() {
+        return geoApiContext;
     }
+
 }
