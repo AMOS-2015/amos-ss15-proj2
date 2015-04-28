@@ -26,7 +26,7 @@ public class ServerModule implements Module {
 
 	@Provides
 	@Inject
-	public RestAdapter provideRestAdapter(final Context context) {
+	public static RestAdapter provideRestAdapter(final Context context) {
 		// TODO @Vanessa: please replace the static references to LoginActivity once it has been refactored
 		return new RestAdapter.Builder()
 				.setEndpoint(context.getString(R.string.server_address))
@@ -42,15 +42,15 @@ public class ServerModule implements Module {
 
 	@Provides
 	@Inject
-	public UsersResource provideUsersResource(RestAdapter restAdapter) {
-		return restAdapter.create(UsersResource.class);
+	public static UsersResource provideUsersResource(Context context) {
+		return provideRestAdapter(context).create(UsersResource.class);
 	}
 
 
 	@Provides
 	@Inject
-	public DirectionsResource provideDirectionsResource(RestAdapter restAdapter) {
-		return restAdapter.create(DirectionsResource.class);
+	public static DirectionsResource provideDirectionsResource(Context context) {
+		return provideRestAdapter(context).create(DirectionsResource.class);
 	}
 
 }

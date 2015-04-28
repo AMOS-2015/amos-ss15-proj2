@@ -2,6 +2,7 @@ package org.croudtrip.activities;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -19,6 +20,7 @@ import org.croudtrip.R;
 import org.croudtrip.UsersResource;
 import org.croudtrip.auth.User;
 import org.croudtrip.auth.UserDescription;
+import org.croudtrip.server.ServerModule;
 import org.croudtrip.utils.DefaultTransformer;
 
 import java.util.Date;
@@ -28,7 +30,6 @@ import javax.inject.Inject;
 import retrofit.RequestInterceptor;
 import retrofit.RestAdapter;
 import retrofit.RetrofitError;
-import roboguice.activity.RoboActivity;
 import roboguice.inject.ContentView;
 import roboguice.inject.InjectView;
 import rx.functions.Action1;
@@ -40,7 +41,7 @@ import timber.log.Timber;
  * @author Frederik Simon, Vanessa Lange
  */
 @ContentView(R.layout.activity_login)
-public class LoginActivity extends RoboActivity {
+public class LoginActivity extends Activity {
 
     @Inject UsersResource usersResource;
 
@@ -75,7 +76,10 @@ public class LoginActivity extends RoboActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_login);
         animationDuration = getResources().getInteger(android.R.integer.config_shortAnimTime);
+
+        getDependencies();
 
         chooseLogin.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -436,6 +440,34 @@ public class LoginActivity extends RoboActivity {
         String base64EncodedCredentials = Base64.encodeToString(credentials.getBytes(), Base64.NO_WRAP);
         request.addHeader("Authorization", "Basic " + base64EncodedCredentials);
         return true;
+    }
+
+
+    /**
+     * Tmp fix until Guice starts working again ...
+     */
+    private void getDependencies() {
+        this.usersResource = ServerModule.provideUsersResource(this);
+
+        this.loginButton = (Button) findViewById(R.id.btn_login);
+        this.progressBar = (ProgressBar) findViewById(R.id.pb_login);
+        this.errorTextView = (TextView) findViewById(R.id.tv_invalid_login);
+
+        this.layoutChoose = findViewById(R.id.layout_choose);
+        this.layoutRegister = findViewById(R.id.layout_register);
+        this.layoutLogin = findViewById(R.id.layout_login);
+
+        this.chooseLogin = (Button) findViewById(R.id.btn_login_with_email);
+        this.chooseRegister = (Button) findViewById(R.id.btn_register_email);
+
+        this.register = (Button) findViewById(R.id.btn_register);
+        this.registerFirstName = (EditText) findViewById(R.id.et_firstName);
+        this.registerLastName = (EditText) findViewById(R.id.et_lastName);
+        this.registerPassword = (EditText) findViewById(R.id.et_password);
+        this.email = (EditText) findViewById(R.id.et_email);
+
+        this.loginEmail = (EditText) findViewById(R.id.et_login_email);
+        this.loginPassword = (EditText) findViewById(R.id.et_login_password);
     }
 
 }

@@ -1,5 +1,6 @@
 package org.croudtrip.activities;
 
+import android.app.Fragment;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -20,7 +21,7 @@ import it.neokree.materialnavigationdrawer.elements.MaterialSection;
  * We will probably use fragments, so this activity works as a container for all these fragments and will probably do
  * some initialization and stuff
  */
-public class MainActivity extends AbstractRoboDrawerActivity {
+public class MainActivity extends MaterialNavigationDrawer<Fragment> {
 
     @Override
     public void init(Bundle savedInstanceState) {
