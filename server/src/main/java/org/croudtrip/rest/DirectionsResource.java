@@ -70,16 +70,17 @@ public class DirectionsResource {
     }
 
     @GET
+    @Path("/loc")
     @UnitOfWork
     public List<Route> getDirections(
-            @QueryParam("from") Location fromLocation,
-            @NotEmpty @QueryParam("to") Location toLocation) throws Exception {
+            @QueryParam("fromLat") double fromLat, @QueryParam("fromLng") double fromLng,
+            @NotEmpty @QueryParam("toLat") double toLat, @NotEmpty @QueryParam("toLng") double toLng) throws Exception {
 
         List<Route> resultRoutes = new ArrayList<>();
         try {
             DirectionsRoute[] googleRoutes = DirectionsApi.newRequest(geoApiContext)
-                                                          .origin( assertValidLocationParam("from", fromLocation))
-                                                          .destination( assertValidLocationParam("to", toLocation))
+                                                          .origin( new LatLng( fromLat, fromLng ))
+                                                          .destination( new LatLng( toLat, toLng ))
                                                           .await();
 
             for (DirectionsRoute googleRoute : googleRoutes) {
