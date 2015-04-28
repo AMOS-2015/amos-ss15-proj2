@@ -30,8 +30,6 @@ import javax.inject.Inject;
 import retrofit.RequestInterceptor;
 import retrofit.RestAdapter;
 import retrofit.RetrofitError;
-import roboguice.inject.ContentView;
-import roboguice.inject.InjectView;
 import rx.functions.Action1;
 import timber.log.Timber;
 
@@ -40,30 +38,30 @@ import timber.log.Timber;
  * (recommended by google)
  * @author Frederik Simon, Vanessa Lange
  */
-@ContentView(R.layout.activity_login)
+// @ContentView(R.layout.activity_login)
 public class LoginActivity extends Activity {
 
     @Inject UsersResource usersResource;
 
-    @InjectView(R.id.btn_login) Button loginButton;
-    @InjectView(R.id.pb_login) ProgressBar progressBar;
-    @InjectView(R.id.tv_invalid_login) TextView errorTextView;
+    Button loginButton;
+    ProgressBar progressBar;
+    TextView errorTextView;
 
-    @InjectView(R.id.layout_choose) View layoutChoose;
-    @InjectView(R.id.layout_register) View layoutRegister;
-    @InjectView(R.id.layout_login) View layoutLogin;
+    View layoutChoose;
+    View layoutRegister;
+    View layoutLogin;
 
-    @InjectView(R.id.btn_login_with_email) Button chooseLogin;
-    @InjectView(R.id.btn_register_email) Button chooseRegister;
+    Button chooseLogin;
+    Button chooseRegister;
 
-    @InjectView(R.id.btn_register) Button register;
-    @InjectView(R.id.et_firstName) EditText registerFirstName;
-    @InjectView(R.id.et_lastName) EditText registerLastName;
-    @InjectView(R.id.et_password) EditText registerPassword;
-    @InjectView(R.id.et_email) EditText email;
+    Button register;
+    EditText registerFirstName;
+    EditText registerLastName;
+    EditText registerPassword;
+    EditText email;
 
-    @InjectView(R.id.et_login_email) EditText loginEmail;
-    @InjectView(R.id.et_login_password) EditText loginPassword;
+    EditText loginEmail;
+    EditText loginPassword;
 
     private int animationDuration;
 
