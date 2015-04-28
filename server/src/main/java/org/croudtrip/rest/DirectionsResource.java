@@ -7,6 +7,7 @@ import com.google.maps.errors.NotFoundException;
 import com.google.maps.model.DirectionsLeg;
 import com.google.maps.model.DirectionsRoute;
 import com.google.maps.model.DirectionsStep;
+import com.google.maps.model.LatLng;
 
 import org.croudtrip.directions.Leg;
 import org.croudtrip.directions.Location;
@@ -68,6 +69,28 @@ public class DirectionsResource {
         }
     }
 
+    @GET
+    @UnitOfWork
+    public List<Route> getDirections(
+            @QueryParam("from") Location fromLocation,
+            @NotEmpty @QueryParam("to") Location toLocation) throws Exception {
+
+        List<Route> resultRoutes = new ArrayList<>();
+        try {
+            DirectionsRoute[] googleRoutes = DirectionsApi.newRequest(geoApiContext)
+                                                          .origin( assertValidLocationParam("from", fromLocation))
+                                                          .destination( assertValidLocationParam("to", toLocation))
+                                                          .await();
+
+            for (DirectionsRoute googleRoute : googleRoutes) {
+                resultRoutes.add(createRoute(googleRoute));
+            }
+            return resultRoutes;
+        } catch (NotFoundException nfe) {
+            throw RestUtils.createJsonFormattedException("location not found", 404);
+        }
+    }
+
 
     private String assertValidLocationParam(String paramName, String location) {
         if (location == null || location.length() == 0) {
@@ -76,7 +99,19 @@ public class DirectionsResource {
         return location;
     }
 
+    private LatLng assertValidLocationParam(String paramName, Location location) {
+        if ( location == null ) {
+            throw RestUtils.createJsonFormattedException("query param \"" + paramName + "\" cannot be emtpy", 400);
+        }
+        return new LatLng( location.getLat(), location.getLng() );
+    }
 
+    /**
+     * Creates a Route that can be exported to JSON and is readable
+     * for the client from the given Route coming from the Google Directions server.
+     * @param googleRoute the route that is downloaded from the google server
+     * @return an own JSON convertible route
+     */
     private Route createRoute(DirectionsRoute googleRoute) {
         List<Leg> legs = new ArrayList<>();
         for (DirectionsLeg googleLeg : googleRoute.legs) {

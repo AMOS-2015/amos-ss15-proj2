@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Objects;
 
 /**
- * Describes the location of a geo position by latitude and logitude
+ * Describes the location of a geo position by latitude and longitude
  * Created by Frederik Simon on 24.04.2015.
  */
 public class Location {
