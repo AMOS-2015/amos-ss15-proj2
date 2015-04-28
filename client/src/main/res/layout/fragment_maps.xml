@@ -9,4 +9,21 @@
         android:layout_height="match_parent"
         class="com.google.android.gms.maps.MapFragment" />
 
+    <LinearLayout
+        android:id="@+id/progressLayout"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:visibility="gone"
+        android:background="@color/semitransparent">
+
+        <ProgressBar
+            style="?android:attr/progressBarStyleLarge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/progressBar"
+            android:indeterminate="true" />
+    </LinearLayout>
+
 </RelativeLayout>

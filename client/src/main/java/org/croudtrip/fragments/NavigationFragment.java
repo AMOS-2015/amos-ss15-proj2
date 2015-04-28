@@ -4,9 +4,11 @@ package org.croudtrip.fragments;
 import android.app.Fragment;
 import android.app.ProgressDialog;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.GoogleMap;
@@ -20,8 +22,10 @@ import com.google.maps.android.PolyUtil;
 
 import org.croudtrip.DirectionsResource;
 import org.croudtrip.R;
+import org.croudtrip.directions.Leg;
 import org.croudtrip.directions.Location;
 import org.croudtrip.directions.Route;
+import org.croudtrip.directions.Step;
 import org.croudtrip.server.ServerModule;
 import org.croudtrip.utils.DefaultTransformer;
 
@@ -47,7 +51,7 @@ public class NavigationFragment extends Fragment {
 
         MapFragment map = (MapFragment) getFragmentManager().findFragmentById(R.id.location_map);
         map.getMapAsync( new MapReady() );
-        //map.getMap().setOnMapClickListener( new MapListeners( map.getMap()) );
+        map.getMap().setOnMapClickListener( new MapListeners( map.getMap()) );
 
         return view;
     }
@@ -114,22 +118,37 @@ public class NavigationFragment extends Fragment {
                 Location locFrom = new Location( markers.get(0).latitude, markers.get(0).longitude );
                 Location locTo = new Location( markers.get(1).latitude, markers.get(1).longitude );
 
-                final ProgressDialog progress = ProgressDialog.show(getActivity(), "","", true, false );
+                Log.d("FROM", markers.get(0).latitude + " " + markers.get(0).longitude);
+                Log.d("FROM", locFrom.getLat() + " " + locFrom.getLng());
 
-                directionsResource.getDirections(locFrom, locTo)
+                Log.d("TO", markers.get(1).latitude + " " + markers.get(1).longitude);
+                Log.d("TO", locTo.getLat() + " " + locTo.getLng());
+
+                final LinearLayout layout = (LinearLayout) getActivity().findViewById(R.id.progressLayout);
+
+                layout.setVisibility( View.VISIBLE );
+                directionsResource.getDirections(locFrom.getLat(), locFrom.getLng(), locTo.getLat(), locTo.getLng())
                         .compose(new DefaultTransformer<List<Route>>())
+                        .doOnError( new Action1<Throwable>() {
+                            @Override
+                            public void call(Throwable throwable) {
+                                Toast.makeText(getActivity(), throwable.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
+                            }
+                        })
                         .subscribe(new Action1<List<Route>>() {
 
                             @Override
                             public void call(List<Route> routes) {
                                 if (routes == null || routes.isEmpty())
-                                    Toast.makeText(getActivity(), R.string.no_route_found, Toast.LENGTH_SHORT);
+                                    Toast.makeText(getActivity(), R.string.no_route_found, Toast.LENGTH_SHORT).show();
 
                                 for (Route r : routes) {
-                                    googleMap.addPolyline(new PolylineOptions().addAll(PolyUtil.decode(r.getPolyline())));
+                                    for (Leg l : r.getLegs())
+                                        for (Step s : l.getSteps())
+                                            googleMap.addPolyline(new PolylineOptions().addAll(PolyUtil.decode(s.getPolyline())));
                                 }
 
-                                progress.dismiss();
+                                layout.setVisibility(View.GONE);
                             }
                         });
             }
