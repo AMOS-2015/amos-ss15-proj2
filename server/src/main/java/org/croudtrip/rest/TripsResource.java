@@ -2,6 +2,7 @@ package org.croudtrip.rest;
 
 import com.google.common.base.Optional;
 
+import org.croudtrip.auth.User;
 import org.croudtrip.trips.TripOffer;
 import org.croudtrip.trips.TripOfferDescription;
 import org.croudtrip.trips.TripsManager;
@@ -19,6 +20,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
+import io.dropwizard.auth.Auth;
 import io.dropwizard.hibernate.UnitOfWork;
 
 /**
@@ -39,8 +41,8 @@ public class TripsResource {
 
     @POST
     @UnitOfWork
-    public TripOffer addOffer(@Valid TripOfferDescription offerDescription) {
-        return tripsManager.addOffer(offerDescription);
+    public TripOffer addOffer(@Auth User user, @Valid TripOfferDescription offerDescription) {
+        return tripsManager.addOffer(user, offerDescription);
     }
 
 

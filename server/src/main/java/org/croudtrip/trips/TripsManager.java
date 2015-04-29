@@ -3,6 +3,7 @@ package org.croudtrip.trips;
 
 import com.google.common.base.Optional;
 
+import org.croudtrip.auth.User;
 import org.croudtrip.db.TripOfferDAO;
 
 import java.util.List;
@@ -22,8 +23,8 @@ public class TripsManager {
 	}
 
 
-	public TripOffer addOffer(TripOfferDescription description) {
-		TripOffer offer = new TripOffer(0, description.getStart(), description.getEnd(), description.getMaxDiversionInKm());
+	public TripOffer addOffer(User owner, TripOfferDescription description) {
+		TripOffer offer = new TripOffer(0, description.getStart(), description.getEnd(), description.getMaxDiversionInKm(), owner);
 		tripOfferDAO.save(offer);
 		return offer;
 	}

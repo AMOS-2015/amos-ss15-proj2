@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Objects;
 
+import org.croudtrip.auth.User;
 import org.croudtrip.directions.Location;
 
 import javax.persistence.AttributeOverride;
@@ -14,6 +15,8 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
@@ -58,6 +61,11 @@ public class TripOffer {
 	@Column(name = "maxDiversionInKm", nullable = false)
 	private float maxDiversionInKm;
 
+	@ManyToOne
+	@JoinColumn(name = User.COLUMN_ID, nullable = false)
+	private User owner;
+
+
 	public TripOffer() { }
 
 	@JsonCreator
@@ -65,12 +73,14 @@ public class TripOffer {
 			@JsonProperty("id") long id,
 			@JsonProperty("start") Location start,
 			@JsonProperty("end") Location end,
-			@JsonProperty("maxDiversionInKm") float maxDiversionInKm) {
+			@JsonProperty("maxDiversionInKm") float maxDiversionInKm,
+			@JsonProperty("owner") User owner) {
 
 		this.id = id;
 		this.start = start;
 		this.end = end;
 		this.maxDiversionInKm = maxDiversionInKm;
+		this.owner = owner;
 	}
 
 
@@ -94,6 +104,11 @@ public class TripOffer {
 	}
 
 
+	public User getOwner() {
+		return owner;
+	}
+
+
 	@Override
 	public boolean equals(Object other) {
 		if (other == null || !(other instanceof TripOffer)) return false;
@@ -101,13 +116,14 @@ public class TripOffer {
 		return Objects.equal(id, offer.id)
 				&& Objects.equal(start, offer.start)
 				&& Objects.equal(end, offer.end)
-				&& Objects.equal(maxDiversionInKm, offer.maxDiversionInKm);
+				&& Objects.equal(maxDiversionInKm, offer.maxDiversionInKm)
+				&& Objects.equal(owner, offer.owner);
 	}
 
 
 	@Override
 	public int hashCode() {
-		return Objects.hashCode(id, start, end, maxDiversionInKm);
+		return Objects.hashCode(id, start, end, maxDiversionInKm, owner);
 	}
 
 }
