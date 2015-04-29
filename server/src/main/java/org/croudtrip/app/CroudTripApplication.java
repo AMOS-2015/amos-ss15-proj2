@@ -17,7 +17,7 @@ import org.croudtrip.rest.TripsResource;
 import org.croudtrip.rest.UsersResource;
 import org.croudtrip.trips.TripOffer;
 import org.croudtrip.user.Avatar;
-import org.croudtrip.user.ThrowableExceptionMapper;
+import org.croudtrip.rest.ThrowableExceptionMapper;
 
 import io.dropwizard.Application;
 import io.dropwizard.auth.AuthFactory;

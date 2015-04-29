@@ -1,4 +1,4 @@
-package org.croudtrip.user;
+package org.croudtrip.rest;
 
 
 import java.io.PrintWriter;
