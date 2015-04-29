@@ -4,6 +4,7 @@ package org.croudtrip.app;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 
+import org.croudtrip.account.Vehicle;
 import org.croudtrip.auth.BasicAuthenticator;
 import org.croudtrip.auth.BasicCredentials;
 import org.croudtrip.account.User;
@@ -15,6 +16,7 @@ import org.croudtrip.rest.JsonExceptionMapper;
 import org.croudtrip.rest.NotFoundExceptionMapper;
 import org.croudtrip.rest.TripsResource;
 import org.croudtrip.rest.UsersResource;
+import org.croudtrip.rest.VehicleResource;
 import org.croudtrip.trips.TripOffer;
 import org.croudtrip.account.Avatar;
 import org.croudtrip.rest.ThrowableExceptionMapper;
@@ -56,6 +58,7 @@ public final class CroudTripApplication extends Application<CroudTripConfig> {
 		environment.jersey().register(injector.getInstance(AvatarsResource.class));
         environment.jersey().register(injector.getInstance(DirectionsResource.class));
 		environment.jersey().register(injector.getInstance(TripsResource.class));
+		environment.jersey().register(injector.getInstance(VehicleResource.class));
 		environment.jersey().register(injector.getInstance(NotFoundExceptionMapper.class));
 		environment.jersey().register(injector.getInstance(JsonExceptionMapper.class));
 		environment.jersey().register(injector.getInstance(ThrowableExceptionMapper.class));
@@ -70,7 +73,8 @@ public final class CroudTripApplication extends Application<CroudTripConfig> {
 			User.class,
 			BasicCredentials.class,
 			Avatar.class,
-			TripOffer.class) {
+			TripOffer.class,
+			Vehicle.class) {
 		@Override
 		public DataSourceFactory getDataSourceFactory(CroudTripConfig configuration) {
 			return configuration.getDatabase();

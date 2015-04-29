@@ -24,7 +24,7 @@ import io.dropwizard.auth.Auth;
 import io.dropwizard.hibernate.UnitOfWork;
 
 /**
- * Resource for managing users.
+ * Resource for managing trips.
  */
 @Path("/trips")
 @Produces(MediaType.APPLICATION_JSON)
