@@ -19,6 +19,6 @@ public class Constants {
 
     public final static String SHARED_PREF_KEY_WAITING_TIME = "waitingTime";
     public final static String SHARED_PREF_KEY_DIVERSION = "maxDiversion";
-
+    public final static String SHARED_PREF_KEY_PROFILE_IMAGE_URI = "profileImg";
 
 }

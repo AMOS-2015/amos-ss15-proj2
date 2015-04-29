@@ -1,28 +1,53 @@
 package org.croudtrip.fragments;
 
 import android.app.Fragment;
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.graphics.drawable.BitmapDrawable;
+import android.net.Uri;
 import android.os.Bundle;
-import android.support.v7.widget.Toolbar;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.Toast;
 
+import com.getbase.floatingactionbutton.FloatingActionButton;
+
+import org.croudtrip.Constants;
 import org.croudtrip.R;
+import org.croudtrip.activities.LoginActivity;
+import org.croudtrip.auth.User;
 
-import it.neokree.materialnavigationdrawer.MaterialNavigationDrawer;
+
 
 /**
- * Created by alex on 22.04.15.
+ * This fragment allows the user to edit their profile information (e.g. name, profile picture, address,
+ * etc.).
+ * @author Nazeeh Ammari
  */
 public class EditProfileFragment extends Fragment {
 
+
+    //************************* Variables ***************************//
+    ImageView profilePicture;
+    EditText  profileNameEdit, phoneNumberEdit, addressEdit;
+    String newName, newNumber, newAddress;
+    String tempName, tempNumber, tempAddress;
+    Uri profileImageUri, tempUri;
+
+
+    //************************* Methods *****************************//
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        Toolbar toolbar = ((MaterialNavigationDrawer) this.getActivity()).getToolbar();
     }
 
     @Override
@@ -32,14 +57,235 @@ public class EditProfileFragment extends Fragment {
         setHasOptionsMenu(true);
         View view = inflater.inflate(R.layout.fragment_edit_profile, container, false);
 
+        SharedPreferences prefs = this.getActivity().getSharedPreferences(Constants.SHARED_PREF_FILE_USER, Context.MODE_PRIVATE);
+
+        //Get EditTexts
+        profileNameEdit = (EditText)view.findViewById(R.id.edit_profile_name);
+        phoneNumberEdit = (EditText)view.findViewById(R.id.edit_profile_phone);
+        addressEdit = (EditText)view.findViewById(R.id.edit_profile_address);
+
+        //Get the ImageView and fill it with the profile picture from SharedPrefs (Uri)
+        profilePicture = (ImageView)view.findViewById(R.id.profile_picture_edit);
+        if (prefs.getString(Constants.SHARED_PREF_KEY_PROFILE_IMAGE_URI,null) != null) {
+            profileImageUri = Uri.parse(prefs.getString(Constants.SHARED_PREF_KEY_PROFILE_IMAGE_URI,null));
+        }
+        if (profileImageUri != null) {
+            profilePicture.setImageURI(profileImageUri);
+            tempUri = profileImageUri;
+        }
+        else
+        {
+            profilePicture.setImageResource(R.drawable.background_drawer);
+        }
+        final Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
+        // Restore user from SharedPref file
+        User user = LoginActivity.getLoggedInUser(this.getActivity().getApplicationContext());
+
+
+        if(user != null) {
+            String name = null;
+            if (user.getFirstName() != null && user.getLastName() != null) {
+                name = user.getFirstName() + " " + user.getLastName();
+            } else if (user.getFirstName() != null) {
+                name = user.getFirstName();
+            } else if (user.getLastName() != null) {
+                name = user.getLastName();
+            }
+
+            //Fill EditText fields
+            if (name != null) {
+                profileNameEdit.setHint(name);
+                tempName = name;
+            }
+            else
+            {
+                profileNameEdit.setHint("Unknown");
+                tempName = "Unknown";
+            }
+
+            if (user.getPhoneNumber() != null) {
+                phoneNumberEdit.setHint(user.getPhoneNumber());
+                tempNumber = user.getPhoneNumber();
+            }
+            else
+            {
+                phoneNumberEdit.setHint("Unknown");
+                tempNumber = "Unknown";
+            }
+
+            if (user.getAddress()!=null) {
+                addressEdit.setHint(user.getAddress());
+                tempAddress = user.getAddress();
+            }
+            else {
+                addressEdit.setHint("Unknown");
+                tempAddress = "Unknown";
+            }
+
+            //Prepare variables to save them in SharedPrefs
+            newName = name;
+            newNumber = user.getPhoneNumber();
+            newAddress = user.getAddress();
+        }
+
+        //Listeners for EditTexts, save the string to a variable when Enter is pressed or focus is changed
+        //Name
+        profileNameEdit.setOnKeyListener(new View.OnKeyListener() {
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+                if ((event.getAction() == KeyEvent.ACTION_DOWN) &&
+                        (keyCode == KeyEvent.KEYCODE_ENTER)) {
+                    newName = profileNameEdit.getText().toString();
+                    return true;
+                }
+                return false;
+            }
+        });
+
+        profileNameEdit.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if(!hasFocus){
+                    newName = profileNameEdit.getText().toString();
+                }
+            }
+        });
+
+
+        //Phone Number
+        phoneNumberEdit.setOnKeyListener(new View.OnKeyListener() {
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+                if ((event.getAction() == KeyEvent.ACTION_DOWN) &&
+                        (keyCode == KeyEvent.KEYCODE_ENTER)) {
+                    newNumber = phoneNumberEdit.getText().toString();
+                    return true;
+                }
+                return false;
+            }
+        });
+        phoneNumberEdit.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if(!hasFocus){
+                    newNumber = phoneNumberEdit.getText().toString();
+                }
+            }
+        });
+
+        //Address
+        addressEdit.setOnKeyListener(new View.OnKeyListener() {
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+                if ((event.getAction() == KeyEvent.ACTION_DOWN) &&
+                        (keyCode == KeyEvent.KEYCODE_ENTER)) {
+                    newAddress = addressEdit.getText().toString();
+                    return true;
+                }
+                return false;
+            }
+        });
+        addressEdit.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (!hasFocus) {
+                    newAddress = addressEdit.getText().toString();
+                }
+            }
+        });
+
+        // Discard changes button
+        Button discard = (Button) view.findViewById(R.id.discard);
+        discard.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                profileNameEdit.setHint(tempName);
+                profileNameEdit.setText("");
+                phoneNumberEdit.setHint(tempNumber);
+                phoneNumberEdit.setText("");
+                addressEdit.setHint(tempAddress);
+                addressEdit.setText("");
+                Toast.makeText(getActivity(), "Changes discarded", Toast.LENGTH_SHORT)
+                        .show();
+            }
+        });
+
+
+        // save changes button
+        Button save = (Button) view.findViewById(R.id.save);
+        save.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                saveProfileChanges();
+            }
+        });
+
+        // change profile image button
+        FloatingActionButton editProfileImage = (FloatingActionButton) view.findViewById(R.id.btn_edit_profile_image);
+        editProfileImage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //Save the previous picture Uri in a temporary variable and clear the ImageView while the user selects an image (maybe not the best practice)
+
+                tempUri = profileImageUri;
+                BitmapDrawable bd = (BitmapDrawable) profilePicture.getDrawable();
+                bd.getBitmap().recycle();
+                profilePicture.setImageBitmap(null);
+
+
+                //Open Gallery
+                photoPickerIntent.setType("image/*");
+                startActivityForResult(photoPickerIntent, 100);
+            }
+        });
 
         return view;
     }
 
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (data != null) {
+            //Fill the ImageView
+            profileImageUri = data.getData();
+            profilePicture.setImageURI(profileImageUri);
+        } else {
+            //Fill the ImageView with the previous image in case of failure
+            profilePicture.setImageURI(tempUri);
+            Toast.makeText(getActivity(), "An error occurred while getting the picture, please try again", Toast.LENGTH_SHORT)
+                    .show();
+        }
+    }
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         menu.clear();
         //inflater.inflate(R.menu.menu_main, menu);
     }
+
+    public void saveProfileChanges() {
+
+        SharedPreferences prefs = this.getActivity().getSharedPreferences(Constants.SHARED_PREF_FILE_USER, Context.MODE_PRIVATE);
+
+        SharedPreferences.Editor editor = prefs.edit();
+        //editor.putString(Constants.SHARED_PREF_KEY_PROFILE_IMAGE_URL, selectedImage.toString());
+        editor.putString(Constants.SHARED_PREF_KEY_FIRSTNAME, newName);
+        editor.putString(Constants.SHARED_PREF_KEY_LASTNAME, null);
+        editor.putString(Constants.SHARED_PREF_KEY_PHONE, newNumber);
+        editor.putString(Constants.SHARED_PREF_KEY_ADDRESS, newAddress);
+        if (profileImageUri != null) {
+            editor.putString(Constants.SHARED_PREF_KEY_PROFILE_IMAGE_URI, profileImageUri.toString());
+        }
+        editor.apply();
+        Toast.makeText(getActivity(), "Profile Updated!", Toast.LENGTH_SHORT)
+                .show();
+    }
+
+    public void onDestroy() {
+        super.onDestroy();
+        if (profileImageUri != null) {
+            //Recycle the bitmap inside the profile picture ImageView to avoid Out of Memory errors
+            BitmapDrawable bd = (BitmapDrawable) profilePicture.getDrawable();
+            bd.getBitmap().recycle();
+            profilePicture.setImageBitmap(null);
+        }
+    }
 }
+
+

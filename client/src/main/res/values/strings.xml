@@ -56,4 +56,7 @@
 
     <string name="navigation">Navigation</string>
     <string name="no_route_found">No route could be found for your request.</string>
+
+    <string name="save_changes">Save Changes</string>
+    <string name="discard_changes">Discard Changes</string>
 </resources>
