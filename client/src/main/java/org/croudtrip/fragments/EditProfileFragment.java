@@ -23,7 +23,7 @@ import com.getbase.floatingactionbutton.FloatingActionButton;
 import org.croudtrip.Constants;
 import org.croudtrip.R;
 import org.croudtrip.activities.LoginActivity;
-import org.croudtrip.auth.User;
+import org.croudtrip.account.User;
 
 
 

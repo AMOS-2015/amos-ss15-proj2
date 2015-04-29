@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Objects;
 
-import org.croudtrip.auth.User;
+import org.croudtrip.account.User;
 import org.croudtrip.directions.Location;
 
 import javax.persistence.AttributeOverride;

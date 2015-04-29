@@ -1,12 +1,10 @@
-package org.croudtrip.user;
+package org.croudtrip.account;
 
 
 import com.google.common.base.Optional;
 
 import org.croudtrip.auth.BasicAuthenticationUtils;
 import org.croudtrip.auth.BasicCredentials;
-import org.croudtrip.auth.User;
-import org.croudtrip.auth.UserDescription;
 import org.croudtrip.db.BasicCredentialsDAO;
 import org.croudtrip.db.UserDAO;
 import org.croudtrip.utils.Assert;

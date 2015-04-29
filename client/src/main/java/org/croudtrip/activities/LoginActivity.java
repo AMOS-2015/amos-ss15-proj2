@@ -17,8 +17,8 @@ import android.widget.Toast;
 import org.croudtrip.Constants;
 import org.croudtrip.R;
 import org.croudtrip.UsersResource;
-import org.croudtrip.auth.User;
-import org.croudtrip.auth.UserDescription;
+import org.croudtrip.account.User;
+import org.croudtrip.account.UserDescription;
 import org.croudtrip.utils.DefaultTransformer;
 
 import java.util.Date;

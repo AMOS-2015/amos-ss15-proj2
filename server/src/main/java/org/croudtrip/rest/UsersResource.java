@@ -2,9 +2,9 @@ package org.croudtrip.rest;
 
 import com.google.common.base.Optional;
 
-import org.croudtrip.auth.User;
-import org.croudtrip.auth.UserDescription;
-import org.croudtrip.user.UserManager;
+import org.croudtrip.account.User;
+import org.croudtrip.account.UserDescription;
+import org.croudtrip.account.UserManager;
 
 import java.util.List;
 

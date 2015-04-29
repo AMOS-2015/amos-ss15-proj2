@@ -2,10 +2,10 @@ package org.croudtrip.rest;
 
 import com.google.common.base.Optional;
 
-import org.croudtrip.auth.User;
-import org.croudtrip.user.Avatar;
-import org.croudtrip.user.AvatarManager;
-import org.croudtrip.user.UserManager;
+import org.croudtrip.account.User;
+import org.croudtrip.account.Avatar;
+import org.croudtrip.account.AvatarManager;
+import org.croudtrip.account.UserManager;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 

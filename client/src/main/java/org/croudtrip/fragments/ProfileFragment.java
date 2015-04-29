@@ -17,7 +17,7 @@ import com.getbase.floatingactionbutton.FloatingActionButton;
 
 import org.croudtrip.R;
 import org.croudtrip.activities.LoginActivity;
-import org.croudtrip.auth.User;
+import org.croudtrip.account.User;
 import org.croudtrip.utils.DefaultTransformer;
 
 import java.io.InputStream;

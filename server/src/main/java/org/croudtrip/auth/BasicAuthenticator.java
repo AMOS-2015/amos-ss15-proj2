@@ -3,7 +3,8 @@ package org.croudtrip.auth;
 
 import com.google.common.base.Optional;
 
-import org.croudtrip.user.UserManager;
+import org.croudtrip.account.User;
+import org.croudtrip.account.UserManager;
 
 import javax.inject.Inject;
 

@@ -3,6 +3,8 @@ package org.croudtrip.auth;
 
 import com.google.common.base.Objects;
 
+import org.croudtrip.account.User;
+
 import java.util.Arrays;
 
 import javax.persistence.Column;

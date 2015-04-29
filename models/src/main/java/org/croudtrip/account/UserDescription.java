@@ -1,4 +1,4 @@
-package org.croudtrip.auth;
+package org.croudtrip.account;
 
 
 import com.fasterxml.jackson.annotation.JsonCreator;

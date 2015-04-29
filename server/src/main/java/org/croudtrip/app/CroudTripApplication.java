@@ -6,7 +6,7 @@ import com.google.inject.Injector;
 
 import org.croudtrip.auth.BasicAuthenticator;
 import org.croudtrip.auth.BasicCredentials;
-import org.croudtrip.auth.User;
+import org.croudtrip.account.User;
 import org.croudtrip.db.DbModule;
 import org.croudtrip.directions.DirectionsModule;
 import org.croudtrip.rest.AvatarsResource;
@@ -16,7 +16,7 @@ import org.croudtrip.rest.NotFoundExceptionMapper;
 import org.croudtrip.rest.TripsResource;
 import org.croudtrip.rest.UsersResource;
 import org.croudtrip.trips.TripOffer;
-import org.croudtrip.user.Avatar;
+import org.croudtrip.account.Avatar;
 import org.croudtrip.rest.ThrowableExceptionMapper;
 
 import io.dropwizard.Application;

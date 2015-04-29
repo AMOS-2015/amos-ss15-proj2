@@ -3,7 +3,7 @@ package org.croudtrip.trips;
 
 import com.google.common.base.Optional;
 
-import org.croudtrip.auth.User;
+import org.croudtrip.account.User;
 import org.croudtrip.db.TripOfferDAO;
 
 import java.util.List;
