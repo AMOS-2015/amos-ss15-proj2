@@ -10,18 +10,11 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-import io.dropwizard.hibernate.AbstractDAO;
-
 public class UserDAO extends AbstractDAO<User> {
 
 	@Inject
 	UserDAO(SessionFactory sessionFactory) {
 		super(sessionFactory);
-	}
-
-
-	public Optional<User> findById(long id) {
-		return Optional.fromNullable(get(id));
 	}
 
 
@@ -34,21 +27,6 @@ public class UserDAO extends AbstractDAO<User> {
 		return Optional.fromNullable(
 				uniqueResult(
 						namedQuery(User.QUERY_NAME_FIND_BY_EMAIL).setParameter(User.QUERY_PARAM_MAIL, email)));
-	}
-
-
-	public void save(User user) {
-		currentSession().save(user);
-	}
-
-
-	public void update(User user) {
-		currentSession().merge(user);
-	}
-
-
-	public void delete(User user) {
-		currentSession().delete(user);
 	}
 
 
