@@ -64,7 +64,7 @@ public class NavigationFragment extends Fragment {
             // get some test direction from the server
             // TODO: Improve testing route direction
             String from = "Nuremberg, DE";
-            String to = "Erlangen, DE";
+            String to = "Berlin, DE";
 
             directionsResource.getDirections(from, to)
                     .compose(new DefaultTransformer<List<Route>>())
@@ -75,9 +75,21 @@ public class NavigationFragment extends Fragment {
                             if (routes == null || routes.isEmpty())
                                 Toast.makeText(getActivity(), R.string.no_route_found, Toast.LENGTH_SHORT);
 
+                            List<LatLng> points = new ArrayList<LatLng>();
                             for (Route r : routes) {
-                                map.addPolyline(new PolylineOptions().addAll(PolyUtil.decode(r.getPolyline())));
+                                for (Leg l : r.getLegs())
+                                    for (Step s : l.getSteps())
+                                        points.addAll( PolyUtil.decode( s.getPolyline() ) );
+                                map.addPolyline(new PolylineOptions().addAll(points) );
                             }
+
+
+                        }
+                    }, new Action1<Throwable>() {
+                        @Override
+                        public void call(Throwable throwable) {
+                            // on main thread; something went wrong
+                            Log.e("COUDTRIP ERROR", throwable.getMessage());
                         }
                     });
         }
@@ -129,25 +141,30 @@ public class NavigationFragment extends Fragment {
                 layout.setVisibility( View.VISIBLE );
                 directionsResource.getDirections(locFrom.getLat(), locFrom.getLng(), locTo.getLat(), locTo.getLng())
                         .compose(new DefaultTransformer<List<Route>>())
-                        .doOnError( new Action1<Throwable>() {
-                            @Override
-                            public void call(Throwable throwable) {
-                                Toast.makeText(getActivity(), throwable.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
-                            }
-                        })
                         .subscribe(new Action1<List<Route>>() {
-
                             @Override
                             public void call(List<Route> routes) {
                                 if (routes == null || routes.isEmpty())
                                     Toast.makeText(getActivity(), R.string.no_route_found, Toast.LENGTH_SHORT).show();
 
+                                List<LatLng> points = new ArrayList<LatLng>();
                                 for (Route r : routes) {
                                     for (Leg l : r.getLegs())
                                         for (Step s : l.getSteps())
-                                            googleMap.addPolyline(new PolylineOptions().addAll(PolyUtil.decode(s.getPolyline())));
+                                            points.addAll(PolyUtil.decode(s.getPolyline()));
+
+                                    Log.d("CROUDTRIP", "Polyline points " + points.size() );
+                                    googleMap.addPolyline(new PolylineOptions().addAll(points) );
                                 }
 
+                                layout.setVisibility(View.GONE);
+                            }
+                        }, new Action1<Throwable>() {
+                            @Override
+                            public void call(Throwable throwable) {
+                                // on main thread; something went wrong
+                                Log.e("COUDTRIP ERROR", throwable.getMessage());
+                                Log.e("COUDTRIP ERROR", throwable.getStackTrace().toString());
                                 layout.setVisibility(View.GONE);
                             }
                         });
