@@ -14,6 +14,7 @@ import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -37,7 +38,8 @@ public class JoinTripFragment extends Fragment {
 
     private final int REQUEST_PLACE_PICKER = 122;
 
-    private TextView tv_name, tv_address, tv_attributions;
+    private TextView tv_name, tv_attributions;
+    private EditText tv_address;
     private Button btn_destination;
 
     @Override
@@ -55,7 +57,7 @@ public class JoinTripFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_join_trip, container, false);
 
         tv_name = (TextView) view.findViewById(R.id.name);
-        tv_address = (TextView) view.findViewById(R.id.address);
+        tv_address = (EditText) view.findViewById(R.id.address);
         tv_attributions = (TextView) view.findViewById(R.id.attributions);
 
 
