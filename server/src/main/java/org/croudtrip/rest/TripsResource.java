@@ -2,15 +2,16 @@ package org.croudtrip.rest;
 
 import com.google.common.base.Optional;
 
-import org.croudtrip.db.TripOfferDAO;
 import org.croudtrip.trips.TripOffer;
 import org.croudtrip.trips.TripOfferDescription;
+import org.croudtrip.trips.TripsManager;
 
 import java.util.List;
 
 import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -28,20 +29,18 @@ import io.dropwizard.hibernate.UnitOfWork;
 @Consumes(MediaType.APPLICATION_JSON)
 public class TripsResource {
 
-    private final TripOfferDAO tripOfferDAO;
+    private final TripsManager tripsManager;
 
     @Inject
-    TripsResource(TripOfferDAO tripOfferDAO) {
-        this.tripOfferDAO = tripOfferDAO;
+    TripsResource(TripsManager tripsManager) {
+        this.tripsManager = tripsManager;
     }
 
 
     @POST
     @UnitOfWork
     public TripOffer addOffer(@Valid TripOfferDescription offerDescription) {
-        TripOffer offer = new TripOffer(0, offerDescription.getStart(), offerDescription.getEnd(), offerDescription.getMaxDiversionInKm());
-        tripOfferDAO.save(offer);
-        return offer;
+        return tripsManager.addOffer(offerDescription);
     }
 
 
@@ -49,16 +48,29 @@ public class TripsResource {
     @Path("/{offerId}")
     @UnitOfWork
     public TripOffer getOffer(@PathParam("offerId") long offerId) {
-        Optional<TripOffer> offer = tripOfferDAO.findById(offerId);
-        if (offer.isPresent()) return offer.get();
-        else throw RestUtils.createNotFoundException();
+        return assertIsValidId(offerId);
     }
 
 
     @GET
     @UnitOfWork
     public List<TripOffer> getAllOffers() {
-        return tripOfferDAO.findAll();
+        return tripsManager.findAllOffers();
+    }
+
+
+    @DELETE
+    @UnitOfWork
+    @Path("/{offerId}")
+    public void deleteOff(@PathParam("offerId") long offerId) {
+        tripsManager.deleteOffer(assertIsValidId(offerId));
+    }
+
+
+    private TripOffer assertIsValidId(long offerId) {
+        Optional<TripOffer> offer = tripsManager.findOffer(offerId);
+        if (offer.isPresent()) return offer.get();
+        else throw RestUtils.createNotFoundException();
     }
 
 }
