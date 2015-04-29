@@ -10,7 +10,7 @@ import java.util.List;
  * A rout that is provided by a directions-request
  * Created by Frederik Simon on 24.04.2015.
  */
-public class Route {
+public class RouteNavigation {
 
     private final String summary;
     private final List<Leg> legs;
@@ -20,7 +20,7 @@ public class Route {
     private final List<String> warnings;
 
     @JsonCreator
-    public Route(
+    public RouteNavigation(
             @JsonProperty("summary") String summary,
             @JsonProperty("legs") List<Leg> legs,
             @JsonProperty("waypointOrder") List<Integer> waypointOrder,
@@ -62,14 +62,14 @@ public class Route {
 
     @Override
     public boolean equals(Object other) {
-        if (other == null || !(other instanceof Route)) return false;
-        Route route = (Route) other;
-        return Objects.equal(summary, route.summary)
-                && Objects.equal(legs, route.legs)
-                && Objects.equal(waypointOrder, route.waypointOrder)
-                && Objects.equal(polyline, route.polyline)
-                && Objects.equal(copyrights, route.copyrights)
-                && Objects.equal(warnings, route.warnings);
+        if (other == null || !(other instanceof RouteNavigation)) return false;
+        RouteNavigation routeNavigation = (RouteNavigation) other;
+        return Objects.equal(summary, routeNavigation.summary)
+                && Objects.equal(legs, routeNavigation.legs)
+                && Objects.equal(waypointOrder, routeNavigation.waypointOrder)
+                && Objects.equal(polyline, routeNavigation.polyline)
+                && Objects.equal(copyrights, routeNavigation.copyrights)
+                && Objects.equal(warnings, routeNavigation.warnings);
     }
 
     @Override

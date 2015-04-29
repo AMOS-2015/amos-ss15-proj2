@@ -11,7 +11,7 @@ import com.google.maps.model.LatLng;
 
 import org.croudtrip.directions.Leg;
 import org.croudtrip.directions.Location;
-import org.croudtrip.directions.Route;
+import org.croudtrip.directions.RouteNavigation;
 import org.croudtrip.directions.RouteDistance;
 import org.croudtrip.directions.RouteDuration;
 import org.croudtrip.directions.Step;
@@ -48,11 +48,11 @@ public class DirectionsResource {
 
     @GET
     @UnitOfWork
-    public List<Route> getDirections(
+    public List<RouteNavigation> getDirections(
             @QueryParam("from") String fromLocation,
             @NotEmpty @QueryParam("to") String toLocation) throws Exception {
 
-        List<Route> resultRoutes = new ArrayList<>();
+        List<RouteNavigation> resultRouteNavigations = new ArrayList<>();
         try {
             DirectionsRoute[] googleRoutes = DirectionsApi.getDirections(
                     geoApiContext,
@@ -61,9 +61,9 @@ public class DirectionsResource {
                     .await();
 
             for (DirectionsRoute googleRoute : googleRoutes) {
-                resultRoutes.add(createRoute(googleRoute));
+                resultRouteNavigations.add(createRoute(googleRoute));
             }
-            return resultRoutes;
+            return resultRouteNavigations;
         } catch (NotFoundException nfe) {
             throw RestUtils.createJsonFormattedException("location not found", 404);
         }
@@ -72,11 +72,11 @@ public class DirectionsResource {
     @GET
     @Path("/loc")
     @UnitOfWork
-    public List<Route> getDirections(
+    public List<RouteNavigation> getDirections(
             @QueryParam("fromLat") double fromLat, @QueryParam("fromLng") double fromLng,
             @NotEmpty @QueryParam("toLat") double toLat, @NotEmpty @QueryParam("toLng") double toLng) throws Exception {
 
-        List<Route> resultRoutes = new ArrayList<>();
+        List<RouteNavigation> resultRouteNavigations = new ArrayList<>();
         try {
             DirectionsRoute[] googleRoutes = DirectionsApi.newRequest(geoApiContext)
                                                           .origin( new LatLng( fromLat, fromLng ))
@@ -84,9 +84,9 @@ public class DirectionsResource {
                                                           .await();
 
             for (DirectionsRoute googleRoute : googleRoutes) {
-                resultRoutes.add(createRoute(googleRoute));
+                resultRouteNavigations.add(createRoute(googleRoute));
             }
-            return resultRoutes;
+            return resultRouteNavigations;
         } catch (NotFoundException nfe) {
             throw RestUtils.createJsonFormattedException("location not found", 404);
         }
@@ -113,7 +113,7 @@ public class DirectionsResource {
      * @param googleRoute the route that is downloaded from the google server
      * @return an own JSON convertible route
      */
-    private Route createRoute(DirectionsRoute googleRoute) {
+    private RouteNavigation createRoute(DirectionsRoute googleRoute) {
         List<Leg> legs = new ArrayList<>();
         for (DirectionsLeg googleLeg : googleRoute.legs) {
 
@@ -144,7 +144,7 @@ public class DirectionsResource {
         List<Integer> wayPointOrder = new ArrayList<>();
         for (int order : googleRoute.waypointOrder) wayPointOrder.add(order);
 
-        return new Route(
+        return new RouteNavigation(
                 googleRoute.summary,
                 legs,
                 wayPointOrder,

@@ -23,7 +23,7 @@ import org.croudtrip.DirectionsResource;
 import org.croudtrip.R;
 import org.croudtrip.directions.Leg;
 import org.croudtrip.directions.Location;
-import org.croudtrip.directions.Route;
+import org.croudtrip.directions.RouteNavigation;
 import org.croudtrip.directions.Step;
 import org.croudtrip.utils.DefaultTransformer;
 
@@ -64,16 +64,16 @@ public class NavigationFragment extends RoboFragment {
             String to = "Berlin, DE";
 
             directionsResource.getDirections(from, to)
-                    .compose(new DefaultTransformer<List<Route>>())
-                    .subscribe(new Action1<List<Route>>() {
+                    .compose(new DefaultTransformer<List<RouteNavigation>>())
+                    .subscribe(new Action1<List<RouteNavigation>>() {
 
                         @Override
-                        public void call(List<Route> routes) {
-                            if (routes == null || routes.isEmpty())
+                        public void call(List<RouteNavigation> routeNavigations) {
+                            if (routeNavigations == null || routeNavigations.isEmpty())
                                 Toast.makeText(getActivity(), R.string.no_route_found, Toast.LENGTH_SHORT);
 
                             List<LatLng> points = new ArrayList<LatLng>();
-                            for (Route r : routes) {
+                            for (RouteNavigation r : routeNavigations) {
                                 for (Leg l : r.getLegs())
                                     for (Step s : l.getSteps())
                                         points.addAll( PolyUtil.decode( s.getPolyline() ) );
@@ -137,15 +137,15 @@ public class NavigationFragment extends RoboFragment {
 
                 layout.setVisibility( View.VISIBLE );
                 directionsResource.getDirections(locFrom.getLat(), locFrom.getLng(), locTo.getLat(), locTo.getLng())
-                        .compose(new DefaultTransformer<List<Route>>())
-                        .subscribe(new Action1<List<Route>>() {
+                        .compose(new DefaultTransformer<List<RouteNavigation>>())
+                        .subscribe(new Action1<List<RouteNavigation>>() {
                             @Override
-                            public void call(List<Route> routes) {
-                                if (routes == null || routes.isEmpty())
+                            public void call(List<RouteNavigation> routeNavigations) {
+                                if (routeNavigations == null || routeNavigations.isEmpty())
                                     Toast.makeText(getActivity(), R.string.no_route_found, Toast.LENGTH_SHORT).show();
 
                                 List<LatLng> points = new ArrayList<LatLng>();
-                                for (Route r : routes) {
+                                for (RouteNavigation r : routeNavigations) {
                                     for (Leg l : r.getLegs())
                                         for (Step s : l.getSteps())
                                             points.addAll(PolyUtil.decode(s.getPolyline()));
