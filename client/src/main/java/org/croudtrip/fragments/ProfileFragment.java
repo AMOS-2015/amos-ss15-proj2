@@ -1,6 +1,8 @@
 package org.croudtrip.fragments;
 
 import android.app.Fragment;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
@@ -8,6 +10,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.getbase.floatingactionbutton.FloatingActionButton;
@@ -15,10 +18,19 @@ import com.getbase.floatingactionbutton.FloatingActionButton;
 import org.croudtrip.R;
 import org.croudtrip.activities.LoginActivity;
 import org.croudtrip.auth.User;
+import org.croudtrip.utils.DefaultTransformer;
 
+import java.io.InputStream;
+import java.net.URL;
 import java.util.Calendar;
 
+import javax.net.ssl.HttpsURLConnection;
+
 import it.neokree.materialnavigationdrawer.MaterialNavigationDrawer;
+import rx.Observable;
+import rx.functions.Action1;
+import rx.functions.Func0;
+import timber.log.Timber;
 
 /**
  * This fragment shows the user's profile with the data he has entered (e.g. address, phone number
@@ -44,7 +56,7 @@ public class ProfileFragment extends Fragment {
 
         setHasOptionsMenu(true);
         final Fragment _this = this;
-        View view = inflater.inflate(R.layout.fragment_profile, container, false);
+        final View view = inflater.inflate(R.layout.fragment_profile, container, false);
 
         // Restore user from SharedPref file
         User user = LoginActivity.getLoggedInUser(this.getActivity().getApplicationContext());
@@ -84,6 +96,43 @@ public class ProfileFragment extends Fragment {
                     ((MaterialNavigationDrawer) _this.getActivity()).setFragmentChild(new EditProfileFragment(), getString(R.string.profile_edit));
                 }
             });
+
+            // download avatar
+            final String avatarUrl = user.getAvatarUrl();
+            if (avatarUrl != null) {
+                Observable
+                        .defer(new Func0<Observable<Bitmap>>() {
+                            @Override
+                            public Observable<Bitmap> call() {
+                                try {
+                                    URL url = new URL(avatarUrl);
+                                    HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
+                                    connection.setDoInput(true);
+                                    connection.connect();
+                                    InputStream input = connection.getInputStream();
+                                    return Observable.just(BitmapFactory.decodeStream(input));
+                                } catch (Exception e) {
+                                    return Observable.error(e);
+                                }
+                            }
+                        })
+                        .compose(new DefaultTransformer<Bitmap>())
+                        .subscribe(new Action1<Bitmap>() {
+                            @Override
+                            public void call(Bitmap avatar) {
+                                if(avatar != null) {
+                                    ((ImageView) view.findViewById(R.id.tv_profile_image)).setImageBitmap(avatar);
+                                }else{
+                                    Timber.d("Profile avatar is null");
+                                }
+                            }
+                        }, new Action1<Throwable>() {
+                            @Override
+                            public void call(Throwable throwable) {
+                                Timber.e(throwable, "Failed to download avatar");
+                            }
+                        });
+            }
         }
 
         return view;
