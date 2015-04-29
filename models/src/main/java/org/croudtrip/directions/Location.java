@@ -4,13 +4,29 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Objects;
 
+import javax.persistence.Column;
+import javax.persistence.Embeddable;
+
 /**
  * Describes the location of a geo position by latitude and longitude
  * Created by Frederik Simon on 24.04.2015.
  */
+@Embeddable
 public class Location {
 
-    private final double lat, lng;
+    public static final String
+            COLUMN_LAT = "lat",
+            COLUMN_LNG = "lng";
+
+
+    @Column(name = COLUMN_LAT)
+    private double lat;
+
+    @Column(name = COLUMN_LNG)
+    private double lng;
+
+
+    public Location() { }
 
     @JsonCreator
     public Location(@JsonProperty("lat") double lat, @JsonProperty("lng") double lng ) {

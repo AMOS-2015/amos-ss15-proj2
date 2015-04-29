@@ -13,7 +13,9 @@ import org.croudtrip.rest.AvatarsResource;
 import org.croudtrip.rest.DirectionsResource;
 import org.croudtrip.rest.JsonExceptionMapper;
 import org.croudtrip.rest.NotFoundExceptionMapper;
+import org.croudtrip.rest.TripsResource;
 import org.croudtrip.rest.UsersResource;
+import org.croudtrip.trips.TripOffer;
 import org.croudtrip.user.Avatar;
 import org.croudtrip.user.ThrowableExceptionMapper;
 
@@ -53,6 +55,7 @@ public final class CroudTripApplication extends Application<CroudTripConfig> {
         environment.jersey().register(injector.getInstance(UsersResource.class));
 		environment.jersey().register(injector.getInstance(AvatarsResource.class));
         environment.jersey().register(injector.getInstance(DirectionsResource.class));
+		environment.jersey().register(injector.getInstance(TripsResource.class));
 		environment.jersey().register(injector.getInstance(NotFoundExceptionMapper.class));
 		environment.jersey().register(injector.getInstance(JsonExceptionMapper.class));
 		environment.jersey().register(injector.getInstance(ThrowableExceptionMapper.class));
@@ -66,7 +69,8 @@ public final class CroudTripApplication extends Application<CroudTripConfig> {
 	private final HibernateBundle<CroudTripConfig> hibernateBundle = new HibernateBundle<CroudTripConfig>(
 			User.class,
 			BasicCredentials.class,
-			Avatar.class) {
+			Avatar.class,
+			TripOffer.class) {
 		@Override
 		public DataSourceFactory getDataSourceFactory(CroudTripConfig configuration) {
 			return configuration.getDatabase();
