@@ -41,7 +41,7 @@
     <string name="profile_image_description">Profile image</string>
     <string name="profile_error_general">Your profile could not be loaded</string>
 
-    <string name="server_address">https://osr-amos.cs.fau.de/ss15/proj2/application/</string>
+    <string name="server_address">https://osr-amos.cs.fau.de/ss15/proj2-test/application/</string>
     <string name="title_activity_maps">Map</string>
 
     <string name="join_choose_destination">What´s your destination?</string>
