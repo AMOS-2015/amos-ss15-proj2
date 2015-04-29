@@ -24,19 +24,24 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="@color/text"
-            android:id="@+id/name"/>
+            android:id="@+id/name"
+            android:layout_gravity="center_horizontal"/>
+
+        <EditText
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/text"
+            android:id="@+id/address"
+            android:minWidth="200dp"
+            android:hint="Enter address"
+            android:layout_gravity="center_horizontal"/>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="@color/text"
-            android:id="@+id/address"/>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textColor="@color/text"
-            android:id="@+id/attributions"/>
+            android:id="@+id/attributions"
+            android:layout_gravity="center_horizontal"/>
 
         <com.rengwuxian.materialedittext.MaterialEditText
             android:id="@+id/waitingTime"
