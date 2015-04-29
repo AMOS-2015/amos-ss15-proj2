@@ -1,10 +1,19 @@
 package org.croudtrip.activities;
 
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.location.LocationManager;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
+import android.text.Html;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.CheckBox;
 
 import org.croudtrip.Constants;
 import org.croudtrip.R;
@@ -66,6 +75,11 @@ public class MainActivity extends AbstractRoboDrawerActivity {
         // create bottom section
         this.addBottomSection(newSection(getString(R.string.menu_settings), R.drawable.ic_settings, new SettingsFragment()));
 
+        Log.d("alex", "GPS: " + GPSavailable());
+        if (!GPSavailable()) {
+            checkForGPS();
+        }
+
         // download avatar
         if (avatarUrl == null) return;
         Observable
@@ -99,6 +113,55 @@ public class MainActivity extends AbstractRoboDrawerActivity {
                         Timber.e(throwable, "failed to download avatar");
                     }
                 });
+
+    }
+
+    private boolean GPSavailable() {
+        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+    }
+
+
+    private void checkForGPS() {
+        final SharedPreferences prefs = getSharedPreferences(Constants.SHARED_PREF_FILE_USER, Context.MODE_PRIVATE);
+        final SharedPreferences.Editor editor = prefs.edit();
+
+
+        AlertDialog.Builder adb = new AlertDialog.Builder(this);
+        LayoutInflater adbInflater = LayoutInflater.from(this);
+        View dialogLayout = adbInflater.inflate(R.layout.dialog_enable_gps, null);
+        final CheckBox dontShowAgain = (CheckBox) dialogLayout.findViewById(R.id.skip);
+        adb.setView(dialogLayout);
+        adb.setTitle(getResources().getString(R.string.enable_gps_title));
+        adb.setMessage(getResources().getString(R.string.enable_gps_description));
+        adb.setPositiveButton(getResources().getString(R.string.enable_gps_ok), new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+
+                if (dontShowAgain.isChecked()) {
+                    editor.putBoolean(Constants.SHARED_PREF_KEY_SKIP_ENABLE_GPS, true);
+                    editor.apply();
+                }
+                startActivity(new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+
+                return;
+            }
+        });
+
+        adb.setNegativeButton(getResources().getString(R.string.enable_gps_cancel), new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                if (dontShowAgain.isChecked()) {
+                    editor.putBoolean(Constants.SHARED_PREF_KEY_SKIP_ENABLE_GPS, true);
+                    editor.apply();
+                }
+
+                return;
+            }
+        });
+
+        boolean skip = prefs.getBoolean(Constants.SHARED_PREF_KEY_SKIP_ENABLE_GPS, false);
+        //if (!skip) {
+            adb.show();
+        //}
     }
 
 }

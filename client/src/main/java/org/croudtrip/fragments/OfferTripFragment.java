@@ -96,6 +96,11 @@ public class OfferTripFragment extends Fragment {
         int waitingTime = prefs.getInt(Constants.SHARED_PREF_KEY_DIVERSION, 3);
         maxWaitingTime.setText("" + waitingTime);
 
+        final MaterialEditText pricePerKm = (MaterialEditText) view.findViewById(R.id.price);
+        int price = prefs.getInt(Constants.SHARED_PREF_KEY_PRICE, 26);
+        pricePerKm.setText("" + price);
+
+
 
         Button btn_join = (Button) view.findViewById(R.id.offer);
         btn_join.setOnClickListener(new View.OnClickListener() {

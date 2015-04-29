@@ -52,7 +52,7 @@
     <string name="offer_choose_destination">What´s your destination?</string>
     <string name="offer_change_destination">Change destination</string>
     <string name="offer_max_diversion">Max diversion (in km)</string>
-    <string name="price">Price per km (in €)</string>
+    <string name="price">Price per km (in cent)</string>
 
     <string name="offer_trip">Offer Trip</string>
 
@@ -61,4 +61,12 @@
 
     <string name="save_changes">Save Changes</string>
     <string name="discard_changes">Discard Changes</string>
+
+    <string name="enable_gps_title">GPS not available</string>
+    <string name="enable_gps_description">This application works best with GPS on your device enabled. Enable now?</string>
+    <string name="enable_gps_ask">Please do not show again</string>
+    <string name="enable_gps_ok">ok</string>
+    <string name="enable_gps_cancel">cancel</string>
+
+
 </resources>
