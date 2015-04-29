@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">CroudTrip</string>
+    <string name="app_name" translatable="false">CroudTrip</string>
 
 
     <string name="menu_join_trip">Join trip</string>
@@ -12,7 +12,7 @@
 
 
     <string name="login_email">Login with email</string>
-    <string name="skip">Skip for now</string>
+    <string name="skip">View trips without logging in</string>
     <string name="hint_email">your@email.com</string>
     <string name="hint_firstname">First name</string>
     <string name="hint_lastname">Last name</string>
@@ -51,7 +51,9 @@
 
     <string name="offer_choose_destination">What´s your destination?</string>
     <string name="offer_change_destination">Change destination</string>
-    <string name="offer_max_diversion">Max diversion (in minutes)</string>
+    <string name="offer_max_diversion">Max diversion (in km)</string>
+    <string name="price">Price per km (in €)</string>
+
     <string name="offer_trip">Offer Trip</string>
 
     <string name="navigation">Navigation</string>

@@ -48,6 +48,7 @@ public class MainActivity extends MaterialNavigationDrawer<Fragment> {
         String lastName = prefs.getString(Constants.SHARED_PREF_KEY_LASTNAME, "");
         String email = prefs.getString(Constants.SHARED_PREF_KEY_EMAIL, "");
         final String avatarUrl = prefs.getString(Constants.SHARED_PREF_KEY_AVATAR_URL, null);
+
         final MaterialAccount account = new MaterialAccount(this.getResources(),firstName+ " " + lastName,email,R.drawable.profile, R.drawable.background_drawer);
         this.addAccount(account);
 
