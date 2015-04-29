@@ -2,7 +2,6 @@ package org.croudtrip.fragments;
 
 
 import android.app.Fragment;
-import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -26,7 +25,6 @@ import org.croudtrip.directions.Leg;
 import org.croudtrip.directions.Location;
 import org.croudtrip.directions.Route;
 import org.croudtrip.directions.Step;
-import org.croudtrip.server.ServerModule;
 import org.croudtrip.utils.DefaultTransformer;
 
 import java.util.ArrayList;
@@ -34,20 +32,19 @@ import java.util.List;
 
 import javax.inject.Inject;
 
+import roboguice.fragment.provided.RoboFragment;
 import rx.functions.Action1;
 
 /**
  * A simple {@link Fragment} subclass.
  */
-public class NavigationFragment extends Fragment {
+public class NavigationFragment extends RoboFragment {
 
     @Inject DirectionsResource directionsResource;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_maps, container, false);
-
-        directionsResource = ServerModule.provideDirectionsResource(this.getActivity());
 
         MapFragment map = (MapFragment) getFragmentManager().findFragmentById(R.id.location_map);
         map.getMapAsync( new MapReady() );

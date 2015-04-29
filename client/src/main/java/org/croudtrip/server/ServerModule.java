@@ -2,6 +2,10 @@ package org.croudtrip.server;
 
 import android.content.Context;
 
+import com.google.inject.Binder;
+import com.google.inject.Module;
+import com.google.inject.Provides;
+
 import org.croudtrip.DirectionsResource;
 import org.croudtrip.R;
 import org.croudtrip.UsersResource;
@@ -12,19 +16,17 @@ import javax.inject.Inject;
 import retrofit.RequestInterceptor;
 import retrofit.RestAdapter;
 
-public class ServerModule {
+public class ServerModule implements Module {
 
-	/*
 	@Override
 	public void configure(Binder binder) {
 		// nothing to do for now
 	}
-	*/
 
 
-	// @Provides
+	@Provides
 	@Inject
-	public static RestAdapter provideRestAdapter(final Context context) {
+	public RestAdapter provideRestAdapter(final Context context) {
 		// TODO @Vanessa: please replace the static references to LoginActivity once it has been refactored
 		return new RestAdapter.Builder()
 				.setEndpoint(context.getString(R.string.server_address))
@@ -38,16 +40,16 @@ public class ServerModule {
 	}
 
 
-	// @Provides
+	@Provides
 	@Inject
-	public static UsersResource provideUsersResource(Context context) {
+	public UsersResource provideUsersResource(Context context) {
 		return provideRestAdapter(context).create(UsersResource.class);
 	}
 
 
-	// @Provides
+	@Provides
 	@Inject
-	public static DirectionsResource provideDirectionsResource(Context context) {
+	public DirectionsResource provideDirectionsResource(Context context) {
 		return provideRestAdapter(context).create(DirectionsResource.class);
 	}
 
