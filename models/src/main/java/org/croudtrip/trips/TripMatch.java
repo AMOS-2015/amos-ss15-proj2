@@ -51,6 +51,9 @@ public class TripMatch {
 	@Column(name = "diversionInSeconds", nullable = false)
 	private long diversionInSeconds;
 
+	@Column(name = "estimatedPriceInCents", nullable = false)
+	private int estimatedPriceInCents;
+
 	@ManyToOne
 	@JoinColumn(name = User.COLUMN_ID + "_driver", nullable = false)
 	private User driver;
@@ -67,6 +70,7 @@ public class TripMatch {
 			@JsonProperty("route") Route route,
 			@JsonProperty("diversionInMeters") long diversionInMeters,
 			@JsonProperty("diversionInSeconds") long diversionInSeconds,
+			@JsonProperty("estimatedPriceInCents") int estimatedPriceInCents,
 			@JsonProperty("driver") User driver,
 			@JsonProperty("passenger") User passenger) {
 
@@ -74,6 +78,7 @@ public class TripMatch {
 		this.route = route;
 		this.diversionInMeters = diversionInMeters;
 		this.diversionInSeconds = diversionInSeconds;
+		this.estimatedPriceInCents = estimatedPriceInCents;
 		this.driver = driver;
 		this.passenger = passenger;
 	}
@@ -99,6 +104,11 @@ public class TripMatch {
 	}
 
 
+	public int getEstimatedPriceInCents() {
+		return estimatedPriceInCents;
+	}
+
+
 	public User getDriver() {
 		return driver;
 	}
@@ -117,6 +127,7 @@ public class TripMatch {
 				&& Objects.equal(route, offer.route)
 				&& Objects.equal(diversionInMeters, offer.diversionInMeters)
 				&& Objects.equal(diversionInSeconds, offer.diversionInSeconds)
+				&& Objects.equal(estimatedPriceInCents, offer.estimatedPriceInCents)
 				&& Objects.equal(driver, offer.driver)
 				&& Objects.equal(passenger, offer.passenger);
 	}
@@ -124,7 +135,7 @@ public class TripMatch {
 
 	@Override
 	public int hashCode() {
-		return Objects.hashCode(id, route, diversionInMeters, diversionInSeconds, driver, passenger);
+		return Objects.hashCode(id, route, diversionInMeters, diversionInSeconds, estimatedPriceInCents, driver, passenger);
 	}
 
 }
