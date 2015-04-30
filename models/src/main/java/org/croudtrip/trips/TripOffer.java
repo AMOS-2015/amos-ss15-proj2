@@ -48,6 +48,9 @@ public class TripOffer {
 	@Column(name = "maxDiversionInMeters", nullable = false)
 	private long maxDiversionInMeters;
 
+	@Column(name = "pricePerKmInCents", nullable = false)
+	private int pricePerKmInCents;
+
 	@ManyToOne
 	@JoinColumn(name = User.COLUMN_ID, nullable = false)
 	private User driver;
@@ -60,11 +63,13 @@ public class TripOffer {
 			@JsonProperty("id") long id,
 			@JsonProperty("route") Route route,
 			@JsonProperty("maxDiversionsInMeters") long maxDiversionInMeters,
+			@JsonProperty("pricePerKmInCents") int pricePerKmInCents,
 			@JsonProperty("driver") User driver) {
 
 		this.id = id;
 		this.route = route;
 		this.maxDiversionInMeters = maxDiversionInMeters;
+		this.pricePerKmInCents = pricePerKmInCents;
 		this.driver = driver;
 	}
 
@@ -84,6 +89,11 @@ public class TripOffer {
 	}
 
 
+	public int getPricePerKmInCents() {
+		return pricePerKmInCents;
+	}
+
+
 	public User getDriver() {
 		return driver;
 	}
@@ -96,13 +106,14 @@ public class TripOffer {
 		return Objects.equal(id, offer.id)
 				&& Objects.equal(route, offer.route)
 				&& Objects.equal(maxDiversionInMeters, offer.maxDiversionInMeters)
+				&& Objects.equal(pricePerKmInCents, offer.pricePerKmInCents)
 				&& Objects.equal(driver, offer.driver);
 	}
 
 
 	@Override
 	public int hashCode() {
-		return Objects.hashCode(id, route, maxDiversionInMeters, driver);
+		return Objects.hashCode(id, route, maxDiversionInMeters, pricePerKmInCents, driver);
 	}
 
 }

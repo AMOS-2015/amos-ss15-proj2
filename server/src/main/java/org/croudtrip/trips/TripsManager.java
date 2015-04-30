@@ -31,7 +31,7 @@ public class TripsManager {
 	public TripOffer addOffer(User owner, TripOfferDescription description) throws Exception {
 		List<Route> route = directionsManager.getDirections(description.getStart(), description.getEnd());
 		if (route.size() == 0) throw new Exception("not route found");
-		TripOffer offer = new TripOffer(0, route.get(0), description.getMaxDiversionInMeters(), owner);
+		TripOffer offer = new TripOffer(0, route.get(0), description.getMaxDiversionInMeters(), description.getPricePerKmInCents(), owner);
 		tripOfferDAO.save(offer);
 		return offer;
 	}
