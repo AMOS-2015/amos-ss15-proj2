@@ -41,7 +41,7 @@
     <string name="profile_image_description">Profile image</string>
     <string name="profile_error_general">Your profile could not be loaded</string>
 
-    <string name="server_address">https://osr-amos.cs.fau.de/ss15/proj2-test/application/</string>
+    <string name="server_address">http://192.168.178.26:8080/</string>
     <string name="title_activity_maps">Map</string>
 
     <string name="join_choose_destination">What´s your destination?</string>
@@ -57,6 +57,8 @@
     <string name="offer_trip">Offer Trip</string>
     <string name="offer_trip_no_location">Offer Trip failed: Your location is unknown.</string>
     <string name="offer_trip_no_destination">Offer Trip failed: No destination location could be extracted.</string>
+    <string name="duration_text">"Duration: %1$dh %2$dm %3$ds"</string>
+    <string name="distance_text">"Distance: %1$.1fkm"</string>
 
     <string name="navigation">Navigation</string>
     <string name="no_route_found">No route could be found for your request.</string>

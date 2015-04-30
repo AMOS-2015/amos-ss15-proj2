@@ -3,15 +3,11 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent" >
 
-    <GridLayout
+    <LinearLayout
+        android:orientation="vertical"
         android:layout_width="fill_parent"
-        android:layout_height="fill_parent">
-
-        <fragment
-            android:id="@+id/location_map"
-            android:layout_width="match_parent"
-            android:layout_height="307dp"
-            class="com.google.android.gms.maps.MapFragment" />
+        android:layout_height="fill_parent"
+        android:layout_alignParentEnd="false">
 
         <LinearLayout
             android:id="@+id/progressLayout"
@@ -29,6 +25,33 @@
                 android:id="@+id/progressBar"
                 android:indeterminate="true" />
         </LinearLayout>
-    </GridLayout>
+
+        <fragment
+            android:id="@+id/location_map"
+            android:layout_width="match_parent"
+            android:layout_height="471dp"
+            class="com.google.android.gms.maps.MapFragment" />
+
+        <TextView
+            android:id="@+id/distance_text"
+            android:layout_width="match_parent"
+            android:layout_height="35dp"
+            android:autoText="false"
+            android:text="Distance: "
+            android:layout_below="@+id/location_map"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        <TextView
+            android:id="@+id/duration_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:autoText="false"
+            android:text="Duration: "
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true" />
+
+    </LinearLayout>
 
 </RelativeLayout>
