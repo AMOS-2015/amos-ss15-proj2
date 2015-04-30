@@ -55,6 +55,8 @@
     <string name="price">Price per km (in cent)</string>
 
     <string name="offer_trip">Offer Trip</string>
+    <string name="offer_trip_no_location">Offer Trip failed: Your location is unknown.</string>
+    <string name="offer_trip_no_destination">Offer Trip failed: No destination location could be extracted.</string>
 
     <string name="navigation">Navigation</string>
     <string name="no_route_found">No route could be found for your request.</string>
