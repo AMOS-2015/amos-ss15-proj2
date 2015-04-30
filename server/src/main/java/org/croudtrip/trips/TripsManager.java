@@ -8,6 +8,7 @@ import org.croudtrip.db.TripOfferDAO;
 import org.croudtrip.directions.DirectionsManager;
 import org.croudtrip.directions.Route;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -48,6 +49,21 @@ public class TripsManager {
 
 	public void deleteOffer(TripOffer offer) {
 		tripOfferDAO.delete(offer);
+	}
+
+
+	public List<TripMatch> findMatches(User passenger, TripRequestDescription requestDescription) {
+		List<TripMatch> matches = new ArrayList<>();
+
+		List<TripOffer> offers = findAllOffers();
+		if (offers.size() == 0) return matches;
+
+		// TODO don't return dummy match
+		TripOffer offer = offers.get(0);
+		Route route = offer.getRoute();
+		TripMatch match = new TripMatch(0, route, route.getDistanceInMeters() + 100, route.getDurationInSeconds() + 100, offer.getOwner(), passenger);
+		matches.add(match);
+		return matches;
 	}
 
 }
