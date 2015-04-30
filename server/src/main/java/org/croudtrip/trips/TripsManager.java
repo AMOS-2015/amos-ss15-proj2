@@ -84,8 +84,14 @@ public class TripsManager {
             if( diversionRoute.getDistanceInMeters() - route.getDistanceInMeters() < offer.getMaxDiversionInMeters() )
             {
                 // TODO: What is the trip length from the point of view of our customers?
-                long tripLength = (diversionRoute.getDistanceInMeters() - route.getDistanceInMeters());
-                long tripDuration = diversionRoute.getDurationInSeconds() - route.getDurationInSeconds();
+                List<Route> passengerRoutes = directionsManager.getDirections( requestDescription.getStart(), requestDescription.getEnd() );
+                if(passengerRoutes == null || passengerRoutes.isEmpty())
+                    return new ArrayList<>();
+
+                Route passengerRoute = passengerRoutes.get(0);
+
+                long tripLength = (passengerRoute.getDistanceInMeters());
+                long tripDuration = passengerRoute.getDurationInSeconds();
                 int price = (int) (tripLength/100.0f * offer.getPricePerKmInCents());
 
                 TripMatch match = new TripMatch(
