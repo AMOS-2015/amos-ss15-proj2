@@ -30,17 +30,20 @@ import org.croudtrip.R;
 
 import it.neokree.materialnavigationdrawer.MaterialNavigationDrawer;
 import it.neokree.materialnavigationdrawer.elements.MaterialSection;
+import roboguice.fragment.provided.RoboFragment;
+import roboguice.inject.InjectView;
 
 /**
  * Created by alex on 22.04.15.
  */
-public class JoinTripFragment extends Fragment {
+public class JoinTripFragment extends RoboFragment {
 
     private final int REQUEST_PLACE_PICKER = 122;
 
-    private TextView tv_name, tv_attributions;
-    private EditText tv_address;
-    private Button btn_destination;
+    @InjectView(R.id.name) private TextView tv_name;
+    @InjectView(R.id.attributions) private TextView tv_attributions;
+    @InjectView(R.id.address) private EditText tv_address;
+    @InjectView(R.id.places) private Button btn_destination;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -53,16 +56,18 @@ public class JoinTripFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
+        super.onCreateView( inflater, container, savedInstanceState );
         setHasOptionsMenu(true);
+
         View view = inflater.inflate(R.layout.fragment_join_trip, container, false);
+        return view;
+    }
 
-        tv_name = (TextView) view.findViewById(R.id.name);
-        tv_address = (EditText) view.findViewById(R.id.address);
-        tv_attributions = (TextView) view.findViewById(R.id.attributions);
+    @Override
+    public void onViewCreated( View view, Bundle savedInstanceState )
+    {
+        super.onViewCreated(view, savedInstanceState);
 
-
-
-        btn_destination = (Button) view.findViewById(R.id.places);
         btn_destination.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -74,7 +79,7 @@ public class JoinTripFragment extends Fragment {
                 } catch (GooglePlayServicesRepairableException e) {
                     e.printStackTrace();
                 } catch (GooglePlayServicesNotAvailableException e) {
-                   e.printStackTrace();
+                    e.printStackTrace();
                 }
             }
         });
@@ -113,9 +118,6 @@ public class JoinTripFragment extends Fragment {
                  */
             }
         });
-
-
-        return view;
     }
 
     @Override

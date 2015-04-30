@@ -42,6 +42,8 @@ import javax.inject.Inject;
 
 import it.neokree.materialnavigationdrawer.MaterialNavigationDrawer;
 import roboguice.fragment.provided.RoboFragment;
+import roboguice.inject.ContentView;
+import roboguice.inject.InjectView;
 import rx.functions.Action1;
 import timber.log.Timber;
 
@@ -54,9 +56,10 @@ public class OfferTripFragment extends RoboFragment {
 
     private final int REQUEST_PLACE_PICKER = 122;
 
-    private TextView tv_name, tv_attributions;
-    private EditText tv_address;
-    private Button btn_destination;
+    @InjectView(R.id.name) private TextView tv_name;
+    @InjectView(R.id.attributions) private TextView tv_attributions;
+    @InjectView(R.id.address) private EditText tv_address;
+    @InjectView(R.id.places) private Button btn_destination;
 
     @Inject LocationUpdater locationUpdater;
 
@@ -85,16 +88,18 @@ public class OfferTripFragment extends RoboFragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-
+        super.onCreateView(inflater, container, savedInstanceState);
         setHasOptionsMenu(true);
-        View view = inflater.inflate(R.layout.fragment_offer_trip, container, false);
 
-        tv_name = (TextView) view.findViewById(R.id.name);
-        tv_address = (EditText) view.findViewById(R.id.address);
-        tv_attributions = (TextView) view.findViewById(R.id.attributions);
+        View view = inflater.inflate(R.layout.fragment_offer_trip, container, false);
+        return view;
+    }
+
+    @Override
+    public void onViewCreated( View view, Bundle savedInstanceState ) {
+        super.onViewCreated(view, savedInstanceState);
 
         // choose a destination by using the place picker
-        btn_destination = (Button) view.findViewById(R.id.places);
         btn_destination.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -162,7 +167,7 @@ public class OfferTripFragment extends RoboFragment {
                 Intent intent = new Intent( getActivity(), DriverActivity.class);
                 Bundle b = new Bundle();
                 b.putInt("maxDiversion", Integer.valueOf(maxDiversion.getText().toString()) );
-                b.putDouble("fromLat", currentLocation.getLatitude() );
+                b.putDouble("fromLat", currentLocation.getLatitude());
                 b.putDouble("fromLng", currentLocation.getLongitude() );
                 b.putDouble("toLat", destination.latitude );
                 b.putDouble("toLng", destination.longitude );
@@ -172,10 +177,6 @@ public class OfferTripFragment extends RoboFragment {
                 Toast.makeText(getActivity().getApplicationContext(), R.string.offer_trip, Toast.LENGTH_SHORT).show();
             }
         });
-
-
-
-        return view;
     }
 
     @Override
