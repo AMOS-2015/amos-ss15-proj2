@@ -16,7 +16,7 @@ import android.widget.TextView;
 import com.getbase.floatingactionbutton.FloatingActionButton;
 
 import org.croudtrip.R;
-import org.croudtrip.activities.LoginActivity;
+import org.croudtrip.account.AccountManager;
 import org.croudtrip.account.User;
 import org.croudtrip.utils.DefaultTransformer;
 
@@ -59,7 +59,7 @@ public class ProfileFragment extends Fragment {
         final View view = inflater.inflate(R.layout.fragment_profile, container, false);
 
         // Restore user from SharedPref file
-        User user = LoginActivity.getLoggedInUser(this.getActivity().getApplicationContext());
+        User user = AccountManager.getLoggedInUser(this.getActivity().getApplicationContext());
 
         if(user != null) {
             //  Fill in the profile views
@@ -79,12 +79,20 @@ public class ProfileFragment extends Fragment {
                 birthYear = calendar.get(Calendar.YEAR) + "";
             }
 
+            String gender = null;
+            if(user.getIsMale() != null){
+                if(user.getIsMale()) {
+                    gender = getString(R.string.profile_male);
+                }else {
+                    gender = getString(R.string.profile_female);
+                }
+            }
+
             setTextViewContent((TextView) view.findViewById(R.id.tv_profile_name), name);
             setTextViewContent((TextView) view.findViewById(R.id.tv_profile_email), user.getEmail());
             setTextViewContent((TextView) view.findViewById(R.id.tv_profile_phone), user.getPhoneNumber());
             setTextViewContent((TextView) view.findViewById(R.id.tv_profile_address), user.getAddress());
-            setTextViewContent((TextView) view.findViewById(R.id.tv_profile_gender),
-                    (user.getIsMale()) ? getString(R.string.profile_male) : getString(R.string.profile_female));
+            setTextViewContent((TextView) view.findViewById(R.id.tv_profile_gender), gender);
             setTextViewContent((TextView) view.findViewById(R.id.tv_profile_birthyear), birthYear);
 
 

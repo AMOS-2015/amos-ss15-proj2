@@ -9,7 +9,6 @@ import android.graphics.BitmapFactory;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
-import android.text.Html;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,6 +16,8 @@ import android.widget.CheckBox;
 
 import org.croudtrip.Constants;
 import org.croudtrip.R;
+import org.croudtrip.account.AccountManager;
+import org.croudtrip.account.User;
 import org.croudtrip.fragments.JoinTripFragment;
 import org.croudtrip.fragments.NavigationFragment;
 import org.croudtrip.fragments.OfferTripFragment;
@@ -51,11 +52,11 @@ public class MainActivity extends AbstractRoboDrawerActivity {
         this.setBackPattern(MaterialNavigationDrawer.BACKPATTERN_BACK_TO_FIRST);
         this.setDrawerHeaderImage(R.drawable.background_drawer);
 
-        SharedPreferences prefs = getSharedPreferences(Constants.SHARED_PREF_FILE_USER, Context.MODE_PRIVATE);
-        String firstName = prefs.getString(Constants.SHARED_PREF_KEY_FIRSTNAME, "");
-        String lastName = prefs.getString(Constants.SHARED_PREF_KEY_LASTNAME, "");
-        String email = prefs.getString(Constants.SHARED_PREF_KEY_EMAIL, "");
-        final String avatarUrl = prefs.getString(Constants.SHARED_PREF_KEY_AVATAR_URL, null);
+        User user = AccountManager.getLoggedInUser(getApplicationContext());
+        String firstName = (user.getFirstName() == null) ? "" : user.getFirstName();
+        String lastName = (user.getLastName() == null) ? "" : user.getLastName();
+        String email = (user.getEmail() == null) ? "" : user.getEmail();
+        final String avatarUrl = (user.getAvatarUrl() == null) ? null : user.getAvatarUrl();
 
         final MaterialAccount account = new MaterialAccount(this.getResources(),firstName+ " " + lastName,email,R.drawable.profile, R.drawable.background_drawer);
         this.addAccount(account);
@@ -64,7 +65,7 @@ public class MainActivity extends AbstractRoboDrawerActivity {
                         // create sections
         this.addSection(newSection(getString(R.string.menu_join_trip), R.drawable.hitchhiker, new JoinTripFragment()));
         this.addSection(newSection(getString(R.string.menu_offer_trip), R.drawable.ic_directions_car_white, new OfferTripFragment()));
-        if(LoginActivity.isUserLoggedIn(this)) {
+        if(AccountManager.isUserLoggedIn(this)) {
             // only logged-in users can view their profile
             this.addSection(newSection(getString(R.string.menu_profile), R.drawable.profile_icon, new ProfileFragment()));
         }
@@ -123,7 +124,7 @@ public class MainActivity extends AbstractRoboDrawerActivity {
 
 
     private void checkForGPS() {
-        final SharedPreferences prefs = getSharedPreferences(Constants.SHARED_PREF_FILE_USER, Context.MODE_PRIVATE);
+        final SharedPreferences prefs = getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
         final SharedPreferences.Editor editor = prefs.edit();
 
 

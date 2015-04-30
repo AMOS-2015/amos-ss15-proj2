@@ -5,51 +5,65 @@
     android:layout_height="match_parent"
     android:background="@drawable/background">
 
-    <LinearLayout
+    <FrameLayout
         android:id="@+id/layout_register"
-        android:visibility="gone"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:gravity="center_vertical|center_horizontal">
+        android:layout_height="match_parent"
+        android:visibility="gone">
 
-        <EditText
-            android:id="@+id/et_email"
-            android:width="200dp"
-            android:inputType="textEmailAddress"
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center_vertical|center_horizontal">
+
+            <EditText
+                android:id="@+id/et_email"
+                android:width="200dp"
+                android:inputType="textEmailAddress"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:hint="@string/hint_email"/>
+
+            <EditText
+                android:id="@+id/et_firstName"
+                android:width="200dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:hint="@string/hint_firstname"/>
+
+            <EditText
+                android:id="@+id/et_lastName"
+                android:width="200dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:hint="@string/hint_lastname"/>
+
+            <EditText
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:inputType="textPassword"
+                android:width="200dp"
+                android:id="@+id/et_password"
+                android:hint="@string/hint_password"/>
+
+            <Button
+                android:id="@+id/btn_register"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/register"/>
+
+        </LinearLayout>
+
+        <ProgressBar
+            android:id="@+id/pb_register"
+            style="?android:attr/progressBarStyleLarge"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:hint="@string/hint_email"/>
-
-        <EditText
-            android:id="@+id/et_firstName"
-            android:width="200dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:hint="@string/hint_firstname"/>
-
-        <EditText
-            android:id="@+id/et_lastName"
-            android:width="200dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:hint="@string/hint_lastname"/>
-
-        <EditText
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:inputType="textPassword"
-            android:width="200dp"
-            android:id="@+id/et_password"
-            android:hint="@string/hint_password"/>
-
-        <Button
-            android:id="@+id/btn_register"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/register"/>
-
-    </LinearLayout>
+            android:layout_gravity = "center_vertical|center_horizontal"
+            android:visibility="gone">
+        </ProgressBar>
+    </FrameLayout>
 
     <FrameLayout
         android:id="@+id/layout_login"

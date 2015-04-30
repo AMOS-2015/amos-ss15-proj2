@@ -9,6 +9,7 @@ import com.google.inject.Provides;
 import org.croudtrip.DirectionsResource;
 import org.croudtrip.R;
 import org.croudtrip.UsersResource;
+import org.croudtrip.account.AccountManager;
 import org.croudtrip.activities.LoginActivity;
 
 import javax.inject.Inject;
@@ -27,13 +28,12 @@ public class ServerModule implements Module {
 	@Provides
 	@Inject
 	public RestAdapter provideRestAdapter(final Context context) {
-		// TODO @Vanessa: please replace the static references to LoginActivity once it has been refactored
 		return new RestAdapter.Builder()
 				.setEndpoint(context.getString(R.string.server_address))
 				.setRequestInterceptor(new RequestInterceptor() {
 					@Override
 					public void intercept(RequestFacade request) {
-						LoginActivity.addAuthorizationHeader(context, request);
+						AccountManager.addAuthorizationHeader(context, request);
 					}
 				})
 				.build();

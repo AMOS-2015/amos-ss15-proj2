@@ -11,7 +11,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 
 import org.croudtrip.R;
-import org.croudtrip.activities.LoginActivity;
+import org.croudtrip.account.AccountManager;
 
 import it.neokree.materialnavigationdrawer.MaterialNavigationDrawer;
 
@@ -40,13 +40,13 @@ public class SettingsFragment extends Fragment {
         setHasOptionsMenu(true);
         View view = inflater.inflate(R.layout.fragment_settings, container, false);
 
-        if(LoginActivity.isUserLoggedIn(getActivity().getApplicationContext())) {
+        if(AccountManager.isUserLoggedIn(getActivity().getApplicationContext())) {
             Button logoutButton = (Button) view.findViewById(R.id.settings_logout);
             logoutButton.setVisibility(View.VISIBLE);
             logoutButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    LoginActivity.logout(getActivity().getApplicationContext());
+                    AccountManager.logout(getActivity().getApplicationContext(), true);
                 }
             });
         }

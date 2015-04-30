@@ -22,9 +22,8 @@ import com.getbase.floatingactionbutton.FloatingActionButton;
 
 import org.croudtrip.Constants;
 import org.croudtrip.R;
-import org.croudtrip.activities.LoginActivity;
+import org.croudtrip.account.AccountManager;
 import org.croudtrip.account.User;
-
 
 
 /**
@@ -42,6 +41,8 @@ public class EditProfileFragment extends Fragment {
     String tempName, tempNumber, tempAddress;
     Uri profileImageUri, tempUri;
 
+    private User user;
+
 
     //************************* Methods *****************************//
     @Override
@@ -57,18 +58,19 @@ public class EditProfileFragment extends Fragment {
         setHasOptionsMenu(true);
         View view = inflater.inflate(R.layout.fragment_edit_profile, container, false);
 
-        SharedPreferences prefs = this.getActivity().getSharedPreferences(Constants.SHARED_PREF_FILE_USER, Context.MODE_PRIVATE);
-
         //Get EditTexts
         profileNameEdit = (EditText)view.findViewById(R.id.edit_profile_name);
         phoneNumberEdit = (EditText)view.findViewById(R.id.edit_profile_phone);
         addressEdit = (EditText)view.findViewById(R.id.edit_profile_address);
 
         //Get the ImageView and fill it with the profile picture from SharedPrefs (Uri)
+        // TODO
         profilePicture = (ImageView)view.findViewById(R.id.profile_picture_edit);
+        /*
         if (prefs.getString(Constants.SHARED_PREF_KEY_PROFILE_IMAGE_URI,null) != null) {
             profileImageUri = Uri.parse(prefs.getString(Constants.SHARED_PREF_KEY_PROFILE_IMAGE_URI,null));
         }
+        */
         if (profileImageUri != null) {
             profilePicture.setImageURI(profileImageUri);
             tempUri = profileImageUri;
@@ -79,7 +81,8 @@ public class EditProfileFragment extends Fragment {
         }
         final Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
         // Restore user from SharedPref file
-        User user = LoginActivity.getLoggedInUser(this.getActivity().getApplicationContext());
+
+        this.user = AccountManager.getLoggedInUser(this.getActivity().getApplicationContext());
 
 
         if(user != null) {
@@ -261,14 +264,25 @@ public class EditProfileFragment extends Fragment {
 
     public void saveProfileChanges() {
 
-        SharedPreferences prefs = this.getActivity().getSharedPreferences(Constants.SHARED_PREF_FILE_USER, Context.MODE_PRIVATE);
+        // TODO: put all changes into the user object properly
+        user = new User(
+                user.getId(),
+                user.getEmail(),
+                newName,
+                null,
+                newNumber,
+                user.getIsMale(),
+                user.getBirthDay(),
+                newAddress,
+                null
+        );
 
+        //TODO: maybe pass a new password to the method
+        AccountManager.saveUser(getActivity().getApplicationContext(), user, null);
+
+        SharedPreferences prefs = this.getActivity().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
-        //editor.putString(Constants.SHARED_PREF_KEY_PROFILE_IMAGE_URL, selectedImage.toString());
-        editor.putString(Constants.SHARED_PREF_KEY_FIRSTNAME, newName);
-        editor.putString(Constants.SHARED_PREF_KEY_LASTNAME, null);
-        editor.putString(Constants.SHARED_PREF_KEY_PHONE, newNumber);
-        editor.putString(Constants.SHARED_PREF_KEY_ADDRESS, newAddress);
+
         if (profileImageUri != null) {
             editor.putString(Constants.SHARED_PREF_KEY_PROFILE_IMAGE_URI, profileImageUri.toString());
         }

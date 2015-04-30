@@ -18,7 +18,6 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.getbase.floatingactionbutton.FloatingActionButton;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.location.places.Place;
@@ -29,7 +28,6 @@ import org.croudtrip.Constants;
 import org.croudtrip.R;
 
 import it.neokree.materialnavigationdrawer.MaterialNavigationDrawer;
-import it.neokree.materialnavigationdrawer.elements.MaterialSection;
 
 /**
  * Created by alex on 22.04.15.
@@ -92,7 +90,7 @@ public class OfferTripFragment extends Fragment {
         });
 
         final MaterialEditText maxWaitingTime = (MaterialEditText) view.findViewById(R.id.diversion);
-        final SharedPreferences prefs = getActivity().getSharedPreferences(Constants.SHARED_PREF_FILE_USER, Context.MODE_PRIVATE);
+        final SharedPreferences prefs = getActivity().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
         int waitingTime = prefs.getInt(Constants.SHARED_PREF_KEY_DIVERSION, 3);
         maxWaitingTime.setText("" + waitingTime);
 

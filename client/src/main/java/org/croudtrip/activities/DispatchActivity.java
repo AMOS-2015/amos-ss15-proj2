@@ -5,6 +5,8 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 
+import org.croudtrip.account.AccountManager;
+
 import timber.log.Timber;
 
 /**
@@ -16,17 +18,7 @@ public class DispatchActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        /*
-        SharedPreferences prefs = getSharedPreferences(Constants.SHARED_PREF_FILE_USER, Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.putString(Constants.SHARED_PREF_KEY_EMAIL, "my@email.com");
-        editor.putString(Constants.SHARED_PREF_KEY_PWD, "password");
-        editor.putString(Constants.SHARED_PREF_KEY_FIRSTNAME, "Alex");
-        editor.putString(Constants.SHARED_PREF_KEY_LASTNAME, "Test");
-        editor.apply();
-        */
-
-        if (LoginActivity.isUserLoggedIn(this)) {
+        if (AccountManager.isUserLoggedIn(this)) {
             Timber.i("User is logged in");
             startActivity(new Intent(this, MainActivity.class));
         } else {
@@ -34,5 +26,4 @@ public class DispatchActivity extends Activity {
             startActivity(new Intent(this, LoginActivity.class));
         }
     }
-
 }
