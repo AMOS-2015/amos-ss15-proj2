@@ -21,10 +21,8 @@ import com.google.maps.android.PolyUtil;
 
 import org.croudtrip.DirectionsResource;
 import org.croudtrip.R;
-import org.croudtrip.directions.Leg;
 import org.croudtrip.directions.Location;
 import org.croudtrip.directions.RouteNavigation;
-import org.croudtrip.directions.Step;
 import org.croudtrip.utils.DefaultTransformer;
 
 import java.util.ArrayList;
@@ -57,49 +55,18 @@ public class NavigationFragment extends RoboFragment {
         @Override
         public void onMapReady(final GoogleMap map) {
             map.setMyLocationEnabled(true);
-
-            // get some test direction from the server
-            // TODO: Improve testing route direction
-            String from = "Nuremberg, DE";
-            String to = "Berlin, DE";
-
-            directionsResource.getDirections(from, to)
-                    .compose(new DefaultTransformer<List<RouteNavigation>>())
-                    .subscribe(new Action1<List<RouteNavigation>>() {
-
-                        @Override
-                        public void call(List<RouteNavigation> routeNavigations) {
-                            if (routeNavigations == null || routeNavigations.isEmpty())
-                                Toast.makeText(getActivity(), R.string.no_route_found, Toast.LENGTH_SHORT);
-
-                            List<LatLng> points = new ArrayList<LatLng>();
-                            for (RouteNavigation r : routeNavigations) {
-                                for (Leg l : r.getLegs())
-                                    for (Step s : l.getSteps())
-                                        points.addAll( PolyUtil.decode( s.getPolyline() ) );
-                                map.addPolyline(new PolylineOptions().addAll(points) );
-                            }
-
-
-                        }
-                    }, new Action1<Throwable>() {
-                        @Override
-                        public void call(Throwable throwable) {
-                            // on main thread; something went wrong
-                            Log.e("COUDTRIP ERROR", throwable.getMessage());
-                        }
-                    });
         }
     }
 
-    class MapListeners implements GoogleMap.OnMapClickListener {
 
-        GoogleMap googleMap;
-        List<LatLng> markers;
+    private class MapListeners implements GoogleMap.OnMapClickListener {
 
-        MapListeners( GoogleMap map ) {
+        private final GoogleMap googleMap;
+        private final List<LatLng> markers;
+
+        public MapListeners(GoogleMap map ) {
             this.googleMap = map;
-            this.markers = new ArrayList<LatLng>();
+            this.markers = new ArrayList<>();
         }
 
 
@@ -144,14 +111,8 @@ public class NavigationFragment extends RoboFragment {
                                 if (routeNavigations == null || routeNavigations.isEmpty())
                                     Toast.makeText(getActivity(), R.string.no_route_found, Toast.LENGTH_SHORT).show();
 
-                                List<LatLng> points = new ArrayList<LatLng>();
-                                for (RouteNavigation r : routeNavigations) {
-                                    for (Leg l : r.getLegs())
-                                        for (Step s : l.getSteps())
-                                            points.addAll(PolyUtil.decode(s.getPolyline()));
-
-                                    Log.d("CROUDTRIP", "Polyline points " + points.size() );
-                                    googleMap.addPolyline(new PolylineOptions().addAll(points) );
+                                for (RouteNavigation route : routeNavigations) {
+                                    googleMap.addPolyline(new PolylineOptions().addAll(PolyUtil.decode(route.getPolyline())));
                                 }
 
                                 layout.setVisibility(View.GONE);
