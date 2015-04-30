@@ -40,8 +40,13 @@ public class DirectionsManager {
 
 	private Route createRoute(Location startLocation, Location endLocation, DirectionsRoute googleRoute) {
 
+		long distanceInMeters = 0;
+		long durationInSeconds = 0;
+
 		List<LatLng> points = new ArrayList<>();
 		for (DirectionsLeg leg : googleRoute.legs) {
+			distanceInMeters += leg.distance.inMeters;
+			durationInSeconds += leg.duration.inSeconds;
 			for (DirectionsStep step : leg.steps) {
 				points.addAll(step.polyline.decodePath());
 			}
@@ -63,7 +68,7 @@ public class DirectionsManager {
 			warnings = null;
 		}
 
-		return new Route(startLocation, endLocation, polyline.getEncodedPath(), googleRoute.copyrights, warnings);
+		return new Route(startLocation, endLocation, polyline.getEncodedPath(), distanceInMeters, durationInSeconds, googleRoute.copyrights, warnings);
 	}
 
 }
