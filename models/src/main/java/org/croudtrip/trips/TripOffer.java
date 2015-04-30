@@ -45,8 +45,8 @@ public class TripOffer {
 	@Embedded
 	private Route route;
 
-	@Column(name = "maxDiversionInKm", nullable = false)
-	private float maxDiversionInKm;
+	@Column(name = "maxDiversionInMeters", nullable = false)
+	private long maxDiversionInMeters;
 
 	@ManyToOne
 	@JoinColumn(name = User.COLUMN_ID, nullable = false)
@@ -59,12 +59,12 @@ public class TripOffer {
 	public TripOffer(
 			@JsonProperty("id") long id,
 			@JsonProperty("route") Route route,
-			@JsonProperty("maxDiversionInKm") float maxDiversionInKm,
+			@JsonProperty("maxDiversionsInMeters") long maxDiversionInMeters,
 			@JsonProperty("owner") User owner) {
 
 		this.id = id;
 		this.route = route;
-		this.maxDiversionInKm = maxDiversionInKm;
+		this.maxDiversionInMeters = maxDiversionInMeters;
 		this.owner = owner;
 	}
 
@@ -79,8 +79,8 @@ public class TripOffer {
 	}
 
 
-	public float getMaxDiversionInKm() {
-		return maxDiversionInKm;
+	public long getMaxDiversionInMeters() {
+		return maxDiversionInMeters;
 	}
 
 
@@ -95,14 +95,14 @@ public class TripOffer {
 		TripOffer offer = (TripOffer) other;
 		return Objects.equal(id, offer.id)
 				&& Objects.equal(route, offer.route)
-				&& Objects.equal(maxDiversionInKm, offer.maxDiversionInKm)
+				&& Objects.equal(maxDiversionInMeters, offer.maxDiversionInMeters)
 				&& Objects.equal(owner, offer.owner);
 	}
 
 
 	@Override
 	public int hashCode() {
-		return Objects.hashCode(id, route, maxDiversionInKm, owner);
+		return Objects.hashCode(id, route, maxDiversionInMeters, owner);
 	}
 
 }

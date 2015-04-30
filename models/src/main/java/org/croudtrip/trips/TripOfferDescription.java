@@ -12,17 +12,17 @@ import org.croudtrip.directions.Location;
 public class TripOfferDescription {
 
 	private final Location start, end;
-	private final float maxDiversionInKm;
+	private final long maxDiversionInMeters;
 
 	@JsonCreator
 	public TripOfferDescription(
 			@JsonProperty("start") Location start,
 			@JsonProperty("end") Location end,
-			@JsonProperty("maxDiversionInKm") float maxDiversionInKm) {
+			@JsonProperty("maxDiversionInMeters") long maxDiversionInMeters) {
 
 		this.start = start;
 		this.end = end;
-		this.maxDiversionInKm = maxDiversionInKm;
+		this.maxDiversionInMeters = maxDiversionInMeters;
 	}
 
 
@@ -36,8 +36,8 @@ public class TripOfferDescription {
 	}
 
 
-	public float getMaxDiversionInKm() {
-		return maxDiversionInKm;
+	public long getMaxDiversionInMeters() {
+		return maxDiversionInMeters;
 	}
 
 
@@ -47,13 +47,13 @@ public class TripOfferDescription {
 		TripOfferDescription offer = (TripOfferDescription) other;
 		return Objects.equal(start, offer.start)
 				&& Objects.equal(end, offer.end)
-				&& Objects.equal(maxDiversionInKm, offer.maxDiversionInKm);
+				&& Objects.equal(maxDiversionInMeters, offer.maxDiversionInMeters);
 	}
 
 
 	@Override
 	public int hashCode() {
-		return Objects.hashCode(start, end, maxDiversionInKm);
+		return Objects.hashCode(start, end, maxDiversionInMeters);
 	}
 
 }
