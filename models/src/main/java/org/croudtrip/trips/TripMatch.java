@@ -54,6 +54,9 @@ public class TripMatch {
 	@Column(name = "estimatedPriceInCents", nullable = false)
 	private int estimatedPriceInCents;
 
+    @Column(name = "pricePerKilometer", nullable = false)
+    private int pricePerKilometer;
+
 	@ManyToOne
 	@JoinColumn(name = User.COLUMN_ID + "_driver", nullable = false)
 	private User driver;
@@ -71,6 +74,7 @@ public class TripMatch {
 			@JsonProperty("diversionInMeters") long diversionInMeters,
 			@JsonProperty("diversionInSeconds") long diversionInSeconds,
 			@JsonProperty("estimatedPriceInCents") int estimatedPriceInCents,
+            @JsonProperty("pricePerKilometer") int pricePerKilometer,
 			@JsonProperty("driver") User driver,
 			@JsonProperty("passenger") User passenger) {
 
@@ -79,6 +83,7 @@ public class TripMatch {
 		this.diversionInMeters = diversionInMeters;
 		this.diversionInSeconds = diversionInSeconds;
 		this.estimatedPriceInCents = estimatedPriceInCents;
+        this.pricePerKilometer = pricePerKilometer;
 		this.driver = driver;
 		this.passenger = passenger;
 	}
@@ -107,7 +112,12 @@ public class TripMatch {
 	public int getEstimatedPriceInCents() {
 		return estimatedPriceInCents;
 	}
+    public void setEstimatedPriceInCents( int estimatedPriceInCents ) { this.estimatedPriceInCents = estimatedPriceInCents; }
 
+    public int getPricePerKilometerInCents() { return pricePerKilometer; }
+
+    @JsonProperty("pricePerKilometer")
+    public void setPricePerKilometerInCents( int pricePerKilometerInCents ) { this.pricePerKilometer = pricePerKilometerInCents; }
 
 	public User getDriver() {
 		return driver;
@@ -128,6 +138,7 @@ public class TripMatch {
 				&& Objects.equal(diversionInMeters, offer.diversionInMeters)
 				&& Objects.equal(diversionInSeconds, offer.diversionInSeconds)
 				&& Objects.equal(estimatedPriceInCents, offer.estimatedPriceInCents)
+                && Objects.equal(pricePerKilometer, offer.pricePerKilometer)
 				&& Objects.equal(driver, offer.driver)
 				&& Objects.equal(passenger, offer.passenger);
 	}
@@ -135,7 +146,7 @@ public class TripMatch {
 
 	@Override
 	public int hashCode() {
-		return Objects.hashCode(id, route, diversionInMeters, diversionInSeconds, estimatedPriceInCents, driver, passenger);
+		return Objects.hashCode(id, route, diversionInMeters, diversionInSeconds, estimatedPriceInCents, pricePerKilometer, driver, passenger);
 	}
 
 }

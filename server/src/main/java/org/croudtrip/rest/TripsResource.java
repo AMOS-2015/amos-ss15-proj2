@@ -80,7 +80,7 @@ public class TripsResource {
     @POST
     @UnitOfWork
     @Path(PATH_MATCHES)
-    public List<TripMatch> findMatches(@Auth User passenger, @Valid TripRequestDescription requestDescription) {
+    public List<TripMatch> findMatches(@Auth User passenger, @Valid TripRequestDescription requestDescription) throws Exception {
         return tripsManager.findMatches(passenger, requestDescription);
     }
 

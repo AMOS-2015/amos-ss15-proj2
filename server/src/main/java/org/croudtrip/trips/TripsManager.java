@@ -2,13 +2,17 @@ package org.croudtrip.trips;
 
 
 import com.google.common.base.Optional;
+import com.google.maps.errors.NotFoundException;
 
 import org.croudtrip.account.User;
 import org.croudtrip.db.TripOfferDAO;
 import org.croudtrip.directions.DirectionsManager;
 import org.croudtrip.directions.Route;
+import org.croudtrip.directions.RouteLocation;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -52,28 +56,91 @@ public class TripsManager {
 	}
 
 
-	public List<TripMatch> findMatches(User passenger, TripRequestDescription requestDescription) {
+	public List<TripMatch> findMatches(User passenger, TripRequestDescription requestDescription) throws Exception {
 		List<TripMatch> matches = new ArrayList<>();
 
 		List<TripOffer> offers = findAllOffers();
 		if (offers.size() == 0) return matches;
 
-		// TODO don't return dummy match
-		TripOffer offer = offers.get(0);
-		Route route = offer.getRoute();
+        List<Route> diversionRoutes = new ArrayList<>();
 
-		long tripLength = 100;
-		long tripDuration = 100;
-		int price = (int) tripLength * offer.getPricePerKmInCents();
+        for( TripOffer offer : offers ) {
+            Route route = offer.getRoute();
+            RouteLocation startLocation = route.getStart();
+            RouteLocation endLocation = route.getEnd();
 
-		TripMatch match = new TripMatch(
-				0,
-				route, route.getDistanceInMeters() + tripLength,
-				route.getDurationInSeconds() + tripLength,
-				price,
-				offer.getDriver(),
-				passenger);
-		matches.add(match);
+            List<RouteLocation> waypoints = new ArrayList<>();
+            waypoints.add( requestDescription.getStart() );
+            waypoints.add( requestDescription.getEnd() );
+
+            diversionRoutes = directionsManager.getDirections( startLocation, endLocation, waypoints );
+
+            if( diversionRoutes == null || diversionRoutes.size() == 0 )
+                return new ArrayList<>();
+
+            Route diversionRoute = diversionRoutes.get(0);
+            System.out.println("Additional meters: " + (diversionRoute.getDistanceInMeters() - route.getDistanceInMeters()));
+            System.out.println("Max Diversion: " + (offer.getMaxDiversionInMeters()));
+            if( diversionRoute.getDistanceInMeters() - route.getDistanceInMeters() < offer.getMaxDiversionInMeters() )
+            {
+                // TODO: What is the trip length from the point of view of our customers?
+                long tripLength = (diversionRoute.getDistanceInMeters() - route.getDistanceInMeters());
+                long tripDuration = diversionRoute.getDurationInSeconds() - route.getDurationInSeconds();
+                int price = (int) (tripLength/100.0f * offer.getPricePerKmInCents());
+
+                TripMatch match = new TripMatch(
+                        0,
+                        diversionRoute, tripLength,
+                        tripDuration,
+                        price,
+                        offer.getPricePerKmInCents(),
+                        offer.getDriver(),
+                        passenger);
+
+                matches.add(match);
+            }
+        }
+
+        // if there is no or only one match, we can return immediately, since there is no price comparation necessary
+        if( matches.size() < 2 )
+            return matches;
+
+
+        // sort matches ascending based on the price
+        Collections.sort(matches, new Comparator<TripMatch>() {
+            @Override
+            public int compare(TripMatch m1, TripMatch m2) {
+                if ( m1.getPricePerKilometerInCents() == m2.getPricePerKilometerInCents() )
+                    return 0;
+
+                return (m1.getPricePerKilometerInCents() < m2.getPricePerKilometerInCents()) ? -1 : 1;
+            }
+        });
+
+        int samePrice = 1;
+        int lowestPrice = matches.get(0).getPricePerKilometerInCents();
+        while( samePrice < matches.size() && matches.get(samePrice).getPricePerKilometerInCents() == lowestPrice ) {
+            System.out.println("Match: " + matches.get(samePrice).getEstimatedPriceInCents() + " "+  matches.get(samePrice).getPricePerKilometerInCents());
+            samePrice++;
+        }
+
+        // if all matches have the same price no adaption is necessary
+        if( samePrice == matches.size() )
+            return matches;
+
+        int secondLowestPrice = matches.get(samePrice).getPricePerKilometerInCents();
+        System.out.println("Second lowest price: " + secondLowestPrice);
+        while( matches.size() > samePrice )
+            matches.remove( matches.size() - 1);
+
+        // adjust price value for all possible matches
+        for( TripMatch m : matches ) {
+            m.setPricePerKilometerInCents( secondLowestPrice );
+            m.setEstimatedPriceInCents( (int)(m.getDiversionInMeters()/1000.0f * m.getPricePerKilometerInCents()) );
+
+            System.out.println("Match: " + m.getEstimatedPriceInCents() + " "+  m.getPricePerKilometerInCents());
+        }
+
 		return matches;
 	}
 

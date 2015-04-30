@@ -2,11 +2,13 @@ package org.croudtrip.directions;
 
 import com.google.maps.DirectionsApi;
 import com.google.maps.GeoApiContext;
+import com.google.maps.GeocodingApi;
 import com.google.maps.errors.NotFoundException;
 import com.google.maps.model.DirectionsLeg;
 import com.google.maps.model.DirectionsRoute;
 import com.google.maps.model.DirectionsStep;
 import com.google.maps.model.EncodedPolyline;
+import com.google.maps.model.GeocodingResult;
 import com.google.maps.model.LatLng;
 
 import java.util.ArrayList;
@@ -36,6 +38,32 @@ public class DirectionsManager {
 		}
 		return result;
 	}
+
+    public List<Route> getDirections(RouteLocation startLocation, RouteLocation endLocation, List<RouteLocation> waypoints) throws NotFoundException, Exception {
+        String[] stringWaypoints = new String[waypoints.size()];
+        for( int i = 0; i < stringWaypoints.length; ++i ) {
+            RouteLocation loc = waypoints.get(i);
+            GeocodingResult[] result = GeocodingApi.newRequest(geoApiContext).latlng( new LatLng( loc.getLat(), loc.getLng() )).await();
+
+            // translating one of the waypoints failed
+            if( result == null || result.length == 0 )
+                throw new NotFoundException("No address could be extracted from waypoint");
+
+            stringWaypoints[i] = result[0].formattedAddress;
+        }
+
+        List<Route> result = new ArrayList<>();
+        DirectionsRoute[] googleRoutes = DirectionsApi.newRequest(geoApiContext)
+                .origin(new LatLng(startLocation.getLat(), startLocation.getLng()))
+                .destination(new LatLng(endLocation.getLat(), endLocation.getLng()))
+                .waypoints( stringWaypoints )
+                .await();
+
+        for (DirectionsRoute googleRoute : googleRoutes) {
+            result.add(createRoute(startLocation, endLocation, googleRoute));
+        }
+        return result;
+    }
 
 
 	private Route createRoute(RouteLocation startLocation, RouteLocation endLocation, DirectionsRoute googleRoute) {
