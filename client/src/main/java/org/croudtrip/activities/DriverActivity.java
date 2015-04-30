@@ -54,11 +54,15 @@ public class DriverActivity extends RoboActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate( savedInstanceState );
 
+        durationText.setText("");
+        distanceText.setText("");
+
         //mapFragment = (MapFragment) getFragmentManager().findFragmentById(R.id.location_map);
         googleMap = mapFragment.getMap();
 
         Bundle b = getIntent().getExtras();
         int maxDiversion = b.getInt( "maxDiversion" );
+        int pricePerKilometer = b.getInt("pricePerKilometer");
 
         double fromLat = b.getDouble("fromLat");
         double fromLng = b.getDouble("fromLng");
@@ -69,8 +73,8 @@ public class DriverActivity extends RoboActivity {
         TripOfferDescription tripOffer = new TripOfferDescription(
                 new RouteLocation( fromLat, fromLng ),
                 new RouteLocation( toLat, toLng ),
-                maxDiversion,
-                25);
+                maxDiversion * 1000L,
+                pricePerKilometer);
 
         tripsResource.addOffer( tripOffer )
                 .subscribeOn(Schedulers.io())

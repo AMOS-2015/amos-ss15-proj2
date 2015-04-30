@@ -167,6 +167,7 @@ public class OfferTripFragment extends RoboFragment {
                 Intent intent = new Intent( getActivity(), DriverActivity.class);
                 Bundle b = new Bundle();
                 b.putInt("maxDiversion", Integer.valueOf(maxDiversion.getText().toString()) );
+                b.putInt("pricePerKilometer", Integer.valueOf(pricePerKm.getText().toString()));
                 b.putDouble("fromLat", currentLocation.getLatitude());
                 b.putDouble("fromLng", currentLocation.getLongitude() );
                 b.putDouble("toLat", destination.latitude );

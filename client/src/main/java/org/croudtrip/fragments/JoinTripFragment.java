@@ -160,7 +160,9 @@ public class JoinTripFragment extends RoboFragment {
                                                                                 return;
                                                                            }
                                                                            Toast.makeText(getActivity().getApplicationContext(), "Found " + tripMatches.size() + " matches", Toast.LENGTH_SHORT).show();
-                                                                           TripMatch tripMatch = tripMatches.get(0);
+                                                                           for( TripMatch match : tripMatches ) {
+                                                                               Timber.d( "Match: " + match.getEstimatedPriceInCents() + " " + match.getPricePerKilometerInCents() );
+                                                                           }
 
                                                                        }
                                                                    }, new Action1<Throwable>() {
