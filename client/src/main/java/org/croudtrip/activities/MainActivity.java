@@ -72,6 +72,19 @@ public class MainActivity extends AbstractRoboDrawerActivity {
         final MaterialAccount account = new MaterialAccount(this.getResources(),firstName+ " " + lastName,email,R.drawable.profile, R.drawable.background_drawer);
         this.addAccount(account);
 
+        // subscribe to location updates
+        LocationRequest request = LocationRequest.create() //standard GMS LocationRequest
+                .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
+                .setNumUpdates(5)
+                .setInterval(100);
+        ReactiveLocationProvider locationProvider = new ReactiveLocationProvider(this);
+        locationUpdateSubscription = locationProvider.getUpdatedLocation(request)
+                .subscribe(new Action1<Location>() {
+                    @Override
+                    public void call(Location location) {
+                        locationUpdater.setLastLocation( location );
+                    }
+                });
 
         // create sections
         this.addSection(newSection(getString(R.string.menu_join_trip), R.drawable.hitchhiker, new JoinTripFragment()));
@@ -125,22 +138,6 @@ public class MainActivity extends AbstractRoboDrawerActivity {
                         Timber.e(throwable, "failed to download avatar");
                     }
                 });
-
-
-        // subscribe to location updates
-        LocationRequest request = LocationRequest.create() //standard GMS LocationRequest
-                .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
-                .setNumUpdates(5)
-                .setInterval(100);
-        ReactiveLocationProvider locationProvider = new ReactiveLocationProvider(this);
-        locationUpdateSubscription = locationProvider.getUpdatedLocation(request)
-                                                    .subscribe(new Action1<Location>() {
-                                                        @Override
-                                                        public void call(Location location) {
-                                                            locationUpdater.setLastLocation( location );
-                                                        }
-                                                    });
-
     }
 
     @Override

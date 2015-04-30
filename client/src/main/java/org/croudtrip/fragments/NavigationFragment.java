@@ -21,7 +21,7 @@ import com.google.maps.android.PolyUtil;
 
 import org.croudtrip.DirectionsResource;
 import org.croudtrip.R;
-import org.croudtrip.directions.Location;
+import org.croudtrip.directions.RouteLocation;
 import org.croudtrip.directions.Route;
 import org.croudtrip.utils.DefaultTransformer;
 
@@ -91,8 +91,8 @@ public class NavigationFragment extends RoboFragment {
             markers.add(latLng);
 
             if( markers.size() >= 2 ) {
-                Location locFrom = new Location( markers.get(0).latitude, markers.get(0).longitude );
-                Location locTo = new Location( markers.get(1).latitude, markers.get(1).longitude );
+                RouteLocation locFrom = new RouteLocation( markers.get(0).latitude, markers.get(0).longitude );
+                RouteLocation locTo = new RouteLocation( markers.get(1).latitude, markers.get(1).longitude );
 
                 Log.d("FROM", markers.get(0).latitude + " " + markers.get(0).longitude);
                 Log.d("FROM", locFrom.getLat() + " " + locFrom.getLng());

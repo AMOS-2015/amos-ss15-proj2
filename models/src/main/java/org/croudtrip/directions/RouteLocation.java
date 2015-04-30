@@ -12,7 +12,7 @@ import javax.persistence.Embeddable;
  * Created by Frederik Simon on 24.04.2015.
  */
 @Embeddable
-public class Location {
+public class RouteLocation {
 
     public static final String
             COLUMN_LAT = "lat",
@@ -26,10 +26,10 @@ public class Location {
     private double lng;
 
 
-    public Location() { }
+    public RouteLocation() { }
 
     @JsonCreator
-    public Location(@JsonProperty("lat") double lat, @JsonProperty("lng") double lng ) {
+    public RouteLocation(@JsonProperty("lat") double lat, @JsonProperty("lng") double lng) {
         this.lat = lat;
         this.lng = lng;
     }
@@ -44,8 +44,8 @@ public class Location {
 
     @Override
     public boolean equals(Object other) {
-        if (other == null || !(other instanceof Location)) return false;
-        Location location = (Location) other;
+        if (other == null || !(other instanceof RouteLocation)) return false;
+        RouteLocation location = (RouteLocation) other;
         return Objects.equal(lat, location.lat) && Objects.equal(lng, location.lng);
     }
 

@@ -30,6 +30,7 @@ import com.rengwuxian.materialedittext.MaterialEditText;
 import org.croudtrip.Constants;
 import org.croudtrip.R;
 import org.croudtrip.TripsResource;
+import org.croudtrip.activities.DriverActivity;
 import org.croudtrip.location.LocationUpdater;
 import org.croudtrip.trips.TripOffer;
 import org.croudtrip.trips.TripOfferDescription;
@@ -110,11 +111,12 @@ public class OfferTripFragment extends RoboFragment {
             }
         });
 
-        // define maximum waiting time -- TODO: should be maxDiversion
-        final MaterialEditText maxWaitingTime = (MaterialEditText) view.findViewById(R.id.diversion);
+        // define maximum waiting time
+        final MaterialEditText maxDiversion = (MaterialEditText) view.findViewById(R.id.diversion);
         final SharedPreferences prefs = getActivity().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
+
         int waitingTime = prefs.getInt(Constants.SHARED_PREF_KEY_DIVERSION, 3);
-        maxWaitingTime.setText("" + waitingTime);
+        maxDiversion.setText("" + waitingTime);
 
         // define maximum price per kilometer that offers the driver
         final MaterialEditText pricePerKm = (MaterialEditText) view.findViewById(R.id.price);
@@ -130,7 +132,7 @@ public class OfferTripFragment extends RoboFragment {
             @Override
             public void onClick(View v) {
                 SharedPreferences.Editor editor = prefs.edit();
-                editor.putInt(Constants.SHARED_PREF_KEY_DIVERSION, Integer.valueOf(maxWaitingTime.getText().toString()));
+                editor.putInt(Constants.SHARED_PREF_KEY_DIVERSION, Integer.valueOf(maxDiversion.getText().toString()));
                 editor.apply();
 
                 // retrieve current position
@@ -157,23 +159,15 @@ public class OfferTripFragment extends RoboFragment {
                     return;
                 }
 
-                TripOfferDescription tripOffer = new TripOfferDescription(
-                                                        new org.croudtrip.directions.Location( currentLocation.getLatitude(), currentLocation.getLongitude() ),
-                                                        new org.croudtrip.directions.Location( destination.latitude, destination.longitude ),
-                                                        Integer.valueOf(maxWaitingTime.getText().toString()) );
-
-                tripsResource.addOffer( tripOffer ).subscribe(new Action1<TripOffer>() {
-                    @Override
-                    public void call(TripOffer routeNavigations) {
-                        Timber.d("Your offer was successfully sent to the server");
-                    }
-                }, new Action1<Throwable>() {
-                    @Override
-                    public void call(Throwable throwable) {
-                        // on main thread; something went wrong
-                        Timber.e(throwable.getMessage());
-                    }
-                });
+                Intent intent = new Intent( getActivity(), DriverActivity.class);
+                Bundle b = new Bundle();
+                b.putInt("maxDiversion", Integer.valueOf(maxDiversion.getText().toString()) );
+                b.putDouble("fromLat", currentLocation.getLatitude() );
+                b.putDouble("fromLng", currentLocation.getLongitude() );
+                b.putDouble("toLat", destination.latitude );
+                b.putDouble("toLng", destination.longitude );
+                intent.putExtras(b);
+                startActivity(intent);
 
                 Toast.makeText(getActivity().getApplicationContext(), R.string.offer_trip, Toast.LENGTH_SHORT).show();
             }

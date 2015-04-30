@@ -4,21 +4,21 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Objects;
 
-import org.croudtrip.directions.Location;
+import org.croudtrip.directions.RouteLocation;
 
 /**
  * A description of a trip that is being offered by a driver.
  */
 public class TripOfferDescription {
 
-	private final Location start, end;
+	private final RouteLocation start, end;
 	private final long maxDiversionInMeters;
 	private final int pricePerKmInCents;
 
 	@JsonCreator
 	public TripOfferDescription(
-			@JsonProperty("start") Location start,
-			@JsonProperty("end") Location end,
+			@JsonProperty("start") RouteLocation start,
+			@JsonProperty("end") RouteLocation end,
 			@JsonProperty("maxDiversionInMeters") long maxDiversionInMeters,
 			@JsonProperty("pricePerKmInCents") int pricePerKmInCents) {
 
@@ -29,12 +29,12 @@ public class TripOfferDescription {
 	}
 
 
-	public Location getStart() {
+	public RouteLocation getStart() {
 		return start;
 	}
 
 
-	public Location getEnd() {
+	public RouteLocation getEnd() {
 		return end;
 	}
 
