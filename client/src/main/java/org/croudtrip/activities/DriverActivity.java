@@ -69,7 +69,8 @@ public class DriverActivity extends RoboActivity {
         TripOfferDescription tripOffer = new TripOfferDescription(
                 new RouteLocation( fromLat, fromLng ),
                 new RouteLocation( toLat, toLng ),
-                maxDiversion );
+                maxDiversion,
+                25);
 
         tripsResource.addOffer( tripOffer )
                 .subscribeOn(Schedulers.io())
