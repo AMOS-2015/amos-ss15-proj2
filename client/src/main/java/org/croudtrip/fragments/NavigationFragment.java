@@ -22,7 +22,7 @@ import com.google.maps.android.PolyUtil;
 import org.croudtrip.DirectionsResource;
 import org.croudtrip.R;
 import org.croudtrip.directions.Location;
-import org.croudtrip.directions.RouteNavigation;
+import org.croudtrip.directions.Route;
 import org.croudtrip.utils.DefaultTransformer;
 
 import java.util.ArrayList;
@@ -104,14 +104,14 @@ public class NavigationFragment extends RoboFragment {
 
                 layout.setVisibility( View.VISIBLE );
                 directionsResource.getDirections(locFrom.getLat(), locFrom.getLng(), locTo.getLat(), locTo.getLng())
-                        .compose(new DefaultTransformer<List<RouteNavigation>>())
-                        .subscribe(new Action1<List<RouteNavigation>>() {
+                        .compose(new DefaultTransformer<List<Route>>())
+                        .subscribe(new Action1<List<Route>>() {
                             @Override
-                            public void call(List<RouteNavigation> routeNavigations) {
-                                if (routeNavigations == null || routeNavigations.isEmpty())
+                            public void call(List<Route> routes) {
+                                if (routes == null || routes.isEmpty())
                                     Toast.makeText(getActivity(), R.string.no_route_found, Toast.LENGTH_SHORT).show();
 
-                                for (RouteNavigation route : routeNavigations) {
+                                for (Route route : routes) {
                                     googleMap.addPolyline(new PolylineOptions().addAll(PolyUtil.decode(route.getPolyline())));
                                 }
 

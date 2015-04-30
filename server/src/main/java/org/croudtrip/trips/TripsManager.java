@@ -5,6 +5,8 @@ import com.google.common.base.Optional;
 
 import org.croudtrip.account.User;
 import org.croudtrip.db.TripOfferDAO;
+import org.croudtrip.directions.DirectionsManager;
+import org.croudtrip.directions.Route;
 
 import java.util.List;
 
@@ -15,16 +17,20 @@ import javax.inject.Singleton;
 public class TripsManager {
 
 	private final TripOfferDAO tripOfferDAO;
+	private final DirectionsManager directionsManager;
 
 
 	@Inject
-	TripsManager(TripOfferDAO tripOfferDAO) {
+	TripsManager(TripOfferDAO tripOfferDAO, DirectionsManager directionsManager) {
 		this.tripOfferDAO = tripOfferDAO;
+		this.directionsManager = directionsManager;
 	}
 
 
-	public TripOffer addOffer(User owner, TripOfferDescription description) {
-		TripOffer offer = new TripOffer(0, description.getStart(), description.getEnd(), description.getMaxDiversionInKm(), owner);
+	public TripOffer addOffer(User owner, TripOfferDescription description) throws Exception {
+		List<Route> route = directionsManager.getDirections(description.getStart(), description.getEnd());
+		if (route.size() == 0) throw new Exception("not route found");
+		TripOffer offer = new TripOffer(0, route.get(0), description.getMaxDiversionInKm(), owner);
 		tripOfferDAO.save(offer);
 		return offer;
 	}

@@ -41,7 +41,7 @@ public class TripsResource {
 
     @POST
     @UnitOfWork
-    public TripOffer addOffer(@Auth User user, @Valid TripOfferDescription offerDescription) {
+    public TripOffer addOffer(@Auth User user, @Valid TripOfferDescription offerDescription) throws Exception {
         return tripsManager.addOffer(user, offerDescription);
     }
 

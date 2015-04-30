@@ -4,7 +4,7 @@ import com.google.maps.errors.NotFoundException;
 
 import org.croudtrip.directions.DirectionsManager;
 import org.croudtrip.directions.Location;
-import org.croudtrip.directions.RouteNavigation;
+import org.croudtrip.directions.Route;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import java.util.List;
@@ -37,7 +37,7 @@ public class DirectionsResource {
 
     @GET
     @UnitOfWork
-    public List<RouteNavigation> getDirections(
+    public List<Route> getDirections(
             @QueryParam("fromLat") double fromLat, @QueryParam("fromLng") double fromLng,
             @NotEmpty @QueryParam("toLat") double toLat, @NotEmpty @QueryParam("toLng") double toLng) throws Exception {
 

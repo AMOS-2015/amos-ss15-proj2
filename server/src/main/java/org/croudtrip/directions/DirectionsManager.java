@@ -24,8 +24,8 @@ public class DirectionsManager {
 	}
 
 
-	public List<RouteNavigation> getDirections(Location startLocation, Location endLocation) throws NotFoundException, Exception {
-		List<RouteNavigation> result = new ArrayList<>();
+	public List<Route> getDirections(Location startLocation, Location endLocation) throws NotFoundException, Exception {
+		List<Route> result = new ArrayList<>();
 		DirectionsRoute[] googleRoutes = DirectionsApi.newRequest(geoApiContext)
 				.origin(new LatLng(startLocation.getLat(), startLocation.getLng()))
 				.destination(new LatLng(endLocation.getLat(), endLocation.getLng()))
@@ -38,7 +38,7 @@ public class DirectionsManager {
 	}
 
 
-	private RouteNavigation createRoute(Location startLocation, Location endLocation, DirectionsRoute googleRoute) {
+	private Route createRoute(Location startLocation, Location endLocation, DirectionsRoute googleRoute) {
 
 		List<LatLng> points = new ArrayList<>();
 		for (DirectionsLeg leg : googleRoute.legs) {
@@ -63,7 +63,7 @@ public class DirectionsManager {
 			warnings = null;
 		}
 
-		return new RouteNavigation(startLocation, endLocation, polyline.getEncodedPath(), googleRoute.copyrights, warnings);
+		return new Route(startLocation, endLocation, polyline.getEncodedPath(), googleRoute.copyrights, warnings);
 	}
 
 }
