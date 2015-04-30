@@ -5,10 +5,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Objects;
 
 import org.croudtrip.account.User;
-import org.croudtrip.directions.Location;
+import org.croudtrip.directions.Route;
 
-import javax.persistence.AttributeOverride;
-import javax.persistence.AttributeOverrides;
 import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
@@ -45,18 +43,7 @@ public class TripOffer {
 	private long id;
 
 	@Embedded
-	@AttributeOverrides({
-			@AttributeOverride(name=Location.COLUMN_LAT, column = @Column(name = "startLat")),
-			@AttributeOverride(name=Location.COLUMN_LNG, column = @Column(name = "startLng"))
-	})
-	private Location start;
-
-	@Embedded
-	@AttributeOverrides({
-			@AttributeOverride(name=Location.COLUMN_LAT, column = @Column(name = "endLat")),
-			@AttributeOverride(name=Location.COLUMN_LNG, column = @Column(name = "endLng"))
-	})
-	private Location end;
+	private Route route;
 
 	@Column(name = "maxDiversionInKm", nullable = false)
 	private float maxDiversionInKm;
@@ -71,14 +58,12 @@ public class TripOffer {
 	@JsonCreator
 	public TripOffer(
 			@JsonProperty("id") long id,
-			@JsonProperty("start") Location start,
-			@JsonProperty("end") Location end,
+			@JsonProperty("route") Route route,
 			@JsonProperty("maxDiversionInKm") float maxDiversionInKm,
 			@JsonProperty("owner") User owner) {
 
 		this.id = id;
-		this.start = start;
-		this.end = end;
+		this.route = route;
 		this.maxDiversionInKm = maxDiversionInKm;
 		this.owner = owner;
 	}
@@ -89,13 +74,8 @@ public class TripOffer {
 	}
 
 
-	public Location getStart() {
-		return start;
-	}
-
-
-	public Location getEnd() {
-		return end;
+	public Route getRoute() {
+		return route;
 	}
 
 
@@ -114,8 +94,7 @@ public class TripOffer {
 		if (other == null || !(other instanceof TripOffer)) return false;
 		TripOffer offer = (TripOffer) other;
 		return Objects.equal(id, offer.id)
-				&& Objects.equal(start, offer.start)
-				&& Objects.equal(end, offer.end)
+				&& Objects.equal(route, offer.route)
 				&& Objects.equal(maxDiversionInKm, offer.maxDiversionInKm)
 				&& Objects.equal(owner, offer.owner);
 	}
@@ -123,7 +102,7 @@ public class TripOffer {
 
 	@Override
 	public int hashCode() {
-		return Objects.hashCode(id, start, end, maxDiversionInKm, owner);
+		return Objects.hashCode(id, route, maxDiversionInKm, owner);
 	}
 
 }

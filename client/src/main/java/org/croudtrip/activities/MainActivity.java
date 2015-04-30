@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
@@ -13,6 +14,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.CheckBox;
+
+import com.google.android.gms.location.LocationRequest;
 
 import org.croudtrip.Constants;
 import org.croudtrip.R;
@@ -23,17 +26,21 @@ import org.croudtrip.fragments.NavigationFragment;
 import org.croudtrip.fragments.OfferTripFragment;
 import org.croudtrip.fragments.ProfileFragment;
 import org.croudtrip.fragments.SettingsFragment;
+import org.croudtrip.location.LocationUpdater;
 import org.croudtrip.utils.DefaultTransformer;
 
 import java.io.InputStream;
 import java.net.URL;
 
+import javax.inject.Inject;
 import javax.net.ssl.HttpsURLConnection;
 
 import it.neokree.materialnavigationdrawer.MaterialNavigationDrawer;
 import it.neokree.materialnavigationdrawer.elements.MaterialAccount;
 import it.neokree.materialnavigationdrawer.elements.MaterialSection;
+import pl.charmas.android.reactivelocation.ReactiveLocationProvider;
 import rx.Observable;
+import rx.Subscription;
 import rx.functions.Action1;
 import rx.functions.Func0;
 import timber.log.Timber;
@@ -43,6 +50,10 @@ import timber.log.Timber;
  * some initialization and stuff
  */
 public class MainActivity extends AbstractRoboDrawerActivity {
+
+    @Inject private LocationUpdater locationUpdater;
+    private Subscription locationUpdateSubscription;
+
 
     @Override
     public void init(Bundle savedInstanceState) {
@@ -62,7 +73,7 @@ public class MainActivity extends AbstractRoboDrawerActivity {
         this.addAccount(account);
 
 
-                        // create sections
+        // create sections
         this.addSection(newSection(getString(R.string.menu_join_trip), R.drawable.hitchhiker, new JoinTripFragment()));
         this.addSection(newSection(getString(R.string.menu_offer_trip), R.drawable.ic_directions_car_white, new OfferTripFragment()));
         if(AccountManager.isUserLoggedIn(this)) {
@@ -115,6 +126,27 @@ public class MainActivity extends AbstractRoboDrawerActivity {
                     }
                 });
 
+
+        // subscribe to location updates
+        LocationRequest request = LocationRequest.create() //standard GMS LocationRequest
+                .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
+                .setNumUpdates(5)
+                .setInterval(100);
+        ReactiveLocationProvider locationProvider = new ReactiveLocationProvider(this);
+        locationUpdateSubscription = locationProvider.getUpdatedLocation(request)
+                                                    .subscribe(new Action1<Location>() {
+                                                        @Override
+                                                        public void call(Location location) {
+                                                            locationUpdater.setLastLocation( location );
+                                                        }
+                                                    });
+
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        locationUpdateSubscription.unsubscribe();
     }
 
     private boolean GPSavailable() {

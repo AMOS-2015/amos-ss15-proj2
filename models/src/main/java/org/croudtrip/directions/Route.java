@@ -1,0 +1,93 @@
+package org.croudtrip.directions;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Objects;
+
+import javax.persistence.AttributeOverride;
+import javax.persistence.AttributeOverrides;
+import javax.persistence.Column;
+import javax.persistence.Embeddable;
+import javax.persistence.Embedded;
+
+/**
+ * A route between two points.
+ */
+@Embeddable
+public class Route {
+
+    @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name=Location.COLUMN_LAT, column = @Column(name = "startLat")),
+            @AttributeOverride(name=Location.COLUMN_LNG, column = @Column(name = "startLng"))
+    })
+    private Location start;
+
+    @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name=Location.COLUMN_LAT, column = @Column(name = "endLat")),
+            @AttributeOverride(name=Location.COLUMN_LNG, column = @Column(name = "endLng"))
+    })
+    private Location end;
+
+
+    @Column(name = "polyLine", nullable = false, length = 65535)
+    private String polyline;
+
+    @Column(name = "google_copyrights", nullable = true)
+    private String googleCopyrights;
+
+    @Column(name = "google_warnings", nullable = true)
+    private String googleWarnings;
+
+
+    public Route() { }
+
+    @JsonCreator
+    public Route(
+            @JsonProperty("start") Location start,
+            @JsonProperty("end") Location end,
+            @JsonProperty("polyline") String polyline,
+            @JsonProperty("copyrights") String googleCopyrights,
+            @JsonProperty("warnings") String googleWarnings) {
+
+        this.start = start;
+        this.end = end;
+        this.polyline = polyline;
+        this.googleCopyrights = googleCopyrights;
+        this.googleWarnings = googleWarnings;
+    }
+
+    public String getPolyline() {
+        return polyline;
+    }
+
+    public String getGoogleCopyrights() {
+        return googleCopyrights;
+    }
+
+    public Location getStart() {
+        return start;
+    }
+
+    public Location getEnd() {
+        return end;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (other == null || !(other instanceof Route)) return false;
+        Route route = (Route) other;
+        return Objects.equal(polyline, route.polyline)
+                && Objects.equal(googleCopyrights, route.googleCopyrights)
+                && Objects.equal(googleWarnings, route.googleWarnings)
+                && Objects.equal(start, route.start)
+                && Objects.equal(end, route.end);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(polyline, googleCopyrights, googleWarnings, start, end);
+    }
+
+}

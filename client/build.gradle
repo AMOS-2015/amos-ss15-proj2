@@ -92,6 +92,7 @@ dependencies {
     compile 'com.rengwuxian.materialedittext:library:2.0.3'
     compile 'org.roboguice:roboguice:3.0.1'
     provided 'org.roboguice:roboblender:3.0.1'
+    compile 'pl.charmas.android:android-reactive-location:0.5@aar'
 }
 
 // create retrofit interfaces from server resources
