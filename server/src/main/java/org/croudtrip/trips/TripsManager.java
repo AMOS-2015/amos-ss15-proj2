@@ -61,7 +61,7 @@ public class TripsManager {
 		// TODO don't return dummy match
 		TripOffer offer = offers.get(0);
 		Route route = offer.getRoute();
-		TripMatch match = new TripMatch(0, route, route.getDistanceInMeters() + 100, route.getDurationInSeconds() + 100, offer.getOwner(), passenger);
+		TripMatch match = new TripMatch(0, route, route.getDistanceInMeters() + 100, route.getDurationInSeconds() + 100, offer.getDriver(), passenger);
 		matches.add(match);
 		return matches;
 	}

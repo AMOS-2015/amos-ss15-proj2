@@ -50,7 +50,7 @@ public class TripOffer {
 
 	@ManyToOne
 	@JoinColumn(name = User.COLUMN_ID, nullable = false)
-	private User owner;
+	private User driver;
 
 
 	public TripOffer() { }
@@ -60,12 +60,12 @@ public class TripOffer {
 			@JsonProperty("id") long id,
 			@JsonProperty("route") Route route,
 			@JsonProperty("maxDiversionsInMeters") long maxDiversionInMeters,
-			@JsonProperty("owner") User owner) {
+			@JsonProperty("driver") User driver) {
 
 		this.id = id;
 		this.route = route;
 		this.maxDiversionInMeters = maxDiversionInMeters;
-		this.owner = owner;
+		this.driver = driver;
 	}
 
 
@@ -84,8 +84,8 @@ public class TripOffer {
 	}
 
 
-	public User getOwner() {
-		return owner;
+	public User getDriver() {
+		return driver;
 	}
 
 
@@ -96,13 +96,13 @@ public class TripOffer {
 		return Objects.equal(id, offer.id)
 				&& Objects.equal(route, offer.route)
 				&& Objects.equal(maxDiversionInMeters, offer.maxDiversionInMeters)
-				&& Objects.equal(owner, offer.owner);
+				&& Objects.equal(driver, offer.driver);
 	}
 
 
 	@Override
 	public int hashCode() {
-		return Objects.hashCode(id, route, maxDiversionInMeters, owner);
+		return Objects.hashCode(id, route, maxDiversionInMeters, driver);
 	}
 
 }
