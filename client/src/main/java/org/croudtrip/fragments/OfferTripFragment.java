@@ -110,11 +110,12 @@ public class OfferTripFragment extends RoboFragment {
             }
         });
 
-        // define maximum waiting time -- TODO: should be maxDiversion
-        final MaterialEditText maxWaitingTime = (MaterialEditText) view.findViewById(R.id.diversion);
+        // define maximum waiting time
+        final MaterialEditText maxDiversion = (MaterialEditText) view.findViewById(R.id.diversion);
         final SharedPreferences prefs = getActivity().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
+
         int waitingTime = prefs.getInt(Constants.SHARED_PREF_KEY_DIVERSION, 3);
-        maxWaitingTime.setText("" + waitingTime);
+        maxDiversion.setText("" + waitingTime);
 
         // define maximum price per kilometer that offers the driver
         final MaterialEditText pricePerKm = (MaterialEditText) view.findViewById(R.id.price);
@@ -130,7 +131,7 @@ public class OfferTripFragment extends RoboFragment {
             @Override
             public void onClick(View v) {
                 SharedPreferences.Editor editor = prefs.edit();
-                editor.putInt(Constants.SHARED_PREF_KEY_DIVERSION, Integer.valueOf(maxWaitingTime.getText().toString()));
+                editor.putInt(Constants.SHARED_PREF_KEY_DIVERSION, Integer.valueOf(maxDiversion.getText().toString()));
                 editor.apply();
 
                 // retrieve current position
@@ -160,7 +161,7 @@ public class OfferTripFragment extends RoboFragment {
                 TripOfferDescription tripOffer = new TripOfferDescription(
                                                         new org.croudtrip.directions.Location( currentLocation.getLatitude(), currentLocation.getLongitude() ),
                                                         new org.croudtrip.directions.Location( destination.latitude, destination.longitude ),
-                                                        Integer.valueOf(maxWaitingTime.getText().toString()) );
+                                                        Integer.valueOf(maxDiversion.getText().toString()) );
 
                 tripsResource.addOffer( tripOffer ).subscribe(new Action1<TripOffer>() {
                     @Override
