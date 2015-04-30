@@ -15,6 +15,7 @@ import com.google.maps.android.PolyUtil;
 
 import org.croudtrip.R;
 import org.croudtrip.TripsResource;
+import org.croudtrip.directions.RouteLocation;
 import org.croudtrip.location.LocationUpdater;
 import org.croudtrip.trips.TripOffer;
 import org.croudtrip.trips.TripOfferDescription;
@@ -66,8 +67,8 @@ public class DriverActivity extends RoboActivity {
         double toLng = b.getDouble("toLng");
 
         TripOfferDescription tripOffer = new TripOfferDescription(
-                new org.croudtrip.directions.Location( fromLat, fromLng ),
-                new org.croudtrip.directions.Location( toLat, toLng ),
+                new RouteLocation( fromLat, fromLng ),
+                new RouteLocation( toLat, toLng ),
                 maxDiversion );
 
         tripsResource.addOffer( tripOffer )

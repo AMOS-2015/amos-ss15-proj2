@@ -18,17 +18,17 @@ public class Route {
 
     @Embedded
     @AttributeOverrides({
-            @AttributeOverride(name=Location.COLUMN_LAT, column = @Column(name = "startLat")),
-            @AttributeOverride(name=Location.COLUMN_LNG, column = @Column(name = "startLng"))
+            @AttributeOverride(name= RouteLocation.COLUMN_LAT, column = @Column(name = "startLat")),
+            @AttributeOverride(name= RouteLocation.COLUMN_LNG, column = @Column(name = "startLng"))
     })
-    private Location start;
+    private RouteLocation start;
 
     @Embedded
     @AttributeOverrides({
-            @AttributeOverride(name=Location.COLUMN_LAT, column = @Column(name = "endLat")),
-            @AttributeOverride(name=Location.COLUMN_LNG, column = @Column(name = "endLng"))
+            @AttributeOverride(name= RouteLocation.COLUMN_LAT, column = @Column(name = "endLat")),
+            @AttributeOverride(name= RouteLocation.COLUMN_LNG, column = @Column(name = "endLng"))
     })
-    private Location end;
+    private RouteLocation end;
 
     @Column(name = "polyLine", nullable = false, length = 65535)
     private String polyline;
@@ -50,8 +50,8 @@ public class Route {
 
     @JsonCreator
     public Route(
-            @JsonProperty("start") Location start,
-            @JsonProperty("end") Location end,
+            @JsonProperty("start") RouteLocation start,
+            @JsonProperty("end") RouteLocation end,
             @JsonProperty("polyline") String polyline,
             @JsonProperty("distanceInMeters") long distanceInMeters,
             @JsonProperty("durationInSeconds") long durationInSeconds,
@@ -83,11 +83,11 @@ public class Route {
         return googleCopyrights;
     }
 
-    public Location getStart() {
+    public RouteLocation getStart() {
         return start;
     }
 
-    public Location getEnd() {
+    public RouteLocation getEnd() {
         return end;
     }
 

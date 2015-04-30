@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Objects;
 
-import org.croudtrip.directions.Location;
+import org.croudtrip.directions.RouteLocation;
 
 import javax.validation.constraints.NotNull;
 
@@ -13,25 +13,25 @@ import javax.validation.constraints.NotNull;
  */
 public class TripRequestDescription {
 
-	@NotNull private final Location start;
-	@NotNull private final Location end;
+	@NotNull private final RouteLocation start;
+	@NotNull private final RouteLocation end;
 
 	@JsonCreator
 	public TripRequestDescription(
-			@JsonProperty("start") Location start,
-			@JsonProperty("end") Location end) {
+			@JsonProperty("start") RouteLocation start,
+			@JsonProperty("end") RouteLocation end) {
 
 		this.start = start;
 		this.end = end;
 	}
 
 
-	public Location getStart() {
+	public RouteLocation getStart() {
 		return start;
 	}
 
 
-	public Location getEnd() {
+	public RouteLocation getEnd() {
 		return end;
 	}
 

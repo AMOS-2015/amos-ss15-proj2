@@ -24,7 +24,7 @@ public class DirectionsManager {
 	}
 
 
-	public List<Route> getDirections(Location startLocation, Location endLocation) throws NotFoundException, Exception {
+	public List<Route> getDirections(RouteLocation startLocation, RouteLocation endLocation) throws NotFoundException, Exception {
 		List<Route> result = new ArrayList<>();
 		DirectionsRoute[] googleRoutes = DirectionsApi.newRequest(geoApiContext)
 				.origin(new LatLng(startLocation.getLat(), startLocation.getLng()))
@@ -38,7 +38,7 @@ public class DirectionsManager {
 	}
 
 
-	private Route createRoute(Location startLocation, Location endLocation, DirectionsRoute googleRoute) {
+	private Route createRoute(RouteLocation startLocation, RouteLocation endLocation, DirectionsRoute googleRoute) {
 
 		long distanceInMeters = 0;
 		long durationInSeconds = 0;

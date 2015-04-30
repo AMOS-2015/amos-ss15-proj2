@@ -3,7 +3,7 @@ package org.croudtrip.rest;
 import com.google.maps.errors.NotFoundException;
 
 import org.croudtrip.directions.DirectionsManager;
-import org.croudtrip.directions.Location;
+import org.croudtrip.directions.RouteLocation;
 import org.croudtrip.directions.Route;
 import org.hibernate.validator.constraints.NotEmpty;
 
@@ -42,7 +42,7 @@ public class DirectionsResource {
             @NotEmpty @QueryParam("toLat") double toLat, @NotEmpty @QueryParam("toLng") double toLng) throws Exception {
 
         try {
-            return directionsManager.getDirections(new Location(fromLat, fromLng), new Location(toLat, toLng));
+            return directionsManager.getDirections(new RouteLocation(fromLat, fromLng), new RouteLocation(toLat, toLng));
 
         } catch (NotFoundException nfe) {
             throw RestUtils.createJsonFormattedException("location not found", 404);
