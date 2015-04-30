@@ -30,9 +30,14 @@ public class Route {
     })
     private Location end;
 
-
     @Column(name = "polyLine", nullable = false, length = 65535)
     private String polyline;
+
+    @Column(name = "distance_in_meters", nullable = false)
+    private long distanceInMeters;
+
+    @Column(name = "duration_in_seconds", nullable = false)
+    private long durationInSeconds;
 
     @Column(name = "google_copyrights", nullable = true)
     private String googleCopyrights;
@@ -48,18 +53,30 @@ public class Route {
             @JsonProperty("start") Location start,
             @JsonProperty("end") Location end,
             @JsonProperty("polyline") String polyline,
+            @JsonProperty("distanceInMeters") long distanceInMeters,
+            @JsonProperty("durationInSeconds") long durationInSeconds,
             @JsonProperty("copyrights") String googleCopyrights,
             @JsonProperty("warnings") String googleWarnings) {
 
         this.start = start;
         this.end = end;
         this.polyline = polyline;
+        this.distanceInMeters = distanceInMeters;
+        this.durationInSeconds = durationInSeconds;
         this.googleCopyrights = googleCopyrights;
         this.googleWarnings = googleWarnings;
     }
 
     public String getPolyline() {
         return polyline;
+    }
+
+    public long getDistanceInMeters() {
+        return distanceInMeters;
+    }
+
+    public long getDurationInSeconds() {
+        return durationInSeconds;
     }
 
     public String getGoogleCopyrights() {
@@ -80,6 +97,8 @@ public class Route {
         Route route = (Route) other;
         return Objects.equal(polyline, route.polyline)
                 && Objects.equal(googleCopyrights, route.googleCopyrights)
+                && Objects.equal(durationInSeconds, route.durationInSeconds)
+                && Objects.equal(distanceInMeters, route.distanceInMeters)
                 && Objects.equal(googleWarnings, route.googleWarnings)
                 && Objects.equal(start, route.start)
                 && Objects.equal(end, route.end);
@@ -87,7 +106,7 @@ public class Route {
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(polyline, googleCopyrights, googleWarnings, start, end);
+        return Objects.hashCode(polyline, googleCopyrights, durationInSeconds, distanceInMeters, googleWarnings, start, end);
     }
 
 }
