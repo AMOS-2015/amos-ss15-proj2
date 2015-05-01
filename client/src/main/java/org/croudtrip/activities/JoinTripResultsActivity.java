@@ -43,6 +43,7 @@ public class JoinTripResultsActivity extends RoboActivity {
     @InjectView(R.id.pb_join_trip)                  private ProgressBar progressBar;
     @InjectView(R.id.tv_join_trip_results_caption)  private TextView caption;
     @InjectView(R.id.lv_join_trip_results)          private ListView resultsList;
+    @InjectView(R.id.tv_join_trip_error)            private TextView error;
 
 
     @Inject
@@ -95,6 +96,10 @@ public class JoinTripResultsActivity extends RoboActivity {
                         // on main thread; something went wrong
                         Timber.e(throwable.getMessage());
                         progressBar.setVisibility(View.GONE);
+
+                        caption.setText(getResources().getQuantityString(R.plurals.join_trip_results,
+                                0, 0));
+                        error.setVisibility(View.VISIBLE);
                     }
                 });
 

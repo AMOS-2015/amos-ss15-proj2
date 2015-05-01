@@ -58,6 +58,7 @@
     <string name="join_trip_results_distance_m">Distance: %d m</string>
     <string name="join_trip_results_duration_min">Duration: %dmin</string>
     <string name="join_trip_results_duration_hmin">Duration: %1$dh %2$dmin</string>
+    <string name="join_trip_results_error">An error occurred when sending your request to the server. Please try again.</string>
 
 
     <string name="offer_choose_destination">What´s your destination?</string>
