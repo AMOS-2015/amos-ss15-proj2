@@ -64,10 +64,10 @@ public class MainActivity extends AbstractRoboDrawerActivity {
         this.setDrawerHeaderImage(R.drawable.background_drawer);
 
         User user = AccountManager.getLoggedInUser(getApplicationContext());
-        String firstName = (user.getFirstName() == null) ? "" : user.getFirstName();
-        String lastName = (user.getLastName() == null) ? "" : user.getLastName();
-        String email = (user.getEmail() == null) ? "" : user.getEmail();
-        final String avatarUrl = (user.getAvatarUrl() == null) ? null : user.getAvatarUrl();
+        String firstName = (user == null || user.getFirstName() == null) ? "" : user.getFirstName();
+        String lastName = (user == null || user.getLastName() == null) ? "" : user.getLastName();
+        String email = (user == null || user.getEmail() == null) ? "" : user.getEmail();
+        final String avatarUrl = (user == null || user.getAvatarUrl() == null) ? null : user.getAvatarUrl();
 
         final MaterialAccount account = new MaterialAccount(this.getResources(),firstName+ " " + lastName,email,R.drawable.profile, R.drawable.background_drawer);
         this.addAccount(account);
