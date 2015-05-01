@@ -48,6 +48,17 @@
     <string name="join_change_destination">Change destination</string>
     <string name="join_max_waiting">Max waiting time (in minutes)</string>
     <string name="join_trip">Join Trip</string>
+    <plurals name="join_trip_results">
+        <item quantity="zero">Sorry, we found no ride for you</item>
+        <item quantity="one">We found %d ride for you</item>
+        <item quantity="other">We found %d rides for you</item>
+    </plurals>
+    <string name="join_trip_results_costs">%s €</string>
+    <string name="join_trip_results_distance_km">Distance: %d km</string>
+    <string name="join_trip_results_distance_m">Distance: %d m</string>
+    <string name="join_trip_results_duration_min">Duration: %dmin</string>
+    <string name="join_trip_results_duration_hmin">Duration: %1$dh %2$dmin</string>
+
 
     <string name="offer_choose_destination">What´s your destination?</string>
     <string name="offer_change_destination">Change destination</string>

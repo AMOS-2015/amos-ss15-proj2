@@ -52,6 +52,11 @@
             android:name=".activities.DriverActivity"
             android:label="@string/app_name" >
         </activity>
+
+        <activity
+            android:name=".activities.JoinTripResultsActivity"
+            android:label="@string/app_name" >
+        </activity>
     </application>
 
 </manifest>

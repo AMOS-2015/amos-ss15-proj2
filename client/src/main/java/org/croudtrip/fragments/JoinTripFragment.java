@@ -32,10 +32,8 @@ import com.rengwuxian.materialedittext.MaterialEditText;
 import org.croudtrip.Constants;
 import org.croudtrip.R;
 import org.croudtrip.TripsResource;
-import org.croudtrip.directions.RouteLocation;
+import org.croudtrip.activities.JoinTripResultsActivity;
 import org.croudtrip.location.LocationUpdater;
-import org.croudtrip.trips.TripMatch;
-import org.croudtrip.trips.TripRequestDescription;
 
 import java.io.IOException;
 import java.util.List;
@@ -46,10 +44,6 @@ import it.neokree.materialnavigationdrawer.MaterialNavigationDrawer;
 import it.neokree.materialnavigationdrawer.elements.MaterialSection;
 import roboguice.fragment.provided.RoboFragment;
 import roboguice.inject.InjectView;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Action1;
-import rx.schedulers.Schedulers;
-import timber.log.Timber;
 
 /**
  * Created by alex on 22.04.15.
@@ -124,7 +118,7 @@ public class JoinTripFragment extends RoboFragment {
 
                 // retrieve current position
                 Location currentLocation = locationUpdater.getLastLocation();
-                if( currentLocation == null ) {
+                if (currentLocation == null) {
                     Toast.makeText(getActivity().getApplicationContext(), R.string.offer_trip_no_location, Toast.LENGTH_SHORT).show();
                     return;
                 }
@@ -132,48 +126,31 @@ public class JoinTripFragment extends RoboFragment {
                 // get destination from string
                 LatLng destination = null;
                 try {
-                    List<Address> addresses = geocoder.getFromLocationName( tv_address.getText().toString(), 1 );
-                    if( addresses.size() > 0 )
-                        destination = new LatLng( addresses.get(0).getLatitude(), addresses.get(0).getLongitude() );
+                    List<Address> addresses = geocoder.getFromLocationName(tv_address.getText().toString(), 1);
+                    if (addresses.size() > 0)
+                        destination = new LatLng(addresses.get(0).getLatitude(), addresses.get(0).getLongitude());
                 } catch (IOException e) {
                     Toast.makeText(getActivity().getApplicationContext(), R.string.offer_trip_no_destination, Toast.LENGTH_SHORT).show();
                     return;
                 }
 
                 // no destination received
-                if( destination == null ) {
+                if (destination == null) {
                     Toast.makeText(getActivity().getApplicationContext(), R.string.offer_trip_no_destination, Toast.LENGTH_SHORT).show();
                     return;
                 }
 
-                TripRequestDescription tripRequestDescription = new TripRequestDescription( new RouteLocation( currentLocation.getLatitude(), currentLocation.getLongitude() ),
-                                                                                            new RouteLocation( destination.latitude, destination.longitude ));
-
-                tripsResource.findMatches( tripRequestDescription ).subscribeOn(Schedulers.io())
-                                                                   .observeOn(AndroidSchedulers.mainThread())
-                                                                   .subscribe( new Action1<List<TripMatch>>() {
-                                                                       @Override
-                                                                       public void call(List<TripMatch> tripMatches) {
-
-                                                                           if( tripMatches == null || tripMatches.size() == 0 ) {
-                                                                                Toast.makeText(getActivity().getApplicationContext(), R.string.join_trip_no_matches, Toast.LENGTH_SHORT).show();
-                                                                                return;
-                                                                           }
-                                                                           Toast.makeText(getActivity().getApplicationContext(), "Found " + tripMatches.size() + " matches", Toast.LENGTH_SHORT).show();
-                                                                           for( TripMatch match : tripMatches ) {
-                                                                               Timber.d( "Match: " + match.getEstimatedPriceInCents() + " " + match.getPricePerKilometerInCents() );
-                                                                           }
-
-                                                                       }
-                                                                   }, new Action1<Throwable>() {
-                                                                       @Override
-                                                                       public void call(Throwable throwable) {
-                                                                           // on main thread; something went wrong
-                                                                           Timber.e(throwable.getMessage());
-                                                                       }
-                                                                   });
-
-                Toast.makeText(getActivity().getApplicationContext(), "Join Trip", Toast.LENGTH_SHORT).show();
+                // Show the results for this search
+                Intent intent = new Intent(getActivity(), JoinTripResultsActivity.class);
+                Bundle extras = new Bundle();
+                extras.putDouble(JoinTripResultsActivity.KEY_CURRENT_LOCATION_LATITUDE,
+                        currentLocation.getLatitude());
+                extras.putDouble(JoinTripResultsActivity.KEY_CURRENT_LOCATION_LONGITUDE,
+                        currentLocation.getLongitude());
+                extras.putDouble(JoinTripResultsActivity.KEY_DESTINATION_LATITUDE, destination.latitude);
+                extras.putDouble(JoinTripResultsActivity.KEY_DESTINATION_LONGITUDE, destination.longitude);
+                intent.putExtras(extras);
+                startActivity(intent);
             }
         });
 
@@ -194,8 +171,8 @@ public class JoinTripFragment extends RoboFragment {
                  */
             }
         });
-
     }
+
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
