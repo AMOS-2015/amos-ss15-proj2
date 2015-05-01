@@ -1,7 +1,10 @@
-package org.croudtrip.activities;
+package org.croudtrip.fragments;
 
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -17,21 +20,19 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-import roboguice.activity.RoboActivity;
-import roboguice.inject.ContentView;
-import roboguice.inject.InjectView;
+import it.neokree.materialnavigationdrawer.MaterialNavigationDrawer;
+import roboguice.fragment.provided.RoboFragment;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
 import rx.schedulers.Schedulers;
 import timber.log.Timber;
 
 /**
- * This Activity shows the results for a join request. It displays drivers, their costs and several
+ * This Fragment shows the results for a join request. It displays drivers, their costs and several
  * other information,should the user want to join.
  * Created by Vanessa Lange on 01.05.15.
  */
-@ContentView(R.layout.activity_join_trip_results)
-public class JoinTripResultsActivity extends RoboActivity {
+public class JoinTripResultsFragment extends RoboFragment {
 
     //******************** Variables ************************//
 
@@ -40,11 +41,10 @@ public class JoinTripResultsActivity extends RoboActivity {
     public final static String KEY_DESTINATION_LATITUDE = "destination_latitude";
     public final static String KEY_DESTINATION_LONGITUDE = "destination_longitude";
 
-    @InjectView(R.id.pb_join_trip)                  private ProgressBar progressBar;
-    @InjectView(R.id.tv_join_trip_results_caption)  private TextView caption;
-    @InjectView(R.id.lv_join_trip_results)          private ListView resultsList;
-    @InjectView(R.id.tv_join_trip_error)            private TextView error;
-
+    private ProgressBar progressBar;
+    private TextView caption;
+    private ListView resultsList;
+    private TextView error;
 
     @Inject
     TripsResource tripsResource;
@@ -55,9 +55,29 @@ public class JoinTripResultsActivity extends RoboActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Toolbar toolbar = ((MaterialNavigationDrawer) this.getActivity()).getToolbar();
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
+        super.onCreateView(inflater, container, savedInstanceState);
+        setHasOptionsMenu(true);
+        View view = inflater.inflate(R.layout.fragment_join_trip_results, container, false);
+
+        this.progressBar = (ProgressBar) view.findViewById(R.id.pb_join_trip);
+        this.caption = (TextView) view.findViewById(R.id.tv_join_trip_results_caption);
+        this.resultsList = (ListView) view.findViewById(R.id.lv_join_trip_results);
+        this.error = (TextView) view.findViewById(R.id.tv_join_trip_error);
+
+        return view;
+    }
+
+
+    @Override
+    public void onViewCreated( View view, Bundle savedInstanceState ) {
 
         // Get currentLocation and destination
-        Bundle extras = getIntent().getExtras();
+        Bundle extras = getArguments();
         double currentLocationLat = extras.getDouble(KEY_CURRENT_LOCATION_LATITUDE);
         double currentLocationLon = extras.getDouble(KEY_CURRENT_LOCATION_LONGITUDE);
         double destinationLat = extras.getDouble(KEY_DESTINATION_LATITUDE);
@@ -82,7 +102,7 @@ public class JoinTripResultsActivity extends RoboActivity {
 
                         // Fill the results list
                         JoinTripResultsAdapter adapter = new JoinTripResultsAdapter(
-                                JoinTripResultsActivity.this,
+                                getActivity(),
                                 R.layout.listview_row_join_trip_results, tripMatches);
 
                         resultsList.setAdapter(adapter);
@@ -94,7 +114,7 @@ public class JoinTripResultsActivity extends RoboActivity {
                     @Override
                     public void call(Throwable throwable) {
                         // on main thread; something went wrong
-                        Timber.e(throwable.getMessage());
+                        Timber.e("Error when trying to join a trip: " + throwable.getMessage());
                         progressBar.setVisibility(View.GONE);
 
                         caption.setText(getResources().getQuantityString(R.plurals.join_trip_results,

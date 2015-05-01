@@ -32,7 +32,6 @@ import com.rengwuxian.materialedittext.MaterialEditText;
 import org.croudtrip.Constants;
 import org.croudtrip.R;
 import org.croudtrip.TripsResource;
-import org.croudtrip.activities.JoinTripResultsActivity;
 import org.croudtrip.location.LocationUpdater;
 
 import java.io.IOException;
@@ -141,16 +140,19 @@ public class JoinTripFragment extends RoboFragment {
                 }
 
                 // Show the results for this search
-                Intent intent = new Intent(getActivity(), JoinTripResultsActivity.class);
                 Bundle extras = new Bundle();
-                extras.putDouble(JoinTripResultsActivity.KEY_CURRENT_LOCATION_LATITUDE,
+                extras.putDouble(JoinTripResultsFragment.KEY_CURRENT_LOCATION_LATITUDE,
                         currentLocation.getLatitude());
-                extras.putDouble(JoinTripResultsActivity.KEY_CURRENT_LOCATION_LONGITUDE,
+                extras.putDouble(JoinTripResultsFragment.KEY_CURRENT_LOCATION_LONGITUDE,
                         currentLocation.getLongitude());
-                extras.putDouble(JoinTripResultsActivity.KEY_DESTINATION_LATITUDE, destination.latitude);
-                extras.putDouble(JoinTripResultsActivity.KEY_DESTINATION_LONGITUDE, destination.longitude);
-                intent.putExtras(extras);
-                startActivity(intent);
+                extras.putDouble(JoinTripResultsFragment.KEY_DESTINATION_LATITUDE, destination.latitude);
+                extras.putDouble(JoinTripResultsFragment.KEY_DESTINATION_LONGITUDE, destination.longitude);
+
+                Fragment fragment = new JoinTripResultsFragment();
+                fragment.setArguments(extras);
+                ((MaterialNavigationDrawer) getActivity()).setFragmentChild(
+                        fragment,
+                        getString(R.string.join_trip));
             }
         });
 
