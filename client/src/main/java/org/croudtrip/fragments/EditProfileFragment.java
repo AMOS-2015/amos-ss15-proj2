@@ -275,7 +275,7 @@ public class EditProfileFragment extends Fragment {
                 user.getBirthDay(),
                 newAddress,
                 null,
-                0 // TODO get actual last modified timestamp
+                user.getLastModified() // TODO if something changed, enter <NOW> as lastModified
         );
 
         //TODO: maybe pass a new password to the method
