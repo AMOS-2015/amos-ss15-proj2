@@ -102,6 +102,6 @@ afterEvaluate {
         it.outputDir = file(generatedSourcesDir)
         it.packageName = 'org.croudtrip'
         it.paramConverterManager.registerConverter(ClassName.get(Auth.class), new IgnoreConverter())
-        it.excludedClassNamesRegex = 'AvatarsResource'
+        it.excludedClassNamesRegex = 'AvatarsResource|UsersHeadResource'
     }
 }

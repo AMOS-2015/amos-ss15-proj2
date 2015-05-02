@@ -15,6 +15,7 @@ import org.croudtrip.rest.DirectionsResource;
 import org.croudtrip.rest.JsonExceptionMapper;
 import org.croudtrip.rest.NotFoundExceptionMapper;
 import org.croudtrip.rest.TripsResource;
+import org.croudtrip.rest.UsersHeadResource;
 import org.croudtrip.rest.UsersResource;
 import org.croudtrip.rest.VehicleResource;
 import org.croudtrip.trips.TripOffer;
@@ -55,6 +56,7 @@ public final class CroudTripApplication extends Application<CroudTripConfig> {
 
 
         environment.jersey().register(injector.getInstance(UsersResource.class));
+		environment.jersey().register(injector.getInstance(UsersHeadResource.class));
 		environment.jersey().register(injector.getInstance(AvatarsResource.class));
         environment.jersey().register(injector.getInstance(DirectionsResource.class));
 		environment.jersey().register(injector.getInstance(TripsResource.class));

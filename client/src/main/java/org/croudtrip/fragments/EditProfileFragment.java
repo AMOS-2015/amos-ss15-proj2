@@ -274,7 +274,8 @@ public class EditProfileFragment extends Fragment {
                 user.getIsMale(),
                 user.getBirthDay(),
                 newAddress,
-                null
+                null,
+                0 // TODO get actual last modified timestamp
         );
 
         //TODO: maybe pass a new password to the method

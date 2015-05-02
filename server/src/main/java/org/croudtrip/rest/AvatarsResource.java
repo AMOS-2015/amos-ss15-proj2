@@ -95,7 +95,8 @@ public class AvatarsResource {
                 user.getIsMale(),
                 user.getBirthDay(),
                 user.getAddress(),
-                avatarUrl);
+                avatarUrl,
+                user.getLastModified());
         return userManager.updateUser(updatedUser);
     }
 

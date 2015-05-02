@@ -163,8 +163,8 @@ public class AccountManager {
                 isMale,
                 birthday,
                 prefs.getString(SHARED_PREF_KEY_ADDRESS, null),
-                prefs.getString(SHARED_PREF_KEY_AVATAR_URL, null)
-        );
+                prefs.getString(SHARED_PREF_KEY_AVATAR_URL, null),
+                0); // TODO get actual last modified timestamp
         return user;
     }
 
