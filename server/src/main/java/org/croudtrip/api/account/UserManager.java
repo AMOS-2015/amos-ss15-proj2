@@ -1,4 +1,4 @@
-package org.croudtrip.account;
+package org.croudtrip.api.account;
 
 
 import com.google.common.base.Optional;

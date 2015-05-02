@@ -2,12 +2,12 @@ package org.croudtrip.rest;
 
 import com.google.common.base.Optional;
 
-import org.croudtrip.account.User;
-import org.croudtrip.trips.TripMatch;
-import org.croudtrip.trips.TripOffer;
-import org.croudtrip.trips.TripOfferDescription;
-import org.croudtrip.trips.TripRequestDescription;
-import org.croudtrip.trips.TripsManager;
+import org.croudtrip.api.account.User;
+import org.croudtrip.api.trips.TripMatch;
+import org.croudtrip.api.trips.TripOffer;
+import org.croudtrip.api.trips.TripOfferDescription;
+import org.croudtrip.api.trips.TripRequestDescription;
+import org.croudtrip.api.trips.TripsManager;
 
 import java.util.List;
 

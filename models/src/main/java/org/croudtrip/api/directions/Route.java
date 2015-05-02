@@ -1,4 +1,4 @@
-package org.croudtrip.directions;
+package org.croudtrip.api.directions;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;

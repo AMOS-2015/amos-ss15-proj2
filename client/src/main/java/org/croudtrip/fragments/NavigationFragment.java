@@ -19,10 +19,10 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.maps.android.PolyUtil;
 
-import org.croudtrip.DirectionsResource;
 import org.croudtrip.R;
-import org.croudtrip.directions.RouteLocation;
-import org.croudtrip.directions.Route;
+import org.croudtrip.api.DirectionsResource;
+import org.croudtrip.api.directions.Route;
+import org.croudtrip.api.directions.RouteLocation;
 import org.croudtrip.utils.DefaultTransformer;
 
 import java.util.ArrayList;
@@ -38,7 +38,8 @@ import rx.functions.Action1;
  */
 public class NavigationFragment extends RoboFragment {
 
-    @Inject DirectionsResource directionsResource;
+    @Inject
+    DirectionsResource directionsResource;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {

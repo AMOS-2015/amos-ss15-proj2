@@ -20,7 +20,7 @@ import com.google.android.gms.location.LocationRequest;
 import org.croudtrip.Constants;
 import org.croudtrip.R;
 import org.croudtrip.account.AccountManager;
-import org.croudtrip.account.User;
+import org.croudtrip.api.account.User;
 import org.croudtrip.fragments.JoinTripFragment;
 import org.croudtrip.fragments.NavigationFragment;
 import org.croudtrip.fragments.OfferTripFragment;

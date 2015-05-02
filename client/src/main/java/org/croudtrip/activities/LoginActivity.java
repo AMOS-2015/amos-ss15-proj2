@@ -13,10 +13,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import org.croudtrip.R;
-import org.croudtrip.UsersResource;
 import org.croudtrip.account.AccountManager;
-import org.croudtrip.account.User;
-import org.croudtrip.account.UserDescription;
+import org.croudtrip.api.UsersResource;
+import org.croudtrip.api.account.User;
+import org.croudtrip.api.account.UserDescription;
 import org.croudtrip.utils.DefaultTransformer;
 
 import javax.inject.Inject;

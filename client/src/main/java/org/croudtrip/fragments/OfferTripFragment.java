@@ -29,11 +29,9 @@ import com.rengwuxian.materialedittext.MaterialEditText;
 
 import org.croudtrip.Constants;
 import org.croudtrip.R;
-import org.croudtrip.TripsResource;
 import org.croudtrip.activities.DriverActivity;
+import org.croudtrip.api.TripsResource;
 import org.croudtrip.location.LocationUpdater;
-import org.croudtrip.trips.TripOffer;
-import org.croudtrip.trips.TripOfferDescription;
 
 import java.io.IOException;
 import java.util.List;
@@ -42,9 +40,7 @@ import javax.inject.Inject;
 
 import it.neokree.materialnavigationdrawer.MaterialNavigationDrawer;
 import roboguice.fragment.provided.RoboFragment;
-import roboguice.inject.ContentView;
 import roboguice.inject.InjectView;
-import rx.functions.Action1;
 import timber.log.Timber;
 
 /**
@@ -63,7 +59,8 @@ public class OfferTripFragment extends RoboFragment {
 
     @Inject LocationUpdater locationUpdater;
 
-    @Inject TripsResource tripsResource;
+    @Inject
+    TripsResource tripsResource;
 
     private Geocoder geocoder;
 

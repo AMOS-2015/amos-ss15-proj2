@@ -14,11 +14,11 @@ import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.maps.android.PolyUtil;
 
 import org.croudtrip.R;
-import org.croudtrip.TripsResource;
-import org.croudtrip.directions.RouteLocation;
+import org.croudtrip.api.TripsResource;
+import org.croudtrip.api.directions.RouteLocation;
+import org.croudtrip.api.trips.TripOffer;
+import org.croudtrip.api.trips.TripOfferDescription;
 import org.croudtrip.location.LocationUpdater;
-import org.croudtrip.trips.TripOffer;
-import org.croudtrip.trips.TripOfferDescription;
 
 import javax.inject.Inject;
 
@@ -39,7 +39,8 @@ import timber.log.Timber;
  */
 @ContentView(R.layout.fragment_maps)
 public class DriverActivity extends RoboActivity {
-    @Inject TripsResource tripsResource;
+    @Inject
+    TripsResource tripsResource;
 
     @InjectFragment(R.id.location_map) private MapFragment mapFragment;
     @InjectView(R.id.duration_text) private TextView durationText;

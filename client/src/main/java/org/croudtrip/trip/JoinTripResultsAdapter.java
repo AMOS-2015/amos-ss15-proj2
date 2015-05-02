@@ -8,8 +8,8 @@ import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
 import org.croudtrip.R;
-import org.croudtrip.account.User;
-import org.croudtrip.trips.TripMatch;
+import org.croudtrip.api.account.User;
+import org.croudtrip.api.trips.TripMatch;
 
 import java.util.List;
 

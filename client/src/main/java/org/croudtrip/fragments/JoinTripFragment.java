@@ -31,7 +31,7 @@ import com.rengwuxian.materialedittext.MaterialEditText;
 
 import org.croudtrip.Constants;
 import org.croudtrip.R;
-import org.croudtrip.TripsResource;
+import org.croudtrip.api.TripsResource;
 import org.croudtrip.location.LocationUpdater;
 
 import java.io.IOException;
@@ -57,7 +57,8 @@ public class JoinTripFragment extends RoboFragment {
     @InjectView(R.id.places) private Button btn_destination;
 
     @Inject LocationUpdater locationUpdater;
-    @Inject TripsResource tripsResource;
+    @Inject
+    TripsResource tripsResource;
     private Geocoder geocoder;
 
     @Override

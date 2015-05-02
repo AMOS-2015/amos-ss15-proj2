@@ -6,12 +6,11 @@ import com.google.inject.Binder;
 import com.google.inject.Module;
 import com.google.inject.Provides;
 
-import org.croudtrip.DirectionsResource;
 import org.croudtrip.R;
-import org.croudtrip.TripsResource;
-import org.croudtrip.UsersResource;
 import org.croudtrip.account.AccountManager;
-import org.croudtrip.activities.LoginActivity;
+import org.croudtrip.api.DirectionsResource;
+import org.croudtrip.api.TripsResource;
+import org.croudtrip.api.UsersResource;
 
 import javax.inject.Inject;
 

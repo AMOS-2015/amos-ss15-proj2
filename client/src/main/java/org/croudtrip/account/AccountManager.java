@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.util.Base64;
 
 import org.croudtrip.activities.LoginActivity;
+import org.croudtrip.api.account.User;
 
 import java.util.Date;
 

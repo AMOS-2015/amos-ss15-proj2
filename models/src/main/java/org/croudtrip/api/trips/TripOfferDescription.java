@@ -1,10 +1,10 @@
-package org.croudtrip.trips;
+package org.croudtrip.api.trips;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Objects;
 
-import org.croudtrip.directions.RouteLocation;
+import org.croudtrip.api.directions.RouteLocation;
 
 /**
  * A description of a trip that is being offered by a driver.

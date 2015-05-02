@@ -1,4 +1,4 @@
-package org.croudtrip.directions;
+package org.croudtrip.api.directions;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;

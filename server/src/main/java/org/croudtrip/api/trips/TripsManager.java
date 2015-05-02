@@ -1,14 +1,13 @@
-package org.croudtrip.trips;
+package org.croudtrip.api.trips;
 
 
 import com.google.common.base.Optional;
-import com.google.maps.errors.NotFoundException;
 
-import org.croudtrip.account.User;
+import org.croudtrip.api.account.User;
 import org.croudtrip.db.TripOfferDAO;
-import org.croudtrip.directions.DirectionsManager;
-import org.croudtrip.directions.Route;
-import org.croudtrip.directions.RouteLocation;
+import org.croudtrip.api.directions.DirectionsManager;
+import org.croudtrip.api.directions.Route;
+import org.croudtrip.api.directions.RouteLocation;
 
 import java.util.ArrayList;
 import java.util.Collections;

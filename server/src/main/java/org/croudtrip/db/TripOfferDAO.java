@@ -1,7 +1,7 @@
 package org.croudtrip.db;
 
 
-import org.croudtrip.trips.TripOffer;
+import org.croudtrip.api.trips.TripOffer;
 import org.hibernate.SessionFactory;
 
 import java.util.List;

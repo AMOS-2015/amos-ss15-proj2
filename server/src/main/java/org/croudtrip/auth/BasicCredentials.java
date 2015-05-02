@@ -3,7 +3,7 @@ package org.croudtrip.auth;
 
 import com.google.common.base.Objects;
 
-import org.croudtrip.account.User;
+import org.croudtrip.api.account.User;
 
 import java.util.Arrays;
 

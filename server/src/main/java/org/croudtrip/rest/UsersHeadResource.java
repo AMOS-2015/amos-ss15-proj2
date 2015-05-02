@@ -1,7 +1,7 @@
 package org.croudtrip.rest;
 
-import org.croudtrip.account.User;
-import org.croudtrip.account.UserManager;
+import org.croudtrip.api.account.User;
+import org.croudtrip.api.account.UserManager;
 
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;

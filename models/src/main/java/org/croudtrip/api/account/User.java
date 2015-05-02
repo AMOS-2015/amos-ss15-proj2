@@ -1,4 +1,4 @@
-package org.croudtrip.account;
+package org.croudtrip.api.account;
 
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -38,8 +38,8 @@ public class User {
     public static final String
             ENTITY_NAME = "User",
             COLUMN_ID = "user_id",
-            QUERY_NAME_FIND_ALL = "org.croudtrip.auth.User.findAll",
-            QUERY_NAME_FIND_BY_EMAIL = "org.croudtrip.auth.User.findMail",
+            QUERY_NAME_FIND_ALL = "org.croudtrip.api.account.User.findAll",
+            QUERY_NAME_FIND_BY_EMAIL = "org.croudtrip.api.account.User.findMail",
             QUERY_PARAM_MAIL = "email";
 
 
