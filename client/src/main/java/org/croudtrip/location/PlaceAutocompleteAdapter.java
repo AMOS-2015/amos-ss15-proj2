@@ -43,6 +43,8 @@ public class PlaceAutocompleteAdapter
      * Current results returned by this adapter.
      */
     private ArrayList<PlaceAutocomplete> mResultList;
+    private ArrayList<PlaceAutocomplete> history;
+
 
     /**
      * Handles autocomplete requests.
@@ -69,6 +71,10 @@ public class PlaceAutocompleteAdapter
         super(context, resource);
         mBounds = bounds;
         mPlaceFilter = filter;
+    }
+
+    public void setHistory(ArrayList<PlaceAutocomplete> history) {
+        this.history = history;
     }
 
     /**
@@ -99,7 +105,14 @@ public class PlaceAutocompleteAdapter
      */
     @Override
     public int getCount() {
-        return mResultList.size();
+        if (mResultList != null) {
+            return mResultList.size();
+        }
+        if (history != null) {
+            return history.size();
+        }
+
+        return 0;
     }
 
     /**
@@ -107,7 +120,13 @@ public class PlaceAutocompleteAdapter
      */
     @Override
     public PlaceAutocomplete getItem(int position) {
-        return mResultList.get(position);
+        if (mResultList != null) {
+            return mResultList.get(position);
+        }
+        if (history != null) {
+            return history.get(position);
+        }
+        return null;
     }
 
     /**
@@ -115,10 +134,21 @@ public class PlaceAutocompleteAdapter
      */
     @Override
     public Filter getFilter() {
+        Log.d("alex", "filter");
         Filter filter = new Filter() {
             @Override
             protected FilterResults performFiltering(CharSequence constraint) {
                 FilterResults results = new FilterResults();
+
+                Log.d("alex", "perform filtering: " + constraint);
+                if (constraint == null || constraint.length() < 2) {
+                    results.values = history;
+                    results.count = history.size();
+                    mResultList = history;
+                    Log.d("alex", "history mode");
+                    return results;
+                }
+
                 // Skip the autocomplete query if no constraints are given.
                 if (constraint != null) {
                     // Query the autocomplete API for the (constraint) search string.
@@ -135,9 +165,11 @@ public class PlaceAutocompleteAdapter
             @Override
             protected void publishResults(CharSequence constraint, FilterResults results) {
                 if (results != null && results.count > 0) {
+                    Log.d("alex", "2");
                     // The API returned at least one result, update the data.
                     notifyDataSetChanged();
                 } else {
+                    Log.d("alex", "3");
                     // The API did not return any results, invalidate the data set.
                     notifyDataSetInvalidated();
                 }
@@ -217,7 +249,7 @@ public class PlaceAutocompleteAdapter
         public CharSequence placeId;
         public CharSequence description;
 
-        PlaceAutocomplete(CharSequence placeId, CharSequence description) {
+        public PlaceAutocomplete(CharSequence placeId, CharSequence description) {
             this.placeId = placeId;
             this.description = description;
         }

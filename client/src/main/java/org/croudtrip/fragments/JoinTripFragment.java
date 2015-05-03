@@ -46,9 +46,11 @@ import org.croudtrip.Constants;
 import org.croudtrip.R;
 import org.croudtrip.api.TripsResource;
 import org.croudtrip.location.LocationUpdater;
+import org.croudtrip.location.MyAutoCompleteTextView;
 import org.croudtrip.location.PlaceAutocompleteAdapter;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -74,7 +76,7 @@ public class JoinTripFragment extends RoboFragment implements GoogleApiClient.On
     @InjectView(R.id.attributions) private TextView tv_attributions;
     @InjectView(R.id.address) private EditText tv_address;
     @InjectView(R.id.places) private Button btn_destination;
-    @InjectView(R.id.destination) private AutoCompleteTextView tv_destination;
+    @InjectView(R.id.destination) private MyAutoCompleteTextView tv_destination;
 
     @Inject LocationUpdater locationUpdater;
     @Inject
@@ -85,11 +87,6 @@ public class JoinTripFragment extends RoboFragment implements GoogleApiClient.On
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (googleApiClient == null) {
-            rebuildGoogleApiClient();
-        }
-
-
         geocoder = new Geocoder(getActivity());
 
         Toolbar toolbar = ((MaterialNavigationDrawer) this.getActivity()).getToolbar();
@@ -97,9 +94,16 @@ public class JoinTripFragment extends RoboFragment implements GoogleApiClient.On
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-
         super.onCreateView(inflater, container, savedInstanceState);
         setHasOptionsMenu(true);
+
+        if (googleApiClient == null) {
+            rebuildGoogleApiClient();
+        } else if (!googleApiClient.isConnected()) {
+            googleApiClient.connect();
+        }
+
+
 
         View view = inflater.inflate(R.layout.fragment_join_trip, container, false);
         return view;
@@ -110,9 +114,27 @@ public class JoinTripFragment extends RoboFragment implements GoogleApiClient.On
         super.onViewCreated(view, savedInstanceState);
 
         tv_destination.setOnItemClickListener(mAutocompleteClickListener);
+        tv_destination.setThreshold(0);
         //LatLngBounds bounds = LatLngBounds.builder().include(new LatLng(locationUpdater.getLastLocation().getLatitude(), locationUpdater.getLastLocation().getLongitude())).build();
         adapter = new PlaceAutocompleteAdapter(getActivity(), android.R.layout.simple_list_item_1, BOUNDS_ERLANGEN, null);
         tv_destination.setAdapter(adapter);
+        adapter.setGoogleApiClient(googleApiClient);
+        tv_destination.clearFocus();
+        tv_destination.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View view, boolean hasFocus) {
+                if(hasFocus){
+                    tv_destination.showDropDown();
+                }
+            }
+        });
+
+        ArrayList<PlaceAutocompleteAdapter.PlaceAutocomplete> history = new ArrayList<>();
+        for (int i=0; i<5; i++) {
+            PlaceAutocompleteAdapter.PlaceAutocomplete a = adapter.new PlaceAutocomplete(Math.random() + " dasdasda ", Math.random() + " sda sada");
+            history.add(a);
+        }
+        adapter.setHistory(history);
 
         btn_destination.setOnClickListener(new View.OnClickListener() {
             @Override
