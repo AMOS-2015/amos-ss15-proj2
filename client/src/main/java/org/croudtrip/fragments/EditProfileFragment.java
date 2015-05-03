@@ -1,11 +1,11 @@
 package org.croudtrip.fragments;
 
+import android.app.Dialog;
 import android.app.Fragment;
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
-import android.net.Uri;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -16,14 +16,29 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.NumberPicker;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.Toast;
 
 import com.getbase.floatingactionbutton.FloatingActionButton;
 
-import org.croudtrip.Constants;
 import org.croudtrip.R;
 import org.croudtrip.account.AccountManager;
 import org.croudtrip.account.User;
+import org.croudtrip.utils.DefaultTransformer;
+
+import java.io.InputStream;
+import java.net.URL;
+import java.util.Calendar;
+import java.util.Date;
+
+import javax.net.ssl.HttpsURLConnection;
+
+import rx.Observable;
+import rx.functions.Action1;
+import rx.functions.Func0;
+import timber.log.Timber;
 
 
 /**
@@ -35,11 +50,18 @@ public class EditProfileFragment extends Fragment {
 
 
     //************************* Variables ***************************//
+    String newFirstName, newLastName, newNumber, newAddress;
+    String tempFirstName, tempLastName, tempNumber, tempAddress;
+    Boolean newGenderIsMale, tempGender;
+    Integer newYearOfBirth, tempYearOfBirth;
+    Date newBirthDay;
+    String profileImageUrl, tempUrl;
+
     ImageView profilePicture;
-    EditText  profileNameEdit, phoneNumberEdit, addressEdit;
-    String newName, newNumber, newAddress;
-    String tempName, tempNumber, tempAddress;
-    Uri profileImageUri, tempUri;
+    EditText  firstNameEdit, lastNameEdit, phoneNumberEdit, addressEdit;
+    RadioGroup genderRadio;
+    Button yearPickerButton, save, discard;
+    FloatingActionButton editProfileImage;
 
     private User user;
 
@@ -58,10 +80,16 @@ public class EditProfileFragment extends Fragment {
         setHasOptionsMenu(true);
         View view = inflater.inflate(R.layout.fragment_edit_profile, container, false);
 
-        //Get EditTexts
-        profileNameEdit = (EditText)view.findViewById(R.id.edit_profile_name);
+        //Get EditTexts & Buttons
+        firstNameEdit = (EditText)view.findViewById(R.id.first_name);
+        lastNameEdit = (EditText)view.findViewById(R.id.last_name);
         phoneNumberEdit = (EditText)view.findViewById(R.id.edit_profile_phone);
         addressEdit = (EditText)view.findViewById(R.id.edit_profile_address);
+        yearPickerButton=(Button)view.findViewById(R.id.year_picker_button);
+        discard = (Button) view.findViewById(R.id.discard);
+        save = (Button) view.findViewById(R.id.save);
+        editProfileImage = (FloatingActionButton) view.findViewById(R.id.btn_edit_profile_image);
+        genderRadio = (RadioGroup) view.findViewById(R.id.radioGender);
 
         //Get the ImageView and fill it with the profile picture from SharedPrefs (Uri)
         // TODO
@@ -71,89 +99,177 @@ public class EditProfileFragment extends Fragment {
             profileImageUri = Uri.parse(prefs.getString(Constants.SHARED_PREF_KEY_PROFILE_IMAGE_URI,null));
         }
         */
-        if (profileImageUri != null) {
-            profilePicture.setImageURI(profileImageUri);
-            tempUri = profileImageUri;
-        }
-        else
-        {
-            profilePicture.setImageResource(R.drawable.background_drawer);
-        }
+
         final Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
         // Restore user from SharedPref file
 
         this.user = AccountManager.getLoggedInUser(this.getActivity().getApplicationContext());
 
-
         if(user != null) {
-            String name = null;
-            if (user.getFirstName() != null && user.getLastName() != null) {
-                name = user.getFirstName() + " " + user.getLastName();
-            } else if (user.getFirstName() != null) {
-                name = user.getFirstName();
-            } else if (user.getLastName() != null) {
-                name = user.getLastName();
-            }
-
-            //Fill EditText fields
-            if (name != null) {
-                profileNameEdit.setHint(name);
-                tempName = name;
+            // download avatar
+            if (user.getAvatarUrl() != null) {
+                profileImageUrl = user.getAvatarUrl();
+                tempUrl = user.getAvatarUrl();
+                Observable
+                        .defer(new Func0<Observable<Bitmap>>() {
+                            @Override
+                            public Observable<Bitmap> call() {
+                                try {
+                                    URL url = new URL(user.getAvatarUrl());
+                                    HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
+                                    connection.setDoInput(true);
+                                    connection.connect();
+                                    InputStream input = connection.getInputStream();
+                                    return Observable.just(BitmapFactory.decodeStream(input));
+                                } catch (Exception e) {
+                                    return Observable.error(e);
+                                }
+                            }
+                        })
+                        .compose(new DefaultTransformer<Bitmap>())
+                        .subscribe(new Action1<Bitmap>() {
+                            @Override
+                            public void call(Bitmap avatar) {
+                                if(avatar != null) {
+                                    profilePicture.setImageBitmap(avatar);
+                                }else{
+                                    Timber.d("Profile avatar is null");
+                                }
+                            }
+                        }, new Action1<Throwable>() {
+                            @Override
+                            public void call(Throwable throwable) {
+                                Timber.e(throwable, "Failed to download avatar");
+                            }
+                        });
             }
             else
             {
-                profileNameEdit.setHint("Unknown");
-                tempName = "Unknown";
+
+            }
+            //Fill EditText fields
+            if (user.getFirstName() != null) {
+                firstNameEdit.setText(user.getFirstName());
+                tempFirstName = user.getFirstName();
+                newFirstName = user.getFirstName();
+            }
+            else
+            {
+                firstNameEdit.setText("Unknown");
+                tempFirstName = "Unknown";
+                newFirstName = "Unknown";
+            }
+
+            if (user.getLastName() != null) {
+                lastNameEdit.setText(user.getLastName());
+                tempLastName = user.getLastName();
+                newLastName = user.getLastName();
+            }
+            else
+            {
+                lastNameEdit.setText("Unknown");
+                tempLastName = "Unknown";
+                newLastName="Unknown";
             }
 
             if (user.getPhoneNumber() != null) {
-                phoneNumberEdit.setHint(user.getPhoneNumber());
+                phoneNumberEdit.setText(user.getPhoneNumber());
                 tempNumber = user.getPhoneNumber();
+                newNumber=user.getPhoneNumber();
             }
             else
             {
-                phoneNumberEdit.setHint("Unknown");
+                phoneNumberEdit.setText("Unknown");
                 tempNumber = "Unknown";
+                newNumber="Unknown";
             }
 
             if (user.getAddress()!=null) {
-                addressEdit.setHint(user.getAddress());
+                addressEdit.setText(user.getAddress());
                 tempAddress = user.getAddress();
+                newAddress=user.getAddress();
             }
             else {
-                addressEdit.setHint("Unknown");
+                addressEdit.setText("Unknown");
                 tempAddress = "Unknown";
+                newAddress="Unknown";
             }
 
-            //Prepare variables to save them in SharedPrefs
-            newName = name;
-            newNumber = user.getPhoneNumber();
-            newAddress = user.getAddress();
+            if (user.getIsMale() != null) {
+                tempGender = user.getIsMale();
+                newGenderIsMale = user.getIsMale();
+                if (user.getIsMale()) {
+                    genderRadio.check(R.id.radio_male);
+                }
+                else
+                {
+                    genderRadio.check(R.id.radio_female);
+                }
+            }
+            else
+            {
+                genderRadio.check(R.id.radio_male);
+                tempGender = true;
+                newGenderIsMale = true;
+            }
+
+            if (user.getBirthDay() != null) {
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTime(user.getBirthDay());
+                yearPickerButton.setText(calendar.get(Calendar.YEAR)+"");
+                tempYearOfBirth = calendar.get(Calendar.YEAR);
+                newYearOfBirth = calendar.get(Calendar.YEAR);
+            }
+            else
+            {
+                yearPickerButton.setText("2000");
+                tempYearOfBirth = 2000;
+                newYearOfBirth = 2000;
+            }
         }
 
         //Listeners for EditTexts, save the string to a variable when Enter is pressed or focus is changed
         //Name
-        profileNameEdit.setOnKeyListener(new View.OnKeyListener() {
+        firstNameEdit.setOnKeyListener(new View.OnKeyListener() {
             public boolean onKey(View v, int keyCode, KeyEvent event) {
                 if ((event.getAction() == KeyEvent.ACTION_DOWN) &&
                         (keyCode == KeyEvent.KEYCODE_ENTER)) {
-                    newName = profileNameEdit.getText().toString();
+                    newFirstName = firstNameEdit.getText().toString();
                     return true;
                 }
                 return false;
             }
         });
 
-        profileNameEdit.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+        firstNameEdit.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
                 if(!hasFocus){
-                    newName = profileNameEdit.getText().toString();
+                    newFirstName = firstNameEdit.getText().toString();
                 }
             }
         });
 
 
+        lastNameEdit.setOnKeyListener(new View.OnKeyListener() {
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+                if ((event.getAction() == KeyEvent.ACTION_DOWN) &&
+                        (keyCode == KeyEvent.KEYCODE_ENTER)) {
+                    newLastName = lastNameEdit.getText().toString();
+                    return true;
+                }
+                return false;
+            }
+        });
+
+        lastNameEdit.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if(!hasFocus){
+                    newLastName = lastNameEdit.getText().toString();
+                }
+            }
+        });
         //Phone Number
         phoneNumberEdit.setOnKeyListener(new View.OnKeyListener() {
             public boolean onKey(View v, int keyCode, KeyEvent event) {
@@ -194,25 +310,32 @@ public class EditProfileFragment extends Fragment {
             }
         });
 
+        genderRadio.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener()
+        {
+            @Override
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                RadioButton checkedButton = (RadioButton) group.findViewById(checkedId);
+                newGenderIsMale = checkedButton.getText().equals("Male");
+            }
+        });
+
+    //Year picker button
+    yearPickerButton.setOnClickListener(new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            showYearPicker();
+        }
+    });
         // Discard changes button
-        Button discard = (Button) view.findViewById(R.id.discard);
         discard.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                profileNameEdit.setHint(tempName);
-                profileNameEdit.setText("");
-                phoneNumberEdit.setHint(tempNumber);
-                phoneNumberEdit.setText("");
-                addressEdit.setHint(tempAddress);
-                addressEdit.setText("");
-                Toast.makeText(getActivity(), "Changes discarded", Toast.LENGTH_SHORT)
-                        .show();
+                discardProfileChanges();
             }
         });
 
 
         // save changes button
-        Button save = (Button) view.findViewById(R.id.save);
         save.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -221,13 +344,11 @@ public class EditProfileFragment extends Fragment {
         });
 
         // change profile image button
-        FloatingActionButton editProfileImage = (FloatingActionButton) view.findViewById(R.id.btn_edit_profile_image);
         editProfileImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 //Save the previous picture Uri in a temporary variable and clear the ImageView while the user selects an image (maybe not the best practice)
 
-                tempUri = profileImageUri;
                 BitmapDrawable bd = (BitmapDrawable) profilePicture.getDrawable();
                 bd.getBitmap().recycle();
                 profilePicture.setImageBitmap(null);
@@ -246,13 +367,13 @@ public class EditProfileFragment extends Fragment {
         super.onActivityResult(requestCode, resultCode, data);
         if (data != null) {
             //Fill the ImageView
-            profileImageUri = data.getData();
-            profilePicture.setImageURI(profileImageUri);
+            //profileImageUri = data.getData();
+            //profilePicture.setImageURI(profileImageUri);
         } else {
             //Fill the ImageView with the previous image in case of failure
-            profilePicture.setImageURI(tempUri);
-            Toast.makeText(getActivity(), "An error occurred while getting the picture, please try again", Toast.LENGTH_SHORT)
-                    .show();
+            //profilePicture.setImageURI(tempUri);
+            //Toast.makeText(getActivity(), "An error occurred while getting the picture, please try again", Toast.LENGTH_SHORT)
+            //        .show();
         }
     }
     @Override
@@ -262,24 +383,42 @@ public class EditProfileFragment extends Fragment {
         //inflater.inflate(R.menu.menu_main, menu);
     }
 
+    public void discardProfileChanges() {
+        firstNameEdit.setText(tempFirstName);
+        lastNameEdit.setText(tempLastName);
+        phoneNumberEdit.setText(tempNumber);
+        addressEdit.setText(tempAddress);
+        if (tempGender)
+            genderRadio.check(R.id.radio_male);
+        else
+            genderRadio.check(R.id.radio_female);
+
+        yearPickerButton.setText(tempYearOfBirth+"");
+        Toast.makeText(getActivity(), "Changes discarded", Toast.LENGTH_SHORT)
+                .show();
+    }
     public void saveProfileChanges() {
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.YEAR, newYearOfBirth);
+        newBirthDay = calendar.getTime();
 
         // TODO: put all changes into the user object properly
         user = new User(
                 user.getId(),
                 user.getEmail(),
-                newName,
-                null,
+                newFirstName,
+                newLastName,
                 newNumber,
-                user.getIsMale(),
-                user.getBirthDay(),
+                newGenderIsMale,
+                newBirthDay,
                 newAddress,
-                null
+                profileImageUrl
         );
 
         //TODO: maybe pass a new password to the method
         AccountManager.saveUser(getActivity().getApplicationContext(), user, null);
 
+        /*
         SharedPreferences prefs = this.getActivity().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
 
@@ -287,18 +426,54 @@ public class EditProfileFragment extends Fragment {
             editor.putString(Constants.SHARED_PREF_KEY_PROFILE_IMAGE_URI, profileImageUri.toString());
         }
         editor.apply();
+        */
         Toast.makeText(getActivity(), "Profile Updated!", Toast.LENGTH_SHORT)
                 .show();
     }
 
+    public void showYearPicker() {
+
+        final Dialog yearDialog = new Dialog(getActivity());
+        yearDialog.setTitle("Year of Birth");
+        yearDialog.setContentView(R.layout.year_picker_dialog);
+        Button set = (Button) yearDialog.findViewById(R.id.set);
+        Button cancel = (Button) yearDialog.findViewById(R.id.cancel);
+        final NumberPicker yearPicker = (NumberPicker) yearDialog.findViewById(R.id.year_picker);
+        yearPicker.setMaxValue(2000); // max value 100
+        yearPicker.setMinValue(1920);   // min value 0
+        yearPicker.setWrapSelectorWheel(false);
+        yearPicker.setValue(Integer.parseInt(yearPickerButton.getText().toString()));
+        yearDialog.show();
+
+        set.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                newYearOfBirth = yearPicker.getValue();
+                yearPickerButton.setText(newYearOfBirth.toString());
+                yearDialog.hide();
+            }
+        });
+
+
+        cancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                yearDialog.hide();
+            }
+        });
+
+    }
+
     public void onDestroy() {
         super.onDestroy();
+        /*
         if (profileImageUri != null) {
             //Recycle the bitmap inside the profile picture ImageView to avoid Out of Memory errors
             BitmapDrawable bd = (BitmapDrawable) profilePicture.getDrawable();
             bd.getBitmap().recycle();
             profilePicture.setImageBitmap(null);
         }
+        */
     }
 }
 

@@ -146,7 +146,7 @@ public class AccountManager {
 
         Date birthday = null;
         if(prefs.contains(SHARED_PREF_KEY_BIRTHDAY)){
-            new Date(prefs.getLong(SHARED_PREF_KEY_BIRTHDAY, 0));
+            birthday = new Date(prefs.getLong(SHARED_PREF_KEY_BIRTHDAY, 0));
         }
 
         Boolean isMale = null;
