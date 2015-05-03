@@ -7,7 +7,7 @@ import org.croudtrip.api.trips.TripMatch;
 import org.croudtrip.api.trips.TripOffer;
 import org.croudtrip.api.trips.TripOfferDescription;
 import org.croudtrip.api.trips.TripRequestDescription;
-import org.croudtrip.api.trips.TripsManager;
+import org.croudtrip.trips.TripsManager;
 
 import java.util.List;
 

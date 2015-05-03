@@ -5,7 +5,7 @@ import com.google.common.base.Optional;
 import org.croudtrip.api.account.User;
 import org.croudtrip.api.account.Vehicle;
 import org.croudtrip.api.account.VehicleDescription;
-import org.croudtrip.api.account.VehicleManager;
+import org.croudtrip.account.VehicleManager;
 
 import javax.inject.Inject;
 import javax.validation.Valid;

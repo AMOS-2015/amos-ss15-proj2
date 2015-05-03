@@ -1,8 +1,10 @@
-package org.croudtrip.api.account;
+package org.croudtrip.account;
 
 
 import com.google.common.base.Optional;
 
+import org.croudtrip.api.account.User;
+import org.croudtrip.api.account.UserDescription;
 import org.croudtrip.auth.BasicAuthenticationUtils;
 import org.croudtrip.auth.BasicCredentials;
 import org.croudtrip.db.BasicCredentialsDAO;

@@ -1,4 +1,4 @@
-package org.croudtrip.api.account;
+package org.croudtrip.account;
 
 
 import javax.persistence.Column;

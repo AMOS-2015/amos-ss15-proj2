@@ -4,7 +4,7 @@ import com.google.common.base.Optional;
 
 import org.croudtrip.api.account.User;
 import org.croudtrip.api.account.UserDescription;
-import org.croudtrip.api.account.UserManager;
+import org.croudtrip.account.UserManager;
 
 import java.util.List;
 
