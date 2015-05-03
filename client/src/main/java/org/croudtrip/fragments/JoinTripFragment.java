@@ -75,15 +75,13 @@ public class JoinTripFragment extends RoboFragment implements GoogleApiClient.On
     private DatabaseHelper dbHelper;
     private GoogleApiClient googleApiClient;
     private PlaceAutocompleteAdapter adapter;
-    private static final LatLngBounds BOUNDS_ERLANGEN = new LatLngBounds(
-            new LatLng(49.5913193, 11.0097178), new LatLng(49.6498992, 10.8655223));
 
     private org.croudtrip.db.Place lastSelected; //TODO for po: decide what kind of places to save (real places, coordinates, custom string)
 
 
     @InjectView(R.id.name) private TextView tv_name;
     @InjectView(R.id.attributions) private TextView tv_attributions;
-    @InjectView(R.id.address) private EditText tv_address;
+    @InjectView(R.id.address) private TextView tv_address;
     @InjectView(R.id.places) private Button btn_destination;
     @InjectView(R.id.destination) private MyAutoCompleteTextView tv_destination;
 
@@ -97,8 +95,6 @@ public class JoinTripFragment extends RoboFragment implements GoogleApiClient.On
 
         geocoder = new Geocoder(getActivity());
         dbHelper = ((MainApplication) getActivity().getApplication()).getHelper();
-        //dbHelper.getPlaceDao().deleteById();
-
         Toolbar toolbar = ((MaterialNavigationDrawer) this.getActivity()).getToolbar();
     }
 
@@ -197,14 +193,9 @@ public class JoinTripFragment extends RoboFragment implements GoogleApiClient.On
                 editor.putInt(Constants.SHARED_PREF_KEY_WAITING_TIME, Integer.valueOf(maxWaitingTime.getText().toString()));
                 editor.apply();
 
-                try {
-                    if (lastSelected != null) {
-                        dbHelper.getPlaceDao().create(lastSelected);
-                        lastSelected = null;
-                    }
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
+                org.croudtrip.db.Place tempPlace = lastSelected;
+                lastSelected = null;
+
 
                 // retrieve current position
                 Location currentLocation = locationUpdater.getLastLocation();
@@ -228,6 +219,21 @@ public class JoinTripFragment extends RoboFragment implements GoogleApiClient.On
                 if (destination == null) {
                     Toast.makeText(getActivity().getApplicationContext(), R.string.offer_trip_no_destination, Toast.LENGTH_SHORT).show();
                     return;
+                }
+
+                try {
+                    if (tempPlace != null) {
+                        Log.d("alex", "Save place");
+                        dbHelper.getPlaceDao().create(tempPlace);
+                    } else {
+                        Log.d("alex", "Save custom place");
+                        tempPlace = new org.croudtrip.db.Place();
+                        tempPlace.setId(tv_destination.getText().toString());
+                        tempPlace.setDescription(tv_destination.getText().toString());
+                        dbHelper.getPlaceDao().create(tempPlace);
+                    }
+                } catch (SQLException e) {
+                    e.printStackTrace();
                 }
 
                 // Show the results for this search
@@ -349,16 +355,18 @@ public class JoinTripFragment extends RoboFragment implements GoogleApiClient.On
                 places.release();
                 return;
             }
-            // Get the Place object from the buffer.
-            final Place place = places.get(0);
+
+            Place place;
+            try {
+                place = places.get(0);
+            } catch (IllegalStateException e) {
+                places.release();
+                return;
+            }
             lastSelected = new org.croudtrip.db.Place();
             lastSelected.setId(place.getId());
             lastSelected.setDescription(place.getAddress() + "");
-
-            // Format details of the place for display and show it in a TextView.
-            tv_address.setText(formatPlaceDetails(getResources(), place.getName(),
-                    place.getId(), place.getAddress(), place.getPhoneNumber(),
-                    place.getWebsiteUri()));
+            tv_address.setText(place.getAddress());
 
 
             Log.d("alex", "Place details received: " + place.getName());
