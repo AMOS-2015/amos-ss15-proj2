@@ -43,13 +43,16 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import com.rengwuxian.materialedittext.MaterialEditText;
 
 import org.croudtrip.Constants;
+import org.croudtrip.MainApplication;
 import org.croudtrip.R;
 import org.croudtrip.api.TripsResource;
+import org.croudtrip.db.DatabaseHelper;
 import org.croudtrip.location.LocationUpdater;
 import org.croudtrip.location.MyAutoCompleteTextView;
 import org.croudtrip.location.PlaceAutocompleteAdapter;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -69,10 +72,13 @@ import rx.schedulers.Schedulers;
 public class JoinTripFragment extends RoboFragment implements GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks{
 
     private final int REQUEST_PLACE_PICKER = 122;
+    private DatabaseHelper dbHelper;
     private GoogleApiClient googleApiClient;
     private PlaceAutocompleteAdapter adapter;
     private static final LatLngBounds BOUNDS_ERLANGEN = new LatLngBounds(
             new LatLng(49.5913193, 11.0097178), new LatLng(49.6498992, 10.8655223));
+
+    private org.croudtrip.db.Place lastSelected; //TODO for po: decide what kind of places to save (real places, coordinates, custom string)
 
 
     @InjectView(R.id.name) private TextView tv_name;
@@ -90,6 +96,8 @@ public class JoinTripFragment extends RoboFragment implements GoogleApiClient.On
         super.onCreate(savedInstanceState);
 
         geocoder = new Geocoder(getActivity());
+        dbHelper = ((MainApplication) getActivity().getApplication()).getHelper();
+        //dbHelper.getPlaceDao().deleteById();
 
         Toolbar toolbar = ((MaterialNavigationDrawer) this.getActivity()).getToolbar();
     }
@@ -117,8 +125,8 @@ public class JoinTripFragment extends RoboFragment implements GoogleApiClient.On
 
         tv_destination.setOnItemClickListener(mAutocompleteClickListener);
         tv_destination.setThreshold(0);
-        //LatLngBounds bounds = LatLngBounds.builder().include(new LatLng(locationUpdater.getLastLocation().getLatitude(), locationUpdater.getLastLocation().getLongitude())).build();
-        adapter = new PlaceAutocompleteAdapter(getActivity(), android.R.layout.simple_list_item_1, BOUNDS_ERLANGEN, null);
+        LatLngBounds bounds = LatLngBounds.builder().include(new LatLng(locationUpdater.getLastLocation().getLatitude(), locationUpdater.getLastLocation().getLongitude())).build();
+        adapter = new PlaceAutocompleteAdapter(getActivity(), android.R.layout.simple_list_item_1, bounds, null);
         tv_destination.setAdapter(adapter);
         adapter.setGoogleApiClient(googleApiClient);
         tv_destination.clearFocus();
@@ -131,12 +139,22 @@ public class JoinTripFragment extends RoboFragment implements GoogleApiClient.On
             }
         });
 
-        ArrayList<PlaceAutocompleteAdapter.PlaceAutocomplete> history = new ArrayList<>();
-        for (int i=0; i<5; i++) {
-            PlaceAutocompleteAdapter.PlaceAutocomplete a = adapter.new PlaceAutocomplete(Math.random() + " dasdasda ", Math.random() + " sda sada");
-            history.add(a);
+        try {
+            List<org.croudtrip.db.Place> savedPlaces = dbHelper.getPlaceDao().queryForAll();
+            ArrayList<PlaceAutocompleteAdapter.PlaceAutocomplete> history = new ArrayList<>();
+            for (int i=0; i<savedPlaces.size(); i++) {
+                if (i == 5) {
+                    break;
+                }
+                Log.d("alex", "added historical place");
+                PlaceAutocompleteAdapter.PlaceAutocomplete a = adapter.new PlaceAutocomplete(savedPlaces.get(i).getId(), savedPlaces.get(i).getDescription());
+                history.add(a);
+            }
+            adapter.setHistory(history);
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
-        adapter.setHistory(history);
+
 
         // insert the last known location as soon as it is known
         ReactiveLocationProvider locationProvider = new ReactiveLocationProvider(getActivity());
@@ -178,6 +196,15 @@ public class JoinTripFragment extends RoboFragment implements GoogleApiClient.On
                 SharedPreferences.Editor editor = prefs.edit();
                 editor.putInt(Constants.SHARED_PREF_KEY_WAITING_TIME, Integer.valueOf(maxWaitingTime.getText().toString()));
                 editor.apply();
+
+                try {
+                    if (lastSelected != null) {
+                        dbHelper.getPlaceDao().create(lastSelected);
+                        lastSelected = null;
+                    }
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
 
                 // retrieve current position
                 Location currentLocation = locationUpdater.getLastLocation();
@@ -324,6 +351,9 @@ public class JoinTripFragment extends RoboFragment implements GoogleApiClient.On
             }
             // Get the Place object from the buffer.
             final Place place = places.get(0);
+            lastSelected = new org.croudtrip.db.Place();
+            lastSelected.setId(place.getId());
+            lastSelected.setDescription(place.getAddress() + "");
 
             // Format details of the place for display and show it in a TextView.
             tv_address.setText(formatPlaceDetails(getResources(), place.getName(),
