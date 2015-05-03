@@ -55,8 +55,11 @@ import javax.inject.Inject;
 
 import it.neokree.materialnavigationdrawer.MaterialNavigationDrawer;
 import it.neokree.materialnavigationdrawer.elements.MaterialSection;
+import pl.charmas.android.reactivelocation.ReactiveLocationProvider;
 import roboguice.fragment.provided.RoboFragment;
 import roboguice.inject.InjectView;
+import rx.functions.Action1;
+import rx.schedulers.Schedulers;
 
 /**
  * Created by alex on 22.04.15.
@@ -77,8 +80,7 @@ public class JoinTripFragment extends RoboFragment implements GoogleApiClient.On
     @InjectView(R.id.destination) private AutoCompleteTextView tv_destination;
 
     @Inject LocationUpdater locationUpdater;
-    @Inject
-    TripsResource tripsResource;
+    @Inject TripsResource tripsResource;
     private Geocoder geocoder;
 
     @Override
@@ -113,6 +115,17 @@ public class JoinTripFragment extends RoboFragment implements GoogleApiClient.On
         //LatLngBounds bounds = LatLngBounds.builder().include(new LatLng(locationUpdater.getLastLocation().getLatitude(), locationUpdater.getLastLocation().getLongitude())).build();
         adapter = new PlaceAutocompleteAdapter(getActivity(), android.R.layout.simple_list_item_1, BOUNDS_ERLANGEN, null);
         tv_destination.setAdapter(adapter);
+
+        // insert the last known location as soon as it is known
+        ReactiveLocationProvider locationProvider = new ReactiveLocationProvider(getActivity());
+        locationProvider.getLastKnownLocation().observeOn(Schedulers.io())
+                                               .subscribe(new Action1<Location>() {
+                                                   @Override
+                                                   public void call(Location location) {
+                                                       LatLngBounds bounds = LatLngBounds.builder().include(new LatLng(location.getLatitude(), location.getLongitude())).build();
+                                                       adapter.setBounds(bounds);
+                                                   }
+                                               });
 
         btn_destination.setOnClickListener(new View.OnClickListener() {
             @Override
