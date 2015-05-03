@@ -111,7 +111,6 @@ public class MainActivity extends AbstractRoboDrawerActivity {
         // create bottom section
         this.addBottomSection(newSection(getString(R.string.menu_settings), R.drawable.ic_settings, new SettingsFragment()));
 
-        Log.d("alex", "GPS: " + GPSavailable());
         if (!GPSavailable()) {
             checkForGPS();
         }
