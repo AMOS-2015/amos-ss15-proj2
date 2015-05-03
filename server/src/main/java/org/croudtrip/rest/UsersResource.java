@@ -42,6 +42,10 @@ public class UsersResource {
     @POST
     @UnitOfWork
     public User registerUser(@Valid UserDescription description) {
+        if (description.getEmail() == null || description.getPassword() == null
+                || description.getFirstName() == null || description.getLastName() == null) {
+            throw RestUtils.createJsonFormattedException("email, password, first name and last name may not be empty", 400);
+        }
         if (userManager.findUserByEmail(description.getEmail()).isPresent()) {
             throw RestUtils.createJsonFormattedException("email already registered", 409);
         }
@@ -76,14 +80,8 @@ public class UsersResource {
     @PUT
     @Path("/me")
     @UnitOfWork
-    public User updateUser(@Auth User user, User updatedUser) {
-        if (user.getId() != updatedUser.getId()) {
-            throw RestUtils.createUnauthorizedException();
-        }
-        if (!user.getEmail().equals(updatedUser.getEmail())) {
-            throw RestUtils.createJsonFormattedException("cannot change email", 400);
-        }
-        return userManager.updateUser(updatedUser);
+    public User updateUser(@Auth User user, UserDescription updatedUser) {
+        return userManager.updateUser(user, updatedUser);
     }
 
 

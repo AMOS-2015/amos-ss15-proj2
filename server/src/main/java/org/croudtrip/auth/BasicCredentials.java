@@ -55,10 +55,16 @@ public class BasicCredentials {
 
 	BasicCredentials() { }
 
-	public BasicCredentials(User user, byte[] encryptedPassword, byte[] salt) {
+	public BasicCredentials(long id, User user, byte[] encryptedPassword, byte[] salt) {
+		this.id = id;
 		this.user = user;
 		this.encryptedPassword = encryptedPassword;
 		this.salt = salt;
+	}
+
+
+	public long getId() {
+		return id;
 	}
 
 

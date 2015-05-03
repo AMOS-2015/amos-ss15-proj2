@@ -37,6 +37,8 @@ public class UserManager {
 
 
 	public User addUser(UserDescription userDescription) {
+		//  email, first name, last name and password cannot be null
+		Assert.assertNotNull(userDescription.getEmail(), userDescription.getFirstName(), userDescription.getLastName(), userDescription.getPassword());
 		// email must be unique
 		Assert.assertFalse(
 				findUserByEmail(userDescription.getEmail()).isPresent(),
@@ -50,16 +52,36 @@ public class UserManager {
 		// store credentials
 		byte[] salt = authenticationUtils.generateSalt();
 		byte[] encryptedPassword = authenticationUtils.getEncryptedPassword(userDescription.getPassword(), salt);
-		BasicCredentials credentials = new BasicCredentials(user, encryptedPassword, salt);
+		BasicCredentials credentials = new BasicCredentials(0, user, encryptedPassword, salt);
 		credentialsDAO.save(credentials);
 
 		return user;
 	}
 
 
-	public User updateUser(User user) {
-		user.setLastModified(System.currentTimeMillis() / 1000);
-		userDAO.update(user);
+	public User updateUser(User user, UserDescription userDescription) {
+		// update user
+		User updatedUser = new User(user.getId(),
+				getNonNull(userDescription.getEmail(), user.getEmail()),
+				getNonNull(userDescription.getFirstName(), user.getFirstName()),
+				getNonNull(userDescription.getLastName(), user.getLastName()),
+				getNonNull(userDescription.getPhoneNumber(), user.getPhoneNumber()),
+				getNonNull(userDescription.getIsMale(), user.getIsMale()),
+				getNonNull(userDescription.getBirthday(), user.getBirthDay()),
+				getNonNull(userDescription.getAddress(), user.getAddress()),
+				getNonNull(userDescription.getAvatarUrl(), user.getAvatarUrl()),
+				System.currentTimeMillis() / 1000);
+		userDAO.update(updatedUser);
+
+		// update password
+		if (userDescription.getPassword() != null) {
+			byte[] salt = authenticationUtils.generateSalt();
+			byte[] encryptedPassword = authenticationUtils.getEncryptedPassword(userDescription.getPassword(), salt);
+			BasicCredentials credentials = credentialsDAO.findByUserId(user.getId()).get();
+			BasicCredentials updatedCredentials = new BasicCredentials(credentials.getId(), updatedUser, encryptedPassword, salt);
+			credentialsDAO.update(updatedCredentials);
+		}
+
 		return user;
 	}
 
@@ -89,5 +111,10 @@ public class UserManager {
 		return credentialsDAO.findByUserId(userId);
 	}
 
+
+	private <T> T getNonNull(T value, T defaultValue) {
+		if (value == null) return defaultValue;
+		return value;
+	}
 
 }

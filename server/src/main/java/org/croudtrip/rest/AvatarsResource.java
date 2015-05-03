@@ -6,6 +6,7 @@ import org.croudtrip.api.account.User;
 import org.croudtrip.account.Avatar;
 import org.croudtrip.account.AvatarManager;
 import org.croudtrip.account.UserManager;
+import org.croudtrip.api.account.UserDescription;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 
@@ -86,18 +87,8 @@ public class AvatarsResource {
 
         // update user
         String avatarUrl = UriBuilder.fromUri(uriInfo.getAbsolutePath()).path(String.valueOf(avatarId)).build().toString();
-        User updatedUser = new User(
-                user.getId(),
-                user.getEmail(),
-                user.getFirstName(),
-                user.getLastName(),
-                user.getPhoneNumber(),
-                user.getIsMale(),
-                user.getBirthDay(),
-                user.getAddress(),
-                avatarUrl,
-                user.getLastModified());
-        return userManager.updateUser(updatedUser);
+        UserDescription updatedUser = new UserDescription(null, null, null, null, null, null, null, null, avatarUrl);
+        return userManager.updateUser(user, updatedUser);
     }
 
 
