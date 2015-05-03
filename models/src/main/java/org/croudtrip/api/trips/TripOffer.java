@@ -1,11 +1,11 @@
-package org.croudtrip.trips;
+package org.croudtrip.api.trips;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Objects;
 
-import org.croudtrip.account.User;
-import org.croudtrip.directions.Route;
+import org.croudtrip.api.account.User;
+import org.croudtrip.api.directions.Route;
 
 import javax.persistence.Column;
 import javax.persistence.Embedded;
@@ -35,7 +35,7 @@ public class TripOffer {
 	public static final String
 			ENTITY_NAME =  "TripOffer",
 			COLUMN_ID = "trip_offer_id",
-			QUERY_NAME_FIND_ALL = "org.croudtrip.trips.TripOffer.findAll";
+			QUERY_NAME_FIND_ALL = "org.croudtrip.api.trips.TripOffer.findAll";
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

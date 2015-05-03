@@ -3,7 +3,7 @@ package org.croudtrip.db;
 
 import com.google.common.base.Optional;
 
-import org.croudtrip.account.Vehicle;
+import org.croudtrip.api.account.Vehicle;
 import org.hibernate.SessionFactory;
 
 import javax.inject.Inject;

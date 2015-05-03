@@ -1,4 +1,4 @@
-package org.croudtrip.account;
+package org.croudtrip.api.account;
 
 
 import com.google.common.base.Optional;
@@ -41,7 +41,8 @@ public class UserManager {
 				"user with email " + userDescription.getEmail() + " already registered");
 
 		// store new user
-		User user = new User(0, userDescription.getEmail(), userDescription.getFirstName(), userDescription.getLastName(), null, null, null, null, null);
+		long lastModified = System.currentTimeMillis() / 1000;
+		User user = new User(0, userDescription.getEmail(), userDescription.getFirstName(), userDescription.getLastName(), null, null, null, null, null, lastModified);
 		userDAO.save(user);
 
 		// store credentials
@@ -55,6 +56,7 @@ public class UserManager {
 
 
 	public User updateUser(User user) {
+		user.setLastModified(System.currentTimeMillis() / 1000);
 		userDAO.update(user);
 		return user;
 	}

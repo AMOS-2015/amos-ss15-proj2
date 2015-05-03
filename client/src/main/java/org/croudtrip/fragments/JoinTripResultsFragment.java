@@ -10,11 +10,11 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import org.croudtrip.R;
-import org.croudtrip.TripsResource;
-import org.croudtrip.directions.RouteLocation;
+import org.croudtrip.api.TripsResource;
+import org.croudtrip.api.directions.RouteLocation;
+import org.croudtrip.api.trips.TripMatch;
+import org.croudtrip.api.trips.TripRequestDescription;
 import org.croudtrip.trip.JoinTripResultsAdapter;
-import org.croudtrip.trips.TripMatch;
-import org.croudtrip.trips.TripRequestDescription;
 
 import java.util.List;
 

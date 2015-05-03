@@ -1,4 +1,4 @@
-package org.croudtrip.directions;
+package org.croudtrip.api.directions;
 
 import com.google.maps.DirectionsApi;
 import com.google.maps.GeoApiContext;

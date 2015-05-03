@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.util.Base64;
 
 import org.croudtrip.activities.LoginActivity;
+import org.croudtrip.api.account.User;
 
 import java.util.Date;
 
@@ -32,6 +33,7 @@ public class AccountManager {
     private final static String SHARED_PREF_KEY_ID = "id";
     private final static String SHARED_PREF_KEY_MALE = "male";
     private final static String SHARED_PREF_KEY_AVATAR_URL = "avatar";
+    private final static String SHARED_PREF_KEY_LAST_MODIFIED = "last_modified";
 
 
     //******************************* Methods ********************************//
@@ -79,6 +81,7 @@ public class AccountManager {
         editor.putString(SHARED_PREF_KEY_LASTNAME, user.getLastName());
         editor.putString(SHARED_PREF_KEY_PHONE, user.getPhoneNumber());
         editor.putString(SHARED_PREF_KEY_AVATAR_URL, user.getAvatarUrl());
+        editor.putLong(SHARED_PREF_KEY_LAST_MODIFIED, user.getLastModified());
 
         if(user.getBirthDay() != null) {
             editor.putLong(SHARED_PREF_KEY_BIRTHDAY, user.getBirthDay().getTime());
@@ -163,8 +166,8 @@ public class AccountManager {
                 isMale,
                 birthday,
                 prefs.getString(SHARED_PREF_KEY_ADDRESS, null),
-                prefs.getString(SHARED_PREF_KEY_AVATAR_URL, null)
-        );
+                prefs.getString(SHARED_PREF_KEY_AVATAR_URL, null),
+                prefs.getLong(SHARED_PREF_KEY_LAST_MODIFIED, 0));
         return user;
     }
 

@@ -20,10 +20,11 @@ import com.google.android.gms.location.LocationRequest;
 import org.croudtrip.Constants;
 import org.croudtrip.R;
 import org.croudtrip.account.AccountManager;
-import org.croudtrip.account.User;
+import org.croudtrip.api.account.User;
 import org.croudtrip.fragments.JoinTripFragment;
 import org.croudtrip.fragments.NavigationFragment;
 import org.croudtrip.fragments.OfferTripFragment;
+import org.croudtrip.fragments.PickUpPassengerFragment;
 import org.croudtrip.fragments.ProfileFragment;
 import org.croudtrip.fragments.SettingsFragment;
 import org.croudtrip.location.LocationUpdater;
@@ -95,12 +96,21 @@ public class MainActivity extends AbstractRoboDrawerActivity {
         }
         this.addSection(newSection(getString(R.string.navigation), R.drawable.distance, new NavigationFragment()));
 
+        // TODO: remove from navigation drawer and call after push notification with REAL data
+        PickUpPassengerFragment fragment = new PickUpPassengerFragment();
+        Bundle args = new Bundle();
+        args.putString(PickUpPassengerFragment.KEY_PASSENGER_NAME, "Otto");
+        args.putDouble(PickUpPassengerFragment.KEY_PASSENGER_LATITUDE, 1234.5);
+        args.putDouble(PickUpPassengerFragment.KEY_PASSENGER_LONGITUDE, 678.9);
+        args.putInt(PickUpPassengerFragment.KEY_PASSENGER_PRICE, 200);
+        fragment.setArguments(args);
+        this.addSection(newSection("Pick up passenger", R.drawable.distance, fragment));
+
         ((MaterialSection) getSectionList().get(0)).setNotifications(3);
 
         // create bottom section
         this.addBottomSection(newSection(getString(R.string.menu_settings), R.drawable.ic_settings, new SettingsFragment()));
 
-        Log.d("alex", "GPS: " + GPSavailable());
         if (!GPSavailable()) {
             checkForGPS();
         }

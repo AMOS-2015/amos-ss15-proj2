@@ -1,4 +1,4 @@
-package org.croudtrip.account;
+package org.croudtrip.api.account;
 
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -38,8 +38,8 @@ public class User {
     public static final String
             ENTITY_NAME = "User",
             COLUMN_ID = "user_id",
-            QUERY_NAME_FIND_ALL = "org.croudtrip.auth.User.findAll",
-            QUERY_NAME_FIND_BY_EMAIL = "org.croudtrip.auth.User.findMail",
+            QUERY_NAME_FIND_ALL = "org.croudtrip.api.account.User.findAll",
+            QUERY_NAME_FIND_BY_EMAIL = "org.croudtrip.api.account.User.findMail",
             QUERY_PARAM_MAIL = "email";
 
 
@@ -77,6 +77,9 @@ public class User {
     @Column(name = "avatar_url", nullable = true)
     private String avatarUrl;
 
+    @Column(name = "last_modified", nullable = false)
+    private long lastModified; // unix timestamp in seconds
+
     User() { }
 
     @JsonCreator
@@ -89,7 +92,8 @@ public class User {
             @JsonProperty("isMale") Boolean isMale,
             @JsonProperty("birthDay") Date birthDay,
             @JsonProperty("address") String address,
-            @JsonProperty("avatarUrl") String avatarUrl) {
+            @JsonProperty("avatarUrl") String avatarUrl,
+            @JsonProperty("lastModified") long lastModified) {
 
         this.id = id;
         this.email = email;
@@ -100,6 +104,7 @@ public class User {
         this.birthDay = birthDay;
         this.address = address;
         this.avatarUrl = avatarUrl;
+        this.lastModified = lastModified;
     }
 
 
@@ -148,6 +153,16 @@ public class User {
     }
 
 
+    public long getLastModified() {
+        return lastModified;
+    }
+
+
+    public void setLastModified(long lastModified) {
+        this.lastModified = lastModified;
+    }
+
+
     @Override
     public boolean equals(Object other) {
         if (other == null || !(other instanceof User)) return false;
@@ -160,13 +175,14 @@ public class User {
                 && Objects.equal(isMale, user.isMale)
                 && Objects.equal(birthDay, user.birthDay)
                 && Objects.equal(address, user.address)
-                && Objects.equal(avatarUrl, user.avatarUrl);
+                && Objects.equal(avatarUrl, user.avatarUrl)
+                && Objects.equal(lastModified, user.lastModified);
     }
 
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(id, email, firstName, lastName, phoneNumber, isMale, birthDay, address, avatarUrl);
+        return Objects.hashCode(id, email, firstName, lastName, phoneNumber, isMale, birthDay, address, avatarUrl, lastModified);
     }
 
 }

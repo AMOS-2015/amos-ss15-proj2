@@ -1,4 +1,4 @@
-package org.croudtrip.account;
+package org.croudtrip.api.account;
 
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -30,7 +30,7 @@ public class Vehicle {
 	public static final String
 			ENTITY_NAME = "Vehicle",
 			COLUMN_ID = "vehicle_id",
-			QUERY_NAME_FIND_BY_USER_ID = "org.croudtrip.auth.Vehicle.findByUserId",
+			QUERY_NAME_FIND_BY_USER_ID = "org.croudtrip.api.account.Vehicle.findByUserId",
 			QUERY_PARAM_USER_ID = "user_id";
 
 

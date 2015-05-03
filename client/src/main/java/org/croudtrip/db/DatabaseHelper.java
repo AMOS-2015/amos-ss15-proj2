@@ -31,6 +31,8 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 
     // The DAO object we use to access the DB_Dummy table
     private Dao<DB_Dummy, Long> dummyDAO = null;
+    private Dao<Place, String> placeDAO = null;
+
 
     //*********************** Constructor ***********************//
 
@@ -49,6 +51,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
         try {
             Timber.i("onCreate");
             TableUtils.createTable(connectionSource, DB_Dummy.class);
+            TableUtils.createTable(connectionSource, Place.class);
         } catch (SQLException e) {
             Timber.e("Can't create tables", e);
             throw new RuntimeException(e);
@@ -65,6 +68,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
         try {
             Timber.i("onUpgrade");
             TableUtils.dropTable(connectionSource, DB_Dummy.class, true);
+            TableUtils.dropTable(connectionSource, Place.class, true);
 
             // After the old tables have been dropped, simply create the new ones
             onCreate(db, connectionSource);
@@ -85,6 +89,13 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
             dummyDAO = getDao(DB_Dummy.class);
         }
         return dummyDAO;
+    }
+
+    public Dao<Place, String> getPlaceDao() throws SQLException{
+        if (placeDAO == null) {
+            placeDAO = getDao(Place.class);
+        }
+        return placeDAO;
     }
 
 

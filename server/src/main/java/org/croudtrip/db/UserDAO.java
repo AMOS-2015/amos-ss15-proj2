@@ -3,7 +3,7 @@ package org.croudtrip.db;
 
 import com.google.common.base.Optional;
 
-import org.croudtrip.account.User;
+import org.croudtrip.api.account.User;
 import org.hibernate.SessionFactory;
 
 import java.util.List;
