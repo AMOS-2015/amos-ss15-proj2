@@ -58,6 +58,7 @@
                 android:layout_marginBottom="@dimen/activity_vertical_margin"
                 android:textAppearance="@android:style/TextAppearance.Large"
                 android:text="@string/profile_unknown"
+                android:textColor="@color/text"
                 />
 
             <TextView
@@ -72,6 +73,7 @@
                 android:textAppearance="@android:style/TextAppearance.Medium"
                 android:layout_marginBottom="5dp"
                 android:text="@string/profile_unknown"
+                android:textColor="@color/text"
                 />
 
             <TextView
@@ -86,6 +88,7 @@
                 android:textAppearance="@android:style/TextAppearance.Medium"
                 android:layout_marginBottom="@dimen/activity_vertical_margin"
                 android:text="@string/profile_unknown"
+                android:textColor="@color/text"
                 />
 
             <TextView
@@ -95,6 +98,7 @@
                 android:layout_width="match_parent"
                 android:text="@string/profile_gender"
                 style="?android:attr/listSeparatorTextViewStyle"
+                android:textColor="@color/secondary_text"
                 />
 
             <TextView
@@ -104,6 +108,7 @@
                 android:gravity="center_vertical"
                 android:layout_below="@id/tv_profile_gender_title"
                 android:text="@string/profile_unknown"
+                android:textColor="@color/secondary_text"
                 />
 
             <TextView
@@ -113,7 +118,8 @@
                 android:layout_width="match_parent"
                 android:text="@string/profile_birthyear"
                 android:layout_marginTop="@dimen/activity_vertical_margin"
-                style="?android:attr/listSeparatorTextViewStyle" />
+                style="?android:attr/listSeparatorTextViewStyle"
+                android:textColor="@color/secondary_text"/>
 
             <TextView
                 android:id="@+id/tv_profile_birthyear"
@@ -122,6 +128,7 @@
                 android:gravity="center_vertical"
                 android:layout_below="@id/tv_profile_birthyear_title"
                 android:text="@string/profile_unknown"
+                android:textColor="@color/secondary_text"
                 />
 
             <TextView
@@ -131,7 +138,8 @@
                 android:layout_width="match_parent"
                 android:text="@string/profile_address"
                 android:layout_marginTop="@dimen/activity_vertical_margin"
-                style="?android:attr/listSeparatorTextViewStyle" />
+                style="?android:attr/listSeparatorTextViewStyle"
+                android:textColor="@color/secondary_text"/>
 
             <TextView
                 android:id="@+id/tv_profile_address"
@@ -140,6 +148,7 @@
                 android:gravity="center_vertical"
                 android:layout_below="@id/tv_profile_address_title"
                 android:text="@string/profile_unknown"
+                android:textColor="@color/secondary_text"
                 />
 
 
