@@ -10,7 +10,6 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.CheckBox;
@@ -21,6 +20,7 @@ import org.croudtrip.Constants;
 import org.croudtrip.R;
 import org.croudtrip.account.AccountManager;
 import org.croudtrip.api.account.User;
+import org.croudtrip.fragments.GcmTestFragment;
 import org.croudtrip.fragments.JoinTripFragment;
 import org.croudtrip.fragments.NavigationFragment;
 import org.croudtrip.fragments.OfferTripFragment;
@@ -110,6 +110,9 @@ public class MainActivity extends AbstractRoboDrawerActivity {
 
         // create bottom section
         this.addBottomSection(newSection(getString(R.string.menu_settings), R.drawable.ic_settings, new SettingsFragment()));
+
+        // test gcm section TODO remove this at some point after the next demo
+        addSection(newSection("GCM Demo", (Bitmap) null, new GcmTestFragment()));
 
         if (!GPSavailable()) {
             checkForGPS();

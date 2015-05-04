@@ -50,7 +50,7 @@ public class GcmManager {
 			@Override
 			public Observable<String> call() {
 				String regId = loadRegId();
-				if (regId == null) {
+				if (regId != null) {
 					return Observable.just(regId);
 				} else {
 					try {
@@ -70,7 +70,7 @@ public class GcmManager {
 			@Override
 			public Observable<Void> call(GcmRegistration gcmRegistration) {
 				storeRegId(gcmRegistration.getGcmId());
-				return null;
+				return Observable.just(null);
 			}
 		});
 	}
