@@ -1,11 +1,11 @@
 package org.croudtrip.rest;
 
+import com.google.common.base.Optional;
+
 import org.croudtrip.api.account.User;
 import org.croudtrip.api.gcm.GcmRegistration;
 import org.croudtrip.api.gcm.GcmRegistrationDescription;
-import org.croudtrip.db.GcmRegistrationDAO;
-
-import java.util.List;
+import org.croudtrip.gcm.GcmManager;
 
 import javax.inject.Inject;
 import javax.validation.Valid;
@@ -27,27 +27,27 @@ import io.dropwizard.hibernate.UnitOfWork;
 @Consumes(MediaType.APPLICATION_JSON)
 public class GcmRegistrationResource {
 
-    private final GcmRegistrationDAO gcmRegistrationDAO;
+    private final GcmManager gcmManager;
 
     @Inject
-    GcmRegistrationResource(GcmRegistrationDAO gcmRegistrationDAO) {
-        this.gcmRegistrationDAO = gcmRegistrationDAO;
+    GcmRegistrationResource(GcmManager gcmManager) {
+        this.gcmManager = gcmManager;
     }
 
 
     @PUT
     @UnitOfWork
     public GcmRegistration register(@Auth User user, @Valid GcmRegistrationDescription description) {
-        GcmRegistration registration = new GcmRegistration(0, description.getGcmId(), user);
-        gcmRegistrationDAO.save(registration);
-        return registration;
+        return gcmManager.register(user, description);
     }
 
 
     @GET
     @UnitOfWork
-    public List<GcmRegistration> getRegistrations() {
-        return gcmRegistrationDAO.findAll();
+    public GcmRegistration getRegistration(@Auth User user) {
+        Optional<GcmRegistration> registration = gcmManager.findRegistrationByUser(user);
+        if (registration.isPresent()) return registration.get();
+        else throw RestUtils.createNotFoundException();
     }
 
 }

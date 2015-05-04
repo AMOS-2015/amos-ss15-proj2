@@ -26,6 +26,10 @@ import javax.persistence.Table;
 		@NamedQuery(
 				name = GcmRegistration.QUERY_NAME_FIND_ALL,
 				query = "SELECT r FROM " + GcmRegistration.ENTITY_NAME + " r"
+		),
+		@NamedQuery(
+				name = GcmRegistration.QUERY_NAME_FIND_BY_USER_ID,
+				query = "SELECT r FROM " + GcmRegistration.ENTITY_NAME + " r WHERE r.user.id = :" + GcmRegistration.QUERY_PARAM_USER_ID
 		)
 })
 public class GcmRegistration {
@@ -33,7 +37,9 @@ public class GcmRegistration {
 	public static final String
 			ENTITY_NAME = "GcmRegistration",
 			COLUMN_ID = "gcm_registration_id",
-			QUERY_NAME_FIND_ALL = "org.croudtrip.api.gcm.GcmRegistration.findAll";
+			QUERY_NAME_FIND_ALL = "org.croudtrip.api.gcm.GcmRegistration.findAll",
+			QUERY_NAME_FIND_BY_USER_ID = "org.croudtrip.api.gcm.GcmRegistration.findByUserId",
+			QUERY_PARAM_USER_ID = "user_id";
 
 
 	@Id
