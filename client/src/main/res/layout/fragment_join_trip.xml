@@ -17,7 +17,7 @@
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/join_choose_destination"
+            android:text="@string/join_specify_start"
             android:id="@+id/places"
             android:layout_gravity="center_horizontal" />
 
