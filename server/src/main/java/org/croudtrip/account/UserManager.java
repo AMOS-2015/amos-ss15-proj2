@@ -60,6 +60,11 @@ public class UserManager {
 
 
 	public User updateUser(User user, UserDescription userDescription) {
+		// email must be unique
+		Optional<User> oldUser = findUserByEmail(userDescription.getEmail());
+		Assert.assertFalse(oldUser.isPresent() && oldUser.get().getId() != user.getId(),
+				"user with email " + userDescription.getEmail() + " already registered");
+
 		// update user
 		User updatedUser = new User(user.getId(),
 				getNonNull(userDescription.getEmail(), user.getEmail()),

@@ -2,9 +2,9 @@ package org.croudtrip.rest;
 
 import com.google.common.base.Optional;
 
+import org.croudtrip.account.UserManager;
 import org.croudtrip.api.account.User;
 import org.croudtrip.api.account.UserDescription;
-import org.croudtrip.account.UserManager;
 
 import java.util.List;
 
@@ -81,6 +81,11 @@ public class UsersResource {
     @Path("/me")
     @UnitOfWork
     public User updateUser(@Auth User user, UserDescription updatedUser) {
+        // email must be unique
+        Optional<User> oldUser = userManager.findUserByEmail(updatedUser.getEmail());
+        if (oldUser.isPresent() && oldUser.get().getId() != user.getId()) {
+            throw RestUtils.createJsonFormattedException("user with email " + updatedUser.getEmail() + " already registered", 400);
+        }
         return userManager.updateUser(user, updatedUser);
     }
 
