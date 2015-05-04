@@ -13,6 +13,7 @@ import java.io.IOException;
 import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -47,6 +48,15 @@ public class GcmRegistrationResource {
     @UnitOfWork
     public GcmRegistration register(@Auth User user, @Valid GcmRegistrationDescription description) {
         return gcmManager.register(user, description);
+    }
+
+
+    @DELETE
+    @UnitOfWork
+    public void unregister(@Auth User user) {
+        Optional<GcmRegistration> registration = gcmManager.findRegistrationByUser(user);
+        if (!registration.isPresent()) throw RestUtils.createNotFoundException();
+        gcmManager.unregister(registration.get());
     }
 
 
