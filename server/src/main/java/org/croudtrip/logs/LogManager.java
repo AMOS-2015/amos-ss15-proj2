@@ -61,8 +61,8 @@ public class LogManager {
 	}
 
 
-	public List<LogEntry> getAll() {
-		return logEntryDAO.findAll();
+	public List<LogEntry> findN(int n) {
+		return logEntryDAO.findN(n);
 	}
 
 

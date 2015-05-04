@@ -10,6 +10,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
 import io.dropwizard.hibernate.UnitOfWork;
@@ -31,8 +32,9 @@ public class LogsResource {
 
     @GET
     @UnitOfWork
-    public List<LogEntry> getLogs() {
-        return logManager.getAll();
+    public List<LogEntry> getLogs(@QueryParam("count") int count) {
+        if (count < 1) throw RestUtils.createJsonFormattedException("query param \"count\" must be > 0", 400);
+        return logManager.findN(count);
     }
 
 }

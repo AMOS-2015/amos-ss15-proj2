@@ -21,8 +21,8 @@ import javax.persistence.Table;
 @NamedQueries({
 		@NamedQuery(
 				name = LogEntry.QUERY_NAME_FIND_ALL,
-				query = "SELECT l FROM " + LogEntry.ENTITY_NAME + " l"
-		)
+				query = "SELECT l FROM " + LogEntry.ENTITY_NAME + " l ORDER BY " + LogEntry.COLUMN_ID + " DESC"
+		),
 })
 public class LogEntry {
 

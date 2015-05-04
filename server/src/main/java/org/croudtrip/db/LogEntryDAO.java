@@ -15,10 +15,8 @@ public class LogEntryDAO extends AbstractDAO<LogEntry> {
 		super(sessionFactory);
 	}
 
-
-	public List<LogEntry> findAll() {
-		return list(namedQuery(LogEntry.QUERY_NAME_FIND_ALL));
+	public List<LogEntry> findN(int n) {
+		return list(namedQuery(LogEntry.QUERY_NAME_FIND_ALL).setMaxResults(n));
 	}
-
 
 }
