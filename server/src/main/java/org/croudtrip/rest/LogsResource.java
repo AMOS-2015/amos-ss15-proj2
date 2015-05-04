@@ -3,6 +3,9 @@ package org.croudtrip.rest;
 import org.croudtrip.logs.LogEntry;
 import org.croudtrip.logs.LogManager;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -23,6 +26,8 @@ import io.dropwizard.hibernate.UnitOfWork;
 @Consumes(MediaType.APPLICATION_JSON)
 public class LogsResource {
 
+    private static final SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yy HH:mm:ss");
+
     private final LogManager logManager;
 
     @Inject
@@ -32,9 +37,15 @@ public class LogsResource {
 
     @GET
     @UnitOfWork
-    public List<LogEntry> getLogs(@QueryParam("count") int count) {
+    public List<String> getLogs(@QueryParam("count") int count) {
         if (count < 1) throw RestUtils.createJsonFormattedException("query param \"count\" must be > 0", 400);
-        return logManager.findN(count);
+
+        List<LogEntry> entries = logManager.findN(count);
+        List<String> logs = new LinkedList<>();
+        for (LogEntry entry : entries) {
+            logs.add(entry.getLevel() + "  [" + dateFormat.format(new Date(entry.getTimestamp() * 1000)) + "] " + entry.getTag() + ": " + entry.getMessage());
+        }
+        return logs;
     }
 
 }
