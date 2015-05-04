@@ -60,6 +60,11 @@ public class UserManager {
 
 
 	public User updateUser(User user, UserDescription userDescription) {
+		// email must be unique
+		Optional<User> oldUser = findUserByEmail(userDescription.getEmail());
+		Assert.assertFalse(oldUser.isPresent() && oldUser.get().getId() != user.getId(),
+				"user with email " + userDescription.getEmail() + " already registered");
+
 		// update user
 		User updatedUser = new User(user.getId(),
 				getNonNull(userDescription.getEmail(), user.getEmail()),
@@ -67,7 +72,7 @@ public class UserManager {
 				getNonNull(userDescription.getLastName(), user.getLastName()),
 				getNonNull(userDescription.getPhoneNumber(), user.getPhoneNumber()),
 				getNonNull(userDescription.getIsMale(), user.getIsMale()),
-				getNonNull(userDescription.getBirthday(), user.getBirthDay()),
+				getNonNull(userDescription.getBirthday(), user.getBirthday()),
 				getNonNull(userDescription.getAddress(), user.getAddress()),
 				getNonNull(userDescription.getAvatarUrl(), user.getAvatarUrl()),
 				System.currentTimeMillis() / 1000);

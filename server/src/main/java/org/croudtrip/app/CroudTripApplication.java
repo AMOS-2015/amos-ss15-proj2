@@ -5,14 +5,17 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 
 import org.croudtrip.api.account.Vehicle;
+import org.croudtrip.api.gcm.GcmRegistration;
 import org.croudtrip.auth.BasicAuthenticator;
 import org.croudtrip.auth.BasicCredentials;
 import org.croudtrip.api.account.User;
 import org.croudtrip.db.DbModule;
 import org.croudtrip.directions.DirectionsModule;
+import org.croudtrip.gcm.GcmModule;
 import org.croudtrip.logs.LogEntry;
 import org.croudtrip.rest.AvatarsResource;
 import org.croudtrip.rest.DirectionsResource;
+import org.croudtrip.rest.GcmRegistrationResource;
 import org.croudtrip.rest.JsonExceptionMapper;
 import org.croudtrip.rest.LogsResource;
 import org.croudtrip.rest.NotFoundExceptionMapper;
@@ -54,7 +57,8 @@ public final class CroudTripApplication extends Application<CroudTripConfig> {
 	public void run(CroudTripConfig configuration, Environment environment) throws Exception {
 		Injector injector = Guice.createInjector(
 				new DbModule(hibernateBundle.getSessionFactory()),
-                new DirectionsModule( configuration ));
+                new DirectionsModule(configuration),
+				new GcmModule(configuration.getGoogleAPIKey()));
 
 
         environment.jersey().register(injector.getInstance(UsersResource.class));
@@ -63,6 +67,7 @@ public final class CroudTripApplication extends Application<CroudTripConfig> {
         environment.jersey().register(injector.getInstance(DirectionsResource.class));
 		environment.jersey().register(injector.getInstance(TripsResource.class));
 		environment.jersey().register(injector.getInstance(VehicleResource.class));
+		environment.jersey().register(injector.getInstance(GcmRegistrationResource.class));
 		environment.jersey().register(injector.getInstance(LogsResource.class));
 		environment.jersey().register(injector.getInstance(NotFoundExceptionMapper.class));
 		environment.jersey().register(injector.getInstance(JsonExceptionMapper.class));
@@ -80,7 +85,8 @@ public final class CroudTripApplication extends Application<CroudTripConfig> {
 			Avatar.class,
 			TripOffer.class,
 			Vehicle.class,
-			LogEntry.class) {
+			LogEntry.class,
+			GcmRegistration.class) {
 		@Override
 		public DataSourceFactory getDataSourceFactory(CroudTripConfig configuration) {
 			return configuration.getDatabase();

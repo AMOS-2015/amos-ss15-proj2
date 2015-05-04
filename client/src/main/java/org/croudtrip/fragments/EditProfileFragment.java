@@ -62,7 +62,7 @@ public class EditProfileFragment extends roboguice.fragment.provided.RoboFragmen
     String tempFirstName, tempLastName, tempNumber, tempAddress;
     Boolean newGenderIsMale, tempGender;
     Integer newYearOfBirth, tempYearOfBirth;
-    Date newBirthDay;
+    Long newBirthDay;
     String profileImageUrl, tempUrl;
 
     ImageView profilePicture;
@@ -222,10 +222,10 @@ public class EditProfileFragment extends roboguice.fragment.provided.RoboFragmen
                 newGenderIsMale = true;
             }
 
-            if (user.getBirthDay() != null) {
+            if (user.getBirthday() != null) {
                 Calendar calendar = Calendar.getInstance();
-                calendar.setTime(user.getBirthDay());
-                yearPickerButton.setText(calendar.get(Calendar.YEAR)+"");
+                calendar.setTime(new Date(user.getBirthday()));
+                yearPickerButton.setText(calendar.get(Calendar.YEAR) + "");
                 tempYearOfBirth = calendar.get(Calendar.YEAR);
                 newYearOfBirth = calendar.get(Calendar.YEAR);
             }
@@ -409,7 +409,7 @@ public class EditProfileFragment extends roboguice.fragment.provided.RoboFragmen
     public void saveProfileChanges() {
         Calendar calendar = Calendar.getInstance();
         calendar.set(Calendar.YEAR, newYearOfBirth);
-        newBirthDay = calendar.getTime();
+        newBirthDay = calendar.getTime().getTime();
 
         user = new User(
                 user.getId(),
