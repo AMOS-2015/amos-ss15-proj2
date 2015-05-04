@@ -5,6 +5,7 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 
 import org.croudtrip.api.account.Vehicle;
+import org.croudtrip.api.gcm.GcmRegistration;
 import org.croudtrip.auth.BasicAuthenticator;
 import org.croudtrip.auth.BasicCredentials;
 import org.croudtrip.api.account.User;
@@ -13,6 +14,7 @@ import org.croudtrip.directions.DirectionsModule;
 import org.croudtrip.logs.LogEntry;
 import org.croudtrip.rest.AvatarsResource;
 import org.croudtrip.rest.DirectionsResource;
+import org.croudtrip.rest.GcmRegistrationResource;
 import org.croudtrip.rest.JsonExceptionMapper;
 import org.croudtrip.rest.LogsResource;
 import org.croudtrip.rest.NotFoundExceptionMapper;
@@ -63,6 +65,7 @@ public final class CroudTripApplication extends Application<CroudTripConfig> {
         environment.jersey().register(injector.getInstance(DirectionsResource.class));
 		environment.jersey().register(injector.getInstance(TripsResource.class));
 		environment.jersey().register(injector.getInstance(VehicleResource.class));
+		environment.jersey().register(injector.getInstance(GcmRegistrationResource.class));
 		environment.jersey().register(injector.getInstance(LogsResource.class));
 		environment.jersey().register(injector.getInstance(NotFoundExceptionMapper.class));
 		environment.jersey().register(injector.getInstance(JsonExceptionMapper.class));
@@ -80,7 +83,8 @@ public final class CroudTripApplication extends Application<CroudTripConfig> {
 			Avatar.class,
 			TripOffer.class,
 			Vehicle.class,
-			LogEntry.class) {
+			LogEntry.class,
+			GcmRegistration.class) {
 		@Override
 		public DataSourceFactory getDataSourceFactory(CroudTripConfig configuration) {
 			return configuration.getDatabase();
