@@ -67,18 +67,22 @@ public class LogManager {
 
 
 	private void log(LogLevel level, String message) {
-		LogEntry entry = new LogEntry(level, getCallerClassName(), message);
-		logEntryDAO.save(entry);
+		log(level, getCallerClassName(), message, System.currentTimeMillis() / 1000);
 	}
 
 
 	private void log(LogLevel level, Throwable throwable, String message) {
 		// log message and then throwable
-		logEntryDAO.save(new LogEntry(level, getCallerClassName(), message));
+		long timestamp = System.currentTimeMillis() / 1000;
+		log(level, getCallerClassName(), message, timestamp);
 		StringWriter writer = new StringWriter();
 		throwable.printStackTrace(new PrintWriter(writer));
-		System.out.println("saving stacktrace " + writer.toString());
-		logEntryDAO.save(new LogEntry(level, getCallerClassName(), writer.toString()));
+		log(level, getCallerClassName(), writer.toString(), timestamp);
+	}
+
+
+	private void log(LogLevel level, String tag, String message, long timestamp) {
+		logEntryDAO.save(new LogEntry(level, tag, message, timestamp));
 	}
 
 

@@ -46,12 +46,16 @@ public class LogEntry {
 	@Column(name = "message", nullable = false, length = 65535)
 	private String message;
 
+	@Column(name = "timestamp", nullable = false)
+	private long timestamp; // unix timestamp in seconds
+
 	public LogEntry() { }
 
-	public LogEntry(LogLevel level,  String tag, String message) {
+	public LogEntry(LogLevel level,  String tag, String message, long timestamp) {
 		this.level = level;
 		this.tag = tag;
 		this.message = message;
+		this.timestamp = timestamp;
 	}
 
 	public long getId() {
@@ -70,6 +74,10 @@ public class LogEntry {
 		return message;
 	}
 
+	public long getTimestamp() {
+		return timestamp;
+	}
+
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
@@ -78,12 +86,13 @@ public class LogEntry {
 		return Objects.equal(id, logEntry.id) &&
 				Objects.equal(level, logEntry.level) &&
 				Objects.equal(tag, logEntry.tag) &&
-				Objects.equal(message, logEntry.message);
+				Objects.equal(message, logEntry.message) &&
+				Objects.equal(timestamp, logEntry.timestamp);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hashCode(id, level, tag, message);
+		return Objects.hashCode(id, level, tag, message, timestamp);
 	}
 
 }
