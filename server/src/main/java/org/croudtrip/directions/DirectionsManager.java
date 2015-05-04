@@ -1,4 +1,4 @@
-package org.croudtrip.api.directions;
+package org.croudtrip.directions;
 
 import com.google.maps.DirectionsApi;
 import com.google.maps.GeoApiContext;
@@ -10,6 +10,9 @@ import com.google.maps.model.DirectionsStep;
 import com.google.maps.model.EncodedPolyline;
 import com.google.maps.model.GeocodingResult;
 import com.google.maps.model.LatLng;
+
+import org.croudtrip.api.directions.Route;
+import org.croudtrip.api.directions.RouteLocation;
 
 import java.util.ArrayList;
 import java.util.List;

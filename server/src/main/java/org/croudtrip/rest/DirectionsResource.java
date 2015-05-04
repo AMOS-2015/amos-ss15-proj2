@@ -2,7 +2,7 @@ package org.croudtrip.rest;
 
 import com.google.maps.errors.NotFoundException;
 
-import org.croudtrip.api.directions.DirectionsManager;
+import org.croudtrip.directions.DirectionsManager;
 import org.croudtrip.api.directions.RouteLocation;
 import org.croudtrip.api.directions.Route;
 import org.hibernate.validator.constraints.NotEmpty;

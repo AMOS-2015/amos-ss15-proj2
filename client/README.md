@@ -19,6 +19,12 @@ To be able to use the google-services in your own project you have to add the AP
 by copying "./client/src/main/templates/keys.xml.template" to "./client/src/main/res/values/keys.xml"
 and replace the dummy key with the real key that you get from the Developers Console.
 
+### 4. Add the Server URL to your project
+Everyone is responsible to set the server URL on its own to make the project compile. 
+The server URL takes place within the keys.xml file under the tag "server_address".
+The server URL for our testing server is already inserted within the keys.xml.template,
+but you're free to change this value to your custom needs.
+
 ### 4. Do not push the API-Key
 Be aware that both debug.keystore and keys.xml are ignored for our
 repository (see .gitignore). So we never want to push either of these

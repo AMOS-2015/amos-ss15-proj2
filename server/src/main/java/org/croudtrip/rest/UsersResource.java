@@ -2,9 +2,9 @@ package org.croudtrip.rest;
 
 import com.google.common.base.Optional;
 
+import org.croudtrip.account.UserManager;
 import org.croudtrip.api.account.User;
 import org.croudtrip.api.account.UserDescription;
-import org.croudtrip.api.account.UserManager;
 
 import java.util.List;
 
@@ -42,6 +42,10 @@ public class UsersResource {
     @POST
     @UnitOfWork
     public User registerUser(@Valid UserDescription description) {
+        if (description.getEmail() == null || description.getPassword() == null
+                || description.getFirstName() == null || description.getLastName() == null) {
+            throw RestUtils.createJsonFormattedException("email, password, first name and last name may not be empty", 400);
+        }
         if (userManager.findUserByEmail(description.getEmail()).isPresent()) {
             throw RestUtils.createJsonFormattedException("email already registered", 409);
         }
@@ -76,14 +80,13 @@ public class UsersResource {
     @PUT
     @Path("/me")
     @UnitOfWork
-    public User updateUser(@Auth User user, User updatedUser) {
-        if (user.getId() != updatedUser.getId()) {
-            throw RestUtils.createUnauthorizedException();
+    public User updateUser(@Auth User user, UserDescription updatedUser) {
+        // email must be unique
+        Optional<User> oldUser = userManager.findUserByEmail(updatedUser.getEmail());
+        if (oldUser.isPresent() && oldUser.get().getId() != user.getId()) {
+            throw RestUtils.createJsonFormattedException("user with email " + updatedUser.getEmail() + " already registered", 400);
         }
-        if (!user.getEmail().equals(updatedUser.getEmail())) {
-            throw RestUtils.createJsonFormattedException("cannot change email", 400);
-        }
-        return userManager.updateUser(updatedUser);
+        return userManager.updateUser(user, updatedUser);
     }
 
 

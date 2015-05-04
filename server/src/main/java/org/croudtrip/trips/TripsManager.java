@@ -1,11 +1,15 @@
-package org.croudtrip.api.trips;
+package org.croudtrip.trips;
 
 
 import com.google.common.base.Optional;
 
 import org.croudtrip.api.account.User;
+import org.croudtrip.api.trips.TripMatch;
+import org.croudtrip.api.trips.TripOffer;
+import org.croudtrip.api.trips.TripOfferDescription;
+import org.croudtrip.api.trips.TripRequestDescription;
 import org.croudtrip.db.TripOfferDAO;
-import org.croudtrip.api.directions.DirectionsManager;
+import org.croudtrip.directions.DirectionsManager;
 import org.croudtrip.api.directions.Route;
 import org.croudtrip.api.directions.RouteLocation;
 

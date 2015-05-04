@@ -1,8 +1,11 @@
-package org.croudtrip.api.account;
+package org.croudtrip.account;
 
 
 import com.google.common.base.Optional;
 
+import org.croudtrip.api.account.User;
+import org.croudtrip.api.account.Vehicle;
+import org.croudtrip.api.account.VehicleDescription;
 import org.croudtrip.db.VehicleDAO;
 
 import javax.inject.Inject;

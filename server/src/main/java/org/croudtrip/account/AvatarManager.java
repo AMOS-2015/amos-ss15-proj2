@@ -1,7 +1,8 @@
-package org.croudtrip.api.account;
+package org.croudtrip.account;
 
 import com.google.common.base.Optional;
 
+import org.croudtrip.account.Avatar;
 import org.croudtrip.db.AvatarDAO;
 
 import javax.inject.Inject;

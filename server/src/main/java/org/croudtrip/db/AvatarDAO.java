@@ -1,7 +1,7 @@
 package org.croudtrip.db;
 
 
-import org.croudtrip.api.account.Avatar;
+import org.croudtrip.account.Avatar;
 import org.hibernate.SessionFactory;
 
 import javax.inject.Inject;

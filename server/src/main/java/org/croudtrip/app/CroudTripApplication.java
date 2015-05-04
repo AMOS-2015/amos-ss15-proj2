@@ -9,17 +9,19 @@ import org.croudtrip.auth.BasicAuthenticator;
 import org.croudtrip.auth.BasicCredentials;
 import org.croudtrip.api.account.User;
 import org.croudtrip.db.DbModule;
-import org.croudtrip.api.directions.DirectionsModule;
+import org.croudtrip.directions.DirectionsModule;
+import org.croudtrip.logs.LogEntry;
 import org.croudtrip.rest.AvatarsResource;
 import org.croudtrip.rest.DirectionsResource;
 import org.croudtrip.rest.JsonExceptionMapper;
+import org.croudtrip.rest.LogsResource;
 import org.croudtrip.rest.NotFoundExceptionMapper;
 import org.croudtrip.rest.TripsResource;
 import org.croudtrip.rest.UsersHeadResource;
 import org.croudtrip.rest.UsersResource;
 import org.croudtrip.rest.VehicleResource;
 import org.croudtrip.api.trips.TripOffer;
-import org.croudtrip.api.account.Avatar;
+import org.croudtrip.account.Avatar;
 import org.croudtrip.rest.ThrowableExceptionMapper;
 
 import io.dropwizard.Application;
@@ -61,6 +63,7 @@ public final class CroudTripApplication extends Application<CroudTripConfig> {
         environment.jersey().register(injector.getInstance(DirectionsResource.class));
 		environment.jersey().register(injector.getInstance(TripsResource.class));
 		environment.jersey().register(injector.getInstance(VehicleResource.class));
+		environment.jersey().register(injector.getInstance(LogsResource.class));
 		environment.jersey().register(injector.getInstance(NotFoundExceptionMapper.class));
 		environment.jersey().register(injector.getInstance(JsonExceptionMapper.class));
 		environment.jersey().register(injector.getInstance(ThrowableExceptionMapper.class));
@@ -76,7 +79,8 @@ public final class CroudTripApplication extends Application<CroudTripConfig> {
 			BasicCredentials.class,
 			Avatar.class,
 			TripOffer.class,
-			Vehicle.class) {
+			Vehicle.class,
+			LogEntry.class) {
 		@Override
 		public DataSourceFactory getDataSourceFactory(CroudTripConfig configuration) {
 			return configuration.getDatabase();
