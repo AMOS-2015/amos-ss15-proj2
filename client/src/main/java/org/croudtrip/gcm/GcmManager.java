@@ -17,6 +17,7 @@ import java.io.IOException;
 
 import javax.inject.Inject;
 
+import retrofit.client.Response;
 import rx.Observable;
 import rx.functions.Func0;
 import rx.functions.Func1;
@@ -77,17 +78,21 @@ public class GcmManager {
 
 
 	public Observable<Void> unregister() {
-		return Observable.defer(new Func0<Observable<Void>>() {
+		return Observable.defer(new Func0<Observable<Response>>() {
 			@Override
-			public Observable<Void> call() {
+			public Observable<Response> call() {
 				try {
 					clearRegId();
 					googleCloudMessaging.unregister();
-					// TODO unregister from backend server
-					return Observable.just(null);
+					return registrationResource.unregister();
 				} catch (IOException ioe) {
 					return Observable.error(ioe);
 				}
+			}
+		}).flatMap(new Func1<Response, Observable<Void>>() {
+			@Override
+			public Observable<Void> call(Response response) {
+				return Observable.just(null);
 			}
 		});
 	}
