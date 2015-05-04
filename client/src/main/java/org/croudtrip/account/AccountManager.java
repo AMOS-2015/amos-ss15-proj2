@@ -8,8 +8,6 @@ import android.util.Base64;
 import org.croudtrip.activities.LoginActivity;
 import org.croudtrip.api.account.User;
 
-import java.util.Date;
-
 import retrofit.RequestInterceptor;
 import timber.log.Timber;
 
@@ -84,7 +82,7 @@ public class AccountManager {
         editor.putLong(SHARED_PREF_KEY_LAST_MODIFIED, user.getLastModified());
 
         if(user.getBirthDay() != null) {
-            editor.putLong(SHARED_PREF_KEY_BIRTHDAY, user.getBirthDay().getTime());
+            editor.putLong(SHARED_PREF_KEY_BIRTHDAY, user.getBirthDay());
         }else{
             editor.remove(SHARED_PREF_KEY_BIRTHDAY);
         }
@@ -147,11 +145,6 @@ public class AccountManager {
             return null;
         }
 
-        Date birthday = null;
-        if(prefs.contains(SHARED_PREF_KEY_BIRTHDAY)){
-            birthday = new Date(prefs.getLong(SHARED_PREF_KEY_BIRTHDAY, 0));
-        }
-
         Boolean isMale = null;
         if(prefs.contains(SHARED_PREF_KEY_MALE)){
             isMale = prefs.getBoolean(SHARED_PREF_KEY_MALE, true);
@@ -164,7 +157,7 @@ public class AccountManager {
                 prefs.getString(SHARED_PREF_KEY_LASTNAME, null),
                 prefs.getString(SHARED_PREF_KEY_PHONE, null),
                 isMale,
-                birthday,
+                prefs.getLong(SHARED_PREF_KEY_BIRTHDAY, 0),
                 prefs.getString(SHARED_PREF_KEY_ADDRESS, null),
                 prefs.getString(SHARED_PREF_KEY_AVATAR_URL, null),
                 prefs.getLong(SHARED_PREF_KEY_LAST_MODIFIED, 0));

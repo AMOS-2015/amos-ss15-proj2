@@ -23,6 +23,7 @@ import org.croudtrip.utils.DefaultTransformer;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Calendar;
+import java.util.Date;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -75,7 +76,7 @@ public class ProfileFragment extends Fragment {
             String birthYear = null;
             if(user.getBirthDay() != null){
                 Calendar calendar = Calendar.getInstance();
-                calendar.setTime(user.getBirthDay());
+                calendar.setTime(new Date(user.getBirthDay()));
                 birthYear = calendar.get(Calendar.YEAR) + "";
             }
 
