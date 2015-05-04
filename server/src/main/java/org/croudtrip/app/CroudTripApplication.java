@@ -11,6 +11,7 @@ import org.croudtrip.auth.BasicCredentials;
 import org.croudtrip.api.account.User;
 import org.croudtrip.db.DbModule;
 import org.croudtrip.directions.DirectionsModule;
+import org.croudtrip.gcm.GcmModule;
 import org.croudtrip.logs.LogEntry;
 import org.croudtrip.rest.AvatarsResource;
 import org.croudtrip.rest.DirectionsResource;
@@ -56,7 +57,8 @@ public final class CroudTripApplication extends Application<CroudTripConfig> {
 	public void run(CroudTripConfig configuration, Environment environment) throws Exception {
 		Injector injector = Guice.createInjector(
 				new DbModule(hibernateBundle.getSessionFactory()),
-                new DirectionsModule( configuration ));
+                new DirectionsModule(configuration),
+				new GcmModule(configuration.getGoogleAPIKey()));
 
 
         environment.jersey().register(injector.getInstance(UsersResource.class));
