@@ -81,8 +81,8 @@ public class AccountManager {
         editor.putString(SHARED_PREF_KEY_AVATAR_URL, user.getAvatarUrl());
         editor.putLong(SHARED_PREF_KEY_LAST_MODIFIED, user.getLastModified());
 
-        if(user.getBirthDay() != null) {
-            editor.putLong(SHARED_PREF_KEY_BIRTHDAY, user.getBirthDay());
+        if(user.getBirthday() != null) {
+            editor.putLong(SHARED_PREF_KEY_BIRTHDAY, user.getBirthday());
         }else{
             editor.remove(SHARED_PREF_KEY_BIRTHDAY);
         }

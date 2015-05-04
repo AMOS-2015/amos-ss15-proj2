@@ -74,9 +74,9 @@ public class ProfileFragment extends Fragment {
             }
 
             String birthYear = null;
-            if(user.getBirthDay() != null){
+            if(user.getBirthday() != null){
                 Calendar calendar = Calendar.getInstance();
-                calendar.setTime(new Date(user.getBirthDay()));
+                calendar.setTime(new Date(user.getBirthday()));
                 birthYear = calendar.get(Calendar.YEAR) + "";
             }
 

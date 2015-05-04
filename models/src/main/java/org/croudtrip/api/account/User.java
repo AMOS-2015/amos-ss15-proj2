@@ -50,22 +50,22 @@ public class User {
     @NotNull
     public String email;
 
-    @Column(name = "firstName", nullable = false)
+    @Column(name = "first_name", nullable = false)
     @NotNull
     private String firstName;
 
-    @Column(name = "lastName", nullable = false)
+    @Column(name = "last_name", nullable = false)
     @NotNull
     private String lastName;
 
-    @Column(name = "phoneNumber", nullable = true)
+    @Column(name = "phone_number", nullable = true)
     private String phoneNumber;
 
     @Column(name = "isMale", nullable = true)
     private Boolean isMale;
 
-    @Column(name = "birthDay", nullable = true)
-    private Long birthDay; // unix timestamp in seconds
+    @Column(name = "birthday", nullable = true)
+    private Long birthday; // unix timestamp in seconds
 
     @Column(name = "address", nullable = true)
     private String address;
@@ -86,7 +86,7 @@ public class User {
             @JsonProperty("lastName") String lastName,
             @JsonProperty("phoneNumber") String phoneNumber,
             @JsonProperty("isMale") Boolean isMale,
-            @JsonProperty("birthDay") Long birthDay,
+            @JsonProperty("birthday") Long birthday,
             @JsonProperty("address") String address,
             @JsonProperty("avatarUrl") String avatarUrl,
             @JsonProperty("lastModified") long lastModified) {
@@ -97,7 +97,7 @@ public class User {
         this.lastName = lastName;
         this.phoneNumber = phoneNumber;
         this.isMale = isMale;
-        this.birthDay = birthDay;
+        this.birthday = birthday;
         this.address = address;
         this.avatarUrl = avatarUrl;
         this.lastModified = lastModified;
@@ -134,8 +134,8 @@ public class User {
     }
 
 
-    public Long getBirthDay() {
-        return birthDay;
+    public Long getBirthday() {
+        return birthday;
     }
 
 
@@ -169,7 +169,7 @@ public class User {
                 && Objects.equal(lastName, user.lastName)
                 && Objects.equal(phoneNumber, user.phoneNumber)
                 && Objects.equal(isMale, user.isMale)
-                && Objects.equal(birthDay, user.birthDay)
+                && Objects.equal(birthday, user.birthday)
                 && Objects.equal(address, user.address)
                 && Objects.equal(avatarUrl, user.avatarUrl)
                 && Objects.equal(lastModified, user.lastModified);
@@ -178,7 +178,7 @@ public class User {
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(id, email, firstName, lastName, phoneNumber, isMale, birthDay, address, avatarUrl, lastModified);
+        return Objects.hashCode(id, email, firstName, lastName, phoneNumber, isMale, birthday, address, avatarUrl, lastModified);
     }
 
 }
