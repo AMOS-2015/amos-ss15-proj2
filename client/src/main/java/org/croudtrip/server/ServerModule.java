@@ -13,6 +13,7 @@ import org.croudtrip.api.GcmRegistrationResource;
 import org.croudtrip.api.TripsResource;
 import org.croudtrip.api.UsersHeadResource;
 import org.croudtrip.api.UsersResource;
+import org.croudtrip.api.VehicleResource;
 
 import javax.inject.Inject;
 
@@ -48,6 +49,11 @@ public class ServerModule implements Module {
 		return provideRestAdapter(context).create(UsersResource.class);
 	}
 
+    @Provides
+    @Inject
+    public VehicleResource provideVehiclesResource(Context context) {
+        return provideRestAdapter(context).create(VehicleResource.class);
+    }
 
 	@Provides
 	@Inject
