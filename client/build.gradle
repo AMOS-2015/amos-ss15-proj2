@@ -5,7 +5,9 @@ import io.dropwizard.auth.Auth;
 apply plugin: 'com.android.application'
 apply plugin: 'de.bitdroid.jaxrs2retrofit'
 
-
+dependencies {
+    compile 'com.larswerkman:HoloColorPicker:1.5'
+}
 buildscript {
     repositories {
         jcenter()
