@@ -69,7 +69,7 @@ import rx.schedulers.Schedulers;
 /**
  * Created by alex on 22.04.15.
  */
-public class JoinTripFragment extends RoboFragment implements GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks{
+public class JoinTripFragment extends RoboFragment implements GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks {
 
     private final int REQUEST_PLACE_PICKER = 122;
     private DatabaseHelper dbHelper;
