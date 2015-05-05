@@ -9,6 +9,7 @@ import com.google.inject.Provides;
 import org.croudtrip.R;
 import org.croudtrip.account.AccountManager;
 import org.croudtrip.api.DirectionsResource;
+import org.croudtrip.api.GcmRegistrationResource;
 import org.croudtrip.api.TripsResource;
 import org.croudtrip.api.UsersHeadResource;
 import org.croudtrip.api.UsersResource;
@@ -66,5 +67,11 @@ public class ServerModule implements Module {
     public TripsResource provideTripsResource(Context context) {
         return provideRestAdapter(context).create(TripsResource.class);
     }
+
+	@Provides
+	@Inject
+	public GcmRegistrationResource provideGcmRegistrationResource(Context context) {
+		return provideRestAdapter(context).create(GcmRegistrationResource.class);
+	}
 
 }

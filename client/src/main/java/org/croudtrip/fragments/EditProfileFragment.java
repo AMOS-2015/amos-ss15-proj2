@@ -1,7 +1,6 @@
 package org.croudtrip.fragments;
 
 import android.app.Dialog;
-import android.app.Fragment;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -26,15 +25,21 @@ import com.getbase.floatingactionbutton.FloatingActionButton;
 import org.croudtrip.R;
 import org.croudtrip.account.AccountManager;
 import org.croudtrip.api.account.User;
+import org.croudtrip.api.account.UserDescription;
 import org.croudtrip.utils.DefaultTransformer;
+import org.croudtrip.api.UsersResource;
 
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Calendar;
 import java.util.Date;
 
+import javax.inject.Inject;
 import javax.net.ssl.HttpsURLConnection;
 
+
+import retrofit.RetrofitError;
+import retrofit.client.Response;
 import rx.Observable;
 import rx.functions.Action1;
 import rx.functions.Func0;
@@ -46,15 +51,18 @@ import timber.log.Timber;
  * etc.).
  * @author Nazeeh Ammari
  */
-public class EditProfileFragment extends Fragment {
+public class EditProfileFragment extends roboguice.fragment.provided.RoboFragment {
+
+    @Inject
+    private UsersResource usersResource;
 
 
     //************************* Variables ***************************//
-    String newFirstName, newLastName, newNumber, newAddress;
+    private String email, password = null, newFirstName, newLastName, newNumber, newAddress;
     String tempFirstName, tempLastName, tempNumber, tempAddress;
     Boolean newGenderIsMale, tempGender;
     Integer newYearOfBirth, tempYearOfBirth;
-    Date newBirthDay;
+    Long newBirthDay;
     String profileImageUrl, tempUrl;
 
     ImageView profilePicture;
@@ -65,12 +73,10 @@ public class EditProfileFragment extends Fragment {
 
     private User user;
 
-
     //************************* Methods *****************************//
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
     }
 
     @Override
@@ -106,6 +112,9 @@ public class EditProfileFragment extends Fragment {
         this.user = AccountManager.getLoggedInUser(this.getActivity().getApplicationContext());
 
         if(user != null) {
+            if (user.getEmail() != null) {
+                email=user.getEmail();
+            }
             // download avatar
             if (user.getAvatarUrl() != null) {
                 profileImageUrl = user.getAvatarUrl();
@@ -179,9 +188,9 @@ public class EditProfileFragment extends Fragment {
             }
             else
             {
-                phoneNumberEdit.setText("Unknown");
-                tempNumber = "Unknown";
-                newNumber="Unknown";
+                phoneNumberEdit.setText("0");
+                tempNumber = "0";
+                newNumber="0";
             }
 
             if (user.getAddress()!=null) {
@@ -213,18 +222,18 @@ public class EditProfileFragment extends Fragment {
                 newGenderIsMale = true;
             }
 
-            if (user.getBirthDay() != null) {
+            if (user.getBirthday() != null) {
                 Calendar calendar = Calendar.getInstance();
-                calendar.setTime(user.getBirthDay());
-                yearPickerButton.setText(calendar.get(Calendar.YEAR)+"");
+                calendar.setTime(new Date(user.getBirthday()));
+                yearPickerButton.setText(calendar.get(Calendar.YEAR) + "");
                 tempYearOfBirth = calendar.get(Calendar.YEAR);
                 newYearOfBirth = calendar.get(Calendar.YEAR);
             }
             else
             {
-                yearPickerButton.setText("2000");
-                tempYearOfBirth = 2000;
-                newYearOfBirth = 2000;
+                yearPickerButton.setText("2015");
+                tempYearOfBirth = 2015;
+                newYearOfBirth = 2015;
             }
         }
 
@@ -400,9 +409,8 @@ public class EditProfileFragment extends Fragment {
     public void saveProfileChanges() {
         Calendar calendar = Calendar.getInstance();
         calendar.set(Calendar.YEAR, newYearOfBirth);
-        newBirthDay = calendar.getTime();
+        newBirthDay = calendar.getTime().getTime();
 
-        // TODO: put all changes into the user object properly
         user = new User(
                 user.getId(),
                 user.getEmail(),
@@ -416,20 +424,11 @@ public class EditProfileFragment extends Fragment {
                 0
         );
 
-        //TODO: maybe pass a new password to the method
         AccountManager.saveUser(getActivity().getApplicationContext(), user, null);
-
-        /*
-        SharedPreferences prefs = this.getActivity().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = prefs.edit();
-
-        if (profileImageUri != null) {
-            editor.putString(Constants.SHARED_PREF_KEY_PROFILE_IMAGE_URI, profileImageUri.toString());
-        }
-        editor.apply();
-        */
         Toast.makeText(getActivity(), "Profile Updated!", Toast.LENGTH_SHORT)
                 .show();
+        UserDescription userDescription = new UserDescription(email, newFirstName, newLastName, password,newNumber,newGenderIsMale,newBirthDay,newAddress,"some url");
+        updateUser(userDescription);
     }
 
     public void showYearPicker() {
@@ -440,8 +439,8 @@ public class EditProfileFragment extends Fragment {
         Button set = (Button) yearDialog.findViewById(R.id.set);
         Button cancel = (Button) yearDialog.findViewById(R.id.cancel);
         final NumberPicker yearPicker = (NumberPicker) yearDialog.findViewById(R.id.year_picker);
-        yearPicker.setMaxValue(2000); // max value 100
-        yearPicker.setMinValue(1920);   // min value 0
+        yearPicker.setMaxValue(2015);
+        yearPicker.setMinValue(1920);
         yearPicker.setWrapSelectorWheel(false);
         yearPicker.setValue(Integer.parseInt(yearPickerButton.getText().toString()));
         yearDialog.show();
@@ -465,6 +464,24 @@ public class EditProfileFragment extends Fragment {
 
     }
 
+    public void updateUser (final UserDescription userDescription)
+    {
+        usersResource.updateUser(userDescription)
+                .compose(new DefaultTransformer<User>())
+                .subscribe(new Action1<User>() {
+                    @Override
+                    public void call(User user) {
+                        Timber.v("Updated user info");
+                    }
+
+                }, new Action1<Throwable>() {
+                    @Override
+                    public void call(Throwable throwable) {
+                        //Response response = ((RetrofitError) throwable).getResponse();
+                        Timber.e("Update failed with error:\n" + throwable.getMessage());
+                    }
+                });
+    }
     public void onDestroy() {
         super.onDestroy();
         /*

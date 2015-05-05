@@ -72,7 +72,7 @@ public class UserManager {
 				getNonNull(userDescription.getLastName(), user.getLastName()),
 				getNonNull(userDescription.getPhoneNumber(), user.getPhoneNumber()),
 				getNonNull(userDescription.getIsMale(), user.getIsMale()),
-				getNonNull(userDescription.getBirthday(), user.getBirthDay()),
+				getNonNull(userDescription.getBirthday(), user.getBirthday()),
 				getNonNull(userDescription.getAddress(), user.getAddress()),
 				getNonNull(userDescription.getAvatarUrl(), user.getAvatarUrl()),
 				System.currentTimeMillis() / 1000);
