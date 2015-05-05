@@ -27,6 +27,7 @@ import org.croudtrip.fragments.OfferTripFragment;
 import org.croudtrip.fragments.PickUpPassengerFragment;
 import org.croudtrip.fragments.ProfileFragment;
 import org.croudtrip.fragments.SettingsFragment;
+import org.croudtrip.fragments.VehicleInfoFragment;
 import org.croudtrip.location.LocationUpdater;
 import org.croudtrip.utils.DefaultTransformer;
 
@@ -95,7 +96,6 @@ public class MainActivity extends AbstractRoboDrawerActivity {
             this.addSection(newSection(getString(R.string.menu_profile), R.drawable.profile_icon, new ProfileFragment()));
         }
         this.addSection(newSection(getString(R.string.navigation), R.drawable.distance, new NavigationFragment()));
-        this.addSection(newSection("Vehicle", new NavigationFragment()));
 
         // TODO: remove from navigation drawer and call after push notification with REAL data
         PickUpPassengerFragment fragment = new PickUpPassengerFragment();
@@ -114,6 +114,7 @@ public class MainActivity extends AbstractRoboDrawerActivity {
 
         // test gcm section TODO remove this at some point after the next demo
         addSection(newSection("GCM Demo", (Bitmap) null, new GcmTestFragment()));
+        this.addSection(newSection("Vehicle", new VehicleInfoFragment()));
 
         if (!GPSavailable()) {
             checkForGPS();

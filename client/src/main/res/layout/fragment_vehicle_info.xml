@@ -2,6 +2,83 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    android:paddingBottom="@dimen/activity_vertical_margin"
     tools:context=".MainActivity">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:gravity="center_horizontal"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:paddingTop="45dp"
+
+        >
+
+    <TextView
+        android:id="@+id/car_type_title"
+        android:text="Car Type"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/primary_dark"
+        />
+
+    <EditText
+        android:id="@+id/car_type"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/car_type_title"
+        android:text="Unknown"/>
+
+    <TextView
+        android:id="@+id/car_plate_title"
+        android:text="Car License Plate"
+        android:textColor="@color/primary_dark"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/car_type"/>
+
+    <EditText
+        android:id="@+id/car_plate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/car_plate_title"
+        android:text="Unknown"/>
+
+    <TextView
+            android:id="@+id/car_capacity_title"
+            android:text="Car Capacity"
+            android:layout_marginTop="25dp"
+            android:textColor="@color/primary_dark"
+            android:layout_below="@id/car_plate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+    <Button
+        android:id="@+id/car_capacity"
+        android:text="1"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/car_capacity_title"/>
+
+    <TextView
+        android:id="@+id/car_color_title"
+        android:text="Car Color"
+        android:layout_marginTop="25dp"
+        android:textColor="@color/primary_dark"
+        android:layout_below="@id/car_capacity"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <Button
+        android:id="@+id/color_picker_button"
+        android:layout_below="@id/car_capacity"
+        android:layout_marginTop="5dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+    </LinearLayout>
 
 </RelativeLayout>

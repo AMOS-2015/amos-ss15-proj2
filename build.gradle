@@ -4,7 +4,6 @@ buildscript {
     }
     dependencies {
         classpath 'com.google.maps.android:android-maps-utils:0.3+'
-
     }
 }
 
