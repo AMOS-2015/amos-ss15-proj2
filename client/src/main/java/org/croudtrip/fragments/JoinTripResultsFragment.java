@@ -135,7 +135,7 @@ public class JoinTripResultsFragment extends RoboFragment {
     }
     public void drawRegisterDialog() {
         final Dialog registerDialog = new Dialog(getActivity());
-        registerDialog.setTitle("Year of Birth");
+        registerDialog.setTitle("Register");
         registerDialog.setContentView(R.layout.ask_to_register_dialog);
         Button set = (Button) registerDialog.findViewById(R.id.register);
         Button cancel = (Button) registerDialog.findViewById(R.id.cancel);
