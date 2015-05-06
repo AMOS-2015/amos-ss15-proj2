@@ -59,10 +59,7 @@ public class VehicleInfoFragment extends RoboFragment {
         colorPickerButton = (Button) view.findViewById(R.id.color_picker_button);
         updateInfo = (Button) view.findViewById(R.id.update_info);
 
-
-
-
-
+        setFields();
         updateInfo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick (View v) {
@@ -85,7 +82,7 @@ public class VehicleInfoFragment extends RoboFragment {
         carTypeEdit.setOnKeyListener(new View.OnKeyListener() {
             public boolean onKey(View v, int keyCode, KeyEvent event) {
                 if ((event.getAction() == KeyEvent.ACTION_DOWN) &&
-                        (keyCode == KeyEvent.KEYCODE_ENTER)) {
+                        ((keyCode == KeyEvent.KEYCODE_ENTER))) {
                     newCarType = carTypeEdit.getText().toString();
                     return true;
                 }
@@ -104,7 +101,7 @@ public class VehicleInfoFragment extends RoboFragment {
         carPlateEdit.setOnKeyListener(new View.OnKeyListener() {
             public boolean onKey(View v, int keyCode, KeyEvent event) {
                 if ((event.getAction() == KeyEvent.ACTION_DOWN) &&
-                        (keyCode == KeyEvent.KEYCODE_ENTER)) {
+                        ((keyCode == KeyEvent.KEYCODE_ENTER))) {
                     newCarPlate = carPlateEdit.getText().toString();
                     return true;
                 }
@@ -200,7 +197,7 @@ public class VehicleInfoFragment extends RoboFragment {
                         Response response = ((RetrofitError) throwable).getResponse();
                         if (response != null && response.getStatus() == 401) {  // Not Authorized
                         } else {
-                            Toast.makeText(getActivity(), "error", Toast.LENGTH_LONG).show();
+                            Timber.e("error" + throwable.getMessage());
                         }
                         Timber.e("Couldn't get data" + throwable.getMessage());
                     }
@@ -213,7 +210,8 @@ public class VehicleInfoFragment extends RoboFragment {
                 .subscribe(new Action1<Vehicle>() {
                     @Override
                     public void call(Vehicle vehicle) {
-                        Timber.v("Updated vehicle info");
+                            Toast.makeText(getActivity(), "Updated vehicle info", Toast.LENGTH_SHORT);
+                            Timber.v("Updated vehicle info");
                     }
                 }, new Action1<Throwable>() {
                     @Override
@@ -225,41 +223,44 @@ public class VehicleInfoFragment extends RoboFragment {
     }
 
     public void saveCarChanges() {
-        VehicleDescription vehicleDescription= new VehicleDescription(newCarPlate,newColor,newCarType,newCarCapacity);
-        if (carPlateEdit.getText()!=null)
-        {
-            if (!(carPlateEdit.getText().equals("Enter car plate info")))
-            {
-                saveVehicle(vehicleDescription);
-            }
-            else
-            {
-                Toast.makeText(getActivity(), "Car Plate field is mandatory", Toast.LENGTH_SHORT);
-            }
-        }
+        VehicleDescription vehicleDescription = new VehicleDescription(newCarPlate, newColor, newCarType, newCarCapacity);
+        if (carPlateEdit.getText() != null && carPlateEdit.length() > 0)
+        saveVehicle(vehicleDescription);
         else
-            Toast.makeText(getActivity(), "Car Plate field is mandatory", Toast.LENGTH_SHORT);
+            Toast.makeText(getActivity(), "Car Plate field is mandatory", Toast.LENGTH_SHORT).show();
     }
     public void setFields() {
         if (newCarPlate!=null)
             carPlateEdit.setText(newCarPlate);
         else
+        {
+            newCarPlate = "Unknown";
             carPlateEdit.setText("Enter car plate info");
+        }
 
         if (newCarType!=null)
             carTypeEdit.setText(newCarType);
         else
+        {
             carTypeEdit.setText("Enter car type");
+            newCarType="Unknown";
+        }
 
         if (newColor != null)
             colorPickerButton.setBackgroundColor(Integer.parseInt(newColor));
         else
+        {
             colorPickerButton.setBackgroundColor(Color.WHITE);
+            newColor= String.valueOf(Color.WHITE);
+        }
 
         if (newCarCapacity!=null)
             capacityPickerButton.setText(String.valueOf(newCarCapacity));
         else
+        {
             capacityPickerButton.setText("1");
+            newCarCapacity = 1;
+        }
     }
     }
 

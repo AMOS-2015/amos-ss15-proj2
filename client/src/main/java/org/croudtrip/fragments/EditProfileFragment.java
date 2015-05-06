@@ -4,7 +4,6 @@ import android.app.Dialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -38,8 +37,7 @@ import javax.inject.Inject;
 import javax.net.ssl.HttpsURLConnection;
 
 
-import retrofit.RetrofitError;
-import retrofit.client.Response;
+
 import rx.Observable;
 import rx.functions.Action1;
 import rx.functions.Func0;
@@ -154,7 +152,6 @@ public class EditProfileFragment extends roboguice.fragment.provided.RoboFragmen
             }
             else
             {
-
             }
             //Fill EditText fields
             if (user.getFirstName() != null) {
@@ -357,11 +354,11 @@ public class EditProfileFragment extends roboguice.fragment.provided.RoboFragmen
             @Override
             public void onClick(View v) {
                 //Save the previous picture Uri in a temporary variable and clear the ImageView while the user selects an image (maybe not the best practice)
-
+                /*
                 BitmapDrawable bd = (BitmapDrawable) profilePicture.getDrawable();
                 bd.getBitmap().recycle();
                 profilePicture.setImageBitmap(null);
-
+                */
 
                 //Open Gallery
                 photoPickerIntent.setType("image/*");

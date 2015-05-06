@@ -14,14 +14,14 @@ android:layout_height="match_parent" >
         android:layout_marginTop="80dp">
 
         <TextView
-            android:id="@+id/set"
+            android:id="@+id/message"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/ask_register"
             android:layout_marginLeft="15dp"/>
 
         <Button
-            android:id="@+id/cancel"
+            android:id="@+id/register"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="30dp"
