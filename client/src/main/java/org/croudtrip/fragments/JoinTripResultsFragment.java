@@ -1,15 +1,21 @@
 package org.croudtrip.fragments;
 
+import android.app.Dialog;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ListView;
+import android.widget.NumberPicker;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.croudtrip.R;
+import org.croudtrip.account.AccountManager;
 import org.croudtrip.api.TripsResource;
 import org.croudtrip.api.directions.RouteLocation;
 import org.croudtrip.api.trips.TripMatch;
@@ -107,7 +113,10 @@ public class JoinTripResultsFragment extends RoboFragment {
 
                         resultsList.setAdapter(adapter);
                         progressBar.setVisibility(View.GONE);
-
+                        if (!(AccountManager.isUserLoggedIn(getActivity()))) {
+                            resultsList.setBackgroundColor(Color.GRAY);
+                            drawRegisterDialog();
+                        }
                     }
 
                 }, new Action1<Throwable>() {
@@ -122,6 +131,30 @@ public class JoinTripResultsFragment extends RoboFragment {
                         error.setVisibility(View.VISIBLE);
                     }
                 });
+
+    }
+    public void drawRegisterDialog() {
+        final Dialog registerDialog = new Dialog(getActivity());
+        registerDialog.setTitle("Year of Birth");
+        registerDialog.setContentView(R.layout.ask_to_register_dialog);
+        Button set = (Button) registerDialog.findViewById(R.id.register);
+        Button cancel = (Button) registerDialog.findViewById(R.id.cancel);
+        registerDialog.show();
+
+        set.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(getActivity(),"Register view will be shown",Toast.LENGTH_SHORT).show();
+                registerDialog.hide();
+            }
+        });
+
+        cancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                registerDialog.hide();
+            }
+        });
 
     }
 
