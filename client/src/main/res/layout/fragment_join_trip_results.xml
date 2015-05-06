@@ -16,8 +16,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="@dimen/activity_vertical_margin"
-            android:textAppearance="@android:style/TextAppearance.Large"
-            android:textColor="@color/text"/>
+            android:textAppearance="@android:style/TextAppearance.Large"/>
 
         <ListView
             android:id="@+id/lv_join_trip_results"
@@ -39,7 +38,6 @@
         android:layout_height="wrap_content"
         android:visibility="gone"
         android:text="@string/join_trip_results_error"
-        android:textColor="@color/error"
         android:layout_gravity = "center_vertical|center_horizontal"/>
 
 </FrameLayout>
