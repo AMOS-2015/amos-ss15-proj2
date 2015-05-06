@@ -7,7 +7,7 @@ import android.support.multidex.MultiDex;
 import com.j256.ormlite.android.apptools.OpenHelperManager;
 
 import org.croudtrip.db.DatabaseHelper;
-import org.croudtrip.server.ServerModule;
+import org.croudtrip.api.ServerModule;
 
 import roboguice.RoboGuice;
 import timber.log.Timber;
