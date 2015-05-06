@@ -32,11 +32,18 @@ import rx.functions.Action1;
 import timber.log.Timber;
 
 /**
- * This Activity logs in a user by either registering him or simply by registerEmail and password.
+ * Login and registration activity.
+ * Start this activity via {@link android.app.Activity#startActivityForResult(Intent, int)}.
+ * Returns {@link LoginActivity#RESULT_AUTHENTICATED} on logged in user.
+ * Returns {@link LoginActivity#RESULT_SKIPPED} when login was skipped.
  * @author Frederik Simon, Vanessa Lange
  */
 @ContentView(R.layout.activity_login)
 public class LoginActivity extends RoboActivity {
+
+    public static final int
+            RESULT_AUTHENTICATED = 1,
+            RESULT_SKIPPED = 2;
 
     @Inject private UsersResource usersResource;
 
@@ -117,7 +124,8 @@ public class LoginActivity extends RoboActivity {
         findViewById(R.id.skip).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startActivity(new Intent(LoginActivity.this, MainActivity.class));
+                setResult(RESULT_SKIPPED);
+                finish();
             }
         });
     }
@@ -307,8 +315,7 @@ public class LoginActivity extends RoboActivity {
     private void loginAndRedirect(User user, String password){
         Context appContext = LoginActivity.this.getApplicationContext();
         AccountManager.login(appContext, user, password);
-        Intent intent = new Intent(appContext, MainActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        startActivity(intent);
+        setResult(RESULT_AUTHENTICATED);
+        finish();
     }
 }

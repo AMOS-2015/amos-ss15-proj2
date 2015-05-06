@@ -14,6 +14,8 @@ import timber.log.Timber;
  */
 public class DispatchActivity extends Activity {
 
+    private static final int REQUEST_LOGIN = 42;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -21,9 +23,26 @@ public class DispatchActivity extends Activity {
         if (AccountManager.isUserLoggedIn(this)) {
             Timber.i("User is logged in");
             startActivity(new Intent(this, MainActivity.class));
+            finish();
         } else {
             Timber.i("User is not logged in");
-            startActivity(new Intent(this, LoginActivity.class));
+            startActivityForResult(new Intent(this, LoginActivity.class), REQUEST_LOGIN);
         }
     }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent intent) {
+        // wrong activity request (??)
+        if (requestCode != REQUEST_LOGIN) return;
+
+        if (resultCode == RESULT_CANCELED) {
+            // user cancelled login
+            finish();
+        } else {
+            // all good (logged in or skipped)
+            startActivity(new Intent(this, MainActivity.class));
+            finish();
+        }
+    }
+
 }
