@@ -95,7 +95,7 @@ public class TripsManager {
 
                 long tripLength = (passengerRoute.getDistanceInMeters());
                 long tripDuration = passengerRoute.getDurationInSeconds();
-                int price = (int) (tripLength/100.0f * offer.getPricePerKmInCents());
+                int price = (int) (tripLength/1000.0f * offer.getPricePerKmInCents());
 
                 TripMatch match = new TripMatch(
                         0,
