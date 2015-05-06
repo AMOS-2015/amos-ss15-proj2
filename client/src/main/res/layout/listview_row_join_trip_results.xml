@@ -20,8 +20,7 @@
         android:layout_height="wrap_content"
         android:layout_toLeftOf="@id/tv_join_trip_results_price"
         android:layout_toStartOf="@id/tv_join_trip_results_price"
-        android:textAppearance="@android:style/TextAppearance.Medium"
-        android:textColor="@color/text">
+        android:textAppearance="@android:style/TextAppearance.Medium">
     </TextView>
 
     <TextView
@@ -30,8 +29,7 @@
         android:layout_height="wrap_content"
         android:layout_toLeftOf="@id/tv_join_trip_results_price"
         android:layout_toStartOf="@id/tv_join_trip_results_price"
-        android:layout_below="@id/tv_join_trip_results_driver_name"
-        android:textColor="@color/secondary_text">
+        android:layout_below="@id/tv_join_trip_results_driver_name">
     </TextView>
 
     <TextView
@@ -40,8 +38,7 @@
         android:layout_height="wrap_content"
         android:layout_toLeftOf="@id/tv_join_trip_results_price"
         android:layout_toStartOf="@id/tv_join_trip_results_price"
-        android:layout_below="@id/tv_join_trip_results_distance"
-        android:textColor="@color/secondary_text">
+        android:layout_below="@id/tv_join_trip_results_distance">
     </TextView>
 
 
