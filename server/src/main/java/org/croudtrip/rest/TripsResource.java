@@ -4,11 +4,10 @@ import com.google.common.base.Optional;
 
 import org.croudtrip.api.account.User;
 import org.croudtrip.api.trips.JoinTripRequest;
-import org.croudtrip.api.trips.JoinTripRequestDescription;
-import org.croudtrip.api.trips.TripReservation;
 import org.croudtrip.api.trips.TripOffer;
 import org.croudtrip.api.trips.TripOfferDescription;
 import org.croudtrip.api.trips.TripQueryDescription;
+import org.croudtrip.api.trips.TripReservation;
 import org.croudtrip.trips.TripsManager;
 
 import java.util.List;
@@ -19,6 +18,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -96,11 +96,11 @@ public class TripsResource {
     }
 
 
-    @POST
+    @PUT
     @UnitOfWork
-    @Path(PATH_OFFER_JOINS)
-    public JoinTripRequest joinTrip(@Auth User passenger, JoinTripRequestDescription joinTripRequestDescription) {
-        Optional<TripReservation> reservation = tripsManager.findReservation(joinTripRequestDescription.getReservationId());
+    @Path(PATH_RESERVATIONS + "/{reservationId}")
+    public JoinTripRequest joinTrip(@PathParam("reservationId") long reservationId, @Auth User passenger) {
+        Optional<TripReservation> reservation = tripsManager.findReservation(reservationId);
         if (!reservation.isPresent()) throw RestUtils.createNotFoundException("reservation does not exist");
 
         Optional<JoinTripRequest> joinTripRequest = tripsManager.joinTrip(reservation.get());

@@ -105,11 +105,15 @@ public class TripsManager {
 
 
     public Optional<JoinTripRequest> joinTrip(TripReservation tripReservation) {
+        // remove reservation (either it has now been accepted or is can be discarded)
+        tripMatchReservationDAO.delete(tripReservation);
 
+        // find and check trip
         Optional<TripOffer> offer = tripOfferDAO.findById(tripReservation.getOfferId());
         if (!offer.isPresent()) return Optional.absent();
         // TODO ensure that offer is actually still valid
 
+        // notify driver
         JoinTripRequest joinTripRequest = new JoinTripRequest(
                 0,
                 tripReservation.getQuery(),
