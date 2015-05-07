@@ -12,6 +12,7 @@ import org.croudtrip.api.trips.TripQueryDescription;
 import org.croudtrip.api.trips.TripReservation;
 import org.croudtrip.trips.TripsManager;
 
+import java.io.IOException;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -101,7 +102,7 @@ public class TripsResource {
     @PUT
     @UnitOfWork
     @Path(PATH_RESERVATIONS + "/{reservationId}")
-    public JoinTripRequest joinTrip(@PathParam("reservationId") long reservationId, @Auth User passenger) {
+    public JoinTripRequest joinTrip(@PathParam("reservationId") long reservationId, @Auth User passenger) throws IOException {
         Optional<TripReservation> reservation = tripsManager.findReservation(reservationId);
         if (!reservation.isPresent()) throw RestUtils.createNotFoundException("reservation does not exist");
 

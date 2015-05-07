@@ -7,9 +7,9 @@ import android.widget.Toast;
 
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 
-public class GcmBroadcastReceiver extends BroadcastReceiver {
+import org.croudtrip.api.gcm.GcmConstants;
 
-	private static final String EXTRA_DUMMY = "DUMMY";
+public class GcmBroadcastReceiver extends BroadcastReceiver {
 
 	@Override
 	public void onReceive(Context context, Intent intent) {
@@ -17,7 +17,7 @@ public class GcmBroadcastReceiver extends BroadcastReceiver {
 		String messageType = GoogleCloudMessaging.getInstance(context).getMessageType(intent);
 		if (!GoogleCloudMessaging.MESSAGE_TYPE_MESSAGE.equals(messageType)) return;
 
-		String dummyMessage  = intent.getExtras().getString(EXTRA_DUMMY);
+		String dummyMessage  = intent.getExtras().getString(GcmConstants.GCM_MSG_DUMMY);
 		Toast.makeText(context, "Server says " + dummyMessage, Toast.LENGTH_SHORT).show();
 	}
 }

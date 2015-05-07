@@ -6,6 +6,7 @@ import com.google.common.base.Optional;
 import org.croudtrip.api.account.User;
 import org.croudtrip.api.directions.Route;
 import org.croudtrip.api.directions.RouteLocation;
+import org.croudtrip.api.gcm.GcmConstants;
 import org.croudtrip.api.trips.JoinTripRequest;
 import org.croudtrip.api.trips.JoinTripStatus;
 import org.croudtrip.api.trips.TripOffer;
@@ -18,7 +19,9 @@ import org.croudtrip.db.TripReservationDAO;
 import org.croudtrip.db.TripOfferDAO;
 import org.croudtrip.directions.DirectionsManager;
 import org.croudtrip.utils.Assert;
+import org.croudtrip.gcm.GcmManager;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -34,6 +37,7 @@ public class TripsManager {
     private final TripReservationDAO tripReservationDAO;
     private final JoinTripRequestDAO joinTripRequestDAO;
 	private final DirectionsManager directionsManager;
+    private final GcmManager gcmManager;
 
 
 	@Inject
@@ -41,12 +45,14 @@ public class TripsManager {
             TripOfferDAO tripOfferDAO,
             TripReservationDAO tripReservationDAO,
             JoinTripRequestDAO joinTripRequestDAO,
-            DirectionsManager directionsManager) {
+            DirectionsManager directionsManager,
+            GcmManager gcmManager) {
 
 		this.tripOfferDAO = tripOfferDAO;
         this.tripReservationDAO = tripReservationDAO;
         this.joinTripRequestDAO = joinTripRequestDAO;
 		this.directionsManager = directionsManager;
+        this.gcmManager = gcmManager;
 	}
 
 
@@ -106,7 +112,7 @@ public class TripsManager {
     }
 
 
-    public Optional<JoinTripRequest> joinTrip(TripReservation tripReservation) {
+    public Optional<JoinTripRequest> joinTrip(TripReservation tripReservation) throws IOException {
         // remove reservation (either it has now been accepted or is can be discarded)
         tripReservationDAO.delete(tripReservation);
 
@@ -123,8 +129,12 @@ public class TripsManager {
                 tripReservation.getPricePerKmInCents(),
                 offer.get(),
                 JoinTripStatus.PASSENGER_ACCEPTED);
-        // TODO send push notification to driver (frederik?)
+
         joinTripRequestDAO.save(joinTripRequest);
+
+        // send push notification to driver
+        gcmManager.sendGcmMessageToUser( offer.get().getDriver(), GcmConstants.GCM_MSG_JOIN_REQUEST, ""+joinTripRequest.getId() );
+
         return Optional.of(joinTripRequest);
     }
 
