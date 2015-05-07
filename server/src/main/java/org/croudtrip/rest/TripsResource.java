@@ -4,6 +4,7 @@ import com.google.common.base.Optional;
 
 import org.croudtrip.api.account.User;
 import org.croudtrip.api.trips.JoinTripRequest;
+import org.croudtrip.api.trips.JoinTripRequestUpdate;
 import org.croudtrip.api.trips.TripOffer;
 import org.croudtrip.api.trips.TripOfferDescription;
 import org.croudtrip.api.trips.TripQueryDescription;
@@ -121,9 +122,27 @@ public class TripsResource {
     @GET
     @UnitOfWork
     @Path(PATH_JOINS + "/{joinRequestId}")
-    public Optional<JoinTripRequest> getJoinRequest(@Auth User driver, @PathParam("offerId") long offerId, @PathParam("joinRequestId") long joinRequestId) {
+    public JoinTripRequest getJoinRequest(@Auth User driver, @PathParam("offerId") long offerId, @PathParam("joinRequestId") long joinRequestId) {
         assertIsValidOfferId(offerId);
-        return tripsManager.findJoinRequest(joinRequestId);
+        Optional<JoinTripRequest> request = tripsManager.findJoinRequest(joinRequestId);
+        if (!request.isPresent()) throw RestUtils.createNotFoundException();
+        else return request.get();
+    }
+
+
+    @PUT
+    @UnitOfWork
+    @Path(PATH_JOINS + "/{joinRequestId}")
+    public JoinTripRequest updateJoinRequest(
+            @Auth User driver,
+            @PathParam("offerId") long offerId,
+            @PathParam("joinRequestId") long joinRequestId,
+            JoinTripRequestUpdate update) {
+
+        assertIsValidOfferId(offerId);
+        Optional<JoinTripRequest> joinRequest = tripsManager.findJoinRequest(joinRequestId);
+        if (!joinRequest.isPresent()) throw RestUtils.createNotFoundException();
+        return tripsManager.updateJoinRequest(joinRequest.get(), update.getAcceptPassenger());
     }
 
 

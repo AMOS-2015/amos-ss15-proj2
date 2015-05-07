@@ -138,6 +138,24 @@ public class TripsManager {
     }
 
 
+    public JoinTripRequest updateJoinRequest(JoinTripRequest joinRequest, boolean passengerAccepted) {
+        JoinTripStatus newStatus;
+        if (passengerAccepted) newStatus = JoinTripStatus.DRIVER_ACCEPTED;
+        else newStatus = JoinTripStatus.DRIVER_DECLINED;
+
+        JoinTripRequest updatedRequest = new JoinTripRequest(
+                joinRequest.getId(),
+                joinRequest.getQuery(),
+                joinRequest.getTotalPriceInCents(),
+                joinRequest.getPricePerKmInCents(),
+                joinRequest.getOffer(),
+                newStatus);
+        joinTripRequestDAO.save(updatedRequest);
+        return updatedRequest;
+        // TODO notify passenger
+    }
+
+
     private Optional<TripOffer> analyzeOffer(TripOffer offer, TripQuery query) throws Exception {
         // compute total driver route
         List<RouteLocation> wayPoints = new ArrayList<>();
