@@ -113,7 +113,6 @@ public class GcmManager {
         GcmRegistration gcmRegistration = findRegistrationByUser(receiver).orNull();
         if( gcmRegistration == null ) {
             logManager.e("User " + receiver.getId() + " (" + receiver.getFirstName() + " " + receiver.getLastName() + ") is not registered.");
-            unregister(gcmRegistration);
             return;
         }
 

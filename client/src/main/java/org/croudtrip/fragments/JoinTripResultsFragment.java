@@ -7,6 +7,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.ProgressBar;
@@ -17,6 +18,7 @@ import org.croudtrip.R;
 import org.croudtrip.account.AccountManager;
 import org.croudtrip.api.TripsResource;
 import org.croudtrip.api.directions.RouteLocation;
+import org.croudtrip.api.trips.JoinTripRequest;
 import org.croudtrip.api.trips.TripReservation;
 import org.croudtrip.api.trips.TripQueryDescription;
 import org.croudtrip.trip.JoinTripResultsAdapter;
@@ -73,6 +75,29 @@ public class JoinTripResultsFragment extends RoboFragment {
         this.caption = (TextView) view.findViewById(R.id.tv_join_trip_results_caption);
         this.resultsList = (ListView) view.findViewById(R.id.lv_join_trip_results);
         this.error = (TextView) view.findViewById(R.id.tv_join_trip_error);
+
+        /// TODO: This is just for testing the gcm stuff. Feel free to do it cleanly ;)
+        resultsList.setOnItemClickListener( new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapter, View view, int position, long id) {
+                TripReservation reservation = (TripReservation) adapter.getItemAtPosition(position);
+
+                Timber.d("reservationId " + reservation.getId());
+                tripsResource.joinTrip( reservation.getId() ).subscribe( new Action1<JoinTripRequest>() {
+                    @Override
+                    public void call(JoinTripRequest joinTripRequest) {
+                        Timber.d("Answer");
+
+                    }
+                },new Action1<Throwable>() {
+                    @Override
+                    public void call(Throwable throwable) {
+                        // on main thread; something went wrong
+                        Timber.e("Error when trying to join a trip: " + throwable.getMessage());
+                    }
+                } );
+            }
+        });
 
         return view;
     }
