@@ -3,6 +3,8 @@ package org.croudtrip.rest;
 import com.google.common.base.Optional;
 
 import org.croudtrip.api.account.User;
+import org.croudtrip.api.trips.JoinTripRequest;
+import org.croudtrip.api.trips.JoinTripRequestDescription;
 import org.croudtrip.api.trips.TripReservation;
 import org.croudtrip.api.trips.TripOffer;
 import org.croudtrip.api.trips.TripOfferDescription;
@@ -35,6 +37,7 @@ public class TripsResource {
 
     private static final String
             PATH_OFFERS = "/offers",
+            PATH_OFFER_JOINS = PATH_OFFERS + "/joins",
             PATH_RESERVATIONS = "/reservations";
 
     private final TripsManager tripsManager;
@@ -90,6 +93,19 @@ public class TripsResource {
     @Path(PATH_RESERVATIONS)
     public List<TripReservation> getReservations() {
         return tripsManager.findAllReservations();
+    }
+
+
+    @POST
+    @UnitOfWork
+    @Path(PATH_OFFER_JOINS)
+    public JoinTripRequest joinTrip(@Auth User passenger, JoinTripRequestDescription joinTripRequestDescription) {
+        Optional<TripReservation> reservation = tripsManager.findReservation(joinTripRequestDescription.getReservationId());
+        if (!reservation.isPresent()) throw RestUtils.createNotFoundException("reservation does not exist");
+
+        Optional<JoinTripRequest> joinTripRequest = tripsManager.joinTrip(reservation.get());
+        if (!joinTripRequest.isPresent()) throw RestUtils.createNotFoundException("offer does not exist");
+        return joinTripRequest.get();
     }
 
 

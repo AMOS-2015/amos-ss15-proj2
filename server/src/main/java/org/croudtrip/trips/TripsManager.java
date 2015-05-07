@@ -6,11 +6,13 @@ import com.google.common.base.Optional;
 import org.croudtrip.api.account.User;
 import org.croudtrip.api.directions.Route;
 import org.croudtrip.api.directions.RouteLocation;
-import org.croudtrip.api.trips.TripReservation;
+import org.croudtrip.api.trips.JoinTripRequest;
 import org.croudtrip.api.trips.TripOffer;
 import org.croudtrip.api.trips.TripOfferDescription;
 import org.croudtrip.api.trips.TripQuery;
 import org.croudtrip.api.trips.TripQueryDescription;
+import org.croudtrip.api.trips.TripReservation;
+import org.croudtrip.db.JoinTripRequestDAO;
 import org.croudtrip.db.TripMatchReservationDAO;
 import org.croudtrip.db.TripOfferDAO;
 import org.croudtrip.directions.DirectionsManager;
@@ -28,13 +30,20 @@ public class TripsManager {
 
 	private final TripOfferDAO tripOfferDAO;
     private final TripMatchReservationDAO tripMatchReservationDAO;
+    private final JoinTripRequestDAO joinTripRequestDAO;
 	private final DirectionsManager directionsManager;
 
 
 	@Inject
-	TripsManager(TripOfferDAO tripOfferDAO, TripMatchReservationDAO tripMatchReservationDAO, DirectionsManager directionsManager) {
+	TripsManager(
+            TripOfferDAO tripOfferDAO,
+            TripMatchReservationDAO tripMatchReservationDAO,
+            JoinTripRequestDAO joinTripRequestDAO,
+            DirectionsManager directionsManager) {
+
 		this.tripOfferDAO = tripOfferDAO;
         this.tripMatchReservationDAO = tripMatchReservationDAO;
+        this.joinTripRequestDAO = joinTripRequestDAO;
 		this.directionsManager = directionsManager;
 	}
 
@@ -87,6 +96,29 @@ public class TripsManager {
 
     public List<TripReservation> findAllReservations() {
         return tripMatchReservationDAO.findAll();
+    }
+
+
+    public Optional<TripReservation> findReservation(long reservationId) {
+        return tripMatchReservationDAO.findById(reservationId);
+    }
+
+
+    public Optional<JoinTripRequest> joinTrip(TripReservation tripReservation) {
+
+        Optional<TripOffer> offer = tripOfferDAO.findById(tripReservation.getOfferId());
+        if (!offer.isPresent()) return Optional.absent();
+        // TODO ensure that offer is actually still valid
+
+        JoinTripRequest joinTripRequest = new JoinTripRequest(
+                0,
+                tripReservation.getQuery(),
+                tripReservation.getTotalPriceInCents(),
+                tripReservation.getPricePerKmInCents(),
+                offer.get());
+        // TODO send push notification to driver (frederik?)
+        joinTripRequestDAO.save(joinTripRequest);
+        return Optional.of(joinTripRequest);
     }
 
 
