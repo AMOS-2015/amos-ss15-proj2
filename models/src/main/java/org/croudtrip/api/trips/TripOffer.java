@@ -43,7 +43,7 @@ public class TripOffer {
 	private long id;
 
 	@Embedded
-	private Route route;
+	private Route driverRoute;
 
 	@Column(name = "maxDiversionInMeters", nullable = false)
 	private long maxDiversionInMeters;
@@ -61,13 +61,13 @@ public class TripOffer {
 	@JsonCreator
 	public TripOffer(
 			@JsonProperty("id") long id,
-			@JsonProperty("route") Route route,
+			@JsonProperty("driverRoute") Route driverRoute,
 			@JsonProperty("maxDiversionsInMeters") long maxDiversionInMeters,
 			@JsonProperty("pricePerKmInCents") int pricePerKmInCents,
 			@JsonProperty("driver") User driver) {
 
 		this.id = id;
-		this.route = route;
+		this.driverRoute = driverRoute;
 		this.maxDiversionInMeters = maxDiversionInMeters;
 		this.pricePerKmInCents = pricePerKmInCents;
 		this.driver = driver;
@@ -79,8 +79,8 @@ public class TripOffer {
 	}
 
 
-	public Route getRoute() {
-		return route;
+	public Route getDriverRoute() {
+		return driverRoute;
 	}
 
 
@@ -104,7 +104,7 @@ public class TripOffer {
 		if (other == null || !(other instanceof TripOffer)) return false;
 		TripOffer offer = (TripOffer) other;
 		return Objects.equal(id, offer.id)
-				&& Objects.equal(route, offer.route)
+				&& Objects.equal(driverRoute, offer.driverRoute)
 				&& Objects.equal(maxDiversionInMeters, offer.maxDiversionInMeters)
 				&& Objects.equal(pricePerKmInCents, offer.pricePerKmInCents)
 				&& Objects.equal(driver, offer.driver);
@@ -113,7 +113,7 @@ public class TripOffer {
 
 	@Override
 	public int hashCode() {
-		return Objects.hashCode(id, route, maxDiversionInMeters, pricePerKmInCents, driver);
+		return Objects.hashCode(id, driverRoute, maxDiversionInMeters, pricePerKmInCents, driver);
 	}
 
 }

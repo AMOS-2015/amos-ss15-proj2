@@ -86,18 +86,18 @@ public class DriverActivity extends RoboActivity {
                         Timber.d("Your offer was successfully sent to the server");
 
                         // show route information on the map
-                        googleMap.addPolyline(new PolylineOptions().addAll(PolyUtil.decode(routeNavigations.getRoute().getPolyline())));
+                        googleMap.addPolyline(new PolylineOptions().addAll(PolyUtil.decode(routeNavigations.getDriverRoute().getPolyline())));
                         googleMap.setMyLocationEnabled(true);
 
                         // compute duration for driving
-                        long seconds = routeNavigations.getRoute().getDurationInSeconds();
+                        long seconds = routeNavigations.getDriverRoute().getDurationInSeconds();
                         long hours = seconds/3600;
                         long minutes = (seconds%3600)/60;
                         seconds = (seconds%3600)%60;
                         durationText.setText( String.format( getResources().getString(R.string.duration_text ), hours, minutes, seconds ) );
 
                         // show distance information
-                        distanceText.setText( String.format( getResources().getString(R.string.distance_text ), (routeNavigations.getRoute().getDistanceInMeters() / 1000.0) ) );
+                        distanceText.setText( String.format( getResources().getString(R.string.distance_text ), (routeNavigations.getDriverRoute().getDistanceInMeters() / 1000.0) ) );
 
                         // move camera to current position
                         Location location = locationUpdater.getLastLocation();

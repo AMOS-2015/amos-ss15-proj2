@@ -93,18 +93,18 @@ public class TripsManager {
     private Optional<TripOffer> analyzeOffer(TripOffer offer, TripQuery query) throws Exception {
         // compute total driver route
         List<RouteLocation> wayPoints = new ArrayList<>();
-        wayPoints.add(query.getRoute().getStart());
-        wayPoints.add(query.getRoute().getEnd());
+        wayPoints.add(query.getPassengerRoute().getStart());
+        wayPoints.add(query.getPassengerRoute().getEnd());
         List<Route> possibleDriverRoutes = directionsManager.getDirections(
-                offer.getRoute().getStart(),
-                offer.getRoute().getEnd(),
+                offer.getDriverRoute().getStart(),
+                offer.getDriverRoute().getEnd(),
                 wayPoints);
 
         if (possibleDriverRoutes == null || possibleDriverRoutes.isEmpty()) return Optional.absent();
 
         // check is passenger route is within max diversion
         Route driverRoute = possibleDriverRoutes.get(0);
-        if (driverRoute.getDistanceInMeters() - query.getRoute().getDistanceInMeters() < offer.getMaxDiversionInMeters()) {
+        if (driverRoute.getDistanceInMeters() - query.getPassengerRoute().getDistanceInMeters() < offer.getMaxDiversionInMeters()) {
             return Optional.of(offer);
         } else {
             return Optional.absent();
@@ -142,7 +142,7 @@ public class TripsManager {
         // calculate final price
         int pricePerKmInCents = lowestPricePerKmInCents;
         if (secondLowestPricePerKmInCents != -1) pricePerKmInCents = secondLowestPricePerKmInCents;
-        int totalPriceInCents = (int) (pricePerKmInCents * query.getRoute().getDistanceInMeters() / 1000);
+        int totalPriceInCents = (int) (pricePerKmInCents * query.getPassengerRoute().getDistanceInMeters() / 1000);
 
         // create price reservations
         List<TripReservation> reservations = new ArrayList<>();

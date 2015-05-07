@@ -80,7 +80,7 @@ public class JoinTripResultsAdapter extends ArrayAdapter<TripReservation>{
 
         // Insert distance information
         TextView distanceTextView = (TextView) view.findViewById(R.id.tv_join_trip_results_distance);
-        long distance = reservation.getQuery().getRoute().getDistanceInMeters();
+        long distance = reservation.getQuery().getPassengerRoute().getDistanceInMeters();
 
         if(distance < 1000){
             distanceTextView.setText(getContext().getString(
@@ -95,7 +95,7 @@ public class JoinTripResultsAdapter extends ArrayAdapter<TripReservation>{
 
         // Insert time information
         TextView timeTextView = (TextView) view.findViewById(R.id.tv_join_trip_results_time);
-        long timeInMinutes = reservation.getQuery().getRoute().getDurationInSeconds() / 60;
+        long timeInMinutes = reservation.getQuery().getPassengerRoute().getDurationInSeconds() / 60;
 
         if(timeInMinutes < 60){
             timeTextView.setText(getContext().getString(R.string.join_trip_results_duration_min,

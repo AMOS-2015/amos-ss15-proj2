@@ -20,7 +20,7 @@ import javax.persistence.ManyToOne;
 public class TripQuery {
 
 	@Embedded
-	private Route route;
+	private Route passengerRoute;
 
 	@Column(name = "maxWaitingTimeInSeconds", nullable = false)
 	private long maxWaitingTimeInSeconds;
@@ -34,18 +34,18 @@ public class TripQuery {
 
 	@JsonCreator
 	public TripQuery(
-			@JsonProperty("route") Route route,
+			@JsonProperty("passengerRoute") Route passengerRoute,
 			@JsonProperty("maxWaitingTimeSeconds") long maxWaitingTimeInSeconds,
 			@JsonProperty("passenger") User passenger) {
 
-		this.route = route;
+		this.passengerRoute = passengerRoute;
 		this.maxWaitingTimeInSeconds = maxWaitingTimeInSeconds;
 		this.passenger = passenger;
 	}
 
 
-	public Route getRoute() {
-		return route;
+	public Route getPassengerRoute() {
+		return passengerRoute;
 	}
 
 
@@ -65,14 +65,14 @@ public class TripQuery {
 		if (o == null || getClass() != o.getClass()) return false;
 		TripQuery tripQuery = (TripQuery) o;
 		return Objects.equal(maxWaitingTimeInSeconds, tripQuery.maxWaitingTimeInSeconds) &&
-				Objects.equal(route, tripQuery.route) &&
+				Objects.equal(passengerRoute, tripQuery.passengerRoute) &&
 				Objects.equal(passenger, tripQuery.passenger);
 	}
 
 
 	@Override
 	public int hashCode() {
-		return Objects.hashCode(route, maxWaitingTimeInSeconds, passenger);
+		return Objects.hashCode(passengerRoute, maxWaitingTimeInSeconds, passenger);
 	}
 
 }
