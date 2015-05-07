@@ -1,7 +1,7 @@
 package org.croudtrip.trips;
 
 import org.croudtrip.api.trips.TripReservation;
-import org.croudtrip.db.TripMatchReservationDAO;
+import org.croudtrip.db.TripReservationDAO;
 import org.croudtrip.logs.LogManager;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -21,7 +21,7 @@ import io.dropwizard.lifecycle.Managed;
  */
 public class TripReservationGarbageCollector implements Managed, Runnable {
 
-	private final TripMatchReservationDAO tripMatchReservationDAO;
+	private final TripReservationDAO tripReservationDAO;
 	private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 	private final SessionFactory sessionFactory;
 	private final LogManager logManager;
@@ -30,11 +30,11 @@ public class TripReservationGarbageCollector implements Managed, Runnable {
 
 	@Inject
 	TripReservationGarbageCollector(
-			TripMatchReservationDAO tripMatchReservationDAO,
+			TripReservationDAO tripReservationDAO,
 			SessionFactory sessionFactory,
 			LogManager logManager) {
 
-		this.tripMatchReservationDAO = tripMatchReservationDAO;
+		this.tripReservationDAO = tripReservationDAO;
 		this.sessionFactory = sessionFactory;
 		this.logManager = logManager;
 	}
@@ -58,9 +58,9 @@ public class TripReservationGarbageCollector implements Managed, Runnable {
 			ManagedSessionContext.bind(session);
 
 			long currentTimestamp = System.currentTimeMillis() / 1000;
-			for (TripReservation reservation : tripMatchReservationDAO.findAll()) {
+			for (TripReservation reservation : tripReservationDAO.findAll()) {
 				if (currentTimestamp > reservation.getCreationTimestamp() + reservation.getQuery().getMaxWaitingTimeInSeconds()) {
-					tripMatchReservationDAO.delete(reservation);
+					tripReservationDAO.delete(reservation);
 				}
 			}
 		} catch (Exception e) {

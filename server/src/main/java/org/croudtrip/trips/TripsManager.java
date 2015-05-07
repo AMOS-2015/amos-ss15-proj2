@@ -14,7 +14,7 @@ import org.croudtrip.api.trips.TripQuery;
 import org.croudtrip.api.trips.TripQueryDescription;
 import org.croudtrip.api.trips.TripReservation;
 import org.croudtrip.db.JoinTripRequestDAO;
-import org.croudtrip.db.TripMatchReservationDAO;
+import org.croudtrip.db.TripReservationDAO;
 import org.croudtrip.db.TripOfferDAO;
 import org.croudtrip.directions.DirectionsManager;
 import org.croudtrip.utils.Assert;
@@ -31,7 +31,7 @@ import javax.inject.Singleton;
 public class TripsManager {
 
 	private final TripOfferDAO tripOfferDAO;
-    private final TripMatchReservationDAO tripMatchReservationDAO;
+    private final TripReservationDAO tripReservationDAO;
     private final JoinTripRequestDAO joinTripRequestDAO;
 	private final DirectionsManager directionsManager;
 
@@ -39,12 +39,12 @@ public class TripsManager {
 	@Inject
 	TripsManager(
             TripOfferDAO tripOfferDAO,
-            TripMatchReservationDAO tripMatchReservationDAO,
+            TripReservationDAO tripReservationDAO,
             JoinTripRequestDAO joinTripRequestDAO,
             DirectionsManager directionsManager) {
 
 		this.tripOfferDAO = tripOfferDAO;
-        this.tripMatchReservationDAO = tripMatchReservationDAO;
+        this.tripReservationDAO = tripReservationDAO;
         this.joinTripRequestDAO = joinTripRequestDAO;
 		this.directionsManager = directionsManager;
 	}
@@ -90,25 +90,25 @@ public class TripsManager {
 
         // find and store reservations
         List<TripReservation> reservations = findCheapestMatch(query, potentialMatches);
-        for (TripReservation reservation : reservations) tripMatchReservationDAO.save(reservation);
+        for (TripReservation reservation : reservations) tripReservationDAO.save(reservation);
 
         return reservations;
 	}
 
 
     public List<TripReservation> findAllReservations() {
-        return tripMatchReservationDAO.findAll();
+        return tripReservationDAO.findAll();
     }
 
 
     public Optional<TripReservation> findReservation(long reservationId) {
-        return tripMatchReservationDAO.findById(reservationId);
+        return tripReservationDAO.findById(reservationId);
     }
 
 
     public Optional<JoinTripRequest> joinTrip(TripReservation tripReservation) {
         // remove reservation (either it has now been accepted or is can be discarded)
-        tripMatchReservationDAO.delete(tripReservation);
+        tripReservationDAO.delete(tripReservation);
 
         // find and check trip
         Optional<TripOffer> offer = tripOfferDAO.findById(tripReservation.getOfferId());

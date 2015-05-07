@@ -8,10 +8,10 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-public class TripMatchReservationDAO extends AbstractDAO<TripReservation> {
+public class TripReservationDAO extends AbstractDAO<TripReservation> {
 
 	@Inject
-	TripMatchReservationDAO(SessionFactory sessionFactory) {
+	TripReservationDAO(SessionFactory sessionFactory) {
 		super(sessionFactory);
 	}
 
