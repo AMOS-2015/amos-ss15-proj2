@@ -87,11 +87,12 @@ public class JoinTripResultsFragment extends RoboFragment {
         double currentLocationLon = extras.getDouble(KEY_CURRENT_LOCATION_LONGITUDE);
         double destinationLat = extras.getDouble(KEY_DESTINATION_LATITUDE);
         double destinationLon = extras.getDouble(KEY_DESTINATION_LONGITUDE);
+        long maxWaitingTime = 1000; /* TODO: Get this from passengeres choice*/
 
         // Ask the server for matches
         TripQueryDescription tripQueryDescription = new TripQueryDescription(
                 new RouteLocation(currentLocationLat, currentLocationLon),
-                new RouteLocation(destinationLat, destinationLon));
+                new RouteLocation(destinationLat, destinationLon), maxWaitingTime);
 
         tripsResource.findMatches(tripQueryDescription).subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
