@@ -37,7 +37,7 @@ public class TripsResource {
 
     private static final String
             PATH_OFFERS = "/offers",
-            PATH_OFFER_JOINS = PATH_OFFERS + "/joins",
+            PATH_JOINS = PATH_OFFERS + "/{offerId}/joins",
             PATH_RESERVATIONS = "/reservations";
 
     private final TripsManager tripsManager;
@@ -60,7 +60,7 @@ public class TripsResource {
     @Path(PATH_OFFERS + "/{offerId}")
     @UnitOfWork
     public TripOffer getOffer(@PathParam("offerId") long offerId) {
-        return assertIsValidId(offerId);
+        return assertIsValidOfferId(offerId);
     }
 
 
@@ -76,7 +76,7 @@ public class TripsResource {
     @UnitOfWork
     @Path(PATH_OFFERS + "/{offerId}")
     public void deleteOff(@PathParam("offerId") long offerId) {
-        tripsManager.deleteOffer(assertIsValidId(offerId));
+        tripsManager.deleteOffer(assertIsValidOfferId(offerId));
     }
 
 
@@ -109,7 +109,25 @@ public class TripsResource {
     }
 
 
-    private TripOffer assertIsValidId(long offerId) {
+    @GET
+    @UnitOfWork
+    @Path(PATH_JOINS)
+    public List<JoinTripRequest> getJoinRequests(@Auth User driver, @PathParam("offerId") long offerId) {
+        TripOffer offer = assertIsValidOfferId(offerId);
+        return tripsManager.findAllJoinRequests(offer);
+    }
+
+
+    @GET
+    @UnitOfWork
+    @Path(PATH_JOINS + "/{joinRequestId}")
+    public Optional<JoinTripRequest> getJoinRequest(@Auth User driver, @PathParam("offerId") long offerId, @PathParam("joinRequestId") long joinRequestId) {
+        assertIsValidOfferId(offerId);
+        return tripsManager.findJoinRequest(joinRequestId);
+    }
+
+
+    private TripOffer assertIsValidOfferId(long offerId) {
         Optional<TripOffer> offer = tripsManager.findOffer(offerId);
         if (offer.isPresent()) return offer.get();
         else throw RestUtils.createNotFoundException();

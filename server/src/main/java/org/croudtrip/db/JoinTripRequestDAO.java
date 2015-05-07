@@ -20,4 +20,10 @@ public class JoinTripRequestDAO extends AbstractDAO<JoinTripRequest> {
 		return list(namedQuery(JoinTripRequest.QUERY_NAME_FIND_ALL));
 	}
 
+
+	public List<JoinTripRequest> findByOfferId(long offerId) {
+		return list(namedQuery(JoinTripRequest.QUERY_FIND_BY_OFFER_ID)
+				.setParameter(JoinTripRequest.QUERY_PARAM_OFFER_ID, offerId));
+	}
+
 }

@@ -126,6 +126,16 @@ public class TripsManager {
     }
 
 
+    public List<JoinTripRequest> findAllJoinRequests(TripOffer offer) {
+        return joinTripRequestDAO.findByOfferId(offer.getId());
+    }
+
+
+    public Optional<JoinTripRequest> findJoinRequest(long joinRequestId) {
+        return joinTripRequestDAO.findById(joinRequestId);
+    }
+
+
     private Optional<TripOffer> analyzeOffer(TripOffer offer, TripQuery query) throws Exception {
         // compute total driver route
         List<RouteLocation> wayPoints = new ArrayList<>();
