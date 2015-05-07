@@ -17,7 +17,7 @@ import org.croudtrip.R;
 import org.croudtrip.account.AccountManager;
 import org.croudtrip.api.TripsResource;
 import org.croudtrip.api.directions.RouteLocation;
-import org.croudtrip.api.trips.TripMatch;
+import org.croudtrip.api.trips.TripMatchReservation;
 import org.croudtrip.api.trips.TripQueryDescription;
 import org.croudtrip.trip.JoinTripResultsAdapter;
 
@@ -94,22 +94,22 @@ public class JoinTripResultsFragment extends RoboFragment {
                 new RouteLocation(currentLocationLat, currentLocationLon),
                 new RouteLocation(destinationLat, destinationLon), maxWaitingTime);
 
-        tripsResource.findMatches(tripQueryDescription).subscribeOn(Schedulers.io())
+        tripsResource.createReservations(tripQueryDescription).subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Action1<List<TripMatch>>() {
+                .subscribe(new Action1<List<TripMatchReservation>>() {
 
                     @Override
-                    public void call(List<TripMatch> tripMatches) {
+                    public void call(List<TripMatchReservation> reservations) {
 
                         // Update the caption text
-                        int numMatches = tripMatches.size();
+                        int numMatches = reservations.size();
                         caption.setText(getResources().getQuantityString(R.plurals.join_trip_results,
                                 numMatches, numMatches));
 
                         // Fill the results list
                         JoinTripResultsAdapter adapter = new JoinTripResultsAdapter(
                                 getActivity(),
-                                R.layout.listview_row_join_trip_results, tripMatches);
+                                R.layout.listview_row_join_trip_results, reservations);
 
                         resultsList.setAdapter(adapter);
                         progressBar.setVisibility(View.GONE);

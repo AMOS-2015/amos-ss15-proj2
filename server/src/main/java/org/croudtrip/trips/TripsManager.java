@@ -6,7 +6,6 @@ import com.google.common.base.Optional;
 import org.croudtrip.api.account.User;
 import org.croudtrip.api.directions.Route;
 import org.croudtrip.api.directions.RouteLocation;
-import org.croudtrip.api.trips.TripMatch;
 import org.croudtrip.api.trips.TripMatchReservation;
 import org.croudtrip.api.trips.TripOffer;
 import org.croudtrip.api.trips.TripOfferDescription;
@@ -64,7 +63,7 @@ public class TripsManager {
 	}
 
 
-	public List<TripMatch> findMatches(User passenger, TripQueryDescription queryDescription) throws Exception {
+	public List<TripMatchReservation> createReservations(User passenger, TripQueryDescription queryDescription) throws Exception {
 
         // compute passenger route
         List<Route> possiblePassengerRoutes = directionsManager.getDirections(queryDescription.getStart(), queryDescription.getEnd());
@@ -82,22 +81,7 @@ public class TripsManager {
         List<TripMatchReservation> reservations = findCheapestMatch(query, potentialMatches);
         for (TripMatchReservation reservation : reservations) tripMatchReservationDAO.save(reservation);
 
-        // construct final match
-        List<TripMatch> matches = new ArrayList<>();
-        for(TripMatchReservation reservation : reservations) {
-            TripOffer offer = findOffer(reservation.getOfferId()).get();
-            matches.add(new TripMatch(
-                    reservation.getId(),
-                    reservation.getQuery().getRoute(),
-                    0,  // TODO why does passenger care about diversion?
-                    0,  // TODO why does passenger case about diversion?
-                    reservation.getPriceInCents(),
-                    offer.getPricePerKmInCents(),
-                    offer.getDriver(),
-                    passenger));
-        }
-
-		return matches;
+        return reservations;
 	}
 
 
@@ -158,7 +142,7 @@ public class TripsManager {
         // calculate final price
         int pricePerKmInCents = lowestPricePerKmInCents;
         if (secondLowestPricePerKmInCents != -1) pricePerKmInCents = secondLowestPricePerKmInCents;
-        int price = (int) (pricePerKmInCents * query.getRoute().getDistanceInMeters() / 1000);
+        int totalPriceInCents = (int) (pricePerKmInCents * query.getRoute().getDistanceInMeters() / 1000);
 
         // create price reservations
         List<TripMatchReservation> reservations = new ArrayList<>();
@@ -166,8 +150,11 @@ public class TripsManager {
             reservations.add(new TripMatchReservation(
                     0,
                     query,
-                    price,
-                    match.getId()));
+                    totalPriceInCents,
+                    match.getPricePerKmInCents(),
+                    match.getId(),
+                    match.getDriver()));
+
         }
 
         return reservations;
