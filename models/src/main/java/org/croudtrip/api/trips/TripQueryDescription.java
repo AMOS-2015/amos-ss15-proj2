@@ -15,17 +15,17 @@ public class TripQueryDescription {
 
 	@NotNull private final RouteLocation start;
 	@NotNull private final RouteLocation end;
-    private final long maxWaitingTime;
+    private final long maxWaitingTimeInSeconds;
 
 	@JsonCreator
 	public TripQueryDescription(
 			@JsonProperty("start") RouteLocation start,
 			@JsonProperty("end") RouteLocation end,
-            @JsonProperty("maxWaitingTime") long maxWaitingTime) {
+            @JsonProperty("maxWaitingTimeInSeconds") long maxWaitingTimeInSeconds) {
 
 		this.start = start;
 		this.end = end;
-        this.maxWaitingTime = maxWaitingTime;
+        this.maxWaitingTimeInSeconds = maxWaitingTimeInSeconds;
 	}
 
 	public RouteLocation getStart() {
@@ -36,7 +36,7 @@ public class TripQueryDescription {
 		return end;
 	}
 
-    public long getMaxWaitingTime() { return maxWaitingTime; }
+    public long getMaxWaitingTimeInSeconds() { return maxWaitingTimeInSeconds; }
 
 	@Override
 	public boolean equals(Object other) {
@@ -44,7 +44,7 @@ public class TripQueryDescription {
 		TripQueryDescription request = (TripQueryDescription) other;
 		return Objects.equal(start, request.start)
 				&& Objects.equal(end, request.end)
-                && Objects.equal(maxWaitingTime, request.maxWaitingTime);
+                && Objects.equal(maxWaitingTimeInSeconds, request.maxWaitingTimeInSeconds);
 	}
 
 

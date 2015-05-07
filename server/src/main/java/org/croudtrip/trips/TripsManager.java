@@ -79,7 +79,7 @@ public class TripsManager {
         // compute passenger route
         List<Route> possiblePassengerRoutes = directionsManager.getDirections(queryDescription.getStart(), queryDescription.getEnd());
         if (possiblePassengerRoutes.isEmpty()) return new ArrayList<>();
-        TripQuery query = new TripQuery(possiblePassengerRoutes.get(0), queryDescription.getMaxWaitingTime(), passenger);
+        TripQuery query = new TripQuery(possiblePassengerRoutes.get(0), queryDescription.getMaxWaitingTimeInSeconds(), passenger);
 
         // analyse offers
         List<TripOffer> potentialMatches = new ArrayList<>();
