@@ -12,7 +12,7 @@ import org.croudtrip.api.directions.Route;
  */
 public class TripMatch {
 
-	private final long offerId;
+	private final long matchReservationId;
 	private final Route route;
 	private final long diversionInMeters, diversionInSeconds;
 	private final int estimatedPriceInCents, pricePerKilometer;
@@ -20,7 +20,7 @@ public class TripMatch {
 
 	@JsonCreator
 	public TripMatch(
-			@JsonProperty("offerId") long offerId,
+			@JsonProperty("matchReservationId") long matchReservationId,
 			@JsonProperty("route") Route route,
 			@JsonProperty("diversionInMeters") long diversionInMeters,
 			@JsonProperty("diversionInSeconds") long diversionInSeconds,
@@ -29,7 +29,7 @@ public class TripMatch {
 			@JsonProperty("driver") User driver,
 			@JsonProperty("passenger") User passenger) {
 
-		this.offerId = offerId;
+		this.matchReservationId = matchReservationId;
 		this.route = route;
 		this.diversionInMeters = diversionInMeters;
 		this.diversionInSeconds = diversionInSeconds;
@@ -40,8 +40,8 @@ public class TripMatch {
 	}
 
 
-	public long getOfferId() {
-		return offerId;
+	public long getMatchReservationId() {
+		return matchReservationId;
 	}
 
 
@@ -82,7 +82,7 @@ public class TripMatch {
 	public boolean equals(Object other) {
 		if (other == null || !(other instanceof TripMatch)) return false;
 		TripMatch offer = (TripMatch) other;
-		return Objects.equal(offerId, offer.offerId)
+		return Objects.equal(matchReservationId, offer.matchReservationId)
 				&& Objects.equal(route, offer.route)
 				&& Objects.equal(diversionInMeters, offer.diversionInMeters)
 				&& Objects.equal(diversionInSeconds, offer.diversionInSeconds)
@@ -95,7 +95,7 @@ public class TripMatch {
 
 	@Override
 	public int hashCode() {
-		return Objects.hashCode(offerId, route, diversionInMeters, diversionInSeconds, estimatedPriceInCents, pricePerKilometer, driver, passenger);
+		return Objects.hashCode(matchReservationId, route, diversionInMeters, diversionInSeconds, estimatedPriceInCents, pricePerKilometer, driver, passenger);
 	}
 
 }

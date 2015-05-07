@@ -4,6 +4,7 @@ import com.google.common.base.Optional;
 
 import org.croudtrip.api.account.User;
 import org.croudtrip.api.trips.TripMatch;
+import org.croudtrip.api.trips.TripMatchReservation;
 import org.croudtrip.api.trips.TripOffer;
 import org.croudtrip.api.trips.TripOfferDescription;
 import org.croudtrip.api.trips.TripQueryDescription;
@@ -35,7 +36,8 @@ public class TripsResource {
 
     private static final String
             PATH_OFFERS = "/offers",
-            PATH_MATCHES = "/matches";
+            PATH_MATCHES = "/matches",
+            PATH_RESERVATIONS = "/reservations";
 
     private final TripsManager tripsManager;
 
@@ -82,6 +84,14 @@ public class TripsResource {
     @Path(PATH_MATCHES)
     public List<TripMatch> findMatches(@Auth User passenger, @Valid TripQueryDescription requestDescription) throws Exception {
         return tripsManager.findMatches(passenger, requestDescription);
+    }
+
+
+    @GET
+    @UnitOfWork
+    @Path(PATH_RESERVATIONS)
+    public List<TripMatchReservation> getReservations() {
+        return tripsManager.findAllReservations();
     }
 
 

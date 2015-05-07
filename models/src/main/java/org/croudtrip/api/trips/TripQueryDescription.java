@@ -9,7 +9,7 @@ import org.croudtrip.api.directions.RouteLocation;
 import javax.validation.constraints.NotNull;
 
 /**
- * A description of a trip request created by potential passengers.
+ * A (price) reservation for one matched trip.
  */
 public class TripQueryDescription {
 
@@ -28,11 +28,9 @@ public class TripQueryDescription {
         this.maxWaitingTime = maxWaitingTime;
 	}
 
-
 	public RouteLocation getStart() {
 		return start;
 	}
-
 
 	public RouteLocation getEnd() {
 		return end;

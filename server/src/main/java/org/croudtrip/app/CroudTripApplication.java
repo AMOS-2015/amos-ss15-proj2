@@ -6,6 +6,7 @@ import com.google.inject.Injector;
 
 import org.croudtrip.api.account.Vehicle;
 import org.croudtrip.api.gcm.GcmRegistration;
+import org.croudtrip.api.trips.TripMatchReservation;
 import org.croudtrip.auth.BasicAuthenticator;
 import org.croudtrip.auth.BasicCredentials;
 import org.croudtrip.api.account.User;
@@ -84,6 +85,7 @@ public final class CroudTripApplication extends Application<CroudTripConfig> {
 			BasicCredentials.class,
 			Avatar.class,
 			TripOffer.class,
+			TripMatchReservation.class,
 			Vehicle.class,
 			LogEntry.class,
 			GcmRegistration.class) {
