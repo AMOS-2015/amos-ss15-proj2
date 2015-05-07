@@ -1,14 +1,14 @@
 package org.croudtrip.db;
 
 
-import org.croudtrip.api.trips.TripMatchReservation;
+import org.croudtrip.api.trips.TripReservation;
 import org.hibernate.SessionFactory;
 
 import java.util.List;
 
 import javax.inject.Inject;
 
-public class TripMatchReservationDAO extends AbstractDAO<TripMatchReservation> {
+public class TripMatchReservationDAO extends AbstractDAO<TripReservation> {
 
 	@Inject
 	TripMatchReservationDAO(SessionFactory sessionFactory) {
@@ -16,8 +16,8 @@ public class TripMatchReservationDAO extends AbstractDAO<TripMatchReservation> {
 	}
 
 
-	public List<TripMatchReservation> findAll() {
-		return list(namedQuery(TripMatchReservation.QUERY_NAME_FIND_ALL));
+	public List<TripReservation> findAll() {
+		return list(namedQuery(TripReservation.QUERY_NAME_FIND_ALL));
 	}
 
 }

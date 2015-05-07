@@ -17,7 +17,7 @@ import org.croudtrip.R;
 import org.croudtrip.account.AccountManager;
 import org.croudtrip.api.TripsResource;
 import org.croudtrip.api.directions.RouteLocation;
-import org.croudtrip.api.trips.TripMatchReservation;
+import org.croudtrip.api.trips.TripReservation;
 import org.croudtrip.api.trips.TripQueryDescription;
 import org.croudtrip.trip.JoinTripResultsAdapter;
 
@@ -96,10 +96,10 @@ public class JoinTripResultsFragment extends RoboFragment {
 
         tripsResource.createReservations(tripQueryDescription).subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Action1<List<TripMatchReservation>>() {
+                .subscribe(new Action1<List<TripReservation>>() {
 
                     @Override
-                    public void call(List<TripMatchReservation> reservations) {
+                    public void call(List<TripReservation> reservations) {
 
                         // Update the caption text
                         int numMatches = reservations.size();

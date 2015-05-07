@@ -9,7 +9,7 @@ import android.widget.TextView;
 
 import org.croudtrip.R;
 import org.croudtrip.api.account.User;
-import org.croudtrip.api.trips.TripMatchReservation;
+import org.croudtrip.api.trips.TripReservation;
 
 import java.util.List;
 
@@ -17,13 +17,13 @@ import java.util.List;
  * This Adapter is used in the JoinTripResultsActivity to display the results for a join request.
  * Created by Vanessa Lange on 01.05.15.
  */
-public class JoinTripResultsAdapter extends ArrayAdapter<TripMatchReservation>{
+public class JoinTripResultsAdapter extends ArrayAdapter<TripReservation>{
 
     public JoinTripResultsAdapter(Context context, int textViewResourceId) {
         super(context, textViewResourceId);
     }
 
-    public JoinTripResultsAdapter(Context context, int resource, List<TripMatchReservation> items) {
+    public JoinTripResultsAdapter(Context context, int resource, List<TripReservation> items) {
         super(context, resource, items);
     }
 
@@ -39,7 +39,7 @@ public class JoinTripResultsAdapter extends ArrayAdapter<TripMatchReservation>{
             view = inflater.inflate(R.layout.listview_row_join_trip_results, null);
         }
 
-        TripMatchReservation reservation = getItem(position);
+        TripReservation reservation = getItem(position);
         if(reservation == null){
             return view;
         }

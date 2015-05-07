@@ -21,20 +21,20 @@ import javax.persistence.Table;
 /**
  * A trip that is being offered by a driver.
  */
-@Entity(name = TripMatchReservation.ENTITY_NAME)
-@Table(name = "trip_match_reservations")
+@Entity(name = TripReservation.ENTITY_NAME)
+@Table(name = "trip_reservation")
 @NamedQueries({
 		@NamedQuery(
-				name = org.croudtrip.api.trips.TripMatchReservation.QUERY_NAME_FIND_ALL,
-				query = "SELECT r FROM " + org.croudtrip.api.trips.TripMatchReservation.ENTITY_NAME + " r"
+				name = TripReservation.QUERY_NAME_FIND_ALL,
+				query = "SELECT r FROM " + TripReservation.ENTITY_NAME + " r"
 		)
 })
-public class TripMatchReservation {
+public class TripReservation {
 
 	public static final String
 			ENTITY_NAME =  "TripMatchReservation",
 			COLUMN_ID = "trip_match_reservation_id",
-			QUERY_NAME_FIND_ALL = "org.croudtrip.api.trips.TripMatchReservation.findAll";
+			QUERY_NAME_FIND_ALL = "org.croudtrip.api.trips.TripReservation.findAll";
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -57,10 +57,10 @@ public class TripMatchReservation {
 	@JoinColumn(name = User.COLUMN_ID, nullable = false)
 	private User driver;
 
-	public TripMatchReservation() { }
+	public TripReservation() { }
 
 	@JsonCreator
-	public TripMatchReservation(
+	public TripReservation(
 			@JsonProperty("id") long id,
 			@JsonProperty("query") TripQuery query,
 			@JsonProperty("totalPriceInCents") int totalPriceInCents,
@@ -104,7 +104,7 @@ public class TripMatchReservation {
 	public boolean equals(Object o) {
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
-		TripMatchReservation that = (TripMatchReservation) o;
+		TripReservation that = (TripReservation) o;
 		return Objects.equal(id, that.id) &&
 				Objects.equal(totalPriceInCents, that.totalPriceInCents) &&
 				Objects.equal(pricePerKmInCents, that.pricePerKmInCents) &&

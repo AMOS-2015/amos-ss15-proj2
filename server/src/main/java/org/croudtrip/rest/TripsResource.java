@@ -3,7 +3,7 @@ package org.croudtrip.rest;
 import com.google.common.base.Optional;
 
 import org.croudtrip.api.account.User;
-import org.croudtrip.api.trips.TripMatchReservation;
+import org.croudtrip.api.trips.TripReservation;
 import org.croudtrip.api.trips.TripOffer;
 import org.croudtrip.api.trips.TripOfferDescription;
 import org.croudtrip.api.trips.TripQueryDescription;
@@ -80,7 +80,7 @@ public class TripsResource {
     @POST
     @UnitOfWork
     @Path(PATH_RESERVATIONS)
-    public List<TripMatchReservation> createReservations(@Auth User passenger, @Valid TripQueryDescription requestDescription) throws Exception {
+    public List<TripReservation> createReservations(@Auth User passenger, @Valid TripQueryDescription requestDescription) throws Exception {
         return tripsManager.createReservations(passenger, requestDescription);
     }
 
@@ -88,7 +88,7 @@ public class TripsResource {
     @GET
     @UnitOfWork
     @Path(PATH_RESERVATIONS)
-    public List<TripMatchReservation> getReservations() {
+    public List<TripReservation> getReservations() {
         return tripsManager.findAllReservations();
     }
 

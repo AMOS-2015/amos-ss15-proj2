@@ -6,7 +6,7 @@ import com.google.common.base.Optional;
 import org.croudtrip.api.account.User;
 import org.croudtrip.api.directions.Route;
 import org.croudtrip.api.directions.RouteLocation;
-import org.croudtrip.api.trips.TripMatchReservation;
+import org.croudtrip.api.trips.TripReservation;
 import org.croudtrip.api.trips.TripOffer;
 import org.croudtrip.api.trips.TripOfferDescription;
 import org.croudtrip.api.trips.TripQuery;
@@ -63,7 +63,7 @@ public class TripsManager {
 	}
 
 
-	public List<TripMatchReservation> createReservations(User passenger, TripQueryDescription queryDescription) throws Exception {
+	public List<TripReservation> createReservations(User passenger, TripQueryDescription queryDescription) throws Exception {
 
         // compute passenger route
         List<Route> possiblePassengerRoutes = directionsManager.getDirections(queryDescription.getStart(), queryDescription.getEnd());
@@ -78,14 +78,14 @@ public class TripsManager {
         }
 
         // find and store reservations
-        List<TripMatchReservation> reservations = findCheapestMatch(query, potentialMatches);
-        for (TripMatchReservation reservation : reservations) tripMatchReservationDAO.save(reservation);
+        List<TripReservation> reservations = findCheapestMatch(query, potentialMatches);
+        for (TripReservation reservation : reservations) tripMatchReservationDAO.save(reservation);
 
         return reservations;
 	}
 
 
-    public List<TripMatchReservation> findAllReservations() {
+    public List<TripReservation> findAllReservations() {
         return tripMatchReservationDAO.findAll();
     }
 
@@ -112,7 +112,7 @@ public class TripsManager {
     }
 
 
-    private List<TripMatchReservation> findCheapestMatch(TripQuery query, List<TripOffer> potentialMatches) {
+    private List<TripReservation> findCheapestMatch(TripQuery query, List<TripOffer> potentialMatches) {
         if (potentialMatches.isEmpty()) return new ArrayList<>();
 
         Collections.sort(potentialMatches, new Comparator<TripOffer>() {
@@ -145,9 +145,9 @@ public class TripsManager {
         int totalPriceInCents = (int) (pricePerKmInCents * query.getRoute().getDistanceInMeters() / 1000);
 
         // create price reservations
-        List<TripMatchReservation> reservations = new ArrayList<>();
+        List<TripReservation> reservations = new ArrayList<>();
         for (TripOffer match : matches) {
-            reservations.add(new TripMatchReservation(
+            reservations.add(new TripReservation(
                     0,
                     query,
                     totalPriceInCents,
