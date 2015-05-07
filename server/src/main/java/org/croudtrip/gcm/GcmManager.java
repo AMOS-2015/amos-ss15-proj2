@@ -121,6 +121,7 @@ public class GcmManager {
 
         // send
         Message.Builder builder = new Message.Builder();
+        builder.addData( GcmConstants.GCM_TYPE, messageType );
         builder.addData(messageType, message);
 
         MulticastResult multicastResult = sender.send(builder.build(), devices, 5);

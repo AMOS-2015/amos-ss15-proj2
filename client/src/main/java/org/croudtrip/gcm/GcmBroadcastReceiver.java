@@ -17,6 +17,17 @@ public class GcmBroadcastReceiver extends BroadcastReceiver {
 		String messageType = GoogleCloudMessaging.getInstance(context).getMessageType(intent);
 		if (!GoogleCloudMessaging.MESSAGE_TYPE_MESSAGE.equals(messageType)) return;
 
+        String gcmMessageType = intent.getExtras().getString(GcmConstants.GCM_TYPE);
+        switch(gcmMessageType)
+        {
+            case GcmConstants.GCM_MSG_DUMMY:
+                break;
+            case GcmConstants.GCM_MSG_JOIN_REQUEST:
+                break;
+            default:
+                break;
+        }
+
 		String dummyMessage  = intent.getExtras().getString(GcmConstants.GCM_MSG_JOIN_REQUEST);
 		Toast.makeText(context, "Server says " + dummyMessage, Toast.LENGTH_SHORT).show();
 	}

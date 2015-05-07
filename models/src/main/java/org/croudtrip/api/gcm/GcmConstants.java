@@ -6,6 +6,12 @@ package org.croudtrip.api.gcm;
  * Created by Frederik Simon on 07.05.2015.
  */
 public class GcmConstants {
+    /** This tag is sent with every message so that you can check what the type of a message is
+     * The content of this message data is the string that describes the following message
+     * (e.g. GCM_MSG_JOIN_REQUEST, GCM_MSG_REQUECT_ACCEPTED etc.).
+     */
+    public static final String GCM_TYPE = "MSG_TYPE";
+
     /** Just a dummy tag that is used for testing purposes */
     public static final String GCM_MSG_DUMMY = "DUMMY";
 
