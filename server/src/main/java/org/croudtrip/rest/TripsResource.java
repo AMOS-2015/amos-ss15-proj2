@@ -5,6 +5,7 @@ import com.google.common.base.Optional;
 import org.croudtrip.api.account.User;
 import org.croudtrip.api.trips.JoinTripRequest;
 import org.croudtrip.api.trips.JoinTripRequestUpdate;
+import org.croudtrip.api.trips.JoinTripStatus;
 import org.croudtrip.api.trips.TripOffer;
 import org.croudtrip.api.trips.TripOfferDescription;
 import org.croudtrip.api.trips.TripQueryDescription;
@@ -142,6 +143,10 @@ public class TripsResource {
         assertIsValidOfferId(offerId);
         Optional<JoinTripRequest> joinRequest = tripsManager.findJoinRequest(joinRequestId);
         if (!joinRequest.isPresent()) throw RestUtils.createNotFoundException();
+        if (!joinRequest.get().getStatus().equals(JoinTripStatus.PASSENGER_ACCEPTED)) {
+            throw RestUtils.createJsonFormattedException("driver action already taken", 409);
+        }
+
         return tripsManager.updateJoinRequest(joinRequest.get(), update.getAcceptPassenger());
     }
 

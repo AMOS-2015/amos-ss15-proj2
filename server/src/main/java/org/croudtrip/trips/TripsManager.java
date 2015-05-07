@@ -17,6 +17,7 @@ import org.croudtrip.db.JoinTripRequestDAO;
 import org.croudtrip.db.TripMatchReservationDAO;
 import org.croudtrip.db.TripOfferDAO;
 import org.croudtrip.directions.DirectionsManager;
+import org.croudtrip.utils.Assert;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -139,6 +140,8 @@ public class TripsManager {
 
 
     public JoinTripRequest updateJoinRequest(JoinTripRequest joinRequest, boolean passengerAccepted) {
+        Assert.assertTrue(joinRequest.getStatus().equals(JoinTripStatus.PASSENGER_ACCEPTED), "cannot modify join request");
+
         JoinTripStatus newStatus;
         if (passengerAccepted) newStatus = JoinTripStatus.DRIVER_ACCEPTED;
         else newStatus = JoinTripStatus.DRIVER_DECLINED;
@@ -150,7 +153,7 @@ public class TripsManager {
                 joinRequest.getPricePerKmInCents(),
                 joinRequest.getOffer(),
                 newStatus);
-        joinTripRequestDAO.save(updatedRequest);
+        joinTripRequestDAO.update(updatedRequest);
         return updatedRequest;
         // TODO notify passenger
     }
