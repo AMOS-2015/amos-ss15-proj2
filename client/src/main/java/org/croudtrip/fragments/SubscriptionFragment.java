@@ -23,6 +23,8 @@ public class SubscriptionFragment extends RoboFragment {
 
     @Override
     public void onStop() {
+        super.onStop();
+
         subscriptions.unsubscribe();
         subscriptions.clear();
     }
