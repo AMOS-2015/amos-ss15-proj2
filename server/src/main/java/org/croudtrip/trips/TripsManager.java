@@ -103,6 +103,7 @@ public class TripsManager {
                         tripDuration,
                         price,
                         offer.getPricePerKmInCents(),
+                        offer,
                         offer.getDriver(),
                         passenger);
 

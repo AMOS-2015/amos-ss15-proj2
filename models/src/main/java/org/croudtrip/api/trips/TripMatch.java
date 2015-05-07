@@ -57,6 +57,10 @@ public class TripMatch {
     @Column(name = "pricePerKilometer", nullable = false)
     private int pricePerKilometer;
 
+    @ManyToOne
+    @JoinColumn(name = TripOffer.COLUMN_ID + "_offer", nullable = false)
+    private TripOffer tripOffer;
+
 	@ManyToOne
 	@JoinColumn(name = User.COLUMN_ID + "_driver", nullable = false)
 	private User driver;
@@ -75,6 +79,7 @@ public class TripMatch {
 			@JsonProperty("diversionInSeconds") long diversionInSeconds,
 			@JsonProperty("estimatedPriceInCents") int estimatedPriceInCents,
             @JsonProperty("pricePerKilometer") int pricePerKilometer,
+            @JsonProperty("tripOffer") TripOffer tripOffer,
 			@JsonProperty("driver") User driver,
 			@JsonProperty("passenger") User passenger) {
 
@@ -84,6 +89,7 @@ public class TripMatch {
 		this.diversionInSeconds = diversionInSeconds;
 		this.estimatedPriceInCents = estimatedPriceInCents;
         this.pricePerKilometer = pricePerKilometer;
+        this.tripOffer = tripOffer;
 		this.driver = driver;
 		this.passenger = passenger;
 	}
@@ -108,16 +114,18 @@ public class TripMatch {
 		return diversionInSeconds;
 	}
 
-
 	public int getEstimatedPriceInCents() {
 		return estimatedPriceInCents;
 	}
+
     public void setEstimatedPriceInCents( int estimatedPriceInCents ) { this.estimatedPriceInCents = estimatedPriceInCents; }
 
     public int getPricePerKilometerInCents() { return pricePerKilometer; }
 
     @JsonProperty("pricePerKilometer")
     public void setPricePerKilometerInCents( int pricePerKilometerInCents ) { this.pricePerKilometer = pricePerKilometerInCents; }
+
+    public TripOffer getTripOffer() { return tripOffer; }
 
 	public User getDriver() {
 		return driver;
@@ -132,15 +140,16 @@ public class TripMatch {
 	@Override
 	public boolean equals(Object other) {
 		if (other == null || !(other instanceof TripMatch)) return false;
-		TripMatch offer = (TripMatch) other;
-		return Objects.equal(id, offer.id)
-				&& Objects.equal(route, offer.route)
-				&& Objects.equal(diversionInMeters, offer.diversionInMeters)
-				&& Objects.equal(diversionInSeconds, offer.diversionInSeconds)
-				&& Objects.equal(estimatedPriceInCents, offer.estimatedPriceInCents)
-                && Objects.equal(pricePerKilometer, offer.pricePerKilometer)
-				&& Objects.equal(driver, offer.driver)
-				&& Objects.equal(passenger, offer.passenger);
+		TripMatch match = (TripMatch) other;
+		return Objects.equal(id, match.id)
+				&& Objects.equal(route, match.route)
+				&& Objects.equal(diversionInMeters, match.diversionInMeters)
+				&& Objects.equal(diversionInSeconds, match.diversionInSeconds)
+				&& Objects.equal(estimatedPriceInCents, match.estimatedPriceInCents)
+                && Objects.equal(pricePerKilometer, match.pricePerKilometer)
+                && Objects.equal(tripOffer, match.tripOffer)
+				&& Objects.equal(driver, match.driver)
+				&& Objects.equal(passenger, match.passenger);
 	}
 
 
