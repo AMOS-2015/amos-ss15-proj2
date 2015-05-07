@@ -9,7 +9,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ListView;
-import android.widget.NumberPicker;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -19,7 +18,7 @@ import org.croudtrip.account.AccountManager;
 import org.croudtrip.api.TripsResource;
 import org.croudtrip.api.directions.RouteLocation;
 import org.croudtrip.api.trips.TripMatch;
-import org.croudtrip.api.trips.TripRequestDescription;
+import org.croudtrip.api.trips.TripQueryDescription;
 import org.croudtrip.trip.JoinTripResultsAdapter;
 
 import java.util.List;
@@ -90,11 +89,11 @@ public class JoinTripResultsFragment extends RoboFragment {
         double destinationLon = extras.getDouble(KEY_DESTINATION_LONGITUDE);
 
         // Ask the server for matches
-        TripRequestDescription tripRequestDescription = new TripRequestDescription(
+        TripQueryDescription tripQueryDescription = new TripQueryDescription(
                 new RouteLocation(currentLocationLat, currentLocationLon),
                 new RouteLocation(destinationLat, destinationLon));
 
-        tripsResource.findMatches(tripRequestDescription).subscribeOn(Schedulers.io())
+        tripsResource.findMatches(tripQueryDescription).subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Action1<List<TripMatch>>() {
 

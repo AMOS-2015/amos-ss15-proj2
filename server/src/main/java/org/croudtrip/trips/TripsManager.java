@@ -7,7 +7,7 @@ import org.croudtrip.api.account.User;
 import org.croudtrip.api.trips.TripMatch;
 import org.croudtrip.api.trips.TripOffer;
 import org.croudtrip.api.trips.TripOfferDescription;
-import org.croudtrip.api.trips.TripRequestDescription;
+import org.croudtrip.api.trips.TripQueryDescription;
 import org.croudtrip.db.TripOfferDAO;
 import org.croudtrip.directions.DirectionsManager;
 import org.croudtrip.api.directions.Route;
@@ -59,7 +59,7 @@ public class TripsManager {
 	}
 
 
-	public List<TripMatch> findMatches(User passenger, TripRequestDescription requestDescription) throws Exception {
+	public List<TripMatch> findMatches(User passenger, TripQueryDescription requestDescription) throws Exception {
 		List<TripMatch> matches = new ArrayList<>();
 
 		List<TripOffer> offers = findAllOffers();
@@ -98,7 +98,7 @@ public class TripsManager {
                 int price = (int) (tripLength/1000.0f * offer.getPricePerKmInCents());
 
                 TripMatch match = new TripMatch(
-                        0,
+                        offer.getId(),
                         diversionRoute, tripLength,
                         tripDuration,
                         price,
@@ -143,11 +143,17 @@ public class TripsManager {
             matches.remove( matches.size() - 1);
 
         // adjust price value for all possible matches
+        List<TripMatch> adjustedMatches = new ArrayList<>();
         for( TripMatch m : matches ) {
-            m.setPricePerKilometerInCents( secondLowestPrice );
-            m.setEstimatedPriceInCents( (int)(m.getDiversionInMeters()/1000.0f * m.getPricePerKilometerInCents()) );
-
-            System.out.println("Match: " + m.getEstimatedPriceInCents() + " "+  m.getPricePerKilometerInCents());
+            adjustedMatches.add(new TripMatch(
+                            m.getOfferId(),
+                            m.getRoute(),
+                            m.getDiversionInMeters(),
+                            m.getDiversionInSeconds(),
+                            (int) (m.getDiversionInMeters()/1000.0f * m.getPricePerKilometerInCents()),
+                            secondLowestPrice,
+                            m.getDriver(),
+                            m.getPassenger()));
         }
 
 		return matches;

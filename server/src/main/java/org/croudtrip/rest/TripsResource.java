@@ -6,7 +6,7 @@ import org.croudtrip.api.account.User;
 import org.croudtrip.api.trips.TripMatch;
 import org.croudtrip.api.trips.TripOffer;
 import org.croudtrip.api.trips.TripOfferDescription;
-import org.croudtrip.api.trips.TripRequestDescription;
+import org.croudtrip.api.trips.TripQueryDescription;
 import org.croudtrip.trips.TripsManager;
 
 import java.util.List;
@@ -80,7 +80,7 @@ public class TripsResource {
     @POST
     @UnitOfWork
     @Path(PATH_MATCHES)
-    public List<TripMatch> findMatches(@Auth User passenger, @Valid TripRequestDescription requestDescription) throws Exception {
+    public List<TripMatch> findMatches(@Auth User passenger, @Valid TripQueryDescription requestDescription) throws Exception {
         return tripsManager.findMatches(passenger, requestDescription);
     }
 

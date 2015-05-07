@@ -7,69 +7,20 @@ import com.google.common.base.Objects;
 import org.croudtrip.api.account.User;
 import org.croudtrip.api.directions.Route;
 
-import javax.persistence.Column;
-import javax.persistence.Embedded;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.Table;
-
 /**
- * A trip that has been matched with a driver and passenger.
+ * A potential match between a driver and a passenger.
  */
-@Entity(name = TripMatch.ENTITY_NAME)
-@Table(name = "matched_trips")
-@NamedQueries({
-		@NamedQuery(
-				name = TripMatch.QUERY_NAME_FIND_ALL,
-				query = "SELECT t FROM " + TripMatch.ENTITY_NAME + " t"
-		)
-})
 public class TripMatch {
 
-	public static final String
-			ENTITY_NAME =  "TipMatch",
-			COLUMN_ID = "trip_match_id",
-			QUERY_NAME_FIND_ALL = "org.croudtrip.api.trips.TripMatch.findAll";
-
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = COLUMN_ID)
-	private long id;
-
-	@Embedded
-	private Route route;
-
-	@Column(name = "diversionInMeters", nullable = false)
-	private long diversionInMeters;
-
-	@Column(name = "diversionInSeconds", nullable = false)
-	private long diversionInSeconds;
-
-	@Column(name = "estimatedPriceInCents", nullable = false)
-	private int estimatedPriceInCents;
-
-    @Column(name = "pricePerKilometer", nullable = false)
-    private int pricePerKilometer;
-
-	@ManyToOne
-	@JoinColumn(name = User.COLUMN_ID + "_driver", nullable = false)
-	private User driver;
-
-	@ManyToOne
-	@JoinColumn(name = User.COLUMN_ID + "_passenger", nullable = false)
-	private User passenger;
-
-	public TripMatch() { }
+	private final long offerId;
+	private final Route route;
+	private final long diversionInMeters, diversionInSeconds;
+	private final int estimatedPriceInCents, pricePerKilometer;
+	private final User driver, passenger;
 
 	@JsonCreator
 	public TripMatch(
-			@JsonProperty("id") long id,
+			@JsonProperty("offerId") long offerId,
 			@JsonProperty("route") Route route,
 			@JsonProperty("diversionInMeters") long diversionInMeters,
 			@JsonProperty("diversionInSeconds") long diversionInSeconds,
@@ -78,7 +29,7 @@ public class TripMatch {
 			@JsonProperty("driver") User driver,
 			@JsonProperty("passenger") User passenger) {
 
-		this.id = id;
+		this.offerId = offerId;
 		this.route = route;
 		this.diversionInMeters = diversionInMeters;
 		this.diversionInSeconds = diversionInSeconds;
@@ -89,8 +40,8 @@ public class TripMatch {
 	}
 
 
-	public long getId() {
-		return id;
+	public long getOfferId() {
+		return offerId;
 	}
 
 
@@ -112,12 +63,10 @@ public class TripMatch {
 	public int getEstimatedPriceInCents() {
 		return estimatedPriceInCents;
 	}
-    public void setEstimatedPriceInCents( int estimatedPriceInCents ) { this.estimatedPriceInCents = estimatedPriceInCents; }
+
 
     public int getPricePerKilometerInCents() { return pricePerKilometer; }
 
-    @JsonProperty("pricePerKilometer")
-    public void setPricePerKilometerInCents( int pricePerKilometerInCents ) { this.pricePerKilometer = pricePerKilometerInCents; }
 
 	public User getDriver() {
 		return driver;
@@ -133,7 +82,7 @@ public class TripMatch {
 	public boolean equals(Object other) {
 		if (other == null || !(other instanceof TripMatch)) return false;
 		TripMatch offer = (TripMatch) other;
-		return Objects.equal(id, offer.id)
+		return Objects.equal(offerId, offer.offerId)
 				&& Objects.equal(route, offer.route)
 				&& Objects.equal(diversionInMeters, offer.diversionInMeters)
 				&& Objects.equal(diversionInSeconds, offer.diversionInSeconds)
@@ -146,7 +95,7 @@ public class TripMatch {
 
 	@Override
 	public int hashCode() {
-		return Objects.hashCode(id, route, diversionInMeters, diversionInSeconds, estimatedPriceInCents, pricePerKilometer, driver, passenger);
+		return Objects.hashCode(offerId, route, diversionInMeters, diversionInSeconds, estimatedPriceInCents, pricePerKilometer, driver, passenger);
 	}
 
 }

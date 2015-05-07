@@ -11,13 +11,13 @@ import javax.validation.constraints.NotNull;
 /**
  * A description of a trip request created by potential passengers.
  */
-public class TripRequestDescription {
+public class TripQueryDescription {
 
 	@NotNull private final RouteLocation start;
 	@NotNull private final RouteLocation end;
 
 	@JsonCreator
-	public TripRequestDescription(
+	public TripQueryDescription(
 			@JsonProperty("start") RouteLocation start,
 			@JsonProperty("end") RouteLocation end) {
 
@@ -38,8 +38,8 @@ public class TripRequestDescription {
 
 	@Override
 	public boolean equals(Object other) {
-		if (other == null || !(other instanceof TripRequestDescription)) return false;
-		TripRequestDescription request = (TripRequestDescription) other;
+		if (other == null || !(other instanceof TripQueryDescription)) return false;
+		TripQueryDescription request = (TripQueryDescription) other;
 		return Objects.equal(start, request.start)
 				&& Objects.equal(end, request.end);
 	}
