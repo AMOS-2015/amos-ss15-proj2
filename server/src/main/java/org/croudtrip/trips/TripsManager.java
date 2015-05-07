@@ -222,7 +222,8 @@ public class TripsManager {
                     totalPriceInCents,
                     match.getPricePerKmInCents(),
                     match.getId(),
-                    match.getDriver()));
+                    match.getDriver(),
+                    System.currentTimeMillis() / 1000));
 
         }
 

@@ -57,6 +57,9 @@ public class TripReservation {
 	@JoinColumn(name = User.COLUMN_ID, nullable = false)
 	private User driver;
 
+	@Column(name = "creationTimestamp", nullable = false)
+	private long creationTimestamp; // unix timestamp in seconds
+
 	public TripReservation() { }
 
 	@JsonCreator
@@ -66,7 +69,8 @@ public class TripReservation {
 			@JsonProperty("totalPriceInCents") int totalPriceInCents,
 			@JsonProperty("pricePerKmInCents") int pricePerKmInCents,
 			@JsonProperty("offerId") long offerId,
-			@JsonProperty("driver") User driver) {
+			@JsonProperty("driver") User driver,
+			@JsonProperty("creationTimestamp") long creationTimestamp) {
 
 		this.id = id;
 		this.query = query;
@@ -74,6 +78,7 @@ public class TripReservation {
 		this.pricePerKmInCents = pricePerKmInCents;
 		this.offerId = offerId;
 		this.driver = driver;
+		this.creationTimestamp = creationTimestamp;
 	}
 
 	public long getId() {
@@ -100,6 +105,10 @@ public class TripReservation {
 		return driver;
 	}
 
+	public long getCreationTimestamp() {
+		return creationTimestamp;
+	}
+
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
@@ -110,11 +119,12 @@ public class TripReservation {
 				Objects.equal(pricePerKmInCents, that.pricePerKmInCents) &&
 				Objects.equal(offerId, that.offerId) &&
 				Objects.equal(query, that.query) &&
-				Objects.equal(driver, that.driver);
+				Objects.equal(driver, that.driver) &&
+				Objects.equal(creationTimestamp, that.creationTimestamp);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hashCode(id, query, totalPriceInCents, pricePerKmInCents, offerId, driver);
+		return Objects.hashCode(id, query, totalPriceInCents, pricePerKmInCents, offerId, driver, creationTimestamp);
 	}
 }
