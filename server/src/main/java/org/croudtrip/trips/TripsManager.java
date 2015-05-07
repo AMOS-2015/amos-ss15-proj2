@@ -7,6 +7,7 @@ import org.croudtrip.api.account.User;
 import org.croudtrip.api.directions.Route;
 import org.croudtrip.api.directions.RouteLocation;
 import org.croudtrip.api.trips.JoinTripRequest;
+import org.croudtrip.api.trips.JoinTripStatus;
 import org.croudtrip.api.trips.TripOffer;
 import org.croudtrip.api.trips.TripOfferDescription;
 import org.croudtrip.api.trips.TripQuery;
@@ -119,7 +120,8 @@ public class TripsManager {
                 tripReservation.getQuery(),
                 tripReservation.getTotalPriceInCents(),
                 tripReservation.getPricePerKmInCents(),
-                offer.get());
+                offer.get(),
+                JoinTripStatus.PASSENGER_ACCEPTED);
         // TODO send push notification to driver (frederik?)
         joinTripRequestDAO.save(joinTripRequest);
         return Optional.of(joinTripRequest);

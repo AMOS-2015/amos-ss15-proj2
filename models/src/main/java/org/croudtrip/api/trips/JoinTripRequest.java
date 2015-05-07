@@ -7,6 +7,8 @@ import com.google.common.base.Objects;
 import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -58,6 +60,10 @@ public class JoinTripRequest {
 	@JoinColumn(name = TripOffer.COLUMN_ID, nullable = false)
 	private TripOffer offer;
 
+	@Column(name = "status", nullable = false)
+	@Enumerated(EnumType.STRING)
+	private JoinTripStatus status;
+
 	public JoinTripRequest() { }
 
 	@JsonCreator
@@ -66,13 +72,15 @@ public class JoinTripRequest {
 			@JsonProperty("query") TripQuery query,
 			@JsonProperty("totalPriceInCents") int totalPriceInCents,
 			@JsonProperty("pricePerKmInCents") int pricePerKmInCents,
-			@JsonProperty("offer") TripOffer offer) {
+			@JsonProperty("offer") TripOffer offer,
+			@JsonProperty("status") JoinTripStatus status) {
 
 		this.id = id;
 		this.query = query;
 		this.totalPriceInCents = totalPriceInCents;
 		this.pricePerKmInCents = pricePerKmInCents;
 		this.offer = offer;
+		this.status = status;
 	}
 
 	public long getId() {
@@ -95,6 +103,10 @@ public class JoinTripRequest {
 		return offer;
 	}
 
+	public JoinTripStatus getStatus() {
+		return status;
+	}
+
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
@@ -104,11 +116,12 @@ public class JoinTripRequest {
 				Objects.equal(totalPriceInCents, that.totalPriceInCents) &&
 				Objects.equal(pricePerKmInCents, that.pricePerKmInCents) &&
 				Objects.equal(query, that.query) &&
-				Objects.equal(offer, that.offer);
+				Objects.equal(offer, that.offer) &&
+				Objects.equal(status, that.status);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hashCode(id, query, totalPriceInCents, pricePerKmInCents, offer);
+		return Objects.hashCode(id, query, totalPriceInCents, pricePerKmInCents, offer, status);
 	}
 }
