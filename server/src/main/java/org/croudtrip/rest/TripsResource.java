@@ -40,7 +40,7 @@ public class TripsResource {
 
     private static final String
             PATH_OFFERS = "/offers",
-            PATH_JOINS = PATH_OFFERS + "/{offerId}/joins",
+            PATH_JOINS = "/offers/{offerId}/joins",
             PATH_RESERVATIONS = "/reservations";
 
     private final TripsManager tripsManager;
@@ -139,7 +139,9 @@ public class TripsResource {
             @Auth User driver,
             @PathParam("offerId") long offerId,
             @PathParam("joinRequestId") long joinRequestId,
-            JoinTripRequestUpdate update) {
+            JoinTripRequestUpdate update) throws IOException {
+
+        System.out.println("Update join request start");
 
         assertIsValidOfferId(offerId);
         Optional<JoinTripRequest> joinRequest = tripsManager.findJoinRequest(joinRequestId);

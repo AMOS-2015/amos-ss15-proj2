@@ -20,6 +20,7 @@ import org.croudtrip.db.TripOfferDAO;
 import org.croudtrip.directions.DirectionsManager;
 import org.croudtrip.utils.Assert;
 import org.croudtrip.gcm.GcmManager;
+import org.croudtrip.utils.Pair;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -133,7 +134,10 @@ public class TripsManager {
         joinTripRequestDAO.save(joinTripRequest);
 
         // send push notification to driver
-        gcmManager.sendGcmMessageToUser( offer.get().getDriver(), GcmConstants.GCM_MSG_JOIN_REQUEST, ""+joinTripRequest.getId() );
+        gcmManager.sendGcmMessageToUser( offer.get().getDriver(), GcmConstants.GCM_MSG_JOIN_REQUEST,
+                                                                  new Pair<String, String>(GcmConstants.GCM_MSG_JOIN_REQUEST, "There is a new request to join your trip"),
+                                                                  new Pair<String, String>(GcmConstants.GCM_MSG_JOIN_REQUEST_ID, ""+joinTripRequest.getId()),
+                                                                  new Pair<String, String>(GcmConstants.GCM_MSG_JOIN_REQUEST_OFFER_ID, ""+offer.get().getId()) );
 
         return Optional.of(joinTripRequest);
     }
@@ -149,12 +153,14 @@ public class TripsManager {
     }
 
 
-    public JoinTripRequest updateJoinRequest(JoinTripRequest joinRequest, boolean passengerAccepted) {
+    public JoinTripRequest updateJoinRequest(JoinTripRequest joinRequest, boolean passengerAccepted) throws IOException {
         Assert.assertTrue(joinRequest.getStatus().equals(JoinTripStatus.PASSENGER_ACCEPTED), "cannot modify join request");
 
         JoinTripStatus newStatus;
         if (passengerAccepted) newStatus = JoinTripStatus.DRIVER_ACCEPTED;
         else newStatus = JoinTripStatus.DRIVER_DECLINED;
+
+        System.out.println("Update join request manager");
 
         JoinTripRequest updatedRequest = new JoinTripRequest(
                 joinRequest.getId(),
@@ -164,8 +170,20 @@ public class TripsManager {
                 joinRequest.getOffer(),
                 newStatus);
         joinTripRequestDAO.update(updatedRequest);
+
+        System.out.println("Update join request db stored");
+
+        // notify the passenger about his trip status
+        if( passengerAccepted ) {
+            gcmManager.sendGcmMessageToUser(joinRequest.getQuery().getPassenger(), GcmConstants.GCM_MSG_REQUEST_ACCEPTED, "Your request was accepted");
+        }
+        else {
+            gcmManager.sendGcmMessageToUser(joinRequest.getQuery().getPassenger(), GcmConstants.GCM_MSG_REQUEST_DECLINED, "Your request was declined");
+        }
+
+        System.out.println("Update join request gcm sent");
+
         return updatedRequest;
-        // TODO notify passenger
     }
 
 

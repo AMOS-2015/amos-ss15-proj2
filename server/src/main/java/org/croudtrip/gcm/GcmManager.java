@@ -14,6 +14,7 @@ import org.croudtrip.api.gcm.GcmRegistration;
 import org.croudtrip.api.gcm.GcmRegistrationDescription;
 import org.croudtrip.db.GcmRegistrationDAO;
 import org.croudtrip.logs.LogManager;
+import org.croudtrip.utils.Pair;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -104,6 +105,13 @@ public class GcmManager {
 		}
 	}
 
+    /**
+     * Sends a gcm message to a specific user passing one message type that contains a certain message
+     * @param receiver the user that should receive the message
+     * @param messageType the type of the message (see {@link org.croudtrip.api.gcm.GcmConstants})
+     * @param message the message that is sent itself
+     * @throws IOException if the connection to Google was not successful and msg could not be sent.
+     */
     public void sendGcmMessageToUser(User receiver, String messageType, String message) throws IOException {
         if( receiver == null ) {
             logManager.e("SendToUser failed, because user is null");
@@ -123,6 +131,60 @@ public class GcmManager {
         Message.Builder builder = new Message.Builder();
         builder.addData( GcmConstants.GCM_TYPE, messageType );
         builder.addData(messageType, message);
+
+        MulticastResult multicastResult = sender.send(builder.build(), devices, 5);
+
+        // analyze the results
+        List<Result> results = multicastResult.getResults();
+        for (int i = 0; i < devices.size(); i++) {
+            String gcmId = devices.get(i);
+            Result result = results.get(i);
+            String messageId = result.getMessageId();
+            if (messageId != null) {
+                logManager.d("send msg to " + gcmId + " with msg id " + messageId);
+                String canonicalRegId = result.getCanonicalRegistrationId();
+
+                // update gcm id
+                if (canonicalRegId != null) {
+                    logManager.i("updating gcmId from " + gcmId + " to " + canonicalRegId);
+                    register(gcmRegistration.getUser(), new GcmRegistrationDescription(canonicalRegId));
+                }
+
+            } else {
+                String error = result.getErrorCodeName();
+                if (error.equals(Constants.ERROR_NOT_REGISTERED)) {
+                    // application has been removed from device - unregister it
+                    unregister(gcmRegistration);
+
+                } else {
+                    // unknown error
+                    logManager.e("unknown gcm error " + error);
+                }
+            }
+        }
+    }
+
+    public void sendGcmMessageToUser(User receiver, String messageType, Pair<String, String>... messageData) throws IOException {
+        if( receiver == null ) {
+            logManager.e("SendToUser failed, because user is null");
+            return;
+        }
+
+        GcmRegistration gcmRegistration = findRegistrationByUser(receiver).orNull();
+        if( gcmRegistration == null ) {
+            logManager.e("User " + receiver.getId() + " (" + receiver.getFirstName() + " " + receiver.getLastName() + ") is not registered.");
+            return;
+        }
+
+        final List<String> devices = new ArrayList<>();
+        devices.add(gcmRegistration.getGcmId());
+
+        // send
+        Message.Builder builder = new Message.Builder();
+        builder.addData( GcmConstants.GCM_TYPE, messageType );
+
+        for( Pair<String, String> p : messageData )
+            builder.addData( p.getKey(), p.getValue() );
 
         MulticastResult multicastResult = sender.send(builder.build(), devices, 5);
 
