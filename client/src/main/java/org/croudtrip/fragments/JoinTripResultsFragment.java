@@ -77,7 +77,7 @@ public class JoinTripResultsFragment extends SubscriptionFragment {
         this.resultsList = (ListView) view.findViewById(R.id.lv_join_trip_results);
         this.error = (TextView) view.findViewById(R.id.tv_join_trip_error);
 
-        /// TODO: This is just for testing the gcm stuff. Feel free to do it cleanly ;)
+        /// TODO: This is just for testing the gcm stuff.
         resultsList.setOnItemClickListener( new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapter, View view, int position, long id) {

@@ -1,15 +1,11 @@
 <resources>
     <string name="app_name" translatable="false">CroudTrip</string>
 
-
     <string name="menu_join_trip">Join trip</string>
     <string name="menu_offer_trip">Offer trip</string>
     <string name="menu_profile">My profile</string>
     <string name="menu_edit_profile">Edit profile</string>
     <string name="menu_settings">Settings</string>
-
-
-
 
     <string name="login_email">Login with email</string>
     <string name="skip">View trips without logging in</string>
@@ -95,4 +91,6 @@
     <string name="car_type_hint">e.g Porsche 911</string>
     <string name="ask_register">Unfortunately you cannot join a trip without registration, please sign up here</string>
 
+    <string name="join_request_title">New join request!</string>
+    <string name="joint_request_msg">%1$s wants to join your trip.</string>
 </resources>

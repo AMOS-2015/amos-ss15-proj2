@@ -56,4 +56,12 @@ public class GcmConstants {
      * <br>
      * Contains a list of the reservation ids that can be downloaded by the client. The list is represented by a string separated by spaces.*/
     public static final String GCM_MSG_FOUND_MATCHES = "FOUND_MATCHES";
+
+    /** Notifications IDs for android notifications */
+    public static final int GCM_NOTIFICATION_JOIN_REQUEST_ID = 1;
+    public static final int GCM_NOTIFICATION_REQUEST_ACCEPTED_ID = 2;
+    public static final int GCM_NOTIFICATION_REQUEST_DECLINED_ID = 3;
+    public static final int GCM_NOTIFICATION_REQUEST_ERROR_ID = 4;
+    public static final int GCM_NOTIFICATION_TRIP_CANCELLED_ID = 5;
+    public static final int GCM_NOTIFICATION_FOUND_MATCHES_ID = 6;
 }
