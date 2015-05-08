@@ -22,6 +22,7 @@ import org.croudtrip.api.trips.JoinTripRequest;
 import org.croudtrip.api.trips.TripReservation;
 import org.croudtrip.api.trips.TripQueryDescription;
 import org.croudtrip.trip.JoinTripResultsAdapter;
+import org.croudtrip.utils.DefaultTransformer;
 
 import java.util.List;
 
@@ -93,7 +94,8 @@ public class JoinTripResultsFragment extends SubscriptionFragment {
                 new RouteLocation(currentLocationLat, currentLocationLon),
                 new RouteLocation(destinationLat, destinationLon), maxWaitingTime);
 
-        Subscription subscription = tripsResource.createReservations(tripQueryDescription).subscribeOn(Schedulers.io())
+        Subscription subscription = tripsResource.createReservations(tripQueryDescription)
+                .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Action1<List<TripReservation>>() {
 
@@ -132,24 +134,34 @@ public class JoinTripResultsFragment extends SubscriptionFragment {
                 });
         subscriptions.add(subscription);
 
-        /// TODO: This is just for testing the gcm stuff.
+        // on click of a reservation we request to join this trip.
         resultsList.setOnItemClickListener( new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapter, View view, int position, long id) {
-                TripReservation reservation = (TripReservation) adapter.getItemAtPosition(position);
+                Object object = adapter.getItemAtPosition(position);
+                /*if( !(object instanceof  TripReservation) )
+                    return;*/
+
+                TripReservation reservation = (TripReservation) object;
 
                 Timber.d("reservationId " + reservation.getId());
-                Subscription subscription = tripsResource.joinTrip( reservation.getId() ).subscribe( new Action1<JoinTripRequest>() {
+                Subscription subscription = tripsResource.joinTrip( reservation.getId() )
+                        .compose(new DefaultTransformer<JoinTripRequest>())
+                        .subscribe( new Action1<JoinTripRequest>() {
                     @Override
                     public void call(JoinTripRequest joinTripRequest) {
-                        Timber.d("Answer");
+                        Toast.makeText(getActivity(), R.string.join_request_sent, Toast.LENGTH_SHORT ).show();
 
+                        // TODO: Start a new view? Not clear in which state the passenger should wait.
                     }
                 },new Action1<Throwable>() {
                     @Override
                     public void call(Throwable throwable) {
                         // on main thread; something went wrong
                         Timber.e("Error when trying to join a trip: " + throwable.getMessage());
+                        Toast.makeText(getActivity(), R.string.join_request_sending_error, Toast.LENGTH_SHORT ).show();
+
+                        // TODO: Refresh this fragment. Current reservation could already have been removed on the server (we don't know when the error happened).
                     }
                 } );
 

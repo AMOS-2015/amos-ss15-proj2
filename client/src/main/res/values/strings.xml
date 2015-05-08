@@ -93,4 +93,7 @@
 
     <string name="join_request_title">New join request!</string>
     <string name="joint_request_msg">%1$s wants to join your trip.</string>
+    
+    <string name="join_request_sent">Your request has been sent to the driver. We will inform you as soon as the driver answers your request.</string>
+    <string name="join_request_sending_error">There was an error sending your request.</string>
 </resources>
