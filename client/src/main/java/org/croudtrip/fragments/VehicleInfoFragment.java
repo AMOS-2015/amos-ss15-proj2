@@ -14,6 +14,7 @@ import android.widget.Toast;
 
 import javax.inject.Inject;
 import com.larswerkman.holocolorpicker.ColorPicker;
+import com.larswerkman.holocolorpicker.SVBar;
 
 import org.croudtrip.R;
 import org.croudtrip.api.VehicleResource;
@@ -129,6 +130,8 @@ public class VehicleInfoFragment extends SubscriptionFragment {
         Button set = (Button) colorDialog.findViewById(R.id.set);
         Button cancel = (Button) colorDialog.findViewById(R.id.cancel);
         final ColorPicker colorPicker = (ColorPicker) colorDialog.findViewById(R.id.color_picker);
+        SVBar saturationBar = (SVBar) colorDialog.findViewById(R.id.saturation_bar);
+        colorPicker.addSVBar(saturationBar);
         colorDialog.show();
 
         set.setOnClickListener(new View.OnClickListener() {
@@ -213,7 +216,7 @@ public class VehicleInfoFragment extends SubscriptionFragment {
                 .subscribe(new Action1<Vehicle>() {
                     @Override
                     public void call(Vehicle vehicle) {
-                            Toast.makeText(getActivity(), "Updated vehicle info", Toast.LENGTH_SHORT);
+                            Toast.makeText(getActivity(), "Updated vehicle info", Toast.LENGTH_SHORT).show();
                             Timber.v("Updated vehicle info");
                     }
                 }, new Action1<Throwable>() {
@@ -229,7 +232,7 @@ public class VehicleInfoFragment extends SubscriptionFragment {
     public void saveCarChanges() {
         VehicleDescription vehicleDescription = new VehicleDescription(newCarPlate, newColor, newCarType, newCarCapacity);
         if (carPlateEdit.getText() != null && carPlateEdit.length() > 0)
-        saveVehicle(vehicleDescription);
+            saveVehicle(vehicleDescription);
         else
             Toast.makeText(getActivity(), "Car Plate field is mandatory", Toast.LENGTH_SHORT).show();
     }
@@ -238,16 +241,16 @@ public class VehicleInfoFragment extends SubscriptionFragment {
             carPlateEdit.setText(newCarPlate);
         else
         {
-            newCarPlate = "Unknown";
-            carPlateEdit.setText("Enter car plate info");
+            newCarPlate = ("e.g 123456");
+            carPlateEdit.setHint(R.string.car_plate_hint);
         }
 
         if (newCarType!=null)
             carTypeEdit.setText(newCarType);
         else
         {
-            carTypeEdit.setText("Enter car type");
-            newCarType="Unknown";
+            carTypeEdit.setHint(R.string.car_type_hint);
+            newCarType="e.g Porsche 911";
         }
 
         if (newColor != null)

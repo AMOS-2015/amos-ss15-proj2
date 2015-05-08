@@ -13,8 +13,17 @@ android:layout_height="match_parent" >
         android:layout_centerHorizontal="true"
         android:layout_marginTop="20dp"/>
 
+    <com.larswerkman.holocolorpicker.SVBar
+        android:id="@+id/saturation_bar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/color_picker"
+        android:layout_centerHorizontal="true"
+        />
+
     <LinearLayout
         android:orientation="horizontal"
+        android:layout_centerHorizontal="true"
         android:id="@+id/pickerButtons"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -25,7 +34,6 @@ android:layout_height="match_parent" >
             android:id="@+id/set"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="30dp"
             android:text="Set" />
 
         <Button

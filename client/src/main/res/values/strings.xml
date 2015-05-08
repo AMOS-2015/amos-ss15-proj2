@@ -91,6 +91,8 @@
 
     <string name="place_details">&lt;b&gt;%1$s&lt;/b&gt;&lt;br/&gt;&lt;i&gt;Place Id: %2$s&lt;/i&gt;&lt;br/&gt;Address: %3$s&lt;br/&gt;Phone: %4$s&lt;br/&gt;Website: %5$s</string>
 
+    <string name="car_plate_hint">e.g 123456</string>
+    <string name="car_type_hint">e.g Porsche 911</string>
     <string name="ask_register">Unfortunately you cannot join a trip without registration, please sign up here</string>
 
 </resources>
