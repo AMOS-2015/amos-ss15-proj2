@@ -22,6 +22,8 @@ import rx.schedulers.Schedulers;
 import timber.log.Timber;
 
 /**
+ * An intent server that handles the gcm messages comming from the server. It will create notifications
+ * so that the user can react on new offered trips or open requests.
  * Created by Frederik Simon on 08.05.2015.
  */
 public class GcmIntentService extends IntentService {
