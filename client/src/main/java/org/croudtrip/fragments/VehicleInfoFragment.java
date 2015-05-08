@@ -24,6 +24,7 @@ import org.croudtrip.utils.DefaultTransformer;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
 import roboguice.fragment.provided.RoboFragment;
+import rx.Subscription;
 import rx.functions.Action1;
 import timber.log.Timber;
 
@@ -31,7 +32,7 @@ import timber.log.Timber;
  * This fragment allows the user to enter the vehicle information and uploads this information to the server
  * @author nazeehammari
  */
-public class VehicleInfoFragment extends RoboFragment {
+public class VehicleInfoFragment extends SubscriptionFragment {
 
     @Inject VehicleResource vehicleResource;
     private String newCarType, newCarPlate, newColor;
@@ -179,7 +180,7 @@ public class VehicleInfoFragment extends RoboFragment {
     }
 
     public void getVehicle() {
-             vehicleResource.getVehicle()
+             Subscription subscription = vehicleResource.getVehicle()
                 .compose(new DefaultTransformer<Vehicle>())
                 .subscribe(new Action1<Vehicle>() {
                     @Override
@@ -202,10 +203,12 @@ public class VehicleInfoFragment extends RoboFragment {
                         Timber.e("Couldn't get data" + throwable.getMessage());
                     }
                 });
+
+        subscriptions.add(subscription);
     }
 
     public void saveVehicle(VehicleDescription vehicleDescription) {
-        vehicleResource.setVehicle(vehicleDescription)
+        Subscription subscription = vehicleResource.setVehicle(vehicleDescription)
                 .compose(new DefaultTransformer<Vehicle>())
                 .subscribe(new Action1<Vehicle>() {
                     @Override
@@ -220,6 +223,7 @@ public class VehicleInfoFragment extends RoboFragment {
                         Timber.e("Update failed with error:\n" + throwable.getMessage());
                     }
                 });
+        subscriptions.add(subscription);
     }
 
     public void saveCarChanges() {

@@ -29,6 +29,7 @@ import javax.net.ssl.HttpsURLConnection;
 
 import it.neokree.materialnavigationdrawer.MaterialNavigationDrawer;
 import rx.Observable;
+import rx.Subscription;
 import rx.functions.Action1;
 import rx.functions.Func0;
 import timber.log.Timber;
@@ -38,7 +39,7 @@ import timber.log.Timber;
  * etc.). From here he can also edit his profile (will be transferred to fragment EditProfileFragment)
  * @author Vanessa Lange
  */
-public class ProfileFragment extends Fragment {
+public class ProfileFragment extends SubscriptionFragment {
 
     //************************* Variables ***************************//
 
@@ -109,22 +110,22 @@ public class ProfileFragment extends Fragment {
             // download avatar
             final String avatarUrl = user.getAvatarUrl();
             if (avatarUrl != null) {
-                Observable
+                Subscription subscription = Observable
                         .defer(new Func0<Observable<Bitmap>>() {
-                            @Override
-                            public Observable<Bitmap> call() {
-                                try {
-                                    URL url = new URL(avatarUrl);
-                                    HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
-                                    connection.setDoInput(true);
-                                    connection.connect();
-                                    InputStream input = connection.getInputStream();
-                                    return Observable.just(BitmapFactory.decodeStream(input));
-                                } catch (Exception e) {
-                                    return Observable.error(e);
-                                }
-                            }
-                        })
+                    @Override
+                    public Observable<Bitmap> call() {
+                        try {
+                            URL url = new URL(avatarUrl);
+                            HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
+                            connection.setDoInput(true);
+                            connection.connect();
+                            InputStream input = connection.getInputStream();
+                            return Observable.just(BitmapFactory.decodeStream(input));
+                        } catch (Exception e) {
+                            return Observable.error(e);
+                        }
+                    }
+                })
                         .compose(new DefaultTransformer<Bitmap>())
                         .subscribe(new Action1<Bitmap>() {
                             @Override
@@ -141,6 +142,8 @@ public class ProfileFragment extends Fragment {
                                 Timber.e(throwable, "Failed to download avatar");
                             }
                         });
+
+                subscriptions.add(subscription);
             }
         }
 

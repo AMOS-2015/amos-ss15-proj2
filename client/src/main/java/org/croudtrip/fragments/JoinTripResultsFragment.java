@@ -29,6 +29,7 @@ import javax.inject.Inject;
 
 import it.neokree.materialnavigationdrawer.MaterialNavigationDrawer;
 import roboguice.fragment.provided.RoboFragment;
+import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
 import rx.schedulers.Schedulers;
@@ -39,7 +40,7 @@ import timber.log.Timber;
  * other information,should the user want to join.
  * Created by Vanessa Lange on 01.05.15.
  */
-public class JoinTripResultsFragment extends RoboFragment {
+public class JoinTripResultsFragment extends SubscriptionFragment {
 
     //******************** Variables ************************//
 
@@ -83,7 +84,7 @@ public class JoinTripResultsFragment extends RoboFragment {
                 TripReservation reservation = (TripReservation) adapter.getItemAtPosition(position);
 
                 Timber.d("reservationId " + reservation.getId());
-                tripsResource.joinTrip( reservation.getId() ).subscribe( new Action1<JoinTripRequest>() {
+                Subscription subscription = tripsResource.joinTrip( reservation.getId() ).subscribe( new Action1<JoinTripRequest>() {
                     @Override
                     public void call(JoinTripRequest joinTripRequest) {
                         Timber.d("Answer");
@@ -96,6 +97,8 @@ public class JoinTripResultsFragment extends RoboFragment {
                         Timber.e("Error when trying to join a trip: " + throwable.getMessage());
                     }
                 } );
+
+                subscriptions.add( subscription );
             }
         });
 
@@ -119,7 +122,7 @@ public class JoinTripResultsFragment extends RoboFragment {
                 new RouteLocation(currentLocationLat, currentLocationLon),
                 new RouteLocation(destinationLat, destinationLon), maxWaitingTime);
 
-        tripsResource.createReservations(tripQueryDescription).subscribeOn(Schedulers.io())
+        Subscription subscription = tripsResource.createReservations(tripQueryDescription).subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Action1<List<TripReservation>>() {
 
@@ -156,6 +159,7 @@ public class JoinTripResultsFragment extends RoboFragment {
                         error.setVisibility(View.VISIBLE);
                     }
                 });
+        subscriptions.add(subscription);
 
     }
     public void drawRegisterDialog() {

@@ -6,7 +6,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
-
 import org.croudtrip.R;
 import org.croudtrip.gcm.GcmManager;
 import org.croudtrip.utils.DefaultTransformer;
@@ -15,12 +14,13 @@ import javax.inject.Inject;
 
 import roboguice.fragment.provided.RoboFragment;
 import roboguice.inject.InjectView;
+import rx.Subscription;
 import rx.functions.Action1;
 
 /**
  * Quick and simple GCM testing going on here ...
  */
-public class GcmTestFragment extends RoboFragment {
+public class GcmTestFragment extends SubscriptionFragment {
 
     @InjectView(R.id.status) private TextView statusView;
     @InjectView(R.id.register) private Button registerButton;
@@ -45,9 +45,12 @@ public class GcmTestFragment extends RoboFragment {
             public void onClick(View v) {
                 registerButton.setEnabled(false);
                 statusView.setText("registering ...");
-                gcmManager.register()
+                Subscription subscription = gcmManager.register()
                         .compose(new DefaultTransformer<Void>())
                         .subscribe(new SuccessAction(), new ErrorAction());
+
+                subscriptions.add(subscription);
+
             }
         });
         unregisterButton.setOnClickListener(new View.OnClickListener() {
@@ -55,9 +58,11 @@ public class GcmTestFragment extends RoboFragment {
             public void onClick(View v) {
                 unregisterButton.setEnabled(false);
                 statusView.setText("unregistering ...");
-                gcmManager.unregister()
+                Subscription subscription = gcmManager.unregister()
                         .compose(new DefaultTransformer<Void>())
                         .subscribe(new SuccessAction(), new ErrorAction());
+
+                subscriptions.add(subscription);
             }
         });
     }

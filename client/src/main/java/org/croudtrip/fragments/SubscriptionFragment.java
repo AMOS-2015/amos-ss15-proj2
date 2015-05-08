@@ -12,6 +12,7 @@ import org.croudtrip.R;
 
 import roboguice.fragment.provided.RoboFragment;
 import rx.subscriptions.CompositeSubscription;
+import timber.log.Timber;
 
 /**
  * A base class fragments that extends the {@link RoboFragment} to provide dependency injection
@@ -22,8 +23,10 @@ public class SubscriptionFragment extends RoboFragment {
     protected final CompositeSubscription subscriptions = new CompositeSubscription();
 
     @Override
-    public void onStop() {
-        super.onStop();
+    public void onPause() {
+        super.onPause();
+
+        Timber.d("OnPause Subscriptions");
 
         subscriptions.unsubscribe();
         subscriptions.clear();
