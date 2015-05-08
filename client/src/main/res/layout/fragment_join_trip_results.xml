@@ -37,6 +37,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:visibility="gone"
+        android:textColor="@color/error"
         android:text="@string/join_trip_results_error"
         android:layout_gravity = "center_vertical|center_horizontal"/>
 
