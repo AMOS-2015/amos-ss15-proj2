@@ -29,6 +29,7 @@ import javax.inject.Inject;
 
 import it.neokree.materialnavigationdrawer.MaterialNavigationDrawer;
 import roboguice.fragment.provided.RoboFragment;
+import roboguice.inject.InjectView;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
@@ -49,10 +50,10 @@ public class JoinTripResultsFragment extends SubscriptionFragment {
     public final static String KEY_DESTINATION_LATITUDE = "destination_latitude";
     public final static String KEY_DESTINATION_LONGITUDE = "destination_longitude";
 
-    private ProgressBar progressBar;
-    private TextView caption;
-    private ListView resultsList;
-    private TextView error;
+    @InjectView(R.id.pb_join_trip) private ProgressBar progressBar;
+    @InjectView(R.id.tv_join_trip_results_caption) private TextView caption;
+    @InjectView(R.id.lv_join_trip_results) private ListView resultsList;
+    @InjectView(R.id.tv_join_trip_error) private TextView error;
 
     @Inject
     TripsResource tripsResource;
@@ -71,43 +72,13 @@ public class JoinTripResultsFragment extends SubscriptionFragment {
         super.onCreateView(inflater, container, savedInstanceState);
         setHasOptionsMenu(true);
         View view = inflater.inflate(R.layout.fragment_join_trip_results, container, false);
-
-        this.progressBar = (ProgressBar) view.findViewById(R.id.pb_join_trip);
-        this.caption = (TextView) view.findViewById(R.id.tv_join_trip_results_caption);
-        this.resultsList = (ListView) view.findViewById(R.id.lv_join_trip_results);
-        this.error = (TextView) view.findViewById(R.id.tv_join_trip_error);
-
-        /// TODO: This is just for testing the gcm stuff.
-        resultsList.setOnItemClickListener( new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapter, View view, int position, long id) {
-                TripReservation reservation = (TripReservation) adapter.getItemAtPosition(position);
-
-                Timber.d("reservationId " + reservation.getId());
-                Subscription subscription = tripsResource.joinTrip( reservation.getId() ).subscribe( new Action1<JoinTripRequest>() {
-                    @Override
-                    public void call(JoinTripRequest joinTripRequest) {
-                        Timber.d("Answer");
-
-                    }
-                },new Action1<Throwable>() {
-                    @Override
-                    public void call(Throwable throwable) {
-                        // on main thread; something went wrong
-                        Timber.e("Error when trying to join a trip: " + throwable.getMessage());
-                    }
-                } );
-
-                subscriptions.add( subscription );
-            }
-        });
-
         return view;
     }
 
 
     @Override
     public void onViewCreated( View view, Bundle savedInstanceState ) {
+        super.onViewCreated(view, savedInstanceState);
 
         // Get currentLocation and destination
         Bundle extras = getArguments();
@@ -161,6 +132,30 @@ public class JoinTripResultsFragment extends SubscriptionFragment {
                 });
         subscriptions.add(subscription);
 
+        /// TODO: This is just for testing the gcm stuff.
+        resultsList.setOnItemClickListener( new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapter, View view, int position, long id) {
+                TripReservation reservation = (TripReservation) adapter.getItemAtPosition(position);
+
+                Timber.d("reservationId " + reservation.getId());
+                Subscription subscription = tripsResource.joinTrip( reservation.getId() ).subscribe( new Action1<JoinTripRequest>() {
+                    @Override
+                    public void call(JoinTripRequest joinTripRequest) {
+                        Timber.d("Answer");
+
+                    }
+                },new Action1<Throwable>() {
+                    @Override
+                    public void call(Throwable throwable) {
+                        // on main thread; something went wrong
+                        Timber.e("Error when trying to join a trip: " + throwable.getMessage());
+                    }
+                } );
+
+                subscriptions.add( subscription );
+            }
+        });
     }
     public void drawRegisterDialog() {
         final Dialog registerDialog = new Dialog(getActivity());
