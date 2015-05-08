@@ -8,6 +8,7 @@ import com.j256.ormlite.android.apptools.OpenHelperManager;
 
 import org.croudtrip.db.DatabaseHelper;
 import org.croudtrip.api.ServerModule;
+import org.croudtrip.utils.LifecycleHandler;
 
 import roboguice.RoboGuice;
 import timber.log.Timber;
@@ -23,6 +24,9 @@ public class MainApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+
+        registerActivityLifecycleCallbacks( new LifecycleHandler() );
+
         OpenHelperManager.setOpenHelperClass(DatabaseHelper.class);
         Timber.plant(new Timber.DebugTree());
         RoboGuice.getOrCreateBaseApplicationInjector(

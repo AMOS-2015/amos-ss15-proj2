@@ -17,6 +17,7 @@ import org.croudtrip.api.TripsResource;
 import org.croudtrip.api.gcm.GcmConstants;
 import org.croudtrip.api.trips.JoinTripRequest;
 import org.croudtrip.api.trips.JoinTripRequestUpdate;
+import org.croudtrip.utils.LifecycleHandler;
 
 import retrofit.RequestInterceptor;
 import retrofit.RestAdapter;
@@ -81,7 +82,11 @@ public class GcmIntentService extends IntentService {
                                                    public void call(JoinTripRequest joinTripRequest) {
                                                        // create notification for the user
                                                        // TODO: Send the join trip request or at least the join trip request id
-                                                       createNotification(getString(R.string.join_request_title), getString(R.string.joint_request_msg, joinTripRequest.getQuery().getPassenger().getFirstName()), GcmConstants.GCM_NOTIFICATION_JOIN_REQUEST_ID);
+                                                       if(LifecycleHandler.isApplicationInForeground()) {
+                                                           // TODO: start request activity immediately
+                                                       } else {
+                                                           createNotification(getString(R.string.join_request_title), getString(R.string.joint_request_msg, joinTripRequest.getQuery().getPassenger().getFirstName()), GcmConstants.GCM_NOTIFICATION_JOIN_REQUEST_ID);
+                                                       }
                                                    }
                                                 },
                                                 new Action1<Throwable>() {
