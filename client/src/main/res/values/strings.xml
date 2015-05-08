@@ -49,7 +49,6 @@
     <string name="join_max_waiting">Max waiting time (in minutes)</string>
     <string name="join_trip">Join Trip</string>
     <plurals name="join_trip_results">
-        <item quantity="zero">Sorry, we found no ride for you</item>
         <item quantity="one">We found %d ride for you</item>
         <item quantity="other">We found %d rides for you</item>
     </plurals>
@@ -59,6 +58,12 @@
     <string name="join_trip_results_duration_min">Duration: %dmin</string>
     <string name="join_trip_results_duration_hmin">Duration: %1$dh %2$dmin</string>
     <string name="join_trip_results_error">An error occurred when sending your request to the server. Please try again.</string>
+
+    <plurals name="join_trip_requests">
+        <item quantity="one">%d person wants to join you</item>
+        <item quantity="other">%d people want to join you</item>
+    </plurals>
+    <string name="join_trip_requests_error">An error occurred when looking up you passengers. Please try again.</string>
 
 
     <string name="offer_choose_destination">What´s your destination?</string>
