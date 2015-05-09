@@ -105,12 +105,7 @@ public class GcmIntentService extends IntentService {
                                     // TODO: start request activity immediately
                                 } else {
                                     Intent startingIntent = new Intent(getApplicationContext(), MainActivity.class);
-                                    startingIntent.setAction("HAVE_TO_INSERT_SOME_ACTION_STRING");
-                                    try {
-                                        startingIntent.putExtra("ANOTHER_STRING_THAT_CURRENTLY_NOT_EXISTS", mapper.writeValueAsString(joinTripRequest));
-                                    } catch (JsonProcessingException e) {
-                                        Timber.e(e.getMessage());
-                                    }
+                                    startingIntent.setAction(MainActivity.ACTION_SHOW_JOIN_TRIP_REQUESTS);
                                     PendingIntent contentIntent = PendingIntent.getActivity(getApplicationContext(), 0, startingIntent, 0);
                                     createNotification(getString(R.string.join_request_title), getString(R.string.joint_request_msg,
                                                     joinTripRequest.getQuery().getPassenger().getFirstName()),

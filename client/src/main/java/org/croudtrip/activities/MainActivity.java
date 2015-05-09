@@ -54,6 +54,7 @@ import timber.log.Timber;
  * some initialization and stuff
  */
 public class MainActivity extends AbstractRoboDrawerActivity {
+    public final static String ACTION_SHOW_JOIN_TRIP_REQUESTS = "SHOW_JOIN_TRIP_REQUESTS";
 
     @Inject private LocationUpdater locationUpdater;
     private Subscription locationUpdateSubscription;
@@ -77,6 +78,7 @@ public class MainActivity extends AbstractRoboDrawerActivity {
         final MaterialAccount account = new MaterialAccount(this.getResources(),firstName+ " " + lastName,email,R.drawable.profile, R.drawable.background_drawer);
         this.addAccount(account);
 
+
         // subscribe to location updates
         LocationRequest request = LocationRequest.create() //standard GMS LocationRequest
                 .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
@@ -91,20 +93,37 @@ public class MainActivity extends AbstractRoboDrawerActivity {
                     }
                 });
 
+
         // create sections
         //if (prefs.getBoolean(Constants.SHARED_PREF_KEY_SEARCHING, false)) {
-        if (true) {
+        Intent intent = getIntent();
+        String action = intent.getAction();
+        action = action == null ? "" : action;
+
+        // join trip/my joined trip
+        if ( false ) {
             //TODO: this solution works only if we get some kind of notification from the server if there are (no) results. There
             //TODO: we have to set "loading" in the sp to false
             this.addSection(newSection(getString(R.string.menu_my_trip), R.drawable.hitchhiker, new JoinTripResultsFragment()));
         } else {
             this.addSection(newSection(getString(R.string.menu_join_trip), R.drawable.hitchhiker, new JoinTripFragment()));
         }
-        this.addSection(newSection(getString(R.string.menu_offer_trip), R.drawable.ic_directions_car_white, new OfferTripFragment()));
+
+        // offer trip/ my offered trip
+        if( action.equalsIgnoreCase(ACTION_SHOW_JOIN_TRIP_REQUESTS) ) {
+            this.addSection(newSection("My Trip", R.drawable.distance, new JoinTripRequestsFragment()));
+        }
+        else {
+            this.addSection(newSection(getString(R.string.menu_offer_trip), R.drawable.ic_directions_car_white, new OfferTripFragment()));
+        }
+
+        // profile
         if(AccountManager.isUserLoggedIn(this)) {
             // only logged-in users can view their profile
             this.addSection(newSection(getString(R.string.menu_profile), R.drawable.profile_icon, new ProfileFragment()));
         }
+
+        // TODO: remove navigation tab from drawer
         this.addSection(newSection(getString(R.string.navigation), R.drawable.distance, new NavigationFragment()));
 
         // TODO: remove from navigation drawer and call after push notification with REAL data
@@ -132,6 +151,13 @@ public class MainActivity extends AbstractRoboDrawerActivity {
         if (!GPSavailable()) {
             checkForGPS();
         }
+
+        // set the section that should be loaded at the start of the application
+        this.setDefaultSectionLoaded(0);
+        if( action.equalsIgnoreCase(ACTION_SHOW_JOIN_TRIP_REQUESTS) ) {
+            this.setDefaultSectionLoaded(1);
+        }
+
 
         // download avatar
         if (avatarUrl == null) return;
