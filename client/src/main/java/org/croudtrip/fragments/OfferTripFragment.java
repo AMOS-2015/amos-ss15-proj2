@@ -124,9 +124,7 @@ public class OfferTripFragment extends RoboFragment implements GoogleApiClient.O
         }
 
 
-
-        View view = inflater.inflate(R.layout.fragment_offer_trip, container, false);
-        return view;
+        return inflater.inflate(R.layout.fragment_offer_trip, container, false);
     }
 
     @Override
@@ -185,9 +183,7 @@ public class OfferTripFragment extends RoboFragment implements GoogleApiClient.O
                     Intent intent = intentBuilder.build(getActivity().getApplicationContext());
 
                     startActivityForResult(intent, REQUEST_PLACE_PICKER);
-                } catch (GooglePlayServicesRepairableException e) {
-                    e.printStackTrace();
-                } catch (GooglePlayServicesNotAvailableException e) {
+                } catch (GooglePlayServicesRepairableException | GooglePlayServicesNotAvailableException e) {
                     e.printStackTrace();
                 }
             }
@@ -372,15 +368,6 @@ public class OfferTripFragment extends RoboFragment implements GoogleApiClient.O
             places.release();
         }
     };
-
-    private static Spanned formatPlaceDetails(Resources res, CharSequence name, String id,
-                                              CharSequence address, CharSequence phoneNumber, Uri websiteUri) {
-        Log.e("alex", res.getString(R.string.place_details, name, id, address, phoneNumber,
-                websiteUri));
-        return Html.fromHtml(res.getString(R.string.place_details, name, id, address, phoneNumber,
-                websiteUri));
-
-    }
 
     public void onConnectionFailed(ConnectionResult connectionResult) {
 

@@ -194,11 +194,6 @@ public class MainActivity extends AbstractRoboDrawerActivity {
 
         adb.setNegativeButton(getResources().getString(R.string.enable_gps_cancel), new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
-                if (dontShowAgain.isChecked()) {
-                    editor.putBoolean(Constants.SHARED_PREF_KEY_SKIP_ENABLE_GPS, true);
-                    editor.apply();
-                }
-
                 return;
             }
         });
