@@ -92,8 +92,7 @@ public class MainActivity extends AbstractRoboDrawerActivity {
                 });
 
         // create sections
-        //if (prefs.getBoolean(Constants.SHARED_PREF_KEY_SEARCHING, false)) {
-        if (true) {
+        if (prefs.getBoolean(Constants.SHARED_PREF_KEY_SEARCHING, false)) {
             //TODO: this solution works only if we get some kind of notification from the server if there are (no) results. There
             //TODO: we have to set "loading" in the sp to false
             this.addSection(newSection(getString(R.string.menu_my_trip), R.drawable.hitchhiker, new JoinTripResultsFragment()));

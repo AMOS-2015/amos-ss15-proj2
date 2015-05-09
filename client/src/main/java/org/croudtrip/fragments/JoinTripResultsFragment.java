@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -52,10 +53,16 @@ public class JoinTripResultsFragment extends SubscriptionFragment {
     public final static String KEY_DESTINATION_LATITUDE = "destination_latitude";
     public final static String KEY_DESTINATION_LONGITUDE = "destination_longitude";
 
-    @InjectView(R.id.pb_join_trip)                  private ProgressBar progressBar;
+    //@InjectView(R.id.pb_join_trip)                  private ProgressBar progressBar;
     @InjectView(R.id.tv_join_trip_results_caption)  private TextView caption;
     @InjectView(R.id.rv_join_trip_results)          private RecyclerView recyclerView;
     @InjectView(R.id.tv_join_trip_error)            private TextView error;
+    @InjectView(R.id.layout_join_trip_results)      private View resultView;
+    @InjectView(R.id.layout_join_trip_waiting)      private View waitingView;
+    @InjectView(R.id.btn_joint_trip_stop)           private Button btnStop;
+
+
+
 
     @Inject TripsResource tripsResource;
 
@@ -90,6 +97,7 @@ public class JoinTripResultsFragment extends SubscriptionFragment {
 
         adapter = new JoinTripResultsAdapter(getActivity(), null);
         recyclerView.setAdapter(adapter);
+
 
         // On click of a reservation we request to join this trip.
         adapter.setOnItemClickListener(new JoinTripResultsAdapter.OnItemClickListener() {
@@ -162,21 +170,26 @@ public class JoinTripResultsFragment extends SubscriptionFragment {
 
                     @Override
                     public void call(List<TripReservation> reservations) {
-                        SharedPreferences.Editor editor = prefs.edit();
-                        editor.putBoolean(Constants.SHARED_PREF_KEY_SEARCHING, false);
-                        editor.apply();
 
                         // Update the caption text
                         int numMatches = reservations.size();
-                        caption.setText(getResources().getQuantityString(R.plurals.join_trip_results,
-                                numMatches, numMatches));
+                        if (numMatches != 0) {
+                            SharedPreferences.Editor editor = prefs.edit();
+                            editor.putBoolean(Constants.SHARED_PREF_KEY_SEARCHING, false);
+                            editor.apply();
+                            waitingView.setVisibility(View.GONE);
+                            resultView.setVisibility(View.VISIBLE);
 
-                        // Fill the results list
-                        adapter.addElements(reservations);
+                            caption.setText(getResources().getQuantityString(R.plurals.join_trip_results,
+                                    numMatches, numMatches));
 
-                        if (!(AccountManager.isUserLoggedIn(getActivity()))) {
-                            recyclerView.setBackgroundColor(Color.GRAY);
-                            drawRegisterDialog();
+                            // Fill the results list
+                            adapter.addElements(reservations);
+
+                            if (!(AccountManager.isUserLoggedIn(getActivity()))) {
+                                recyclerView.setBackgroundColor(Color.GRAY);
+                                drawRegisterDialog();
+                            }
                         }
                     }
 
@@ -185,22 +198,28 @@ public class JoinTripResultsFragment extends SubscriptionFragment {
 
                     @Override
                     public void call(Throwable throwable) {
+                        Log.d("alex", "error: " + throwable.getMessage());
+                        Timber.e("Error when trying to join a trip: " + throwable.getMessage());
+
                         SharedPreferences.Editor editor = prefs.edit();
                         editor.putBoolean(Constants.SHARED_PREF_KEY_SEARCHING, false);
                         editor.apply();
 
+                        ((MaterialNavigationDrawer) getActivity()).getCurrentSection().setTarget(new JoinTripFragment());
+                        ((MaterialNavigationDrawer) getActivity()).getCurrentSection().setTitle(getString(R.string.menu_join_trip));
+                        ((MaterialNavigationDrawer) getActivity()).setFragment(new JoinTripFragment(), getString(R.string.join_trip));
+
+                        Toast.makeText(getActivity().getApplicationContext(), getResources().getString(R.string.error), Toast.LENGTH_LONG).show();
                         // on main thread; something went wrong
-                        Timber.e("Error when trying to join a trip: " + throwable.getMessage());
-                        error.setVisibility(View.VISIBLE);
-                        caption.setText(getResources().getQuantityString(R.plurals.join_trip_results,
-                                0, 0));
+                        //error.setVisibility(View.VISIBLE);
+                        //caption.setText(getResources().getQuantityString(R.plurals.join_trip_results, 0, 0));
                     }
                 }, new Action0() {
                     // DONE
 
                     @Override
                     public void call() {
-                        progressBar.setVisibility(View.GONE);
+                        //progressBar.setVisibility(View.GONE);
                     }
                 });
 

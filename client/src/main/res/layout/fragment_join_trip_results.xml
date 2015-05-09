@@ -6,6 +6,7 @@
     android:layout_margin="@dimen/activity_vertical_margin">
 
     <LinearLayout
+        android:visibility="gone"
         android:id="@+id/layout_join_trip_results"
         android:orientation="vertical"
         android:layout_width="match_parent"
@@ -24,13 +25,36 @@
             android:layout_height="wrap_content" />
     </LinearLayout>
 
-    <ProgressBar
+    <LinearLayout
+        android:id="@+id/layout_join_trip_waiting"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="@android:style/TextAppearance.Large"
+            android:layout_gravity="center_horizontal"
+            android:text="@string/join_trip_results_waiting"
+            android:gravity="center_horizontal" />
+
+        <Button
+            android:id="@+id/btn_joint_trip_stop"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:text="@string/join_trip_results_stop"/>
+
+        </LinearLayout>
+
+    <!--<ProgressBar
         android:id="@+id/pb_join_trip"
         style="?android:attr/progressBarStyleLarge"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity = "center_vertical|center_horizontal">
-    </ProgressBar>
+    </ProgressBar>-->
 
     <TextView
         android:id="@+id/tv_join_trip_error"

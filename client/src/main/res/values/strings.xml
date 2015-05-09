@@ -1,6 +1,8 @@
 <resources>
     <string name="app_name" translatable="false">CroudTrip</string>
 
+    <string name="error">Please try it again. Something went wrong</string>
+
     <string name="menu_join_trip">Join trip</string>
     <string name="menu_my_trip">My trip</string>
     <string name="menu_offer_trip">Offer trip</string>
@@ -55,6 +57,10 @@
     <string name="join_trip_results_duration_min">Duration: %dmin</string>
     <string name="join_trip_results_duration_hmin">Duration: %1$dh %2$dmin</string>
     <string name="join_trip_results_error">An error occurred when sending your request to the server. Please try again.</string>
+    <string name="join_trip_results_waiting">We try our best to find trips for you! Hang in there!</string>
+    <string name="join_trip_results_stop">Stop searching</string>
+
+
 
     <plurals name="join_trip_requests">
         <item quantity="one">%d person wants to join you</item>
