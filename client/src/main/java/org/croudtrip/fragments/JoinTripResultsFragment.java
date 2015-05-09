@@ -1,6 +1,8 @@
 package org.croudtrip.fragments;
 
 import android.app.Dialog;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -14,6 +16,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.croudtrip.Constants;
 import org.croudtrip.R;
 import org.croudtrip.account.AccountManager;
 import org.croudtrip.api.TripsResource;
@@ -129,6 +132,14 @@ public class JoinTripResultsFragment extends SubscriptionFragment {
 
         // Get currentLocation and destination
         Bundle extras = getArguments();
+        final SharedPreferences prefs = getActivity().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
+
+        //If extras is null this Fragment was called by the NavigationDrawer. This means the server is already searching for trips
+        if (extras == null || prefs.getBoolean(Constants.SHARED_PREF_KEY_SEARCHING, false)) {
+            return;
+        }
+
+
         double currentLocationLat = extras.getDouble(KEY_CURRENT_LOCATION_LATITUDE);
         double currentLocationLon = extras.getDouble(KEY_CURRENT_LOCATION_LONGITUDE);
         double destinationLat = extras.getDouble(KEY_DESTINATION_LATITUDE);
@@ -140,6 +151,10 @@ public class JoinTripResultsFragment extends SubscriptionFragment {
                 new RouteLocation(currentLocationLat, currentLocationLon),
                 new RouteLocation(destinationLat, destinationLon), maxWaitingTime);
 
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putBoolean(Constants.SHARED_PREF_KEY_SEARCHING, true);
+        editor.apply();
+
         Subscription subscription = tripsResource.createReservations(tripQueryDescription)
                 .compose(new DefaultTransformer<List<TripReservation>>())
                 .subscribe(new Action1<List<TripReservation>>() {
@@ -147,6 +162,9 @@ public class JoinTripResultsFragment extends SubscriptionFragment {
 
                     @Override
                     public void call(List<TripReservation> reservations) {
+                        SharedPreferences.Editor editor = prefs.edit();
+                        editor.putBoolean(Constants.SHARED_PREF_KEY_SEARCHING, false);
+                        editor.apply();
 
                         // Update the caption text
                         int numMatches = reservations.size();
@@ -167,6 +185,10 @@ public class JoinTripResultsFragment extends SubscriptionFragment {
 
                     @Override
                     public void call(Throwable throwable) {
+                        SharedPreferences.Editor editor = prefs.edit();
+                        editor.putBoolean(Constants.SHARED_PREF_KEY_SEARCHING, false);
+                        editor.apply();
+
                         // on main thread; something went wrong
                         Timber.e("Error when trying to join a trip: " + throwable.getMessage());
                         error.setVisibility(View.VISIBLE);
