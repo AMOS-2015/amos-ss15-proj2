@@ -32,7 +32,8 @@ import rx.functions.Func1;
 import timber.log.Timber;
 
 /**
- * Shows the driver a list of passengers who want to join the trip.
+ * Shows the driver a list of passengers who want to join the trip. The driver can then
+ * accept or decline such a JoinTripRequest.
  * @author Vanessa Lange
  */
 public class JoinTripRequestsFragment extends SubscriptionFragment{
@@ -84,21 +85,22 @@ public class JoinTripRequestsFragment extends SubscriptionFragment{
                 .build()
                 .create(TripsResource.class);
 
-        Timber.e("CALLED!");
         // Ask the server for join-trip-requests
         Subscription subscription = tripsResource.getOffers()
                 .compose(new DefaultTransformer<List<TripOffer>>())
                 .flatMap(new Func1<List<TripOffer>, Observable<TripOffer>>() {
                     @Override
                     public Observable<TripOffer> call(List<TripOffer> tripOffers) {
-                        Timber.i("Received List of TripOffers: " + tripOffers.size());
+                        Timber.i("Received " + tripOffers.size() + "list(s) of TripOffers");
                         return Observable.from(tripOffers);
                     }
                 })
                 .flatMap(new Func1<TripOffer, Observable<List<JoinTripRequest>>>() {
                     @Override
                     public Observable<List<JoinTripRequest>> call(TripOffer tripOffer) {
-                        Timber.i("Received TripOffer: " + tripOffer.getId());
+                        Timber.i("Received TripOffer with ID: " + tripOffer.getId());
+
+                        // Get the JoinTripRequests for this TripOffer
                         return tripsResource.getJoinRequests(tripOffer.getId());
                     }
                 })

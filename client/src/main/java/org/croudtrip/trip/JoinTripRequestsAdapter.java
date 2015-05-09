@@ -14,6 +14,7 @@ import org.croudtrip.api.trips.JoinTripRequest;
 import java.util.List;
 
 /**
+ * Adapter for the JoinTripRequests-CardView/List
  * Created by Vanessa Lange on 08.05.15.
  */
 public class JoinTripRequestsAdapter extends RecyclerView.Adapter<JoinTripRequestsAdapter.ViewHolder> {
