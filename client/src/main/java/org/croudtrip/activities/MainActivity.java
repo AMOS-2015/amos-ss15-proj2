@@ -100,6 +100,7 @@ public class MainActivity extends AbstractRoboDrawerActivity {
         String action = intent.getAction();
         action = action == null ? "" : action;
 
+
         // join trip/my joined trip
         if ( false ) {
             //TODO: this solution works only if we get some kind of notification from the server if there are (no) results. There

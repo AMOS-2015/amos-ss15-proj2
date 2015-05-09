@@ -103,6 +103,11 @@ public class GcmIntentService extends IntentService {
                                 // TODO: Send the join trip request or at least the join trip request id
                                 if (LifecycleHandler.isApplicationInForeground()) {
                                     // TODO: start request activity immediately
+                                    Intent startingIntent = new Intent(getApplicationContext(), MainActivity.class);
+                                    startingIntent.setAction(MainActivity.ACTION_SHOW_JOIN_TRIP_REQUESTS);
+                                    startingIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                                    getApplicationContext().startActivity(startingIntent);
+
                                 } else {
                                     Intent startingIntent = new Intent(getApplicationContext(), MainActivity.class);
                                     startingIntent.setAction(MainActivity.ACTION_SHOW_JOIN_TRIP_REQUESTS);
