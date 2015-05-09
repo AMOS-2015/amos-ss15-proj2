@@ -98,6 +98,23 @@ public class JoinTripResultsFragment extends SubscriptionFragment {
         adapter = new JoinTripResultsAdapter(getActivity(), null);
         recyclerView.setAdapter(adapter);
 
+        btnStop.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                SharedPreferences prefs = getActivity().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = prefs.edit();
+                editor.putBoolean(Constants.SHARED_PREF_KEY_SEARCHING, false);
+                editor.apply();
+
+                ((MaterialNavigationDrawer) getActivity()).getCurrentSection().setTarget(new JoinTripFragment());
+                ((MaterialNavigationDrawer) getActivity()).getCurrentSection().setTitle(getString(R.string.join_trip));
+                ((MaterialNavigationDrawer) getActivity()).setFragment(new JoinTripFragment(), getString(R.string.join_trip));
+
+                Toast.makeText(getActivity().getApplicationContext(), R.string.join_trip_results_canceled, Toast.LENGTH_LONG);
+
+                //TODO: tell the server to stop the background search
+            }
+        });
 
         // On click of a reservation we request to join this trip.
         adapter.setOnItemClickListener(new JoinTripResultsAdapter.OnItemClickListener() {
@@ -190,6 +207,11 @@ public class JoinTripResultsFragment extends SubscriptionFragment {
                                 recyclerView.setBackgroundColor(Color.GRAY);
                                 drawRegisterDialog();
                             }
+
+                            //TODO: if potential drivers are found but the user navigates to another fragment and back the rides get dismissed
+                            //TODO: should we save them? no user story -> ask PO
+                            ((MaterialNavigationDrawer) getActivity()).getCurrentSection().setTarget(new JoinTripFragment());
+                            ((MaterialNavigationDrawer) getActivity()).getCurrentSection().setTitle(getString(R.string.join_trip));
                         }
                     }
 

@@ -59,6 +59,8 @@
     <string name="join_trip_results_error">An error occurred when sending your request to the server. Please try again.</string>
     <string name="join_trip_results_waiting">We try our best to find trips for you! Hang in there!</string>
     <string name="join_trip_results_stop">Stop searching</string>
+    <string name="join_trip_results_canceled">Searching for trips stopped</string>
+
 
 
 
