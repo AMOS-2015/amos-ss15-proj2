@@ -13,4 +13,5 @@ public class Constants {
     public final static String SHARED_PREF_KEY_SKIP_ENABLE_GPS = "skipEnableGPS";
     public final static String SHARED_PREF_KEY_PROFILE_IMAGE_URI = "profileImg";
 
+    
 }
