@@ -30,6 +30,7 @@ import org.croudtrip.fragments.PickUpPassengerFragment;
 import org.croudtrip.fragments.ProfileFragment;
 import org.croudtrip.fragments.SettingsFragment;
 import org.croudtrip.fragments.VehicleInfoFragment;
+import org.croudtrip.gcm.GcmManager;
 import org.croudtrip.location.LocationUpdater;
 import org.croudtrip.utils.DefaultTransformer;
 
@@ -47,6 +48,7 @@ import rx.Observable;
 import rx.Subscription;
 import rx.functions.Action1;
 import rx.functions.Func0;
+import rx.subscriptions.CompositeSubscription;
 import timber.log.Timber;
 
 /**
@@ -56,9 +58,9 @@ import timber.log.Timber;
 public class MainActivity extends AbstractRoboDrawerActivity {
     public final static String ACTION_SHOW_JOIN_TRIP_REQUESTS = "SHOW_JOIN_TRIP_REQUESTS";
 
+    @Inject private GcmManager gcmManager;
     @Inject private LocationUpdater locationUpdater;
-    private Subscription locationUpdateSubscription;
-
+    private CompositeSubscription subscriptions = new CompositeSubscription();
 
     @Override
     public void init(Bundle savedInstanceState) {
@@ -85,21 +87,20 @@ public class MainActivity extends AbstractRoboDrawerActivity {
                 .setNumUpdates(5)
                 .setInterval(100);
         ReactiveLocationProvider locationProvider = new ReactiveLocationProvider(this);
-        locationUpdateSubscription = locationProvider.getUpdatedLocation(request)
+        Subscription locationUpdateSubscription = locationProvider.getUpdatedLocation(request)
                 .subscribe(new Action1<Location>() {
                     @Override
                     public void call(Location location) {
                         locationUpdater.setLastLocation( location );
                     }
                 });
-
+        subscriptions.add(locationUpdateSubscription);
 
         // create sections
         //if (prefs.getBoolean(Constants.SHARED_PREF_KEY_SEARCHING, false)) {
         Intent intent = getIntent();
         String action = intent.getAction();
         action = action == null ? "" : action;
-
 
         // join trip/my joined trip
         if ( false ) {
@@ -159,6 +160,23 @@ public class MainActivity extends AbstractRoboDrawerActivity {
             this.setDefaultSectionLoaded(1);
         }
 
+        // do registration for GCM, if we are not registered
+        if( gcmManager.isRegistered() ) {
+            Subscription subscription = gcmManager.register()
+                    .compose(new DefaultTransformer<Void>())
+                    .subscribe( new Action1<Void>() {
+                        @Override
+                        public void call(Void aVoid) {
+                            Timber.d("Registered at GCM.");
+                        }
+                    }, new Action1<Throwable>() {
+                        @Override
+                        public void call(Throwable throwable) {
+                            Timber.e("Could not register at GCM services: " + throwable.getMessage() );
+                        }
+                    });
+            subscriptions.add(subscription);
+        }
 
         // download avatar
         if (avatarUrl == null) return;
@@ -196,9 +214,16 @@ public class MainActivity extends AbstractRoboDrawerActivity {
     }
 
     @Override
+    public void onPause() {
+        super.onPause();
+
+        subscriptions.unsubscribe();
+        subscriptions.clear();
+    }
+
+    @Override
     public void onStop() {
         super.onStop();
-        locationUpdateSubscription.unsubscribe();
     }
 
     private boolean GPSavailable() {

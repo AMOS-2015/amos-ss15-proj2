@@ -62,7 +62,8 @@ public class GcmManager {
 					}
 				}
 			}
-		}).flatMap(new Func1<String, Observable<GcmRegistration>>() {
+		}).retry(5)
+        .flatMap(new Func1<String, Observable<GcmRegistration>>() {
 			@Override
 			public Observable<GcmRegistration> call(String regId) {
 				return registrationResource.register(new GcmRegistrationDescription(regId));
