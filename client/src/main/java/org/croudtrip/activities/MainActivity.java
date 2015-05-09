@@ -92,9 +92,7 @@ public class MainActivity extends AbstractRoboDrawerActivity {
                 });
 
         // create sections
-        if (prefs.getBoolean(Constants.SHARED_PREF_KEY_SEARCHING, false)) {
-            //TODO: this solution works only if we get some kind of notification from the server if there are (no) results. There
-            //TODO: we have to set "loading" in the sp to false
+        if (prefs.getBoolean(Constants.SHARED_PREF_KEY_SEARCHING, false) || prefs.getBoolean(Constants.SHARED_PREF_KEY_ACCEPTED, false)) {
             this.addSection(newSection(getString(R.string.menu_my_trip), R.drawable.hitchhiker, new JoinTripResultsFragment()));
         } else {
             this.addSection(newSection(getString(R.string.menu_join_trip), R.drawable.hitchhiker, new JoinTripFragment()));
@@ -118,8 +116,6 @@ public class MainActivity extends AbstractRoboDrawerActivity {
 
         //TODO: remove from drawer
         this.addSection(newSection("Join Trip - Requests", R.drawable.distance, new JoinTripRequestsFragment()));
-
-        ((MaterialSection) getSectionList().get(0)).setNotifications(3);
 
         // create bottom section
         this.addBottomSection(newSection(getString(R.string.menu_settings), R.drawable.ic_settings, new SettingsFragment()));

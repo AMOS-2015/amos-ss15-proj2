@@ -60,6 +60,13 @@
     <string name="join_trip_results_waiting">We try our best to find trips for you! Hang in there!</string>
     <string name="join_trip_results_stop">Stop searching</string>
     <string name="join_trip_results_canceled">Searching for trips stopped</string>
+    <string name="join_trip_results_pickup">REPLACE is picking you up. The trip will be X€.</string>
+    <string name="join_trip_results_reached">I´ve reached my destination</string>
+    <string name="join_trip_results_report">Report driver - I wasn´t picked up</string>
+    <string name="join_trip_results_cancel">Cancel trip</string>
+
+
+
 
 
 

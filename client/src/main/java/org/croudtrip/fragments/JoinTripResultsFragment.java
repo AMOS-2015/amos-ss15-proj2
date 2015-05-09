@@ -59,7 +59,10 @@ public class JoinTripResultsFragment extends SubscriptionFragment {
     @InjectView(R.id.tv_join_trip_error)            private TextView error;
     @InjectView(R.id.layout_join_trip_results)      private View resultView;
     @InjectView(R.id.layout_join_trip_waiting)      private View waitingView;
+    @InjectView(R.id.layout_join_trip_accepted)     private View acceptedView;
     @InjectView(R.id.btn_joint_trip_stop)           private Button btnStop;
+    @InjectView(R.id.btn_joint_trip_cancel)           private Button btnCancelTrip;
+
 
 
 
@@ -116,6 +119,20 @@ public class JoinTripResultsFragment extends SubscriptionFragment {
             }
         });
 
+        btnCancelTrip.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                SharedPreferences prefs = getActivity().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = prefs.edit();
+                editor.putBoolean(Constants.SHARED_PREF_KEY_ACCEPTED, false);
+                editor.apply();
+
+                ((MaterialNavigationDrawer) getActivity()).getCurrentSection().setTarget(new JoinTripFragment());
+                ((MaterialNavigationDrawer) getActivity()).getCurrentSection().setTitle(getString(R.string.join_trip));
+                ((MaterialNavigationDrawer) getActivity()).setFragment(new JoinTripFragment(), getString(R.string.join_trip));
+            }
+        });
+
         // On click of a reservation we request to join this trip.
         adapter.setOnItemClickListener(new JoinTripResultsAdapter.OnItemClickListener() {
 
@@ -155,20 +172,28 @@ public class JoinTripResultsFragment extends SubscriptionFragment {
         });
 
 
-        // Get currentLocation and destination
-        Bundle extras = getArguments();
-        final SharedPreferences prefs = getActivity().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
-
-        //If extras is null this Fragment was called by the NavigationDrawer. This means the server is already searching for trips
-        if (extras == null || prefs.getBoolean(Constants.SHARED_PREF_KEY_SEARCHING, false)) {
-            return;
+        //If getArguments() is null this Fragment was called by the NavigationDrawer. This means the server is already searching for trips
+        if (getArguments() != null) {
+            Log.d("alex", "START BACKGROUND SEARCH");
+            startBackgroundSearch(getArguments());
         }
 
+        SharedPreferences prefs = getActivity().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
+        if (prefs.getBoolean(Constants.SHARED_PREF_KEY_SEARCHING, false)) {
+            waitingView.setVisibility(View.VISIBLE);
+            ((MaterialNavigationDrawer) getActivity()).getCurrentSection().setNotificationsText("searching");
+        } else if (prefs.getBoolean(Constants.SHARED_PREF_KEY_ACCEPTED, false)) {
+            acceptedView.setVisibility(View.VISIBLE);
+        }
+    }
 
-        double currentLocationLat = extras.getDouble(KEY_CURRENT_LOCATION_LATITUDE);
-        double currentLocationLon = extras.getDouble(KEY_CURRENT_LOCATION_LONGITUDE);
-        double destinationLat = extras.getDouble(KEY_DESTINATION_LATITUDE);
-        double destinationLon = extras.getDouble(KEY_DESTINATION_LONGITUDE);
+    private void startBackgroundSearch(Bundle bundle) {
+        final SharedPreferences prefs = getActivity().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
+
+        double currentLocationLat = bundle.getDouble(KEY_CURRENT_LOCATION_LATITUDE);
+        double currentLocationLon = bundle.getDouble(KEY_CURRENT_LOCATION_LONGITUDE);
+        double destinationLat = bundle.getDouble(KEY_DESTINATION_LATITUDE);
+        double destinationLon = bundle.getDouble(KEY_DESTINATION_LONGITUDE);
         long maxWaitingTime = 1000; /* TODO: Get this from passengeres choice*/
 
         // Ask the server for matches
@@ -248,7 +273,7 @@ public class JoinTripResultsFragment extends SubscriptionFragment {
         subscriptions.add(subscription);
     }
 
-    public void drawRegisterDialog() {
+    private void drawRegisterDialog() {
         final Dialog registerDialog = new Dialog(getActivity());
         registerDialog.setTitle("Register");
         registerDialog.setContentView(R.layout.ask_to_register_dialog);

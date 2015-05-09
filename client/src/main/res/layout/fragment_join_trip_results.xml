@@ -26,6 +26,7 @@
     </LinearLayout>
 
     <LinearLayout
+        android:visibility="gone"
         android:id="@+id/layout_join_trip_waiting"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -47,6 +48,44 @@
             android:text="@string/join_trip_results_stop"/>
 
         </LinearLayout>
+
+    <LinearLayout
+        android:visibility="gone"
+        android:id="@+id/layout_join_trip_accepted"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="@android:style/TextAppearance.Large"
+            android:layout_gravity="center_horizontal"
+            android:text="@string/join_trip_results_pickup"
+            android:gravity="center_horizontal" />
+
+        <Button
+            android:id="@+id/btn_joint_trip_reached"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:text="@string/join_trip_results_reached"/>
+
+        <Button
+            android:id="@+id/btn_joint_trip_report"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:text="@string/join_trip_results_report"/>
+
+        <Button
+            android:id="@+id/btn_joint_trip_cancel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:text="@string/join_trip_results_cancel"/>
+
+    </LinearLayout>
 
     <!--<ProgressBar
         android:id="@+id/pb_join_trip"
