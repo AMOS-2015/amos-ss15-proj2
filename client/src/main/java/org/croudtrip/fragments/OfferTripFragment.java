@@ -151,8 +151,8 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
         try {
             List<org.croudtrip.db.Place> savedPlaces = dbHelper.getPlaceDao().queryForAll();
             ArrayList<PlaceAutocompleteAdapter.PlaceAutocomplete> history = new ArrayList<>();
-            for (int i=0; i<savedPlaces.size(); i++) {
-                if (i == 5) {
+            for (int i=savedPlaces.size()-1; i>=0; i--) {
+                if (history.size() == 5) {
                     break;
                 }
                 Log.d("alex", "added historical place");
@@ -246,6 +246,7 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
                 try {
                     if (tempPlace != null) {
                         Log.d("alex", "Save place");
+                        dbHelper.getPlaceDao().delete(tempPlace);
                         dbHelper.getPlaceDao().create(tempPlace);
                     } else {
                         Log.d("alex", "Save custom place");
