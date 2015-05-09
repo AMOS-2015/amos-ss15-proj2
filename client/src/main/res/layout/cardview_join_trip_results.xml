@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<android.support.v7.widget.CardView
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/cv_join_trip_requests"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    card_view:cardCornerRadius="4dp">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_margin="5dp">
+
+        <TextView
+            android:id="@+id/tv_join_trip_results_price"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:textAppearance="@android:style/TextAppearance.Large">
+        </TextView>
+
+        <TextView
+            android:id="@+id/tv_join_trip_results_driver_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_toLeftOf="@id/tv_join_trip_results_price"
+            android:layout_toStartOf="@id/tv_join_trip_results_price"
+            android:textAppearance="@android:style/TextAppearance.Medium">
+        </TextView>
+
+        <TextView
+            android:id="@+id/tv_join_trip_results_distance"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_toLeftOf="@id/tv_join_trip_results_price"
+            android:layout_toStartOf="@id/tv_join_trip_results_price"
+            android:layout_below="@id/tv_join_trip_results_driver_name">
+        </TextView>
+
+        <TextView
+            android:id="@+id/tv_join_trip_results_duration"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_toLeftOf="@id/tv_join_trip_results_price"
+            android:layout_toStartOf="@id/tv_join_trip_results_price"
+            android:layout_below="@id/tv_join_trip_results_distance">
+        </TextView>
+    </RelativeLayout>
+
+</android.support.v7.widget.CardView>

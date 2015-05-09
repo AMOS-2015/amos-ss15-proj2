@@ -3,13 +3,13 @@ package org.croudtrip.fragments;
 import android.app.Dialog;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.Button;
-import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -19,8 +19,8 @@ import org.croudtrip.account.AccountManager;
 import org.croudtrip.api.TripsResource;
 import org.croudtrip.api.directions.RouteLocation;
 import org.croudtrip.api.trips.JoinTripRequest;
-import org.croudtrip.api.trips.TripReservation;
 import org.croudtrip.api.trips.TripQueryDescription;
+import org.croudtrip.api.trips.TripReservation;
 import org.croudtrip.trip.JoinTripResultsAdapter;
 import org.croudtrip.utils.DefaultTransformer;
 
@@ -29,12 +29,10 @@ import java.util.List;
 import javax.inject.Inject;
 
 import it.neokree.materialnavigationdrawer.MaterialNavigationDrawer;
-import roboguice.fragment.provided.RoboFragment;
 import roboguice.inject.InjectView;
 import rx.Subscription;
-import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Action0;
 import rx.functions.Action1;
-import rx.schedulers.Schedulers;
 import timber.log.Timber;
 
 /**
@@ -51,13 +49,15 @@ public class JoinTripResultsFragment extends SubscriptionFragment {
     public final static String KEY_DESTINATION_LATITUDE = "destination_latitude";
     public final static String KEY_DESTINATION_LONGITUDE = "destination_longitude";
 
-    @InjectView(R.id.pb_join_trip) private ProgressBar progressBar;
-    @InjectView(R.id.tv_join_trip_results_caption) private TextView caption;
-    @InjectView(R.id.lv_join_trip_results) private ListView resultsList;
-    @InjectView(R.id.tv_join_trip_error) private TextView error;
+    @InjectView(R.id.pb_join_trip)                  private ProgressBar progressBar;
+    @InjectView(R.id.tv_join_trip_results_caption)  private TextView caption;
+    @InjectView(R.id.rv_join_trip_results)          private RecyclerView recyclerView;
+    @InjectView(R.id.tv_join_trip_error)            private TextView error;
 
-    @Inject
-    TripsResource tripsResource;
+    @Inject TripsResource tripsResource;
+
+    private RecyclerView.LayoutManager layoutManager;
+    private JoinTripResultsAdapter adapter;
 
 
     //******************** Methods ************************//
@@ -69,17 +69,62 @@ public class JoinTripResultsFragment extends SubscriptionFragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
         setHasOptionsMenu(true);
-        View view = inflater.inflate(R.layout.fragment_join_trip_results, container, false);
-        return view;
+        return inflater.inflate(R.layout.fragment_join_trip_results, container, false);
     }
 
 
     @Override
-    public void onViewCreated( View view, Bundle savedInstanceState ) {
+    public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        // Use a linear layout manager to use the RecyclerView
+        layoutManager = new LinearLayoutManager(getActivity());
+        recyclerView.setLayoutManager(layoutManager);
+
+        adapter = new JoinTripResultsAdapter(getActivity(), null);
+        recyclerView.setAdapter(adapter);
+
+        // On click of a reservation we request to join this trip.
+        adapter.setOnItemClickListener(new JoinTripResultsAdapter.OnItemClickListener() {
+
+            @Override
+            public void onItemClicked(View view, int position) {
+                TripReservation reservation = adapter.getItem(position);
+                Timber.d("Clicked on reservation " + reservation.getId());
+
+                Subscription subscription = tripsResource.joinTrip(reservation.getId())
+                        .compose(new DefaultTransformer<JoinTripRequest>())
+                        .subscribe(new Action1<JoinTripRequest>() {
+                            // SUCCESS
+
+                            @Override
+                            public void call(JoinTripRequest joinTripRequest) {
+                                Toast.makeText(getActivity(), R.string.join_request_sent,
+                                        Toast.LENGTH_SHORT).show();
+
+                                // TODO: Start a new view? Not clear in which state the passenger should wait.
+                            }
+
+                        }, new Action1<Throwable>() {
+                            // ERROR
+
+                            @Override
+                            public void call(Throwable throwable) {
+                                Timber.e("Error when trying to join a trip: " + throwable.getMessage());
+                                Toast.makeText(getActivity(), R.string.join_request_sending_error, Toast.LENGTH_SHORT).show();
+
+                                // TODO: Refresh this fragment. Current reservation could already
+                                // have been removed on the server (we don't know when the error happened).
+
+                            }
+                        });
+                subscriptions.add(subscription);
+            }
+        });
+
 
         // Get currentLocation and destination
         Bundle extras = getArguments();
@@ -95,9 +140,9 @@ public class JoinTripResultsFragment extends SubscriptionFragment {
                 new RouteLocation(destinationLat, destinationLon), maxWaitingTime);
 
         Subscription subscription = tripsResource.createReservations(tripQueryDescription)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
+                .compose(new DefaultTransformer<List<TripReservation>>())
                 .subscribe(new Action1<List<TripReservation>>() {
+                    // SUCCESS
 
                     @Override
                     public void call(List<TripReservation> reservations) {
@@ -108,67 +153,37 @@ public class JoinTripResultsFragment extends SubscriptionFragment {
                                 numMatches, numMatches));
 
                         // Fill the results list
-                        JoinTripResultsAdapter adapter = new JoinTripResultsAdapter(
-                                getActivity(),
-                                R.layout.listview_row_join_trip_results, reservations);
+                        adapter.addElements(reservations);
 
-                        resultsList.setAdapter(adapter);
-                        progressBar.setVisibility(View.GONE);
                         if (!(AccountManager.isUserLoggedIn(getActivity()))) {
-                            resultsList.setBackgroundColor(Color.GRAY);
+                            recyclerView.setBackgroundColor(Color.GRAY);
                             drawRegisterDialog();
                         }
                     }
 
                 }, new Action1<Throwable>() {
+                    // ERROR
+
                     @Override
                     public void call(Throwable throwable) {
                         // on main thread; something went wrong
                         Timber.e("Error when trying to join a trip: " + throwable.getMessage());
-                        progressBar.setVisibility(View.GONE);
-
+                        error.setVisibility(View.VISIBLE);
                         caption.setText(getResources().getQuantityString(R.plurals.join_trip_results,
                                 0, 0));
-                        error.setVisibility(View.VISIBLE);
+                    }
+                }, new Action0() {
+                    // DONE
+
+                    @Override
+                    public void call() {
+                        progressBar.setVisibility(View.GONE);
                     }
                 });
+
         subscriptions.add(subscription);
-
-        // on click of a reservation we request to join this trip.
-        resultsList.setOnItemClickListener( new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapter, View view, int position, long id) {
-                Object object = adapter.getItemAtPosition(position);
-                /*if( !(object instanceof  TripReservation) )
-                    return;*/
-
-                TripReservation reservation = (TripReservation) object;
-
-                Timber.d("reservationId " + reservation.getId());
-                Subscription subscription = tripsResource.joinTrip( reservation.getId() )
-                        .compose(new DefaultTransformer<JoinTripRequest>())
-                        .subscribe( new Action1<JoinTripRequest>() {
-                    @Override
-                    public void call(JoinTripRequest joinTripRequest) {
-                        Toast.makeText(getActivity(), R.string.join_request_sent, Toast.LENGTH_SHORT ).show();
-
-                        // TODO: Start a new view? Not clear in which state the passenger should wait.
-                    }
-                },new Action1<Throwable>() {
-                    @Override
-                    public void call(Throwable throwable) {
-                        // on main thread; something went wrong
-                        Timber.e("Error when trying to join a trip: " + throwable.getMessage());
-                        Toast.makeText(getActivity(), R.string.join_request_sending_error, Toast.LENGTH_SHORT ).show();
-
-                        // TODO: Refresh this fragment. Current reservation could already have been removed on the server (we don't know when the error happened).
-                    }
-                } );
-
-                subscriptions.add( subscription );
-            }
-        });
     }
+
     public void drawRegisterDialog() {
         final Dialog registerDialog = new Dialog(getActivity());
         registerDialog.setTitle("Register");
@@ -180,7 +195,7 @@ public class JoinTripResultsFragment extends SubscriptionFragment {
         set.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(getActivity(),"Register view will be shown",Toast.LENGTH_SHORT).show();
+                Toast.makeText(getActivity(), "Register view will be shown", Toast.LENGTH_SHORT).show();
                 registerDialog.hide();
             }
         });

@@ -18,10 +18,10 @@
             android:layout_marginBottom="@dimen/activity_vertical_margin"
             android:textAppearance="@android:style/TextAppearance.Large"/>
 
-        <ListView
-            android:id="@+id/lv_join_trip_results"
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/rv_join_trip_results"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content" />
     </LinearLayout>
 
     <ProgressBar

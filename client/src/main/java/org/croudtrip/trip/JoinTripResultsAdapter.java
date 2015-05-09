@@ -1,10 +1,10 @@
 package org.croudtrip.trip;
 
 import android.content.Context;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
 import org.croudtrip.R;
@@ -14,40 +14,88 @@ import org.croudtrip.api.trips.TripReservation;
 import java.util.List;
 
 /**
- * This Adapter is used in the JoinTripResultsActivity to display the results for a join request.
+ * This Adapter is used in the JoinTripResultsFragment to display the results for a join request.
  * Created by Vanessa Lange on 01.05.15.
  */
-public class JoinTripResultsAdapter extends ArrayAdapter<TripReservation>{
+public class JoinTripResultsAdapter extends RecyclerView.Adapter<JoinTripResultsAdapter.ViewHolder> {
 
-    public JoinTripResultsAdapter(Context context, int textViewResourceId) {
-        super(context, textViewResourceId);
+    //************************** Variables ***************************//
+
+    private final Context context;
+    private List<TripReservation> reservations;
+
+    protected OnItemClickListener listener;
+
+
+    //************************** Inner classes ***************************//
+
+    public static interface OnItemClickListener {
+        public void onItemClicked(View view, int position);
     }
 
-    public JoinTripResultsAdapter(Context context, int resource, List<TripReservation> items) {
-        super(context, resource, items);
+
+    /**
+     * Provides a reference to the views for each data item.
+     */
+    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
+
+
+        protected TextView tvPrice;
+        protected TextView tvDriverName;
+        protected TextView tvDistance;
+        protected TextView tvDuration;
+
+        public ViewHolder(View view) {
+            super(view);
+
+            this.tvPrice = (TextView)
+                    view.findViewById(R.id.tv_join_trip_results_price);
+            this.tvDriverName = (TextView)
+                    view.findViewById(R.id.tv_join_trip_results_driver_name);
+            this.tvDistance = (TextView)
+                    view.findViewById(R.id.tv_join_trip_results_distance);
+            this.tvDuration = (TextView)
+                    view.findViewById(R.id.tv_join_trip_results_duration);
+
+            view.setOnClickListener(this);
+        }
+
+        @Override
+        public void onClick(View view) {
+            if (listener != null) {
+                listener.onItemClicked(view, getPosition());
+            }
+        }
+    }
+
+
+    //************************** Constructors ***************************//
+
+    public JoinTripResultsAdapter(Context context, List<TripReservation> reservations) {
+        this.context = context;
+        this.reservations = reservations;
+    }
+
+
+    //**************************** Methods *****************************//
+
+    @Override
+    public JoinTripResultsAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+
+        // Create new views (invoked by the layout manager)
+        View view = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.cardview_join_trip_results, parent, false);
+
+        return new ViewHolder(view);
     }
 
 
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
+    public void onBindViewHolder(ViewHolder holder, int position) {
 
-        View view = convertView;
+        TripReservation reservation = reservations.get(position);
 
-        if(view == null){
-            // Set row layout
-            LayoutInflater inflater = LayoutInflater.from(getContext());
-            view = inflater.inflate(R.layout.listview_row_join_trip_results, null);
-        }
-
-        TripReservation reservation = getItem(position);
-        if(reservation == null){
-            return view;
-        }
-
-
-        // Insert price information
-        TextView priceTextView = (TextView) view.findViewById(R.id.tv_join_trip_results_price);
-
+        // Price info
         String price = reservation.getTotalPriceInCents() / 100 + ","; // euros
         int cents = reservation.getTotalPriceInCents()  % 100;
 
@@ -59,53 +107,86 @@ public class JoinTripResultsAdapter extends ArrayAdapter<TripReservation>{
             price = price + cents;
         }
 
-        priceTextView.setText(getContext().getString(R.string.join_trip_results_costs, price));
+        holder.tvPrice.setText(price + " €");
 
 
-        // Insert driver information
-        TextView driverNameTextView = (TextView) view.findViewById(R.id.tv_join_trip_results_driver_name);
+        // Driver info
         User driver = reservation.getDriver();
-
-        String driverName = null;
-        if (driver.getFirstName() != null && driver.getLastName() != null) {
-            driverName = driver.getFirstName() + " " + driver.getLastName();
-        } else if (driver.getFirstName() != null) {
-            driverName = driver.getFirstName();
-        } else if (driver.getLastName() != null) {
-            driverName = driver.getLastName();
-        }
-
-        driverNameTextView.setText(driverName);
+        holder.tvDriverName.setText(driver.getFullName());
 
 
-        // Insert distance information
-        TextView distanceTextView = (TextView) view.findViewById(R.id.tv_join_trip_results_distance);
+        // Distance information
         long distance = reservation.getQuery().getPassengerRoute().getDistanceInMeters();
 
         if(distance < 1000){
-            distanceTextView.setText(getContext().getString(
+            holder.tvDistance.setText(context.getString(
                     R.string.join_trip_results_distance_m, distance));
         }else{
-
             distance = Math.round(distance / 1000.0);
-            distanceTextView.setText(getContext().getString(
+            holder.tvDistance.setText(context.getString(
                     R.string.join_trip_results_distance_km, distance));
         }
 
 
-        // Insert time information
-        TextView timeTextView = (TextView) view.findViewById(R.id.tv_join_trip_results_time);
+        // Duration info
         long timeInMinutes = reservation.getQuery().getPassengerRoute().getDurationInSeconds() / 60;
 
         if(timeInMinutes < 60){
-            timeTextView.setText(getContext().getString(R.string.join_trip_results_duration_min,
+            holder.tvDuration.setText(context.getString(R.string.join_trip_results_duration_min,
                     timeInMinutes));
         }else{
-            timeTextView.setText(getContext().getString(R.string.join_trip_results_duration_hmin,
+            holder.tvDuration.setText(context.getString(R.string.join_trip_results_duration_hmin,
                     timeInMinutes / 60, timeInMinutes % 60));
         }
+    }
 
 
-        return view;
+    /**
+     * Adds the given items to the adapter.
+     * @param additionalReservations new elements to add to the adapter
+     */
+    public void addElements(List<TripReservation> additionalReservations){
+
+        if(additionalReservations == null){
+            return;
+        }
+
+        if(reservations == null){
+            reservations = additionalReservations;
+        }else{
+            reservations.addAll(additionalReservations);
+        }
+
+        this.notifyDataSetChanged();
+    }
+
+
+    @Override
+    public int getItemCount() {
+
+        if (reservations == null) {
+            return 0;
+        }
+
+        return reservations.size();
+    }
+
+    public void setOnItemClickListener(final OnItemClickListener listener) {
+        this.listener = listener;
+    }
+
+
+    /**
+     * Returns the TripReservation at the specific position
+     * @param position the position in the adapter of the item to return
+     * @return the item at the specific position
+     */
+    public TripReservation getItem(int position){
+
+        if(position < 0 || position >= reservations.size()){
+            return null;
+        }
+
+        return reservations.get(position);
     }
 }
