@@ -252,7 +252,9 @@ public class JoinTripFragment extends SubscriptionFragment implements GoogleApiC
 
                 Fragment fragment = new JoinTripResultsFragment();
                 fragment.setArguments(extras);
-                ((MaterialNavigationDrawer) getActivity()).setFragmentChild(
+                ((MaterialNavigationDrawer) getActivity()).getCurrentSection().setTarget(new JoinTripResultsFragment());
+                ((MaterialNavigationDrawer) getActivity()).getCurrentSection().setTitle(getString(R.string.menu_my_trip));
+                ((MaterialNavigationDrawer) getActivity()).setFragment(
                         fragment,
                         getString(R.string.join_trip));
             }

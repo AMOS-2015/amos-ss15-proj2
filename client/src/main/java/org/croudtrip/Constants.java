@@ -7,6 +7,7 @@ public class Constants {
     public final static String SHARED_PREF_FILE_PREFERENCES = "org.croudtrip.preferences";
 
     public final static String SHARED_PREF_KEY_WAITING_TIME = "waitingTime";
+    public final static String SHARED_PREF_KEY_SEARCHING = "searching";
     public final static String SHARED_PREF_KEY_DIVERSION = "maxDiversion";
     public final static String SHARED_PREF_KEY_PRICE = "price";
     public final static String SHARED_PREF_KEY_SKIP_ENABLE_GPS = "skipEnableGPS";

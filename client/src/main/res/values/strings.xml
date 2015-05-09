@@ -2,6 +2,7 @@
     <string name="app_name" translatable="false">CroudTrip</string>
 
     <string name="menu_join_trip">Join trip</string>
+    <string name="menu_my_trip">My trip</string>
     <string name="menu_offer_trip">Offer trip</string>
     <string name="menu_profile">My profile</string>
     <string name="menu_edit_profile">Edit profile</string>

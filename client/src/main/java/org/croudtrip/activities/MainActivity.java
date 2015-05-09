@@ -23,6 +23,7 @@ import org.croudtrip.api.account.User;
 import org.croudtrip.fragments.GcmTestFragment;
 import org.croudtrip.fragments.JoinTripFragment;
 import org.croudtrip.fragments.JoinTripRequestsFragment;
+import org.croudtrip.fragments.JoinTripResultsFragment;
 import org.croudtrip.fragments.NavigationFragment;
 import org.croudtrip.fragments.OfferTripFragment;
 import org.croudtrip.fragments.PickUpPassengerFragment;
@@ -60,11 +61,12 @@ public class MainActivity extends AbstractRoboDrawerActivity {
 
     @Override
     public void init(Bundle savedInstanceState) {
-
         this.disableLearningPattern();
         this.allowArrowAnimation();
         this.setBackPattern(MaterialNavigationDrawer.BACKPATTERN_BACK_TO_FIRST);
         this.setDrawerHeaderImage(R.drawable.background_drawer);
+
+        SharedPreferences prefs = getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
 
         User user = AccountManager.getLoggedInUser(getApplicationContext());
         String firstName = (user == null || user.getFirstName() == null) ? "" : user.getFirstName();
@@ -90,7 +92,14 @@ public class MainActivity extends AbstractRoboDrawerActivity {
                 });
 
         // create sections
-        this.addSection(newSection(getString(R.string.menu_join_trip), R.drawable.hitchhiker, new JoinTripFragment()));
+        //if (prefs.getBoolean(Constants.SHARED_PREF_KEY_SEARCHING, false)) {
+        if (true) {
+            //TODO: this solution works only if we get some kind of notification from the server if there are (no) results. There
+            //TODO: we have to set "loading" in the sp to false
+            this.addSection(newSection(getString(R.string.menu_my_trip), R.drawable.hitchhiker, new JoinTripResultsFragment()));
+        } else {
+            this.addSection(newSection(getString(R.string.menu_join_trip), R.drawable.hitchhiker, new JoinTripFragment()));
+        }
         this.addSection(newSection(getString(R.string.menu_offer_trip), R.drawable.ic_directions_car_white, new OfferTripFragment()));
         if(AccountManager.isUserLoggedIn(this)) {
             // only logged-in users can view their profile
