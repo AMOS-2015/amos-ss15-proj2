@@ -2,18 +2,22 @@ package org.croudtrip.rest;
 
 import com.google.common.base.Optional;
 
+import org.croudtrip.account.VehicleManager;
 import org.croudtrip.api.account.User;
 import org.croudtrip.api.account.Vehicle;
 import org.croudtrip.api.account.VehicleDescription;
-import org.croudtrip.account.VehicleManager;
+
+import java.util.List;
 
 import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
@@ -36,31 +40,49 @@ public class VehicleResource {
     }
 
 
-    @PUT
+    @POST
     @UnitOfWork
-    public Vehicle setVehicle(@Auth User owner, @Valid VehicleDescription vehicleDescription) {
-        return vehicleManager.setVehicle(owner, vehicleDescription);
+    public Vehicle addVehicle(@Auth User owner, @Valid VehicleDescription vehicleDescription) {
+        return vehicleManager.addVehicle(owner, vehicleDescription);
     }
 
 
     @GET
     @UnitOfWork
-    public Vehicle getVehicle(@Auth User owner) {
-        return assertHasVehicle(owner);
+    @Path("/{vehicleId}")
+    public Optional<Vehicle> getVehicle(@Auth User owner, @PathParam("vehicleId") long vehicleId) {
+        return vehicleManager.findVehicleById(vehicleId);
+    }
+
+
+    @GET
+    @UnitOfWork
+    public List<Vehicle> getVehicles(@Auth User owner) {
+        return vehicleManager.findAllVehicles(owner);
     }
 
 
     @DELETE
     @UnitOfWork
-    public void removeVehicle(@Auth User owner) {
-        vehicleManager.deleteVehicle(assertHasVehicle(owner));
+    @Path("/{vehicleId}")
+    public void removeVehicle(@Auth User owner, @PathParam("vehicleId") long vehicleId) {
+        vehicleManager.deleteVehicle(assertValidVehicleId(owner, vehicleId));
     }
 
 
-    private Vehicle assertHasVehicle(User owner) {
-        Optional<Vehicle> vehicle = vehicleManager.getVehicle(owner);
-        if (vehicle.isPresent()) return vehicle.get();
-        else throw RestUtils.createNotFoundException();
+    @PUT
+    @UnitOfWork
+    @Path("/{vehicleId}")
+    public Vehicle updateVehicle(@Auth User owner, @PathParam("vehicleId") long vehicleId, VehicleDescription description) {
+        return vehicleManager.updateVehicle(owner, assertValidVehicleId(owner, vehicleId), description);
+    }
+
+
+    private Vehicle assertValidVehicleId(User owner, long vehicleId) {
+        Optional<Vehicle> vehicle = vehicleManager.findVehicleById(vehicleId);
+        if (!vehicle.isPresent()) RestUtils.createNotFoundException();
+        if (vehicle.get().getOwner().getId() != owner.getId()) throw RestUtils.createUnauthorizedException();
+        return vehicle.get();
     }
 
 }

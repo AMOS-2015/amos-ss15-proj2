@@ -1,4 +1,4 @@
-package org.croudtrip.server;
+package org.croudtrip.api;
 
 import android.content.Context;
 

@@ -12,8 +12,8 @@ import android.widget.EditText;
 import android.widget.NumberPicker;
 import android.widget.Toast;
 
-import javax.inject.Inject;
 import com.larswerkman.holocolorpicker.ColorPicker;
+import com.larswerkman.holocolorpicker.SVBar;
 
 import org.croudtrip.R;
 import org.croudtrip.api.VehicleResource;
@@ -21,9 +21,13 @@ import org.croudtrip.api.account.Vehicle;
 import org.croudtrip.api.account.VehicleDescription;
 import org.croudtrip.utils.DefaultTransformer;
 
+import java.util.List;
+
+import javax.inject.Inject;
+
 import retrofit.RetrofitError;
 import retrofit.client.Response;
-import roboguice.fragment.provided.RoboFragment;
+import rx.Subscription;
 import rx.functions.Action1;
 import timber.log.Timber;
 
@@ -31,7 +35,7 @@ import timber.log.Timber;
  * This fragment allows the user to enter the vehicle information and uploads this information to the server
  * @author nazeehammari
  */
-public class VehicleInfoFragment extends RoboFragment {
+public class VehicleInfoFragment extends SubscriptionFragment {
 
     @Inject VehicleResource vehicleResource;
     private String newCarType, newCarPlate, newColor;
@@ -92,7 +96,7 @@ public class VehicleInfoFragment extends RoboFragment {
         carTypeEdit.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
-                if(!hasFocus){
+                if (!hasFocus) {
                     newCarType = carTypeEdit.getText().toString();
                 }
             }
@@ -111,7 +115,7 @@ public class VehicleInfoFragment extends RoboFragment {
         carPlateEdit.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
-                if(!hasFocus){
+                if (!hasFocus) {
                     newCarPlate = carPlateEdit.getText().toString();
                 }
             }
@@ -128,6 +132,8 @@ public class VehicleInfoFragment extends RoboFragment {
         Button set = (Button) colorDialog.findViewById(R.id.set);
         Button cancel = (Button) colorDialog.findViewById(R.id.cancel);
         final ColorPicker colorPicker = (ColorPicker) colorDialog.findViewById(R.id.color_picker);
+        SVBar saturationBar = (SVBar) colorDialog.findViewById(R.id.saturation_bar);
+        colorPicker.addSVBar(saturationBar);
         colorDialog.show();
 
         set.setOnClickListener(new View.OnClickListener() {
@@ -179,17 +185,20 @@ public class VehicleInfoFragment extends RoboFragment {
     }
 
     public void getVehicle() {
-             vehicleResource.getVehicle()
-                .compose(new DefaultTransformer<Vehicle>())
-                .subscribe(new Action1<Vehicle>() {
+        Subscription subscription = vehicleResource.getVehicles()
+                .compose(new DefaultTransformer<List<Vehicle>>())
+                .subscribe(new Action1<List<Vehicle>>() {
                     @Override
-                    public void call(Vehicle vehicle) {
-                        newCarPlate=vehicle.getLicensePlate();
-                        newColor=vehicle.getColor();
-                        newCarCapacity=vehicle.getCapacity();
-                        newCarType = vehicle.getType();
-                        //Set fields to values fetched from the server
-                        setFields();
+                    public void call(List<Vehicle> vehicles) {
+                        if (vehicles.size() > 0) {
+                            Vehicle vehicle = vehicles.get(0);
+                            newCarPlate = vehicle.getLicensePlate();
+                            newColor = vehicle.getColor();
+                            newCarCapacity = vehicle.getCapacity();
+                            newCarType = vehicle.getType();
+                            //Set fields to values fetched from the server
+                            setFields();
+                        }
                     }
                 }, new Action1<Throwable>() {
                     @Override
@@ -202,15 +211,18 @@ public class VehicleInfoFragment extends RoboFragment {
                         Timber.e("Couldn't get data" + throwable.getMessage());
                     }
                 });
+
+        subscriptions.add(subscription);
     }
 
     public void saveVehicle(VehicleDescription vehicleDescription) {
-        vehicleResource.setVehicle(vehicleDescription)
+        // TODO changed from "setVehicle" to "addVehicle"
+        Subscription subscription = vehicleResource.addVehicle(vehicleDescription)
                 .compose(new DefaultTransformer<Vehicle>())
                 .subscribe(new Action1<Vehicle>() {
                     @Override
                     public void call(Vehicle vehicle) {
-                            Toast.makeText(getActivity(), "Updated vehicle info", Toast.LENGTH_SHORT);
+                            Toast.makeText(getActivity(), "Updated vehicle info", Toast.LENGTH_SHORT).show();
                             Timber.v("Updated vehicle info");
                     }
                 }, new Action1<Throwable>() {
@@ -220,12 +232,13 @@ public class VehicleInfoFragment extends RoboFragment {
                         Timber.e("Update failed with error:\n" + throwable.getMessage());
                     }
                 });
+        subscriptions.add(subscription);
     }
 
     public void saveCarChanges() {
         VehicleDescription vehicleDescription = new VehicleDescription(newCarPlate, newColor, newCarType, newCarCapacity);
         if (carPlateEdit.getText() != null && carPlateEdit.length() > 0)
-        saveVehicle(vehicleDescription);
+            saveVehicle(vehicleDescription);
         else
             Toast.makeText(getActivity(), "Car Plate field is mandatory", Toast.LENGTH_SHORT).show();
     }
@@ -234,16 +247,16 @@ public class VehicleInfoFragment extends RoboFragment {
             carPlateEdit.setText(newCarPlate);
         else
         {
-            newCarPlate = "Unknown";
-            carPlateEdit.setText("Enter car plate info");
+            newCarPlate = ("e.g 123456");
+            carPlateEdit.setHint(R.string.car_plate_hint);
         }
 
         if (newCarType!=null)
             carTypeEdit.setText(newCarType);
         else
         {
-            carTypeEdit.setText("Enter car type");
-            newCarType="Unknown";
+            carTypeEdit.setHint(R.string.car_type_hint);
+            newCarType="e.g Porsche 911";
         }
 
         if (newColor != null)

@@ -6,6 +6,8 @@ import com.google.inject.Injector;
 
 import org.croudtrip.api.account.Vehicle;
 import org.croudtrip.api.gcm.GcmRegistration;
+import org.croudtrip.api.trips.JoinTripRequest;
+import org.croudtrip.api.trips.TripReservation;
 import org.croudtrip.auth.BasicAuthenticator;
 import org.croudtrip.auth.BasicCredentials;
 import org.croudtrip.api.account.User;
@@ -26,6 +28,7 @@ import org.croudtrip.rest.VehicleResource;
 import org.croudtrip.api.trips.TripOffer;
 import org.croudtrip.account.Avatar;
 import org.croudtrip.rest.ThrowableExceptionMapper;
+import org.croudtrip.trips.TripReservationGarbageCollector;
 
 import io.dropwizard.Application;
 import io.dropwizard.auth.AuthFactory;
@@ -61,6 +64,7 @@ public final class CroudTripApplication extends Application<CroudTripConfig> {
 				new GcmModule(configuration.getGoogleAPIKey()));
 
 
+		environment.lifecycle().manage(injector.getInstance(TripReservationGarbageCollector.class));
         environment.jersey().register(injector.getInstance(UsersResource.class));
 		environment.jersey().register(injector.getInstance(UsersHeadResource.class));
 		environment.jersey().register(injector.getInstance(AvatarsResource.class));
@@ -84,6 +88,8 @@ public final class CroudTripApplication extends Application<CroudTripConfig> {
 			BasicCredentials.class,
 			Avatar.class,
 			TripOffer.class,
+			TripReservation.class,
+			JoinTripRequest.class,
 			Vehicle.class,
 			LogEntry.class,
 			GcmRegistration.class) {

@@ -4,15 +4,25 @@ package org.croudtrip.trips;
 import com.google.common.base.Optional;
 
 import org.croudtrip.api.account.User;
-import org.croudtrip.api.trips.TripMatch;
-import org.croudtrip.api.trips.TripOffer;
-import org.croudtrip.api.trips.TripOfferDescription;
-import org.croudtrip.api.trips.TripRequestDescription;
-import org.croudtrip.db.TripOfferDAO;
-import org.croudtrip.directions.DirectionsManager;
 import org.croudtrip.api.directions.Route;
 import org.croudtrip.api.directions.RouteLocation;
+import org.croudtrip.api.gcm.GcmConstants;
+import org.croudtrip.api.trips.JoinTripRequest;
+import org.croudtrip.api.trips.JoinTripStatus;
+import org.croudtrip.api.trips.TripOffer;
+import org.croudtrip.api.trips.TripOfferDescription;
+import org.croudtrip.api.trips.TripQuery;
+import org.croudtrip.api.trips.TripQueryDescription;
+import org.croudtrip.api.trips.TripReservation;
+import org.croudtrip.db.JoinTripRequestDAO;
+import org.croudtrip.db.TripReservationDAO;
+import org.croudtrip.db.TripOfferDAO;
+import org.croudtrip.directions.DirectionsManager;
+import org.croudtrip.utils.Assert;
+import org.croudtrip.gcm.GcmManager;
+import org.croudtrip.utils.Pair;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -25,13 +35,25 @@ import javax.inject.Singleton;
 public class TripsManager {
 
 	private final TripOfferDAO tripOfferDAO;
+    private final TripReservationDAO tripReservationDAO;
+    private final JoinTripRequestDAO joinTripRequestDAO;
 	private final DirectionsManager directionsManager;
+    private final GcmManager gcmManager;
 
 
 	@Inject
-	TripsManager(TripOfferDAO tripOfferDAO, DirectionsManager directionsManager) {
+	TripsManager(
+            TripOfferDAO tripOfferDAO,
+            TripReservationDAO tripReservationDAO,
+            JoinTripRequestDAO joinTripRequestDAO,
+            DirectionsManager directionsManager,
+            GcmManager gcmManager) {
+
 		this.tripOfferDAO = tripOfferDAO;
+        this.tripReservationDAO = tripReservationDAO;
+        this.joinTripRequestDAO = joinTripRequestDAO;
 		this.directionsManager = directionsManager;
+        this.gcmManager = gcmManager;
 	}
 
 
@@ -44,8 +66,8 @@ public class TripsManager {
 	}
 
 
-	public List<TripOffer> findAllOffers() {
-		return tripOfferDAO.findAll();
+	public List<TripOffer> findOffersByDriver(User driver) {
+        return tripOfferDAO.findByDriverId(driver.getId());
 	}
 
 
@@ -59,99 +81,182 @@ public class TripsManager {
 	}
 
 
-	public List<TripMatch> findMatches(User passenger, TripRequestDescription requestDescription) throws Exception {
-		List<TripMatch> matches = new ArrayList<>();
+	public List<TripReservation> createReservations(User passenger, TripQueryDescription queryDescription) throws Exception {
 
-		List<TripOffer> offers = findAllOffers();
-		if (offers.size() == 0) return matches;
+        // compute passenger route
+        List<Route> possiblePassengerRoutes = directionsManager.getDirections(queryDescription.getStart(), queryDescription.getEnd());
+        if (possiblePassengerRoutes.isEmpty()) return new ArrayList<>();
+        TripQuery query = new TripQuery(possiblePassengerRoutes.get(0), queryDescription.getMaxWaitingTimeInSeconds(), passenger);
 
-        List<Route> diversionRoutes = new ArrayList<>();
-
-        for( TripOffer offer : offers ) {
-            Route route = offer.getRoute();
-            RouteLocation startLocation = route.getStart();
-            RouteLocation endLocation = route.getEnd();
-
-            List<RouteLocation> waypoints = new ArrayList<>();
-            waypoints.add( requestDescription.getStart() );
-            waypoints.add( requestDescription.getEnd() );
-
-            diversionRoutes = directionsManager.getDirections( startLocation, endLocation, waypoints );
-
-            if( diversionRoutes == null || diversionRoutes.size() == 0 )
-                return new ArrayList<>();
-
-            Route diversionRoute = diversionRoutes.get(0);
-            System.out.println("Additional meters: " + (diversionRoute.getDistanceInMeters() - route.getDistanceInMeters()));
-            System.out.println("Max Diversion: " + (offer.getMaxDiversionInMeters()));
-            if( diversionRoute.getDistanceInMeters() - route.getDistanceInMeters() < offer.getMaxDiversionInMeters() )
-            {
-                // TODO: What is the trip length from the point of view of our customers?
-                List<Route> passengerRoutes = directionsManager.getDirections( requestDescription.getStart(), requestDescription.getEnd() );
-                if(passengerRoutes == null || passengerRoutes.isEmpty())
-                    return new ArrayList<>();
-
-                Route passengerRoute = passengerRoutes.get(0);
-
-                long tripLength = (passengerRoute.getDistanceInMeters());
-                long tripDuration = passengerRoute.getDurationInSeconds();
-                int price = (int) (tripLength/100.0f * offer.getPricePerKmInCents());
-
-                TripMatch match = new TripMatch(
-                        0,
-                        diversionRoute, tripLength,
-                        tripDuration,
-                        price,
-                        offer.getPricePerKmInCents(),
-                        offer.getDriver(),
-                        passenger);
-
-                matches.add(match);
-            }
+        // analyse offers
+        List<TripOffer> potentialMatches = new ArrayList<>();
+        for (TripOffer offer : tripOfferDAO.findAll()) {
+            Optional<TripOffer> potentialMatch = analyzeOffer(offer, query);
+            if (potentialMatch.isPresent()) potentialMatches.add(potentialMatch.get());
         }
 
-        // if there is no or only one match, we can return immediately, since there is no price comparation necessary
-        if( matches.size() < 2 )
-            return matches;
+        // find and store reservations
+        List<TripReservation> reservations = findCheapestMatch(query, potentialMatches);
+        for (TripReservation reservation : reservations) tripReservationDAO.save(reservation);
+
+        return reservations;
+	}
 
 
-        // sort matches ascending based on the price
-        Collections.sort(matches, new Comparator<TripMatch>() {
+    public List<TripReservation> findAllReservations() {
+        return tripReservationDAO.findAll();
+    }
+
+
+    public Optional<TripReservation> findReservation(long reservationId) {
+        return tripReservationDAO.findById(reservationId);
+    }
+
+
+    public Optional<JoinTripRequest> joinTrip(TripReservation tripReservation) throws IOException {
+        // remove reservation (either it has now been accepted or is can be discarded)
+        tripReservationDAO.delete(tripReservation);
+
+        // find and check trip
+        Optional<TripOffer> offer = tripOfferDAO.findById(tripReservation.getOfferId());
+        if (!offer.isPresent()) return Optional.absent();
+        // TODO ensure that offer is actually still valid
+
+        // notify driver
+        JoinTripRequest joinTripRequest = new JoinTripRequest(
+                0,
+                tripReservation.getQuery(),
+                tripReservation.getTotalPriceInCents(),
+                tripReservation.getPricePerKmInCents(),
+                offer.get(),
+                JoinTripStatus.PASSENGER_ACCEPTED);
+
+        joinTripRequestDAO.save(joinTripRequest);
+
+        // send push notification to driver
+        gcmManager.sendGcmMessageToUser(offer.get().getDriver(), GcmConstants.GCM_MSG_JOIN_REQUEST,
+                new Pair<String, String>(GcmConstants.GCM_MSG_JOIN_REQUEST, "There is a new request to join your trip"),
+                new Pair<String, String>(GcmConstants.GCM_MSG_JOIN_REQUEST_ID, "" + joinTripRequest.getId()),
+                new Pair<String, String>(GcmConstants.GCM_MSG_JOIN_REQUEST_OFFER_ID, "" + offer.get().getId()));
+
+        return Optional.of(joinTripRequest);
+    }
+
+
+    public List<JoinTripRequest> findAllJoinRequests(TripOffer offer) {
+        return joinTripRequestDAO.findByOfferId(offer.getId());
+    }
+
+
+    public Optional<JoinTripRequest> findJoinRequest(long joinRequestId) {
+        return joinTripRequestDAO.findById(joinRequestId);
+    }
+
+
+    public JoinTripRequest updateJoinRequest(JoinTripRequest joinRequest, boolean passengerAccepted) throws IOException {
+        Assert.assertTrue(joinRequest.getStatus().equals(JoinTripStatus.PASSENGER_ACCEPTED), "cannot modify join request");
+
+        JoinTripStatus newStatus;
+        if (passengerAccepted) newStatus = JoinTripStatus.DRIVER_ACCEPTED;
+        else newStatus = JoinTripStatus.DRIVER_DECLINED;
+
+        System.out.println("Update join request manager");
+
+        JoinTripRequest updatedRequest = new JoinTripRequest(
+                joinRequest.getId(),
+                joinRequest.getQuery(),
+                joinRequest.getTotalPriceInCents(),
+                joinRequest.getPricePerKmInCents(),
+                joinRequest.getOffer(),
+                newStatus);
+        joinTripRequestDAO.update(updatedRequest);
+
+        System.out.println("Update join request db stored");
+
+        // notify the passenger about his trip status
+        if( passengerAccepted ) {
+            gcmManager.sendGcmMessageToUser(joinRequest.getQuery().getPassenger(), GcmConstants.GCM_MSG_REQUEST_ACCEPTED, "Your request was accepted");
+        }
+        else {
+            gcmManager.sendGcmMessageToUser(joinRequest.getQuery().getPassenger(), GcmConstants.GCM_MSG_REQUEST_DECLINED, "Your request was declined");
+        }
+
+        System.out.println("Update join request gcm sent");
+
+        return updatedRequest;
+    }
+
+
+    private Optional<TripOffer> analyzeOffer(TripOffer offer, TripQuery query) throws Exception {
+        // compute total driver route
+        List<RouteLocation> wayPoints = new ArrayList<>();
+        wayPoints.add(query.getPassengerRoute().getStart());
+        wayPoints.add(query.getPassengerRoute().getEnd());
+        List<Route> possibleDriverRoutes = directionsManager.getDirections(
+                offer.getDriverRoute().getStart(),
+                offer.getDriverRoute().getEnd(),
+                wayPoints);
+
+        if (possibleDriverRoutes == null || possibleDriverRoutes.isEmpty()) return Optional.absent();
+
+        // check is passenger route is within max diversion
+        Route driverRoute = possibleDriverRoutes.get(0);
+        if (driverRoute.getDistanceInMeters() - query.getPassengerRoute().getDistanceInMeters() < offer.getMaxDiversionInMeters()) {
+            return Optional.of(offer);
+        } else {
+            return Optional.absent();
+        }
+    }
+
+
+    private List<TripReservation> findCheapestMatch(TripQuery query, List<TripOffer> potentialMatches) {
+        if (potentialMatches.isEmpty()) return new ArrayList<>();
+
+        Collections.sort(potentialMatches, new Comparator<TripOffer>() {
             @Override
-            public int compare(TripMatch m1, TripMatch m2) {
-                if ( m1.getPricePerKilometerInCents() == m2.getPricePerKilometerInCents() )
-                    return 0;
-
-                return (m1.getPricePerKilometerInCents() < m2.getPricePerKilometerInCents()) ? -1 : 1;
+            public int compare(TripOffer offer1, TripOffer offer2) {
+                return Integer.valueOf(offer1.getPricePerKmInCents()).compareTo(offer2.getPricePerKmInCents());
             }
         });
 
-        int samePrice = 1;
-        int lowestPrice = matches.get(0).getPricePerKilometerInCents();
-        while( samePrice < matches.size() && matches.get(samePrice).getPricePerKilometerInCents() == lowestPrice ) {
-            System.out.println("Match: " + matches.get(samePrice).getEstimatedPriceInCents() + " "+  matches.get(samePrice).getPricePerKilometerInCents());
-            samePrice++;
+        List<TripOffer> matches = new ArrayList<>();
+
+        // find prices
+        int lowestPricePerKmInCents  = -1, secondLowestPricePerKmInCents = -1;
+        for (TripOffer potentialMatch : potentialMatches) {
+            if (potentialMatch.getPricePerKmInCents() != lowestPricePerKmInCents) {
+                // all cheapest trips are matches
+                lowestPricePerKmInCents = potentialMatch.getPricePerKmInCents();
+                matches.add(potentialMatch);
+
+            } else if (potentialMatch.getPricePerKmInCents() != secondLowestPricePerKmInCents) {
+                // second cheapest determines price
+                secondLowestPricePerKmInCents = potentialMatch.getPricePerKmInCents();
+                break;
+            }
         }
 
-        // if all matches have the same price no adaption is necessary
-        if( samePrice == matches.size() )
-            return matches;
+        // calculate final price
+        int pricePerKmInCents = lowestPricePerKmInCents;
+        if (secondLowestPricePerKmInCents != -1) pricePerKmInCents = secondLowestPricePerKmInCents;
+        int totalPriceInCents = (int) (pricePerKmInCents * query.getPassengerRoute().getDistanceInMeters() / 1000);
 
-        int secondLowestPrice = matches.get(samePrice).getPricePerKilometerInCents();
-        System.out.println("Second lowest price: " + secondLowestPrice);
-        while( matches.size() > samePrice )
-            matches.remove( matches.size() - 1);
+        // create price reservations
+        List<TripReservation> reservations = new ArrayList<>();
+        for (TripOffer match : matches) {
+            reservations.add(new TripReservation(
+                    0,
+                    query,
+                    totalPriceInCents,
+                    match.getPricePerKmInCents(),
+                    match.getId(),
+                    match.getDriver(),
+                    System.currentTimeMillis() / 1000));
 
-        // adjust price value for all possible matches
-        for( TripMatch m : matches ) {
-            m.setPricePerKilometerInCents( secondLowestPrice );
-            m.setEstimatedPriceInCents( (int)(m.getDiversionInMeters()/1000.0f * m.getPricePerKilometerInCents()) );
-
-            System.out.println("Match: " + m.getEstimatedPriceInCents() + " "+  m.getPricePerKilometerInCents());
         }
 
-		return matches;
-	}
+        return reservations;
+    }
 
 }
 

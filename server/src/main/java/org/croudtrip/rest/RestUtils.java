@@ -13,6 +13,11 @@ class RestUtils {
 
 
 	public static WebApplicationException createNotFoundException() {
+		return createNotFoundException("not found");
+	}
+
+
+	public static WebApplicationException createNotFoundException(String msg) {
 		return createJsonFormattedException("not found", 404);
 	}
 

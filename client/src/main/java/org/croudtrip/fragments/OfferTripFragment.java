@@ -60,6 +60,7 @@ import it.neokree.materialnavigationdrawer.MaterialNavigationDrawer;
 import pl.charmas.android.reactivelocation.ReactiveLocationProvider;
 import roboguice.fragment.provided.RoboFragment;
 import roboguice.inject.InjectView;
+import rx.Subscription;
 import rx.functions.Action1;
 import rx.schedulers.Schedulers;
 import timber.log.Timber;
@@ -67,7 +68,7 @@ import timber.log.Timber;
 /**
  * Created by alex on 22.04.15.
  */
-public class OfferTripFragment extends RoboFragment implements GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks {
+public class OfferTripFragment extends SubscriptionFragment implements GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks {
 
     private static OfferTripFragment instance;
 
@@ -165,7 +166,7 @@ public class OfferTripFragment extends RoboFragment implements GoogleApiClient.O
 
         // insert the last known location as soon as it is known
         ReactiveLocationProvider locationProvider = new ReactiveLocationProvider(getActivity());
-        locationProvider.getLastKnownLocation().observeOn(Schedulers.io())
+        Subscription subscription =  locationProvider.getLastKnownLocation().observeOn(Schedulers.io())
                 .subscribe(new Action1<Location>() {
                     @Override
                     public void call(Location location) {
@@ -173,6 +174,8 @@ public class OfferTripFragment extends RoboFragment implements GoogleApiClient.O
                         adapter.setBounds(bounds);
                     }
                 });
+
+        subscriptions.add(subscription);
 
         // choose a destination by using the place picker
         btn_destination.setOnClickListener(new View.OnClickListener() {

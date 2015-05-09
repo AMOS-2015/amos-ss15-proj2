@@ -28,6 +28,10 @@ import javax.persistence.Table;
 		@NamedQuery(
 				name = TripOffer.QUERY_NAME_FIND_ALL,
 				query = "SELECT t FROM " + TripOffer.ENTITY_NAME + " t"
+		),
+		@NamedQuery(
+				name = TripOffer.QUERY_FIND_BY_DRIVER_ID,
+				query = "SELECT t FROM " + TripOffer.ENTITY_NAME + " t WHERE t.driver.id = :" + TripOffer.QUERY_PARAM_DRIVER_ID
 		)
 })
 public class TripOffer {
@@ -35,7 +39,9 @@ public class TripOffer {
 	public static final String
 			ENTITY_NAME =  "TripOffer",
 			COLUMN_ID = "trip_offer_id",
-			QUERY_NAME_FIND_ALL = "org.croudtrip.api.trips.TripOffer.findAll";
+			QUERY_NAME_FIND_ALL = "org.croudtrip.api.trips.TripOffer.findAll",
+			QUERY_FIND_BY_DRIVER_ID = "org.croudtrip.api.trips.TripOffer.findByDriverId",
+			QUERY_PARAM_DRIVER_ID = "driver_id";
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -43,7 +49,7 @@ public class TripOffer {
 	private long id;
 
 	@Embedded
-	private Route route;
+	private Route driverRoute;
 
 	@Column(name = "maxDiversionInMeters", nullable = false)
 	private long maxDiversionInMeters;
@@ -61,13 +67,13 @@ public class TripOffer {
 	@JsonCreator
 	public TripOffer(
 			@JsonProperty("id") long id,
-			@JsonProperty("route") Route route,
+			@JsonProperty("driverRoute") Route driverRoute,
 			@JsonProperty("maxDiversionsInMeters") long maxDiversionInMeters,
 			@JsonProperty("pricePerKmInCents") int pricePerKmInCents,
 			@JsonProperty("driver") User driver) {
 
 		this.id = id;
-		this.route = route;
+		this.driverRoute = driverRoute;
 		this.maxDiversionInMeters = maxDiversionInMeters;
 		this.pricePerKmInCents = pricePerKmInCents;
 		this.driver = driver;
@@ -79,8 +85,8 @@ public class TripOffer {
 	}
 
 
-	public Route getRoute() {
-		return route;
+	public Route getDriverRoute() {
+		return driverRoute;
 	}
 
 
@@ -104,7 +110,7 @@ public class TripOffer {
 		if (other == null || !(other instanceof TripOffer)) return false;
 		TripOffer offer = (TripOffer) other;
 		return Objects.equal(id, offer.id)
-				&& Objects.equal(route, offer.route)
+				&& Objects.equal(driverRoute, offer.driverRoute)
 				&& Objects.equal(maxDiversionInMeters, offer.maxDiversionInMeters)
 				&& Objects.equal(pricePerKmInCents, offer.pricePerKmInCents)
 				&& Objects.equal(driver, offer.driver);
@@ -113,7 +119,7 @@ public class TripOffer {
 
 	@Override
 	public int hashCode() {
-		return Objects.hashCode(id, route, maxDiversionInMeters, pricePerKmInCents, driver);
+		return Objects.hashCode(id, driverRoute, maxDiversionInMeters, pricePerKmInCents, driver);
 	}
 
 }

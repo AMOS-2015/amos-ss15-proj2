@@ -31,12 +31,13 @@ import java.util.List;
 import javax.inject.Inject;
 
 import roboguice.fragment.provided.RoboFragment;
+import rx.Subscription;
 import rx.functions.Action1;
 
 /**
  * A simple {@link Fragment} subclass.
  */
-public class NavigationFragment extends RoboFragment {
+public class NavigationFragment extends SubscriptionFragment {
 
     @Inject
     DirectionsResource directionsResource;
@@ -104,7 +105,7 @@ public class NavigationFragment extends RoboFragment {
                 final LinearLayout layout = (LinearLayout) getActivity().findViewById(R.id.progressLayout);
 
                 layout.setVisibility( View.VISIBLE );
-                directionsResource.getDirections(locFrom.getLat(), locFrom.getLng(), locTo.getLat(), locTo.getLng())
+                Subscription subscription = directionsResource.getDirections(locFrom.getLat(), locFrom.getLng(), locTo.getLat(), locTo.getLng())
                         .compose(new DefaultTransformer<List<Route>>())
                         .subscribe(new Action1<List<Route>>() {
                             @Override
@@ -127,6 +128,8 @@ public class NavigationFragment extends RoboFragment {
                                 layout.setVisibility(View.GONE);
                             }
                         });
+
+                subscriptions.add(subscription);
             }
 
         }

@@ -22,6 +22,7 @@ import org.croudtrip.account.AccountManager;
 import org.croudtrip.api.account.User;
 import org.croudtrip.fragments.GcmTestFragment;
 import org.croudtrip.fragments.JoinTripFragment;
+import org.croudtrip.fragments.JoinTripRequestsFragment;
 import org.croudtrip.fragments.NavigationFragment;
 import org.croudtrip.fragments.OfferTripFragment;
 import org.croudtrip.fragments.PickUpPassengerFragment;
@@ -106,6 +107,9 @@ public class MainActivity extends AbstractRoboDrawerActivity {
         args.putInt(PickUpPassengerFragment.KEY_PASSENGER_PRICE, 200);
         fragment.setArguments(args);
         this.addSection(newSection("Pick up passenger", R.drawable.distance, fragment));
+
+        //TODO: remove from drawer
+        this.addSection(newSection("Join Trip - Requests", R.drawable.distance, new JoinTripRequestsFragment()));
 
         ((MaterialSection) getSectionList().get(0)).setNotifications(3);
 

@@ -9,7 +9,7 @@ import android.widget.TextView;
 
 import org.croudtrip.R;
 import org.croudtrip.api.account.User;
-import org.croudtrip.api.trips.TripMatch;
+import org.croudtrip.api.trips.TripReservation;
 
 import java.util.List;
 
@@ -17,13 +17,13 @@ import java.util.List;
  * This Adapter is used in the JoinTripResultsActivity to display the results for a join request.
  * Created by Vanessa Lange on 01.05.15.
  */
-public class JoinTripResultsAdapter extends ArrayAdapter<TripMatch>{
+public class JoinTripResultsAdapter extends ArrayAdapter<TripReservation>{
 
     public JoinTripResultsAdapter(Context context, int textViewResourceId) {
         super(context, textViewResourceId);
     }
 
-    public JoinTripResultsAdapter(Context context, int resource, List<TripMatch> items) {
+    public JoinTripResultsAdapter(Context context, int resource, List<TripReservation> items) {
         super(context, resource, items);
     }
 
@@ -39,8 +39,8 @@ public class JoinTripResultsAdapter extends ArrayAdapter<TripMatch>{
             view = inflater.inflate(R.layout.listview_row_join_trip_results, null);
         }
 
-        TripMatch match = getItem(position);
-        if(match == null){
+        TripReservation reservation = getItem(position);
+        if(reservation == null){
             return view;
         }
 
@@ -48,8 +48,8 @@ public class JoinTripResultsAdapter extends ArrayAdapter<TripMatch>{
         // Insert price information
         TextView priceTextView = (TextView) view.findViewById(R.id.tv_join_trip_results_price);
 
-        String price = match.getEstimatedPriceInCents() / 100 + ","; // euros
-        int cents = match.getEstimatedPriceInCents() % 100;
+        String price = reservation.getTotalPriceInCents() / 100 + ","; // euros
+        int cents = reservation.getTotalPriceInCents()  % 100;
 
         if(cents == 0){
             price = price + "00";
@@ -64,7 +64,7 @@ public class JoinTripResultsAdapter extends ArrayAdapter<TripMatch>{
 
         // Insert driver information
         TextView driverNameTextView = (TextView) view.findViewById(R.id.tv_join_trip_results_driver_name);
-        User driver = match.getDriver();
+        User driver = reservation.getDriver();
 
         String driverName = null;
         if (driver.getFirstName() != null && driver.getLastName() != null) {
@@ -80,7 +80,7 @@ public class JoinTripResultsAdapter extends ArrayAdapter<TripMatch>{
 
         // Insert distance information
         TextView distanceTextView = (TextView) view.findViewById(R.id.tv_join_trip_results_distance);
-        long distance = match.getDiversionInMeters();
+        long distance = reservation.getQuery().getPassengerRoute().getDistanceInMeters();
 
         if(distance < 1000){
             distanceTextView.setText(getContext().getString(
@@ -95,7 +95,7 @@ public class JoinTripResultsAdapter extends ArrayAdapter<TripMatch>{
 
         // Insert time information
         TextView timeTextView = (TextView) view.findViewById(R.id.tv_join_trip_results_time);
-        long timeInMinutes = match.getDiversionInSeconds() / 60;
+        long timeInMinutes = reservation.getQuery().getPassengerRoute().getDurationInSeconds() / 60;
 
         if(timeInMinutes < 60){
             timeTextView.setText(getContext().getString(R.string.join_trip_results_duration_min,

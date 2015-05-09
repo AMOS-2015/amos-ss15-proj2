@@ -9,39 +9,42 @@ import org.croudtrip.api.directions.RouteLocation;
 import javax.validation.constraints.NotNull;
 
 /**
- * A description of a trip request created by potential passengers.
+ * A (price) reservation for one matched trip.
  */
-public class TripRequestDescription {
+public class TripQueryDescription {
 
 	@NotNull private final RouteLocation start;
 	@NotNull private final RouteLocation end;
+    private final long maxWaitingTimeInSeconds;
 
 	@JsonCreator
-	public TripRequestDescription(
+	public TripQueryDescription(
 			@JsonProperty("start") RouteLocation start,
-			@JsonProperty("end") RouteLocation end) {
+			@JsonProperty("end") RouteLocation end,
+            @JsonProperty("maxWaitingTimeInSeconds") long maxWaitingTimeInSeconds) {
 
 		this.start = start;
 		this.end = end;
+        this.maxWaitingTimeInSeconds = maxWaitingTimeInSeconds;
 	}
-
 
 	public RouteLocation getStart() {
 		return start;
 	}
 
-
 	public RouteLocation getEnd() {
 		return end;
 	}
 
+    public long getMaxWaitingTimeInSeconds() { return maxWaitingTimeInSeconds; }
 
 	@Override
 	public boolean equals(Object other) {
-		if (other == null || !(other instanceof TripRequestDescription)) return false;
-		TripRequestDescription request = (TripRequestDescription) other;
+		if (other == null || !(other instanceof TripQueryDescription)) return false;
+		TripQueryDescription request = (TripQueryDescription) other;
 		return Objects.equal(start, request.start)
-				&& Objects.equal(end, request.end);
+				&& Objects.equal(end, request.end)
+                && Objects.equal(maxWaitingTimeInSeconds, request.maxWaitingTimeInSeconds);
 	}
 
 

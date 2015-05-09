@@ -19,7 +19,7 @@ import roboguice.inject.InjectView;
  * price is displayed.
  * Created by Vanessa Lange on 02.05.15.
  */
-public class PickUpPassengerFragment extends RoboFragment {
+public class PickUpPassengerFragment extends SubscriptionFragment {
 
     //************************** Variables ***************************//
 

@@ -11,9 +11,9 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
-import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
@@ -53,7 +53,7 @@ public class Vehicle {
 	@Column(name = "capacity", nullable = true)
 	private int capacity;
 
-	@OneToOne
+	@ManyToOne
 	@JoinColumn(name = User.COLUMN_ID, nullable = false)
 	@NotNull
 	private User owner;
