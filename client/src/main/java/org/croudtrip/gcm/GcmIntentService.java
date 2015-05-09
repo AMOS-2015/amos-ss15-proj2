@@ -6,13 +6,16 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.content.LocalBroadcastManager;
 import android.widget.Toast;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 
+import org.croudtrip.Constants;
 import org.croudtrip.R;
 import org.croudtrip.account.AccountManager;
 import org.croudtrip.activities.MainActivity;
@@ -20,8 +23,10 @@ import org.croudtrip.api.TripsResource;
 import org.croudtrip.api.gcm.GcmConstants;
 import org.croudtrip.api.trips.JoinTripRequest;
 import org.croudtrip.api.trips.JoinTripRequestUpdate;
+import org.croudtrip.fragments.JoinTripFragment;
 import org.croudtrip.utils.LifecycleHandler;
 
+import it.neokree.materialnavigationdrawer.MaterialNavigationDrawer;
 import retrofit.RequestInterceptor;
 import retrofit.RestAdapter;
 import rx.android.schedulers.AndroidSchedulers;
@@ -69,6 +74,16 @@ public class GcmIntentService extends IntentService {
         Timber.d("Server says " + dummyMessage);
 
         GcmBroadcastReceiver.completeWakefulIntent(intent);
+    }
+
+    private void handleDriverAccepted(Intent intent) {
+        SharedPreferences prefs = getApplicationContext().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putBoolean(Constants.SHARED_PREF_KEY_SEARCHING, false);
+        editor.putBoolean(Constants.SHARED_PREF_KEY_ACCEPTED, true);
+        editor.apply();
+
+        LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(Constants.EVENT_DRIVER_ACCEPTED));
     }
 
     private void handleJoinRequest(Intent intent) {

@@ -1,14 +1,17 @@
 package org.croudtrip.activities;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -57,6 +60,11 @@ public class MainActivity extends AbstractRoboDrawerActivity {
 
     @Inject private LocationUpdater locationUpdater;
     private Subscription locationUpdateSubscription;
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        LocalBroadcastManager.getInstance(this).registerReceiver(driverAcceptedReceiver,new IntentFilter(Constants.EVENT_DRIVER_ACCEPTED));
+    }
 
 
     @Override
@@ -168,6 +176,21 @@ public class MainActivity extends AbstractRoboDrawerActivity {
         super.onStop();
         locationUpdateSubscription.unsubscribe();
     }
+
+    @Override
+    protected void onDestroy() {
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(driverAcceptedReceiver);
+        super.onDestroy();
+    }
+
+    private BroadcastReceiver driverAcceptedReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            getSectionList().get(0).setTarget(new JoinTripResultsFragment());
+            getSectionList().get(0).setTitle(getString(R.string.menu_my_trip));
+            setFragment(new JoinTripResultsFragment(), getString(R.string.menu_my_trip));
+        }
+    };
 
     private boolean GPSavailable() {
         LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
