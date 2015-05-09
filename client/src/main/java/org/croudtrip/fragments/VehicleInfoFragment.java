@@ -12,7 +12,6 @@ import android.widget.EditText;
 import android.widget.NumberPicker;
 import android.widget.Toast;
 
-import javax.inject.Inject;
 import com.larswerkman.holocolorpicker.ColorPicker;
 import com.larswerkman.holocolorpicker.SVBar;
 
@@ -22,9 +21,12 @@ import org.croudtrip.api.account.Vehicle;
 import org.croudtrip.api.account.VehicleDescription;
 import org.croudtrip.utils.DefaultTransformer;
 
+import java.util.List;
+
+import javax.inject.Inject;
+
 import retrofit.RetrofitError;
 import retrofit.client.Response;
-import roboguice.fragment.provided.RoboFragment;
 import rx.Subscription;
 import rx.functions.Action1;
 import timber.log.Timber;
@@ -94,7 +96,7 @@ public class VehicleInfoFragment extends SubscriptionFragment {
         carTypeEdit.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
-                if(!hasFocus){
+                if (!hasFocus) {
                     newCarType = carTypeEdit.getText().toString();
                 }
             }
@@ -113,7 +115,7 @@ public class VehicleInfoFragment extends SubscriptionFragment {
         carPlateEdit.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
-                if(!hasFocus){
+                if (!hasFocus) {
                     newCarPlate = carPlateEdit.getText().toString();
                 }
             }
@@ -183,17 +185,20 @@ public class VehicleInfoFragment extends SubscriptionFragment {
     }
 
     public void getVehicle() {
-             Subscription subscription = vehicleResource.getVehicle()
-                .compose(new DefaultTransformer<Vehicle>())
-                .subscribe(new Action1<Vehicle>() {
+        Subscription subscription = vehicleResource.getVehicles()
+                .compose(new DefaultTransformer<List<Vehicle>>())
+                .subscribe(new Action1<List<Vehicle>>() {
                     @Override
-                    public void call(Vehicle vehicle) {
-                        newCarPlate=vehicle.getLicensePlate();
-                        newColor=vehicle.getColor();
-                        newCarCapacity=vehicle.getCapacity();
-                        newCarType = vehicle.getType();
-                        //Set fields to values fetched from the server
-                        setFields();
+                    public void call(List<Vehicle> vehicles) {
+                        if (vehicles.size() > 0) {
+                            Vehicle vehicle = vehicles.get(0);
+                            newCarPlate = vehicle.getLicensePlate();
+                            newColor = vehicle.getColor();
+                            newCarCapacity = vehicle.getCapacity();
+                            newCarType = vehicle.getType();
+                            //Set fields to values fetched from the server
+                            setFields();
+                        }
                     }
                 }, new Action1<Throwable>() {
                     @Override
@@ -211,7 +216,8 @@ public class VehicleInfoFragment extends SubscriptionFragment {
     }
 
     public void saveVehicle(VehicleDescription vehicleDescription) {
-        Subscription subscription = vehicleResource.setVehicle(vehicleDescription)
+        // TODO changed from "setVehicle" to "addVehicle"
+        Subscription subscription = vehicleResource.addVehicle(vehicleDescription)
                 .compose(new DefaultTransformer<Vehicle>())
                 .subscribe(new Action1<Vehicle>() {
                     @Override
