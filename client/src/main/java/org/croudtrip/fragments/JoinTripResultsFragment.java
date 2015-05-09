@@ -58,6 +58,7 @@ public class JoinTripResultsFragment extends SubscriptionFragment {
 
     private RecyclerView.LayoutManager layoutManager;
     private JoinTripResultsAdapter adapter;
+    
 
 
     //******************** Methods ************************//
