@@ -66,8 +66,8 @@ public class TripsManager {
 	}
 
 
-	public List<TripOffer> findAllOffers() {
-		return tripOfferDAO.findAll();
+	public List<TripOffer> findOffersByDriver(User driver) {
+        return tripOfferDAO.findByDriverId(driver.getId());
 	}
 
 
@@ -90,7 +90,7 @@ public class TripsManager {
 
         // analyse offers
         List<TripOffer> potentialMatches = new ArrayList<>();
-        for (TripOffer offer : findAllOffers()) {
+        for (TripOffer offer : tripOfferDAO.findAll()) {
             Optional<TripOffer> potentialMatch = analyzeOffer(offer, query);
             if (potentialMatch.isPresent()) potentialMatches.add(potentialMatch.get());
         }
@@ -134,10 +134,10 @@ public class TripsManager {
         joinTripRequestDAO.save(joinTripRequest);
 
         // send push notification to driver
-        gcmManager.sendGcmMessageToUser( offer.get().getDriver(), GcmConstants.GCM_MSG_JOIN_REQUEST,
-                                                                  new Pair<String, String>(GcmConstants.GCM_MSG_JOIN_REQUEST, "There is a new request to join your trip"),
-                                                                  new Pair<String, String>(GcmConstants.GCM_MSG_JOIN_REQUEST_ID, ""+joinTripRequest.getId()),
-                                                                  new Pair<String, String>(GcmConstants.GCM_MSG_JOIN_REQUEST_OFFER_ID, ""+offer.get().getId()) );
+        gcmManager.sendGcmMessageToUser(offer.get().getDriver(), GcmConstants.GCM_MSG_JOIN_REQUEST,
+                new Pair<String, String>(GcmConstants.GCM_MSG_JOIN_REQUEST, "There is a new request to join your trip"),
+                new Pair<String, String>(GcmConstants.GCM_MSG_JOIN_REQUEST_ID, "" + joinTripRequest.getId()),
+                new Pair<String, String>(GcmConstants.GCM_MSG_JOIN_REQUEST_OFFER_ID, "" + offer.get().getId()));
 
         return Optional.of(joinTripRequest);
     }

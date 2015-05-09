@@ -70,8 +70,8 @@ public class TripsResource {
     @GET
     @Path(PATH_OFFERS)
     @UnitOfWork
-    public List<TripOffer> getAllOffers() {
-        return tripsManager.findAllOffers();
+    public List<TripOffer> getOffers(@Auth User driver) {
+        return tripsManager.findOffersByDriver(driver);
     }
 
 

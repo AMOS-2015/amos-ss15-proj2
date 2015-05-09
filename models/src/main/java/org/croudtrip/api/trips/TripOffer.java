@@ -28,6 +28,10 @@ import javax.persistence.Table;
 		@NamedQuery(
 				name = TripOffer.QUERY_NAME_FIND_ALL,
 				query = "SELECT t FROM " + TripOffer.ENTITY_NAME + " t"
+		),
+		@NamedQuery(
+				name = TripOffer.QUERY_FIND_BY_DRIVER_ID,
+				query = "SELECT t FROM " + TripOffer.ENTITY_NAME + " t WHERE t.driver.id = :" + TripOffer.QUERY_PARAM_DRIVER_ID
 		)
 })
 public class TripOffer {
@@ -35,7 +39,9 @@ public class TripOffer {
 	public static final String
 			ENTITY_NAME =  "TripOffer",
 			COLUMN_ID = "trip_offer_id",
-			QUERY_NAME_FIND_ALL = "org.croudtrip.api.trips.TripOffer.findAll";
+			QUERY_NAME_FIND_ALL = "org.croudtrip.api.trips.TripOffer.findAll",
+			QUERY_FIND_BY_DRIVER_ID = "org.croudtrip.api.trips.TripOffer.findByDriverId",
+			QUERY_PARAM_DRIVER_ID = "driver_id";
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
