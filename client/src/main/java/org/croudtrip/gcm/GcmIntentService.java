@@ -122,6 +122,7 @@ public class GcmIntentService extends IntentService {
 
 
         // TODO: This is just for testing. Will be done cleanly and combined with the UI and android notifications.
+        // TODO: Vanessa you can have a look at this piece of code to get a feeling how to accept or decline requests
         // always accepting for testing
         JoinTripRequestUpdate requestUpdate = new JoinTripRequestUpdate( true );
         tripsResource.updateJoinRequest( offerId, joinTripRequestId, requestUpdate ).observeOn(Schedulers.io()).subscribeOn(Schedulers.newThread()).subscribe(new Action1<JoinTripRequest>() {
