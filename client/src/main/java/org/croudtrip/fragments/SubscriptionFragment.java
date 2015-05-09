@@ -1,15 +1,6 @@
 package org.croudtrip.fragments;
 
 
-import android.os.Bundle;
-import android.app.Fragment;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.TextView;
-
-import org.croudtrip.R;
-
 import roboguice.fragment.provided.RoboFragment;
 import rx.subscriptions.CompositeSubscription;
 import timber.log.Timber;
@@ -20,7 +11,8 @@ import timber.log.Timber;
  * to unsubscribe all the subscription if the lifecycle of the fragment ends.
  */
 public class SubscriptionFragment extends RoboFragment {
-    protected final CompositeSubscription subscriptions = new CompositeSubscription();
+    protected CompositeSubscription subscriptions = new CompositeSubscription();
+
 
     @Override
     public void onPause() {
@@ -30,6 +22,7 @@ public class SubscriptionFragment extends RoboFragment {
 
         subscriptions.unsubscribe();
         subscriptions.clear();
+        subscriptions = new CompositeSubscription();
     }
 
 

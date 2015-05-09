@@ -11,19 +11,24 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import org.croudtrip.R;
+import org.croudtrip.account.AccountManager;
 import org.croudtrip.api.TripsResource;
 import org.croudtrip.api.trips.JoinTripRequest;
+import org.croudtrip.api.trips.TripOffer;
 import org.croudtrip.trip.JoinTripRequestsAdapter;
 import org.croudtrip.utils.DefaultTransformer;
 
 import java.util.List;
 
-import javax.inject.Inject;
-
 import it.neokree.materialnavigationdrawer.MaterialNavigationDrawer;
+import retrofit.RequestInterceptor;
+import retrofit.RestAdapter;
 import roboguice.inject.InjectView;
+import rx.Observable;
 import rx.Subscription;
+import rx.functions.Action0;
 import rx.functions.Action1;
+import rx.functions.Func1;
 import timber.log.Timber;
 
 /**
@@ -38,8 +43,6 @@ public class JoinTripRequestsFragment extends SubscriptionFragment{
     @InjectView(R.id.rv_join_trip_requests)         private RecyclerView recyclerView;
     @InjectView(R.id.pb_join_trip_requests)         private ProgressBar progressBar;
     @InjectView(R.id.tv_join_trip_requests_error)   private TextView error;
-
-    @Inject private TripsResource tripsResource;
 
     private RecyclerView.LayoutManager layoutManager;
     private JoinTripRequestsAdapter adapter;
@@ -70,42 +73,79 @@ public class JoinTripRequestsFragment extends SubscriptionFragment{
         adapter = new JoinTripRequestsAdapter(null);
         recyclerView.setAdapter(adapter);
 
+        final TripsResource tripsResource = new RestAdapter.Builder()
+                .setEndpoint(getString(R.string.server_address))
+                .setRequestInterceptor(new RequestInterceptor() {
+                    @Override
+                    public void intercept(RequestFacade request) {
+                        AccountManager.addAuthorizationHeader(getActivity(), request);
+                    }
+                })
+                .build()
+                .create(TripsResource.class);
+
+        Timber.e("CALLED!");
         // Ask the server for join-trip-requests
-        Subscription subscription = tripsResource.getJoinRequests(0 /* TODO: Offer ID */)
-                .compose(new DefaultTransformer<List<JoinTripRequest>>()).subscribe(
+        Subscription subscription = tripsResource.getOffers()
+                .compose(new DefaultTransformer<List<TripOffer>>())
+                .flatMap(new Func1<List<TripOffer>, Observable<TripOffer>>() {
+                    @Override
+                    public Observable<TripOffer> call(List<TripOffer> tripOffers) {
+                        Timber.i("Received List of TripOffers: " + tripOffers.size());
+                        return Observable.from(tripOffers);
+                    }
+                })
+                .flatMap(new Func1<TripOffer, Observable<List<JoinTripRequest>>>() {
+                    @Override
+                    public Observable<List<JoinTripRequest>> call(TripOffer tripOffer) {
+                        Timber.i("Received TripOffer: " + tripOffer.getId());
+                        return tripsResource.getJoinRequests(tripOffer.getId());
+                    }
+                })
+                .toList()
+                .compose(new DefaultTransformer<List<List<JoinTripRequest>>>())
+                .subscribe(new Action1<List<List<JoinTripRequest>>>() {
+                    // SUCCESS
 
-                        new Action1<List<JoinTripRequest>>() {
+                    @Override
+                    public void call(List<List<JoinTripRequest>> joinTripRequests) {
 
-                            @Override
-                            public void call(List<JoinTripRequest> joinTripRequests) {
-                                // UI:
-                                progressBar.setVisibility(View.GONE);
+                        int numRequests = adapter.getItemCount();
 
-                                // Fill the list with results
-                                int numRequests = joinTripRequests.size();
-                                adapter.addElements(joinTripRequests);
-
-                                // Show a summary caption
-                                caption.setText(getResources().getQuantityString(R.plurals.join_trip_requests,
-                                        numRequests, numRequests));
-                            }
-
-                        }, new Action1<Throwable>() {
-
-                            @Override
-                            public void call(Throwable throwable) {
-                                // ERROR
-                                // UI:
-                                progressBar.setVisibility(View.GONE);
-                                error.setVisibility(View.VISIBLE);
-
-                                caption.setText(getResources().getQuantityString(R.plurals.join_trip_requests,
-                                        0, 0));
-
-                                Timber.e("Receiving JoinTripRequests failed:\n" + throwable.getMessage());
-                            }
+                        for(List<JoinTripRequest> requests : joinTripRequests){
+                            // Fill the list with results
+                            numRequests += requests.size();
+                            adapter.addElements(requests);
                         }
-                );
+
+                        // Show a summary caption
+                        caption.setText(getResources().getQuantityString(R.plurals.join_trip_requests,
+                                numRequests, numRequests));
+                    }
+
+                }, new Action1<Throwable>() {
+                    // ERROR
+
+                    @Override
+                    public void call(Throwable throwable) {
+
+                        error.setVisibility(View.VISIBLE);
+                        caption.setText(getResources().getQuantityString(R.plurals.join_trip_requests,
+                                0, 0));
+
+                        Timber.e("Receiving JoinTripRequests failed:\n" + throwable.getMessage() +
+                                "\n" + throwable.fillInStackTrace());
+                    }
+                }, new Action0(){
+                    // DONE
+
+                    @Override
+                    public void call() {
+                        // UI:
+                        progressBar.setVisibility(View.GONE);
+                    }
+                });
+
         subscriptions.add(subscription);
     }
 }
