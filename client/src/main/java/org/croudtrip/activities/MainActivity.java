@@ -57,6 +57,8 @@ import timber.log.Timber;
  */
 public class MainActivity extends AbstractRoboDrawerActivity {
     public final static String ACTION_SHOW_JOIN_TRIP_REQUESTS = "SHOW_JOIN_TRIP_REQUESTS";
+    public final static String ACTION_SHOW_REQUEST_ACCEPTED = "SHOW_REQUEST_ACCEPTED";
+    public final static String ACTION_SHOW_REQUEST_DECLINED = "SHOW_REQUEST_DECLINED";
 
     @Inject private GcmManager gcmManager;
     @Inject private LocationUpdater locationUpdater;

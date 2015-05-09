@@ -59,7 +59,12 @@ public class GcmIntentService extends IntentService {
                 break;
             case GcmConstants.GCM_MSG_JOIN_REQUEST:
                 handleJoinRequest(intent);
-
+                break;
+            case GcmConstants.GCM_MSG_REQUEST_ACCEPTED:
+                handleRequestAccepted( intent );
+                break;
+            case GcmConstants.GCM_MSG_REQUEST_DECLINED:
+                handleRequestDeclined(intent);
                 break;
             default:
                 break;
@@ -71,10 +76,67 @@ public class GcmIntentService extends IntentService {
         GcmBroadcastReceiver.completeWakefulIntent(intent);
     }
 
+    private void handleRequestDeclined(Intent intent) {
+
+
+
+    }
+
+    private void handleRequestAccepted( Intent intent ){
+        Timber.d("REQUEST_ACCEPTED");
+
+        // create rest request handler
+        TripsResource tripsResource = new RestAdapter.Builder()
+                .setEndpoint(getString(R.string.server_address))
+                .setRequestInterceptor(new RequestInterceptor() {
+                    @Override
+                    public void intercept(RequestFacade request) {
+                        AccountManager.addAuthorizationHeader(getApplicationContext(), request);
+                    }
+                })
+                .build()
+                .create(TripsResource.class);
+
+        // extract join request and offer from message
+        long joinTripRequestId = Long.parseLong( intent.getExtras().getString(GcmConstants.GCM_MSG_JOIN_REQUEST_ID) );
+        long offerId = Long.parseLong( intent.getExtras().getString(GcmConstants.GCM_MSG_JOIN_REQUEST_OFFER_ID) );
+
+        // download the join trip request
+        tripsResource.getJoinRequest(offerId, joinTripRequestId )
+                .observeOn( Schedulers.io() )
+                .subscribeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                        new Action1<JoinTripRequest>() {
+                            @Override
+                            public void call(JoinTripRequest joinTripRequest) {
+                                // create notification for the user
+                                if (LifecycleHandler.isApplicationInForeground()) {
+                                    Intent startingIntent = new Intent(getApplicationContext(), MainActivity.class);
+                                    startingIntent.setAction(MainActivity.ACTION_SHOW_REQUEST_ACCEPTED);
+                                    startingIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                                    getApplicationContext().startActivity(startingIntent);
+
+                                } else {
+                                    Intent startingIntent = new Intent(getApplicationContext(), MainActivity.class);
+                                    startingIntent.setAction(MainActivity.ACTION_SHOW_REQUEST_ACCEPTED);
+                                    PendingIntent contentIntent = PendingIntent.getActivity(getApplicationContext(), 0, startingIntent, 0);
+                                    createNotification(getString(R.string.join_request_accepted_title), getString(R.string.join_request_accepted_msg,
+                                                    joinTripRequest.getOffer().getDriver().getFirstName()),
+                                            GcmConstants.GCM_NOTIFICATION_REQUEST_ACCEPTED_ID, contentIntent);
+                                }
+                            }
+                        },
+                        new Action1<Throwable>() {
+                            @Override
+                            public void call(Throwable throwable) {
+                                Timber.e("Something went wrong when downloading join request: " + throwable.getMessage());
+                            }
+                        });
+
+    }
+
     private void handleJoinRequest(Intent intent) {
         Timber.d("JOIN_REQUEST");
-
-        final ObjectMapper mapper = new ObjectMapper();
 
         // create rest request handler
         TripsResource tripsResource = new RestAdapter.Builder()

@@ -102,4 +102,6 @@
     
     <string name="join_request_sent">Your request has been sent to the driver. We will inform you as soon as the driver answers your request.</string>
     <string name="join_request_sending_error">There was an error sending your request.</string>
+    <string name="join_request_accepted_title">Accepted Request</string>
+    <string name="join_request_accepted_msg">Congratulations! %1$s is taking you to your destination.</string>
 </resources>
