@@ -1,15 +1,19 @@
 package org.croudtrip.activities;
 
+
 import android.app.Fragment;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -65,6 +69,13 @@ public class MainActivity extends AbstractRoboDrawerActivity {
     @Inject private GcmManager gcmManager;
     @Inject private LocationUpdater locationUpdater;
     private CompositeSubscription subscriptions = new CompositeSubscription();
+    private Subscription locationUpdateSubscription;
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        LocalBroadcastManager.getInstance(this).registerReceiver(driverAcceptedReceiver,new IntentFilter(Constants.EVENT_DRIVER_ACCEPTED));
+    }
+
 
     @Override
     public void init(Bundle savedInstanceState) {
@@ -110,6 +121,9 @@ public class MainActivity extends AbstractRoboDrawerActivity {
         if ( false || action.equalsIgnoreCase(ACTION_SHOW_REQUEST_DECLINED) || action.equalsIgnoreCase(ACTION_SHOW_FOUND_MATCHES) ) {
             //TODO: this solution works only if we get some kind of notification from the server if there are (no) results. There
             //TODO: we have to set "loading" in the sp to false
+
+        }
+        if (prefs.getBoolean(Constants.SHARED_PREF_KEY_SEARCHING, false) || prefs.getBoolean(Constants.SHARED_PREF_KEY_ACCEPTED, false)) {
             this.addSection(newSection(getString(R.string.menu_my_trip), R.drawable.hitchhiker, new JoinTripResultsFragment()));
         } else {
             this.addSection(newSection(getString(R.string.menu_join_trip), R.drawable.hitchhiker, new JoinTripFragment()));
@@ -144,8 +158,6 @@ public class MainActivity extends AbstractRoboDrawerActivity {
 
         //TODO: remove from drawer
         this.addSection(newSection("Join Trip - Requests", R.drawable.distance, new JoinTripRequestsFragment()));
-
-        ((MaterialSection) getSectionList().get(0)).setNotifications(3);
 
         // create bottom section
         this.addBottomSection(newSection(getString(R.string.menu_settings), R.drawable.ic_settings, new SettingsFragment()));
@@ -239,6 +251,21 @@ public class MainActivity extends AbstractRoboDrawerActivity {
     public void onStop() {
         super.onStop();
     }
+
+    @Override
+    protected void onDestroy() {
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(driverAcceptedReceiver);
+        super.onDestroy();
+    }
+
+    private BroadcastReceiver driverAcceptedReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            getSectionList().get(0).setTarget(new JoinTripResultsFragment());
+            getSectionList().get(0).setTitle(getString(R.string.menu_my_trip));
+            setFragment(new JoinTripResultsFragment(), getString(R.string.menu_my_trip));
+        }
+    };
 
     private boolean GPSavailable() {
         LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);

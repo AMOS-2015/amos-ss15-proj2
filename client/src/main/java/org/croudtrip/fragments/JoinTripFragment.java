@@ -77,7 +77,7 @@ public class JoinTripFragment extends SubscriptionFragment implements GoogleApiC
     private GoogleApiClient googleApiClient;
     private PlaceAutocompleteAdapter adapter;
 
-    private org.croudtrip.db.Place lastSelected; //TODO for po: decide what kind of places to save (real places, coordinates, custom string)
+    private org.croudtrip.db.Place lastSelected;
 
 
     @InjectView(R.id.name) private TextView tv_name;
@@ -105,7 +105,13 @@ public class JoinTripFragment extends SubscriptionFragment implements GoogleApiC
         setHasOptionsMenu(true);
 
         if (googleApiClient == null) {
-            rebuildGoogleApiClient();
+            googleApiClient = new GoogleApiClient.Builder(getActivity().getApplicationContext())
+                    .addConnectionCallbacks(this)
+                    .addOnConnectionFailedListener(this)
+                    .addApi(Places.GEO_DATA_API)
+                    .build();
+
+            googleApiClient.connect();
         } else if (!googleApiClient.isConnected()) {
             googleApiClient.connect();
         }
@@ -143,7 +149,6 @@ public class JoinTripFragment extends SubscriptionFragment implements GoogleApiC
                 if (history.size() == 5) {
                     break;
                 }
-                Log.d("alex", "added historical place");
                 PlaceAutocompleteAdapter.PlaceAutocomplete a = adapter.new PlaceAutocomplete(savedPlaces.get(i).getId(), savedPlaces.get(i).getDescription());
                 history.add(a);
             }
@@ -227,11 +232,9 @@ public class JoinTripFragment extends SubscriptionFragment implements GoogleApiC
 
                 try {
                     if (tempPlace != null) {
-                        Log.d("alex", "Save place");
                         dbHelper.getPlaceDao().delete(tempPlace);
                         dbHelper.getPlaceDao().create(tempPlace);
                     } else {
-                        Log.d("alex", "Save custom place");
                         tempPlace = new org.croudtrip.db.Place();
                         tempPlace.setId(tv_destination.getText().toString());
                         tempPlace.setDescription(tv_destination.getText().toString());
@@ -254,9 +257,7 @@ public class JoinTripFragment extends SubscriptionFragment implements GoogleApiC
                 fragment.setArguments(extras);
                 ((MaterialNavigationDrawer) getActivity()).getCurrentSection().setTarget(new JoinTripResultsFragment());
                 ((MaterialNavigationDrawer) getActivity()).getCurrentSection().setTitle(getString(R.string.menu_my_trip));
-                ((MaterialNavigationDrawer) getActivity()).setFragment(
-                        fragment,
-                        getString(R.string.join_trip));
+                ((MaterialNavigationDrawer) getActivity()).setFragment(fragment, getString(R.string.menu_my_trip));
             }
         });
 
@@ -315,20 +316,6 @@ public class JoinTripFragment extends SubscriptionFragment implements GoogleApiC
     }
 
 
-    /* Google places API stuff below here - Who wants to refactor? :D */
-
-
-    private void rebuildGoogleApiClient() {
-        googleApiClient = new GoogleApiClient.Builder(getActivity().getApplicationContext())
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .addApi(Places.GEO_DATA_API)
-                .build();
-
-        googleApiClient.connect();
-        Log.d("alex", "building client: " + googleApiClient + " - " + googleApiClient.isConnected());
-    }
-
     private AdapterView.OnItemClickListener mAutocompleteClickListener = new AdapterView.OnItemClickListener() {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -339,63 +326,44 @@ public class JoinTripFragment extends SubscriptionFragment implements GoogleApiC
               */
             final PlaceAutocompleteAdapter.PlaceAutocomplete item = adapter.getItem(position);
             final String placeId = String.valueOf(item.placeId);
-            Log.d("alex", "Autocomplete item selected: " + item.description);
 
             /*
              Issue a request to the Places Geo Data API to retrieve a Place object with additional
               details about the place.
               */
             PendingResult<PlaceBuffer> placeResult = Places.GeoDataApi.getPlaceById(googleApiClient, placeId);
-            placeResult.setResultCallback(mUpdatePlaceDetailsCallback);
+            placeResult.setResultCallback(new ResultCallback<PlaceBuffer>() {
+                @Override
+                public void onResult(PlaceBuffer places) {
+                    if (!places.getStatus().isSuccess()) {
+                        // Request did not complete successfully
+                        places.release();
+                        return;
+                    }
+
+                    Place place;
+                    try {
+                        place = places.get(0);
+                    } catch (IllegalStateException e) {
+                        places.release();
+                        return;
+                    }
+                    lastSelected = new org.croudtrip.db.Place();
+                    lastSelected.setId(place.getId());
+                    lastSelected.setDescription(place.getAddress() + "");
+                    tv_address.setText(place.getAddress());
+
+
+                    places.release();
+                }
+            });
 
             Toast.makeText(getActivity().getApplicationContext(), "Clicked: " + item.description, Toast.LENGTH_SHORT).show();
-            Log.d("alex", "Called getPlaceById to get Place details for " + item.placeId);
         }
     };
 
-    private ResultCallback<PlaceBuffer> mUpdatePlaceDetailsCallback = new ResultCallback<PlaceBuffer>() {
-        @Override
-        public void onResult(PlaceBuffer places) {
-            if (!places.getStatus().isSuccess()) {
-                // Request did not complete successfully
-                Log.e("alex", "Place query did not complete. Error: " + places.getStatus().toString());
-                places.release();
-                return;
-            }
-
-            Place place;
-            try {
-                place = places.get(0);
-            } catch (IllegalStateException e) {
-                places.release();
-                return;
-            }
-            lastSelected = new org.croudtrip.db.Place();
-            lastSelected.setId(place.getId());
-            lastSelected.setDescription(place.getAddress() + "");
-            tv_address.setText(place.getAddress());
-
-
-            Log.d("alex", "Place details received: " + place.getName());
-
-            places.release();
-        }
-    };
-
-    private static Spanned formatPlaceDetails(Resources res, CharSequence name, String id,
-                                              CharSequence address, CharSequence phoneNumber, Uri websiteUri) {
-        Log.e("alex", res.getString(R.string.place_details, name, id, address, phoneNumber,
-                websiteUri));
-        return Html.fromHtml(res.getString(R.string.place_details, name, id, address, phoneNumber,
-                websiteUri));
-
-    }
 
     public void onConnectionFailed(ConnectionResult connectionResult) {
-
-        Log.d("alex", "onConnectionFailed: ConnectionResult.getErrorCode() = "
-                + connectionResult.getErrorCode());
-
         // TODO(Developer): Check error code and notify the user of error state and resolution.
         Toast.makeText(getActivity(),
                 "Could not connect to Google API Client: Error " + connectionResult.getErrorCode(),
@@ -411,14 +379,11 @@ public class JoinTripFragment extends SubscriptionFragment implements GoogleApiC
     public void onConnected(Bundle bundle) {
         // Successfully connected to the API client. Pass it to the adapter to enable API access.
         adapter.setGoogleApiClient(googleApiClient);
-        Log.d("alex", "GoogleApiClient connected.");
-
     }
 
     @Override
     public void onConnectionSuspended(int i) {
         // Connection to the API client has been suspended. Disable API access in the client.
         adapter.setGoogleApiClient(null);
-        Log.e("alex", "GoogleApiClient connection suspended.");
     }
 }

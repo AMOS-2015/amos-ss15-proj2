@@ -6,13 +6,16 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.content.LocalBroadcastManager;
 import android.widget.Toast;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 
+import org.croudtrip.Constants;
 import org.croudtrip.R;
 import org.croudtrip.account.AccountManager;
 import org.croudtrip.activities.MainActivity;
@@ -23,8 +26,10 @@ import org.croudtrip.api.trips.JoinTripRequestUpdate;
 import org.croudtrip.api.trips.RunningTripQuery;
 import org.croudtrip.api.trips.TripQuery;
 import org.croudtrip.fragments.JoinTripResultsFragment;
+import org.croudtrip.fragments.JoinTripFragment;
 import org.croudtrip.utils.LifecycleHandler;
 
+import it.neokree.materialnavigationdrawer.MaterialNavigationDrawer;
 import retrofit.RequestInterceptor;
 import retrofit.RestAdapter;
 import rx.android.schedulers.AndroidSchedulers;
@@ -194,7 +199,7 @@ public class GcmIntentService extends IntentService {
                         });
     }
 
-    private void handleRequestAccepted( Intent intent ){
+    private void handleRequestAccepted( Intent intent ) {
         Timber.d("REQUEST_ACCEPTED");
 
         // create rest request handler
@@ -210,12 +215,12 @@ public class GcmIntentService extends IntentService {
                 .create(TripsResource.class);
 
         // extract join request and offer from message
-        long joinTripRequestId = Long.parseLong( intent.getExtras().getString(GcmConstants.GCM_MSG_JOIN_REQUEST_ID) );
-        long offerId = Long.parseLong( intent.getExtras().getString(GcmConstants.GCM_MSG_JOIN_REQUEST_OFFER_ID) );
+        long joinTripRequestId = Long.parseLong(intent.getExtras().getString(GcmConstants.GCM_MSG_JOIN_REQUEST_ID));
+        long offerId = Long.parseLong(intent.getExtras().getString(GcmConstants.GCM_MSG_JOIN_REQUEST_OFFER_ID));
 
         // download the join trip request
-        tripsResource.getJoinRequest(offerId, joinTripRequestId )
-                .observeOn( Schedulers.io() )
+        tripsResource.getJoinRequest(offerId, joinTripRequestId)
+                .observeOn(Schedulers.io())
                 .subscribeOn(AndroidSchedulers.mainThread())
                 .subscribe(
                         new Action1<JoinTripRequest>() {
@@ -230,10 +235,10 @@ public class GcmIntentService extends IntentService {
                                     getApplicationContext().startActivity(startingIntent);
 
                                 } else {*/
-                                    PendingIntent contentIntent = PendingIntent.getActivity(getApplicationContext(), 0, startingIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-                                    createNotification(getString(R.string.join_request_accepted_title), getString(R.string.join_request_accepted_msg,
-                                                    joinTripRequest.getOffer().getDriver().getFirstName()),
-                                            GcmConstants.GCM_NOTIFICATION_REQUEST_ACCEPTED_ID, contentIntent);
+                                PendingIntent contentIntent = PendingIntent.getActivity(getApplicationContext(), 0, startingIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+                                createNotification(getString(R.string.join_request_accepted_title), getString(R.string.join_request_accepted_msg,
+                                                joinTripRequest.getOffer().getDriver().getFirstName()),
+                                        GcmConstants.GCM_NOTIFICATION_REQUEST_ACCEPTED_ID, contentIntent);
                                 //}
                             }
                         },
@@ -243,7 +248,32 @@ public class GcmIntentService extends IntentService {
                                 Timber.e("Something went wrong when downloading join request: " + throwable.getMessage());
                             }
                         });
+    }
 
+    /*
+    Should be called if the driver accepted this passenger.
+     */
+    private void handleDriverAccepted(Intent intent) {
+        SharedPreferences prefs = getApplicationContext().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putBoolean(Constants.SHARED_PREF_KEY_SEARCHING, false);
+        editor.putBoolean(Constants.SHARED_PREF_KEY_ACCEPTED, true);
+        editor.apply();
+
+        LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(Constants.EVENT_DRIVER_ACCEPTED));
+    }
+
+    /*
+    Should be called if the background search for "join trips" found something.
+     */
+    private void handleDriversFound(Intent intent) {
+        SharedPreferences prefs = getApplicationContext().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putBoolean(Constants.SHARED_PREF_KEY_SEARCHING, false);
+        editor.putBoolean(Constants.SHARED_PREF_KEY_ACCEPTED, false);
+        editor.apply();
+
+        LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(Constants.EVENT_DRIVER_ACCEPTED));
     }
 
     private void handleJoinRequest(Intent intent) {
@@ -266,7 +296,7 @@ public class GcmIntentService extends IntentService {
         long offerId = Long.parseLong( intent.getExtras().getString(GcmConstants.GCM_MSG_JOIN_REQUEST_OFFER_ID) );
 
         // download the join trip request
-        tripsResource.getJoinRequest(offerId, joinTripRequestId ).observeOn( Schedulers.io() )
+        tripsResource.getJoinRequest(offerId, joinTripRequestId).observeOn( Schedulers.io() )
                 .subscribeOn(AndroidSchedulers.mainThread())
                 .subscribe(
                         new Action1<JoinTripRequest>() {
@@ -282,10 +312,10 @@ public class GcmIntentService extends IntentService {
                                     getApplicationContext().startActivity(startingIntent);
 
                                 } else {*/
-                                    PendingIntent contentIntent = PendingIntent.getActivity(getApplicationContext(), 0, startingIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-                                    createNotification(getString(R.string.join_request_title), getString(R.string.joint_request_msg,
-                                                    joinTripRequest.getQuery().getPassenger().getFirstName()),
-                                            GcmConstants.GCM_NOTIFICATION_JOIN_REQUEST_ID, contentIntent);
+                                PendingIntent contentIntent = PendingIntent.getActivity(getApplicationContext(), 0, startingIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+                                createNotification(getString(R.string.join_request_title), getString(R.string.joint_request_msg,
+                                                joinTripRequest.getQuery().getPassenger().getFirstName()),
+                                        GcmConstants.GCM_NOTIFICATION_JOIN_REQUEST_ID, contentIntent);
                                 //}
                             }
                         },
