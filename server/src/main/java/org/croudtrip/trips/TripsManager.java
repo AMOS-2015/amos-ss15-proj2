@@ -18,6 +18,7 @@ import org.croudtrip.db.JoinTripRequestDAO;
 import org.croudtrip.db.TripReservationDAO;
 import org.croudtrip.db.TripOfferDAO;
 import org.croudtrip.directions.DirectionsManager;
+import org.croudtrip.logs.LogManager;
 import org.croudtrip.utils.Assert;
 import org.croudtrip.gcm.GcmManager;
 import org.croudtrip.utils.Pair;
@@ -39,6 +40,7 @@ public class TripsManager {
     private final JoinTripRequestDAO joinTripRequestDAO;
 	private final DirectionsManager directionsManager;
     private final GcmManager gcmManager;
+    private final LogManager logManager;
 
 
 	@Inject
@@ -47,13 +49,15 @@ public class TripsManager {
             TripReservationDAO tripReservationDAO,
             JoinTripRequestDAO joinTripRequestDAO,
             DirectionsManager directionsManager,
-            GcmManager gcmManager) {
+            GcmManager gcmManager,
+            LogManager logManager) {
 
 		this.tripOfferDAO = tripOfferDAO;
         this.tripReservationDAO = tripReservationDAO;
         this.joinTripRequestDAO = joinTripRequestDAO;
 		this.directionsManager = directionsManager;
         this.gcmManager = gcmManager;
+        this.logManager = logManager;
 	}
 
 
@@ -86,11 +90,27 @@ public class TripsManager {
         // compute passenger route
         List<Route> possiblePassengerRoutes = directionsManager.getDirections(queryDescription.getStart(), queryDescription.getEnd());
         if (possiblePassengerRoutes.isEmpty()) return new ArrayList<>();
+
+        logManager.d("User " + passenger.getId() + " (" + passenger.getFirstName() + " " + passenger.getLastName() + ") sent query.");
+
         TripQuery query = new TripQuery(possiblePassengerRoutes.get(0), queryDescription.getStart(), queryDescription.getEnd(), queryDescription.getMaxWaitingTimeInSeconds(), passenger);
+
+        List<JoinTripRequest> declinedRequests = joinTripRequestDAO.findDeclinedRequests( passenger.getId() );
+
+        logManager.d("Found " + declinedRequests.size() + "declined entries in the database.");
 
         // analyse offers
         List<TripOffer> potentialMatches = new ArrayList<>();
-        for (TripOffer offer : tripOfferDAO.findAll()) {
+        offers: for (TripOffer offer : tripOfferDAO.findAll()) {
+
+            // skip already declined offers
+            for( JoinTripRequest request : declinedRequests ) {
+                logManager.d("Comparing " + offer.getId() + " and " + request.getOffer().getId() );
+                if( offer.getId() == request.getOffer().getId()) {
+                    continue offers;
+                }
+            }
+
             Optional<TripOffer> potentialMatch = analyzeOffer(offer, query);
             if (potentialMatch.isPresent()) potentialMatches.add(potentialMatch.get());
         }
@@ -173,6 +193,8 @@ public class TripsManager {
 
         System.out.println("Update join request db stored");
 
+        logManager.d("User " + joinRequest.getQuery().getPassenger().getId() + " (" + joinRequest.getQuery().getPassenger().getFirstName() + " " + joinRequest.getQuery().getPassenger().getLastName() + ") got status update for joinTripRequest.");
+
         // notify the passenger about his trip status
         if( passengerAccepted ) {
             gcmManager.sendGcmMessageToUser(joinRequest.getQuery().getPassenger(), GcmConstants.GCM_MSG_REQUEST_ACCEPTED,
@@ -182,7 +204,7 @@ public class TripsManager {
         }
         else {
             gcmManager.sendGcmMessageToUser(joinRequest.getQuery().getPassenger(), GcmConstants.GCM_MSG_REQUEST_DECLINED,
-                    new Pair<String, String>(GcmConstants.GCM_MSG_REQUEST_DECLINED, "Your request was accepted"),
+                    new Pair<String, String>(GcmConstants.GCM_MSG_REQUEST_DECLINED, "Your request was declined"),
                     new Pair<String, String>(GcmConstants.GCM_MSG_JOIN_REQUEST_ID, "" + joinRequest.getId()),
                     new Pair<String, String>(GcmConstants.GCM_MSG_JOIN_REQUEST_OFFER_ID, "" + joinRequest.getOffer().getId()));
         }
