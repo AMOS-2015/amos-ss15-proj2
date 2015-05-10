@@ -29,7 +29,6 @@ import org.croudtrip.fragments.GcmTestFragment;
 import org.croudtrip.fragments.JoinTripFragment;
 import org.croudtrip.fragments.JoinTripRequestsFragment;
 import org.croudtrip.fragments.JoinTripResultsFragment;
-import org.croudtrip.fragments.NavigationFragment;
 import org.croudtrip.fragments.OfferTripFragment;
 import org.croudtrip.fragments.PickUpPassengerFragment;
 import org.croudtrip.fragments.ProfileFragment;
@@ -73,6 +72,7 @@ public class MainActivity extends AbstractRoboDrawerActivity {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
         LocalBroadcastManager.getInstance(this).registerReceiver(driverAcceptedReceiver,new IntentFilter(Constants.EVENT_DRIVER_ACCEPTED));
     }
 
