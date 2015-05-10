@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -108,6 +109,8 @@ public class JoinTripResultsFragment extends SubscriptionFragment {
                 SharedPreferences.Editor editor = prefs.edit();
                 editor.putBoolean(Constants.SHARED_PREF_KEY_SEARCHING, false);
                 editor.apply();
+                Log.d("alex", "set to false 4");
+
 
                 ((MaterialNavigationDrawer) getActivity()).getCurrentSection().setTarget(new JoinTripFragment());
                 ((MaterialNavigationDrawer) getActivity()).getCurrentSection().setTitle(getString(R.string.join_trip));
@@ -178,6 +181,8 @@ public class JoinTripResultsFragment extends SubscriptionFragment {
         }
 
         SharedPreferences prefs = getActivity().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
+        Log.d("alex", "SEARCHING: " + prefs.getBoolean(Constants.SHARED_PREF_KEY_SEARCHING, false));
+
         if (prefs.getBoolean(Constants.SHARED_PREF_KEY_SEARCHING, false)) {
             waitingView.setVisibility(View.VISIBLE);
             ((MaterialNavigationDrawer) getActivity()).getCurrentSection().setNotificationsText("searching");
@@ -209,22 +214,11 @@ public class JoinTripResultsFragment extends SubscriptionFragment {
                 .subscribe(new Action1<TripQueryResult>() {
                     // SUCCESS
 
+
                     @Override
                     public void call(TripQueryResult result) {
-                        SharedPreferences.Editor editor = prefs.edit();
-                        editor.putBoolean(Constants.SHARED_PREF_KEY_SEARCHING, false);
-                        editor.apply();
 
-                        // Update the caption text
-                        int numMatches = result.getReservations().size();
-                        caption.setText(getResources().getQuantityString(R.plurals.join_trip_results,
-                                numMatches, numMatches));
-
-                        // Fill the results list
-                        adapter.addElements(result.getReservations());
-                    }
-
-                    public void call(List<TripReservation> reservations) {
+                        List<TripReservation> reservations = result.getReservations();
 
                         // Update the caption text
                         int numMatches = reservations.size();
@@ -232,6 +226,7 @@ public class JoinTripResultsFragment extends SubscriptionFragment {
                             SharedPreferences.Editor editor = prefs.edit();
                             editor.putBoolean(Constants.SHARED_PREF_KEY_SEARCHING, false);
                             editor.apply();
+
                             waitingView.setVisibility(View.GONE);
                             resultView.setVisibility(View.VISIBLE);
 
@@ -263,6 +258,8 @@ public class JoinTripResultsFragment extends SubscriptionFragment {
                         SharedPreferences.Editor editor = prefs.edit();
                         editor.putBoolean(Constants.SHARED_PREF_KEY_SEARCHING, false);
                         editor.apply();
+                        Log.d("alex", "set to false 3");
+
 
                         ((MaterialNavigationDrawer) getActivity()).getCurrentSection().setTarget(new JoinTripFragment());
                         ((MaterialNavigationDrawer) getActivity()).getCurrentSection().setTitle(getString(R.string.menu_join_trip));
