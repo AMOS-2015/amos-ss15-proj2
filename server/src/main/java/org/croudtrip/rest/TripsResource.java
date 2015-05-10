@@ -157,9 +157,10 @@ public class TripsResource {
     @GET
     @UnitOfWork
     @Path(PATH_JOINS)
-    public List<JoinTripRequest> getJoinRequests(@Auth User driver, @PathParam("offerId") long offerId) {
+    public List<JoinTripRequest> getJoinRequests(@Auth User driver, @PathParam("offerId") long offerId, @DefaultValue("false") @QueryParam("open") boolean showOnlyPassengerAccepted) {
         TripOffer offer = assertIsValidOfferId(offerId);
-        return tripsManager.findAllJoinRequests(offer);
+        System.out.println("show only open " + showOnlyPassengerAccepted);
+        return tripsManager.findAllJoinRequests(offer, showOnlyPassengerAccepted);
     }
 
 

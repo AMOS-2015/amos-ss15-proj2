@@ -32,8 +32,14 @@ import javax.persistence.Table;
 				name = JoinTripRequest.QUERY_FIND_BY_OFFER_ID,
 				query = "SELECT r FROM " + JoinTripRequest.ENTITY_NAME + " r WHERE r.offer.id = :" + JoinTripRequest.QUERY_PARAM_OFFER_ID
 		),
+		@NamedQuery(
+				name = JoinTripRequest.QUERY_FIND_BY_OFFER_ID_AND_PASSENGER_ACCEPTED_STATUS,
+				query = "SELECT r FROM " + JoinTripRequest.ENTITY_NAME + " r WHERE " +
+						"r.offer.id = :" + JoinTripRequest.QUERY_PARAM_OFFER_ID + " AND " +
+						"r.status = 'PASSENGER_ACCEPTED'"
+		),
         @NamedQuery(
-                name = JoinTripRequest.QUERY_FIND_DECLINED_REQUESTS,
+                name = JoinTripRequest.QUERY_FIND_BY_PASSENGER_ID_AND_DECLINED_STATUS,
                 query = "SELECT r FROM " + JoinTripRequest.ENTITY_NAME + " r WHERE r.status = 'DRIVER_DECLINED' AND r.query.passenger.id = :" + JoinTripRequest.QUERY_PARAM_PASSENGER_ID
         )
 })
@@ -44,8 +50,9 @@ public class JoinTripRequest {
 			COLUMN_ID = "join_trip_request_id",
 			QUERY_NAME_FIND_ALL = "org.croudtrip.api.trips.JoinTripRequest.findAll",
 			QUERY_FIND_BY_OFFER_ID = "org.croudtrip.api.trips.JoinTripRequest.findByUserId",
+			QUERY_FIND_BY_OFFER_ID_AND_PASSENGER_ACCEPTED_STATUS = "org.croudtrip.api.trips.JoinTripRequest.findByOfferIdAndAcceptedStatus",
+            QUERY_FIND_BY_PASSENGER_ID_AND_DECLINED_STATUS = "org.croudtrip.api.trips.JoinTripRequest.findDeclinedRequests",
 			QUERY_PARAM_OFFER_ID = "offer_id",
-            QUERY_FIND_DECLINED_REQUESTS = "org.croudtrip.api.trips.JoinTripRequest.findDeclinedRequests",
             QUERY_PARAM_PASSENGER_ID = "passenger_id";
 
 	@Id
