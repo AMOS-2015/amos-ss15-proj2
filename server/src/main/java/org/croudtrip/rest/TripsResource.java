@@ -6,6 +6,7 @@ import org.croudtrip.api.account.User;
 import org.croudtrip.api.trips.JoinTripRequest;
 import org.croudtrip.api.trips.JoinTripRequestUpdate;
 import org.croudtrip.api.trips.JoinTripStatus;
+import org.croudtrip.api.trips.RunningTripQuery;
 import org.croudtrip.api.trips.TripOffer;
 import org.croudtrip.api.trips.TripOfferDescription;
 import org.croudtrip.api.trips.TripQueryDescription;
@@ -90,6 +91,25 @@ public class TripsResource {
     @Path(PATH_QUERIES)
     public TripQueryResult queryOffers(@Auth User passenger, @Valid TripQueryDescription requestDescription) throws Exception {
         return tripsManager.queryOffers(passenger, requestDescription);
+    }
+
+
+    @GET
+    @UnitOfWork
+    @Path(PATH_QUERIES)
+    public List<RunningTripQuery> getQueries(@Auth User passenger) throws Exception {
+        return tripsManager.getRunningQueries(passenger);
+    }
+
+
+    @GET
+    @UnitOfWork
+    @Path(PATH_QUERIES + "/{queryId}")
+    public RunningTripQuery getQueries(@Auth User passenger, @PathParam("queryId") long queryId) throws Exception {
+        Optional<RunningTripQuery> query = tripsManager.getRunningQuery(queryId);
+        if (!query.isPresent()) throw RestUtils.createNotFoundException();
+        if (query.get().getQuery().getPassenger().getId() != passenger.getId()) throw RestUtils.createUnauthorizedException();
+        return query.get();
     }
 
 

@@ -2,6 +2,7 @@ package org.croudtrip.trips;
 
 
 import com.google.common.base.Optional;
+import com.google.common.collect.Lists;
 
 import org.croudtrip.api.account.User;
 import org.croudtrip.api.directions.Route;
@@ -9,6 +10,7 @@ import org.croudtrip.api.directions.RouteLocation;
 import org.croudtrip.api.gcm.GcmConstants;
 import org.croudtrip.api.trips.JoinTripRequest;
 import org.croudtrip.api.trips.JoinTripStatus;
+import org.croudtrip.api.trips.RunningTripQuery;
 import org.croudtrip.api.trips.TripOffer;
 import org.croudtrip.api.trips.TripOfferDescription;
 import org.croudtrip.api.trips.TripQuery;
@@ -16,12 +18,13 @@ import org.croudtrip.api.trips.TripQueryDescription;
 import org.croudtrip.api.trips.TripQueryResult;
 import org.croudtrip.api.trips.TripReservation;
 import org.croudtrip.db.JoinTripRequestDAO;
-import org.croudtrip.db.TripReservationDAO;
+import org.croudtrip.db.RunningTripQueryDAO;
 import org.croudtrip.db.TripOfferDAO;
+import org.croudtrip.db.TripReservationDAO;
 import org.croudtrip.directions.DirectionsManager;
+import org.croudtrip.gcm.GcmManager;
 import org.croudtrip.logs.LogManager;
 import org.croudtrip.utils.Assert;
-import org.croudtrip.gcm.GcmManager;
 import org.croudtrip.utils.Pair;
 
 import java.io.IOException;
@@ -37,6 +40,7 @@ import javax.inject.Singleton;
 public class TripsManager {
 
 	private final TripOfferDAO tripOfferDAO;
+    private final RunningTripQueryDAO runningTripQueryDAO;
     private final TripReservationDAO tripReservationDAO;
     private final JoinTripRequestDAO joinTripRequestDAO;
 	private final DirectionsManager directionsManager;
@@ -47,6 +51,7 @@ public class TripsManager {
 	@Inject
 	TripsManager(
             TripOfferDAO tripOfferDAO,
+            RunningTripQueryDAO runningTripQueryDAO,
             TripReservationDAO tripReservationDAO,
             JoinTripRequestDAO joinTripRequestDAO,
             DirectionsManager directionsManager,
@@ -54,6 +59,7 @@ public class TripsManager {
             LogManager logManager) {
 
 		this.tripOfferDAO = tripOfferDAO;
+        this.runningTripQueryDAO = runningTripQueryDAO;
         this.tripReservationDAO = tripReservationDAO;
         this.joinTripRequestDAO = joinTripRequestDAO;
 		this.directionsManager = directionsManager;
@@ -65,8 +71,22 @@ public class TripsManager {
 	public TripOffer addOffer(User owner, TripOfferDescription description) throws Exception {
 		List<Route> route = directionsManager.getDirections(description.getStart(), description.getEnd());
 		if (route.size() == 0) throw new Exception("not route found");
+
+        // create and store offer
 		TripOffer offer = new TripOffer(0, route.get(0), description.getMaxDiversionInMeters(), description.getPricePerKmInCents(), owner);
 		tripOfferDAO.save(offer);
+
+        // compare offer with running queries
+        for (RunningTripQuery runningQuery : runningTripQueryDAO.findAll()) {
+            TripQuery query = runningQuery.getQuery();
+            List<TripOffer> potentialMatches = findPotentialMatches(Lists.newArrayList(offer), query);
+
+            // notify passenger about potential match
+            if (!potentialMatches.isEmpty()) {
+                gcmManager.sendGcmMessageToUser(query.getPassenger(), GcmConstants.GCM_MSG_FOUND_MATCHES);
+                deleteRunningQuery(runningQuery);
+            }
+        }
 		return offer;
 	}
 
@@ -87,41 +107,48 @@ public class TripsManager {
 
 
 	public TripQueryResult queryOffers(User passenger, TripQueryDescription queryDescription) throws Exception {
+        logManager.d("User " + passenger.getId() + " (" + passenger.getFirstName() + " " + passenger.getLastName() + ") sent query.");
 
         // compute passenger route
         List<Route> possiblePassengerRoutes = directionsManager.getDirections(queryDescription.getStart(), queryDescription.getEnd());
         if (possiblePassengerRoutes.isEmpty()) return new TripQueryResult(new ArrayList<TripReservation>(), null);
 
-        logManager.d("User " + passenger.getId() + " (" + passenger.getFirstName() + " " + passenger.getLastName() + ") sent query.");
-
+        // find declined trips for this user
         TripQuery query = new TripQuery(possiblePassengerRoutes.get(0), queryDescription.getStart(), queryDescription.getEnd(), queryDescription.getMaxWaitingTimeInSeconds(), passenger);
-
         List<JoinTripRequest> declinedRequests = joinTripRequestDAO.findDeclinedRequests( passenger.getId() );
-
         logManager.d("Found " + declinedRequests.size() + "declined entries in the database.");
 
         // analyse offers
-        List<TripOffer> potentialMatches = new ArrayList<>();
-        offers: for (TripOffer offer : tripOfferDAO.findAll()) {
-
-            // skip already declined offers
-            for( JoinTripRequest request : declinedRequests ) {
-                logManager.d("Comparing " + offer.getId() + " and " + request.getOffer().getId() );
-                if( offer.getId() == request.getOffer().getId()) {
-                    continue offers;
-                }
-            }
-
-            Optional<TripOffer> potentialMatch = analyzeOffer(offer, query);
-            if (potentialMatch.isPresent()) potentialMatches.add(potentialMatch.get());
-        }
+        List<TripOffer> potentialMatches = findPotentialMatches(tripOfferDAO.findAll(), query);
 
         // find and store reservations
         List<TripReservation> reservations = findCheapestMatch(query, potentialMatches);
         for (TripReservation reservation : reservations) tripReservationDAO.save(reservation);
 
-        return new TripQueryResult(reservations, null);
+        // if no reservations start "background search"
+        RunningTripQuery runningQuery = null;
+        if (reservations.isEmpty()) {
+            runningQuery = new RunningTripQuery(0, query);
+            runningTripQueryDAO.save(runningQuery);
+        }
+
+        return new TripQueryResult(reservations, runningQuery);
 	}
+
+
+    public List<RunningTripQuery> getRunningQueries(User passenger) {
+        return runningTripQueryDAO.findByPassengerId(passenger.getId());
+    }
+
+
+    public Optional<RunningTripQuery> getRunningQuery(long queryId) {
+        return runningTripQueryDAO.findById(queryId);
+    }
+
+
+    public void deleteRunningQuery(RunningTripQuery runningTripQuery) {
+        runningTripQueryDAO.delete(runningTripQuery);
+    }
 
 
     public List<TripReservation> findAllReservations() {
@@ -219,25 +246,39 @@ public class TripsManager {
     }
 
 
-    private Optional<TripOffer> analyzeOffer(TripOffer offer, TripQuery query) throws Exception {
-        // compute total driver route
-        List<RouteLocation> wayPoints = new ArrayList<>();
-        wayPoints.add(query.getPassengerRoute().getStart());
-        wayPoints.add(query.getPassengerRoute().getEnd());
-        List<Route> possibleDriverRoutes = directionsManager.getDirections(
-                offer.getDriverRoute().getStart(),
-                offer.getDriverRoute().getEnd(),
-                wayPoints);
+    private List<TripOffer> findPotentialMatches(List<TripOffer> offers, TripQuery query) throws Exception {
+        // find declined trips for this user
+        List<JoinTripRequest> declinedRequests = joinTripRequestDAO.findDeclinedRequests(query.getPassenger().getId());
 
-        if (possibleDriverRoutes == null || possibleDriverRoutes.isEmpty()) return Optional.absent();
+        // analyse offers
+        List<TripOffer> potentialMatches = new ArrayList<>();
+        offersLabel: for (TripOffer offer : offers) {
+            // skip already declined offers
+            for( JoinTripRequest request : declinedRequests ) {
+                if( offer.getId() == request.getOffer().getId()) {
+                    continue offersLabel;
+                }
+            }
 
-        // check is passenger route is within max diversion
-        Route driverRoute = possibleDriverRoutes.get(0);
-        if (driverRoute.getDistanceInMeters() - query.getPassengerRoute().getDistanceInMeters() < offer.getMaxDiversionInMeters()) {
-            return Optional.of(offer);
-        } else {
-            return Optional.absent();
+            // compute total driver route
+            List<RouteLocation> wayPoints = new ArrayList<>();
+            wayPoints.add(query.getPassengerRoute().getStart());
+            wayPoints.add(query.getPassengerRoute().getEnd());
+            List<Route> possibleDriverRoutes = directionsManager.getDirections(
+                    offer.getDriverRoute().getStart(),
+                    offer.getDriverRoute().getEnd(),
+                    wayPoints);
+
+            if (possibleDriverRoutes == null || possibleDriverRoutes.isEmpty()) continue;
+
+            // check is passenger route is within max diversion
+            Route driverRoute = possibleDriverRoutes.get(0);
+            if (driverRoute.getDistanceInMeters() - query.getPassengerRoute().getDistanceInMeters() < offer.getMaxDiversionInMeters()) {
+                potentialMatches.add(offer);
+            }
         }
+
+        return potentialMatches;
     }
 
 

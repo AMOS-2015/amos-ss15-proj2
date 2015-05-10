@@ -23,6 +23,10 @@ import javax.persistence.Table;
 		@NamedQuery(
 				name = RunningTripQuery.QUERY_NAME_FIND_ALL,
 				query = "SELECT r FROM " + RunningTripQuery.ENTITY_NAME + " r"
+		),
+		@NamedQuery(
+				name = RunningTripQuery.QUERY_FIND_BY_PASSENGER_ID,
+				query = "SELECT r FROM " + RunningTripQuery.ENTITY_NAME + " r WHERE r.query.passenger.id = :" + RunningTripQuery.QUERY_PARAM_PASSENGER_ID
 		)
 })
 public class RunningTripQuery {
@@ -30,7 +34,9 @@ public class RunningTripQuery {
 	public static final String
 			ENTITY_NAME =  "RunningTripQuery",
 			COLUMN_ID = "running_trip_query_id",
-			QUERY_NAME_FIND_ALL = "org.croudtrip.api.trips.JoinTripRequest.findAll";
+			QUERY_NAME_FIND_ALL = "org.croudtrip.api.trips.RunningTripQuery.findAll",
+			QUERY_FIND_BY_PASSENGER_ID = "org.croudtrip.api.trips.RunningTripQuery.findByPassengerId",
+			QUERY_PARAM_PASSENGER_ID = "passenger_id";
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
