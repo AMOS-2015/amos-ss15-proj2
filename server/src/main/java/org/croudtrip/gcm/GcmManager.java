@@ -64,46 +64,18 @@ public class GcmManager {
 		return registrationDAO.findByUserId(user.getId());
 	}
 
+    /**
+     * Sends a gcm message to a specific user passing one message type.
+     * @param receiver the user that should receive the message
+     * @param messageType the type of the message (see {@link org.croudtrip.api.gcm.GcmConstants})
+     * @throws IOException if the connection to Google was not successful and msg could not be sen
+     * @throws java.lang.IllegalArgumentException if the receiver is not valid or not registered.
+     * @throws java.lang.IllegalArgumentException if the receiver is not valid or not registered.
+     */
+    public void sendGcmMessageToUser(User receiver, String messageType) throws IOException, IllegalStateException {
+        sendGcmMessageToUser(receiver, messageType, new Pair<String, String>("",""));
+    }
 
-	public void sendGcmMessage(GcmRegistration gcmRegistration, String message) throws IOException {
-		final List<String> devices = new ArrayList<>();
-		devices.add(gcmRegistration.getGcmId());
-
-		// send
-		Message.Builder builder = new Message.Builder();
-		builder.addData(GcmConstants.GCM_MSG_DUMMY, message);
-
-		MulticastResult multicastResult = sender.send(builder.build(), devices, 5);
-
-		// analyze the results
-		List<Result> results = multicastResult.getResults();
-		for (int i = 0; i < devices.size(); i++) {
-			String gcmId = devices.get(i);
-			Result result = results.get(i);
-			String messageId = result.getMessageId();
-			if (messageId != null) {
-				logManager.d("send msg to " + gcmId + " with msg id " + messageId);
-				String canonicalRegId = result.getCanonicalRegistrationId();
-
-				// update gcm id
-				if (canonicalRegId != null) {
-					logManager.i("updating gcmId from " + gcmId + " to " + canonicalRegId);
-					register(gcmRegistration.getUser(), new GcmRegistrationDescription(canonicalRegId));
-				}
-
-			} else {
-				String error = result.getErrorCodeName();
-				if (error.equals(Constants.ERROR_NOT_REGISTERED)) {
-					// application has been removed from device - unregister it
-					unregister(gcmRegistration);
-
-				} else {
-					// unknown error
-					logManager.e("unknown gcm error " + error);
-				}
-			}
-		}
-	}
 
     /**
      * Sends a gcm message to a specific user passing one message type that contains a certain message
@@ -111,69 +83,30 @@ public class GcmManager {
      * @param messageType the type of the message (see {@link org.croudtrip.api.gcm.GcmConstants})
      * @param message the message that is sent itself
      * @throws IOException if the connection to Google was not successful and msg could not be sent.
+     * @throws java.lang.IllegalArgumentException if the receiver is not valid or not registered.
      */
-    public void sendGcmMessageToUser(User receiver, String messageType, String message) throws IOException {
-        if( receiver == null ) {
-            logManager.e("SendToUser failed, because user is null");
-            return;
-        }
-
-        GcmRegistration gcmRegistration = findRegistrationByUser(receiver).orNull();
-        if( gcmRegistration == null ) {
-            logManager.e("User " + receiver.getId() + " (" + receiver.getFirstName() + " " + receiver.getLastName() + ") is not registered.");
-            return;
-        }
-
-        final List<String> devices = new ArrayList<>();
-        devices.add(gcmRegistration.getGcmId());
-
-        // send
-        Message.Builder builder = new Message.Builder();
-        builder.addData( GcmConstants.GCM_TYPE, messageType );
-        builder.addData(messageType, message);
-
-        MulticastResult multicastResult = sender.send(builder.build(), devices, 5);
-
-        // analyze the results
-        List<Result> results = multicastResult.getResults();
-        for (int i = 0; i < devices.size(); i++) {
-            String gcmId = devices.get(i);
-            Result result = results.get(i);
-            String messageId = result.getMessageId();
-            if (messageId != null) {
-                logManager.d("send msg to " + gcmId + " with msg id " + messageId);
-                String canonicalRegId = result.getCanonicalRegistrationId();
-
-                // update gcm id
-                if (canonicalRegId != null) {
-                    logManager.i("updating gcmId from " + gcmId + " to " + canonicalRegId);
-                    register(gcmRegistration.getUser(), new GcmRegistrationDescription(canonicalRegId));
-                }
-
-            } else {
-                String error = result.getErrorCodeName();
-                if (error.equals(Constants.ERROR_NOT_REGISTERED)) {
-                    // application has been removed from device - unregister it
-                    unregister(gcmRegistration);
-
-                } else {
-                    // unknown error
-                    logManager.e("unknown gcm error " + error);
-                }
-            }
-        }
+    public void sendGcmMessageToUser(User receiver, String messageType, String message) throws IOException, IllegalStateException {
+        sendGcmMessageToUser(receiver, messageType, new Pair<String, String>(messageType, message));
     }
 
-    public void sendGcmMessageToUser(User receiver, String messageType, Pair<String, String>... messageData) throws IOException {
+    /**
+     * Sends a gcm message to a specific user passing a certain message type and multiple messages with it
+     * @param receiver the user that should receive the messageu
+     * @param messageType the type of the message (see {@link org.croudtrip.api.gcm.GcmConstants})
+     * @param messageData multiple instances {@link org.croudtrip.utils.Pair} that contain several messages that should be sent with the gcm
+     * @throws IOException IOException if the connection to Google was not successful and msg could not be sent
+     * @throws java.lang.IllegalArgumentException if the receiver is not valid or not registered.
+     */
+    public void sendGcmMessageToUser(User receiver, String messageType, Pair<String, String>... messageData) throws IOException, IllegalStateException {
         if( receiver == null ) {
             logManager.e("SendToUser failed, because user is null");
-            return;
+            throw new IllegalStateException("Receiver not specified");
         }
 
         GcmRegistration gcmRegistration = findRegistrationByUser(receiver).orNull();
         if( gcmRegistration == null ) {
             logManager.e("User " + receiver.getId() + " (" + receiver.getFirstName() + " " + receiver.getLastName() + ") is not registered.");
-            return;
+            throw new IllegalStateException("Receiver is not registered");
         }
 
         final List<String> devices = new ArrayList<>();

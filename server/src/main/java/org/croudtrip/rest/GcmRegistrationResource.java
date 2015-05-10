@@ -4,6 +4,7 @@ import com.google.common.base.Optional;
 
 import org.croudtrip.account.UserManager;
 import org.croudtrip.api.account.User;
+import org.croudtrip.api.gcm.GcmConstants;
 import org.croudtrip.api.gcm.GcmRegistration;
 import org.croudtrip.api.gcm.GcmRegistrationDescription;
 import org.croudtrip.gcm.GcmManager;
@@ -79,7 +80,7 @@ public class GcmRegistrationResource {
         Optional<GcmRegistration> registration = gcmManager.findRegistrationByUser(user.get());
         if (!registration.isPresent()) throw RestUtils.createNotFoundException();
 
-        gcmManager.sendGcmMessage(registration.get(), message);
+        gcmManager.sendGcmMessageToUser(user.get(), GcmConstants.GCM_MSG_DUMMY);
     }
 
 }
