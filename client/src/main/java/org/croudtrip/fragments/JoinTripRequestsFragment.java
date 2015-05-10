@@ -14,6 +14,7 @@ import org.croudtrip.R;
 import org.croudtrip.account.AccountManager;
 import org.croudtrip.api.TripsResource;
 import org.croudtrip.api.trips.JoinTripRequest;
+import org.croudtrip.api.trips.JoinTripRequestUpdate;
 import org.croudtrip.api.trips.TripOffer;
 import org.croudtrip.trip.JoinTripRequestsAdapter;
 import org.croudtrip.utils.DefaultTransformer;
@@ -25,28 +26,34 @@ import retrofit.RequestInterceptor;
 import retrofit.RestAdapter;
 import roboguice.inject.InjectView;
 import rx.Observable;
+import rx.Subscriber;
 import rx.Subscription;
-import rx.functions.Action0;
-import rx.functions.Action1;
 import rx.functions.Func1;
 import timber.log.Timber;
 
 /**
  * Shows the driver a list of passengers who want to join the trip. The driver can then
  * accept or decline such a JoinTripRequest.
+ *
  * @author Vanessa Lange
  */
-public class JoinTripRequestsFragment extends SubscriptionFragment{
+public class JoinTripRequestsFragment extends SubscriptionFragment {
 
     //************************* Variables ****************************//
 
-    @InjectView(R.id.tv_join_trip_requests_caption) private TextView caption;
-    @InjectView(R.id.rv_join_trip_requests)         private RecyclerView recyclerView;
-    @InjectView(R.id.pb_join_trip_requests)         private ProgressBar progressBar;
-    @InjectView(R.id.tv_join_trip_requests_error)   private TextView error;
+    @InjectView(R.id.tv_join_trip_requests_caption)
+    private TextView caption;
+    @InjectView(R.id.rv_join_trip_requests)
+    private RecyclerView recyclerView;
+    @InjectView(R.id.pb_join_trip_requests)
+    private ProgressBar progressBar;
+    @InjectView(R.id.tv_join_trip_requests_error)
+    private TextView error;
 
     private RecyclerView.LayoutManager layoutManager;
     private JoinTripRequestsAdapter adapter;
+
+    private TripsResource tripsResource;
 
 
     //************************* Methods ****************************//
@@ -67,23 +74,16 @@ public class JoinTripRequestsFragment extends SubscriptionFragment{
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        tripsResource = createTripsResource();
+
         // Use a linear layout manager to use the RecyclerView
         layoutManager = new LinearLayoutManager(getActivity());
         recyclerView.setLayoutManager(layoutManager);
 
         adapter = new JoinTripRequestsAdapter(null);
+        adapter.setOnRequestAcceptDeclineListener(new AcceptDeclineRequestListener());
         recyclerView.setAdapter(adapter);
 
-        final TripsResource tripsResource = new RestAdapter.Builder()
-                .setEndpoint(getString(R.string.server_address))
-                .setRequestInterceptor(new RequestInterceptor() {
-                    @Override
-                    public void intercept(RequestFacade request) {
-                        AccountManager.addAuthorizationHeader(getActivity(), request);
-                    }
-                })
-                .build()
-                .create(TripsResource.class);
 
         // Ask the server for join-trip-requests
         Subscription subscription = tripsResource.getOffers()
@@ -91,7 +91,7 @@ public class JoinTripRequestsFragment extends SubscriptionFragment{
                 .flatMap(new Func1<List<TripOffer>, Observable<TripOffer>>() {
                     @Override
                     public Observable<TripOffer> call(List<TripOffer> tripOffers) {
-                        Timber.i("Received " + tripOffers.size() + "list(s) of TripOffers");
+                        Timber.i("Received " + tripOffers.size() + " list(s) of TripOffers");
                         return Observable.from(tripOffers);
                     }
                 })
@@ -106,48 +106,177 @@ public class JoinTripRequestsFragment extends SubscriptionFragment{
                 })
                 .toList()
                 .compose(new DefaultTransformer<List<List<JoinTripRequest>>>())
-                .subscribe(new Action1<List<List<JoinTripRequest>>>() {
-                    // SUCCESS
-
-                    @Override
-                    public void call(List<List<JoinTripRequest>> joinTripRequests) {
-
-                        int numRequests = adapter.getItemCount();
-
-                        for(List<JoinTripRequest> requests : joinTripRequests){
-                            // Fill the list with results
-                            numRequests += requests.size();
-                            adapter.addElements(requests);
-                        }
-
-                        // Show a summary caption
-                        caption.setText(getResources().getQuantityString(R.plurals.join_trip_requests,
-                                numRequests, numRequests));
-                    }
-
-                }, new Action1<Throwable>() {
-                    // ERROR
-
-                    @Override
-                    public void call(Throwable throwable) {
-
-                        error.setVisibility(View.VISIBLE);
-                        caption.setText(getResources().getQuantityString(R.plurals.join_trip_requests,
-                                0, 0));
-
-                        Timber.e("Receiving JoinTripRequests failed:\n" + throwable.getMessage() +
-                                "\n" + throwable.fillInStackTrace());
-                    }
-                }, new Action0(){
-                    // DONE
-
-                    @Override
-                    public void call() {
-                        // UI:
-                        progressBar.setVisibility(View.GONE);
-                    }
-                });
+                .subscribe(new ReceiveRequestsSubscriber());
 
         subscriptions.add(subscription);
+    }
+
+
+    private TripsResource createTripsResource() {
+
+        TripsResource tripsResource = new RestAdapter.Builder()
+                .setEndpoint(getString(R.string.server_address))
+                .setRequestInterceptor(new RequestInterceptor() {
+                    @Override
+                    public void intercept(RequestFacade request) {
+                        AccountManager.addAuthorizationHeader(getActivity(), request);
+                    }
+                })
+                .build()
+                .create(TripsResource.class);
+
+        return tripsResource;
+    }
+
+
+    //*************************** Inner classes **********************//
+
+    private class AcceptDeclineRequestListener implements JoinTripRequestsAdapter.OnRequestAcceptDeclineListener {
+
+        /**
+         * Listener to listen for any driver decisions to accept or decline
+         * a pending JoinTripRequest. As soon as such a decision is received, the server
+         * is contacted.
+         *
+         * @param accept
+         * @param position
+         */
+        private void handleAcceptDecline(boolean accept, int position) {
+
+            String task;
+            if (accept) {
+                task = "Accepting";
+            } else {
+                task = "Declining";
+            }
+
+            JoinTripRequest request = adapter.getRequest(position);
+            Timber.i(task + " Request with ID " + request.getId());
+
+            // UI
+            progressBar.setVisibility(View.VISIBLE);
+
+            // Don't allow other user clicks while the task is performed
+            adapter.setOnRequestAcceptDeclineListener(null);
+
+            // Inform server
+            JoinTripRequestUpdate requestUpdate = new JoinTripRequestUpdate(accept);
+            Subscription subscription = tripsResource.updateJoinRequest(request.getOffer().getId(),
+                    request.getId(), requestUpdate)
+                    .compose(new DefaultTransformer<JoinTripRequest>())
+                    .subscribe(new AcceptDeclineRequestSubscriber(accept, position));
+
+            subscriptions.add(subscription);
+        }
+
+        @Override
+        public void onJoinRequestDecline(View view, int position) {
+            handleAcceptDecline(false, position);
+        }
+
+        @Override
+        public void onJoinRequestAccept(View view, int position) {
+            handleAcceptDecline(true, position);
+        }
+    }
+
+
+    /**
+     * A simple Subscriber that removes the previously accepted/declined request
+     * from the adapter
+     */
+    private class AcceptDeclineRequestSubscriber extends Subscriber<JoinTripRequest> {
+
+        private boolean accept;
+        private int position;
+
+        protected AcceptDeclineRequestSubscriber(boolean accept, int position) {
+            super();
+            this.accept = accept;
+            this.position = position;
+        }
+
+        @Override
+        public void onNext(JoinTripRequest joinTripRequest) {
+            // SUCCESS
+            Timber.i("Successfully informed the server about a request with ID " + joinTripRequest.getId());
+
+            // Everything worked out, so remove the request from the adapter
+            adapter.removeRequest(position);
+        }
+
+        @Override
+        public void onError(Throwable e) {
+            // ERROR
+            String task;
+
+            if (accept) {
+                task = "accepting";
+            } else {
+                task = "declining";
+            }
+
+            Timber.e("Error when " + task + " a JoinTripRequest: " + e.getMessage());
+            onDone();
+        }
+
+        @Override
+        public void onCompleted() {
+            onDone();
+        }
+
+        private void onDone(){
+
+            // Allow clicks on trips again
+            adapter.setOnRequestAcceptDeclineListener(new AcceptDeclineRequestListener());
+
+            // UI
+            progressBar.setVisibility(View.GONE);
+        }
+    }
+
+
+    /**
+     * Subscribes to any newly received JoinTripRequests which are then added to the adapter.
+     */
+    private class ReceiveRequestsSubscriber extends Subscriber<List<List<JoinTripRequest>>> {
+
+        @Override
+        public void onNext(List<List<JoinTripRequest>> joinTripRequests) {
+            // SUCCESS
+            int numRequests = adapter.getItemCount();
+
+            for (List<JoinTripRequest> requests : joinTripRequests) {
+                Timber.d("Received " + requests.size() + " JoinTripRequest(s)");
+                // Fill the list with results
+                numRequests += requests.size();
+                adapter.addRequests(requests);
+            }
+
+            // Show a summary caption
+            caption.setText(getResources().getQuantityString(R.plurals.join_trip_requests,
+                    numRequests, numRequests));
+        }
+
+        @Override
+        public void onError(Throwable e) {
+            // ERROR
+            error.setVisibility(View.VISIBLE);
+            caption.setText(getResources().getQuantityString(R.plurals.join_trip_requests,
+                    0, 0));
+
+            Timber.e("Receiving JoinTripRequests failed:\n" + e.getMessage());
+            onDone();
+        }
+
+        @Override
+        public void onCompleted() {
+            onDone();
+        }
+
+        private void onDone(){
+            // UI
+            progressBar.setVisibility(View.GONE);
+        }
     }
 }
