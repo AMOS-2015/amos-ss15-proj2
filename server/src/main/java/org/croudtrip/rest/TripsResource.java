@@ -9,6 +9,7 @@ import org.croudtrip.api.trips.JoinTripStatus;
 import org.croudtrip.api.trips.TripOffer;
 import org.croudtrip.api.trips.TripOfferDescription;
 import org.croudtrip.api.trips.TripQueryDescription;
+import org.croudtrip.api.trips.TripQueryResult;
 import org.croudtrip.api.trips.TripReservation;
 import org.croudtrip.trips.TripsManager;
 
@@ -87,8 +88,8 @@ public class TripsResource {
     @POST
     @UnitOfWork
     @Path(PATH_QUERIES)
-    public List<TripReservation> queryOffers(@Auth User passenger, @Valid TripQueryDescription requestDescription) throws Exception {
-        return tripsManager.createReservations(passenger, requestDescription);
+    public TripQueryResult queryOffers(@Auth User passenger, @Valid TripQueryDescription requestDescription) throws Exception {
+        return tripsManager.queryOffers(passenger, requestDescription);
     }
 
 

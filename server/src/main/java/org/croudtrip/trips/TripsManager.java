@@ -13,6 +13,7 @@ import org.croudtrip.api.trips.TripOffer;
 import org.croudtrip.api.trips.TripOfferDescription;
 import org.croudtrip.api.trips.TripQuery;
 import org.croudtrip.api.trips.TripQueryDescription;
+import org.croudtrip.api.trips.TripQueryResult;
 import org.croudtrip.api.trips.TripReservation;
 import org.croudtrip.db.JoinTripRequestDAO;
 import org.croudtrip.db.TripReservationDAO;
@@ -85,11 +86,11 @@ public class TripsManager {
 	}
 
 
-	public List<TripReservation> createReservations(User passenger, TripQueryDescription queryDescription) throws Exception {
+	public TripQueryResult queryOffers(User passenger, TripQueryDescription queryDescription) throws Exception {
 
         // compute passenger route
         List<Route> possiblePassengerRoutes = directionsManager.getDirections(queryDescription.getStart(), queryDescription.getEnd());
-        if (possiblePassengerRoutes.isEmpty()) return new ArrayList<>();
+        if (possiblePassengerRoutes.isEmpty()) return new TripQueryResult(new ArrayList<TripReservation>(), null);
 
         logManager.d("User " + passenger.getId() + " (" + passenger.getFirstName() + " " + passenger.getLastName() + ") sent query.");
 
@@ -119,7 +120,7 @@ public class TripsManager {
         List<TripReservation> reservations = findCheapestMatch(query, potentialMatches);
         for (TripReservation reservation : reservations) tripReservationDAO.save(reservation);
 
-        return reservations;
+        return new TripQueryResult(reservations, null);
 	}
 
 

@@ -23,11 +23,10 @@ import org.croudtrip.api.TripsResource;
 import org.croudtrip.api.directions.RouteLocation;
 import org.croudtrip.api.trips.JoinTripRequest;
 import org.croudtrip.api.trips.TripQueryDescription;
+import org.croudtrip.api.trips.TripQueryResult;
 import org.croudtrip.api.trips.TripReservation;
 import org.croudtrip.trip.JoinTripResultsAdapter;
 import org.croudtrip.utils.DefaultTransformer;
-
-import java.util.List;
 
 import javax.inject.Inject;
 
@@ -158,23 +157,23 @@ public class JoinTripResultsFragment extends SubscriptionFragment {
         editor.apply();
 
         Subscription subscription = tripsResource.queryOffers(tripQueryDescription)
-                .compose(new DefaultTransformer<List<TripReservation>>())
-                .subscribe(new Action1<List<TripReservation>>() {
+                .compose(new DefaultTransformer<TripQueryResult>())
+                .subscribe(new Action1<TripQueryResult>() {
                     // SUCCESS
 
                     @Override
-                    public void call(List<TripReservation> reservations) {
+                    public void call(TripQueryResult result) {
                         SharedPreferences.Editor editor = prefs.edit();
                         editor.putBoolean(Constants.SHARED_PREF_KEY_SEARCHING, false);
                         editor.apply();
 
                         // Update the caption text
-                        int numMatches = reservations.size();
+                        int numMatches = result.getReservations().size();
                         caption.setText(getResources().getQuantityString(R.plurals.join_trip_results,
                                 numMatches, numMatches));
 
                         // Fill the results list
-                        adapter.addElements(reservations);
+                        adapter.addElements(result.getReservations());
 
                         if (!(AccountManager.isUserLoggedIn(getActivity()))) {
                             recyclerView.setBackgroundColor(Color.GRAY);
