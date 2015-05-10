@@ -97,7 +97,7 @@ public class TripsResource {
     @GET
     @UnitOfWork
     @Path(PATH_QUERIES)
-    public List<RunningTripQuery> getQueries(@Auth User passenger) throws Exception {
+    public List<RunningTripQuery> getQueries(@Auth User passenger) {
         return tripsManager.getRunningQueries(passenger);
     }
 
@@ -105,11 +105,19 @@ public class TripsResource {
     @GET
     @UnitOfWork
     @Path(PATH_QUERIES + "/{queryId}")
-    public RunningTripQuery getQueries(@Auth User passenger, @PathParam("queryId") long queryId) throws Exception {
+    public RunningTripQuery getQuery(@Auth User passenger, @PathParam("queryId") long queryId) {
         Optional<RunningTripQuery> query = tripsManager.getRunningQuery(queryId);
         if (!query.isPresent()) throw RestUtils.createNotFoundException();
         if (query.get().getQuery().getPassenger().getId() != passenger.getId()) throw RestUtils.createUnauthorizedException();
         return query.get();
+    }
+
+
+    @DELETE
+    @UnitOfWork
+    @Path(PATH_QUERIES + "/{queryId}")
+    public void deleteQuery(@Auth User passenger, @PathParam("queryId") long queryId) {
+        tripsManager.deleteRunningQuery(getQuery(passenger, queryId));
     }
 
 
