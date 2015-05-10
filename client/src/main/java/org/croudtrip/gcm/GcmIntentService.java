@@ -180,7 +180,7 @@ public class GcmIntentService extends IntentService {
                                     getApplicationContext().startActivity(startingIntent);
 
                                 } else {*/
-                                    PendingIntent contentIntent = PendingIntent.getActivity(getApplicationContext(), 0, startingIntent, 0);
+                                    PendingIntent contentIntent = PendingIntent.getActivity(getApplicationContext(), 0, startingIntent, PendingIntent.FLAG_UPDATE_CURRENT);
                                     createNotification(getString(R.string.join_request_declined_title), getString(R.string.join_request_declined_msg),
                                             GcmConstants.GCM_NOTIFICATION_REQUEST_DECLINED_ID, contentIntent);
                                 //}
@@ -230,7 +230,7 @@ public class GcmIntentService extends IntentService {
                                     getApplicationContext().startActivity(startingIntent);
 
                                 } else {*/
-                                    PendingIntent contentIntent = PendingIntent.getActivity(getApplicationContext(), 0, startingIntent, 0);
+                                    PendingIntent contentIntent = PendingIntent.getActivity(getApplicationContext(), 0, startingIntent, PendingIntent.FLAG_UPDATE_CURRENT);
                                     createNotification(getString(R.string.join_request_accepted_title), getString(R.string.join_request_accepted_msg,
                                                     joinTripRequest.getOffer().getDriver().getFirstName()),
                                             GcmConstants.GCM_NOTIFICATION_REQUEST_ACCEPTED_ID, contentIntent);
@@ -282,7 +282,7 @@ public class GcmIntentService extends IntentService {
                                     getApplicationContext().startActivity(startingIntent);
 
                                 } else {*/
-                                    PendingIntent contentIntent = PendingIntent.getActivity(getApplicationContext(), 0, startingIntent, 0);
+                                    PendingIntent contentIntent = PendingIntent.getActivity(getApplicationContext(), 0, startingIntent, PendingIntent.FLAG_UPDATE_CURRENT);
                                     createNotification(getString(R.string.join_request_title), getString(R.string.joint_request_msg,
                                                     joinTripRequest.getQuery().getPassenger().getFirstName()),
                                             GcmConstants.GCM_NOTIFICATION_JOIN_REQUEST_ID, contentIntent);

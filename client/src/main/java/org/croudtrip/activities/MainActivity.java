@@ -130,7 +130,7 @@ public class MainActivity extends AbstractRoboDrawerActivity {
         }
 
         // TODO: remove navigation tab from drawer
-        this.addSection(newSection(getString(R.string.navigation), R.drawable.distance, new NavigationFragment()));
+        this.addSection(newSection(getString(R.string.navigation), R.drawable.distance, new Intent(this, DriverActivity.class ) ) );
 
         // TODO: remove from navigation drawer and call after push notification with REAL data
         PickUpPassengerFragment fragment = new PickUpPassengerFragment();
