@@ -7,6 +7,8 @@ import com.google.common.base.Objects;
 import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -46,15 +48,21 @@ public class RunningTripQuery {
 	@Embedded
 	private TripQuery query;
 
+	@Column(name = "status", nullable = false)
+	@Enumerated(EnumType.STRING)
+	private RunningTripQueryStatus status;
+
 	public RunningTripQuery() { }
 
 	@JsonCreator
 	public RunningTripQuery(
 			@JsonProperty("id") long id,
-			@JsonProperty("query") TripQuery query) {
+			@JsonProperty("query") TripQuery query,
+			@JsonProperty("status") RunningTripQueryStatus status) {
 
 		this.id = id;
 		this.query = query;
+		this.status = status;
 	}
 
 	public long getId() {
@@ -65,18 +73,23 @@ public class RunningTripQuery {
 		return query;
 	}
 
+	public RunningTripQueryStatus getStatus() {
+		return status;
+	}
+
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
 		RunningTripQuery that = (RunningTripQuery) o;
 		return Objects.equal(id, that.id) &&
-				Objects.equal(query, that.query);
+				Objects.equal(query, that.query) &&
+				Objects.equal(status, that.status);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hashCode(id, query);
+		return Objects.hashCode(id, query, status);
 	}
 
 }

@@ -63,6 +63,11 @@ public class GcmConstants {
      * Contains a list of the reservation ids that can be downloaded by the client. The list is represented by a string separated by spaces.*/
     public static final String GCM_MSG_FOUND_MATCHES = "FOUND_MATCHES";
 
+    /** The ID for the {@link org.croudtrip.api.trips.RunningTripQuery} which has found a potential
+     *  match.
+     */
+    public static final String GCM_MSG_FOUND_MATCHES_QUERY_ID = "QUERY_ID";
+
     /** Notifications IDs for android notifications */
     public static final int GCM_NOTIFICATION_JOIN_REQUEST_ID = 1;
     public static final int GCM_NOTIFICATION_REQUEST_ACCEPTED_ID = 2;

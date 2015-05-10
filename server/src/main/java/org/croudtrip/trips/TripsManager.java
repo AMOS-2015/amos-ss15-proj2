@@ -11,6 +11,7 @@ import org.croudtrip.api.gcm.GcmConstants;
 import org.croudtrip.api.trips.JoinTripRequest;
 import org.croudtrip.api.trips.JoinTripStatus;
 import org.croudtrip.api.trips.RunningTripQuery;
+import org.croudtrip.api.trips.RunningTripQueryStatus;
 import org.croudtrip.api.trips.TripOffer;
 import org.croudtrip.api.trips.TripOfferDescription;
 import org.croudtrip.api.trips.TripQuery;
@@ -78,13 +79,22 @@ public class TripsManager {
 
         // compare offer with running queries
         for (RunningTripQuery runningQuery : runningTripQueryDAO.findAll()) {
+            if (!runningQuery.getStatus().equals(RunningTripQueryStatus.RUNNING)) continue;
+
             TripQuery query = runningQuery.getQuery();
             List<TripOffer> potentialMatches = findPotentialMatches(Lists.newArrayList(offer), query);
 
             // notify passenger about potential match
             if (!potentialMatches.isEmpty()) {
-                gcmManager.sendGcmMessageToUser(query.getPassenger(), GcmConstants.GCM_MSG_FOUND_MATCHES);
-                deleteRunningQuery(runningQuery);
+                gcmManager.sendGcmMessageToUser(
+                        query.getPassenger(),
+                        GcmConstants.GCM_MSG_FOUND_MATCHES,
+                        new Pair<>(GcmConstants.GCM_MSG_FOUND_MATCHES_QUERY_ID, "" + runningQuery.getId()));
+                        RunningTripQuery updatedRunningQuery = new RunningTripQuery(
+                                runningQuery.getId(),
+                                runningQuery.getQuery(),
+                                RunningTripQueryStatus.FOUND);
+                runningTripQueryDAO.update(updatedRunningQuery);
             }
         }
 		return offer;
@@ -128,7 +138,7 @@ public class TripsManager {
         // if no reservations start "background search"
         RunningTripQuery runningQuery = null;
         if (reservations.isEmpty()) {
-            runningQuery = new RunningTripQuery(0, query);
+            runningQuery = new RunningTripQuery(0, query, RunningTripQueryStatus.RUNNING);
             runningTripQueryDAO.save(runningQuery);
         }
 
