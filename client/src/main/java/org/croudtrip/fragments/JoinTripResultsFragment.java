@@ -157,7 +157,7 @@ public class JoinTripResultsFragment extends SubscriptionFragment {
         editor.putBoolean(Constants.SHARED_PREF_KEY_SEARCHING, true);
         editor.apply();
 
-        Subscription subscription = tripsResource.createReservations(tripQueryDescription)
+        Subscription subscription = tripsResource.queryOffers(tripQueryDescription)
                 .compose(new DefaultTransformer<List<TripReservation>>())
                 .subscribe(new Action1<List<TripReservation>>() {
                     // SUCCESS

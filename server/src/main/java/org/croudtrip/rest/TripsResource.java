@@ -41,6 +41,7 @@ public class TripsResource {
     private static final String
             PATH_OFFERS = "/offers",
             PATH_JOINS = "/offers/{offerId}/joins",
+            PATH_QUERIES = "/queries",
             PATH_RESERVATIONS = "/reservations";
 
     private final TripsManager tripsManager;
@@ -85,8 +86,8 @@ public class TripsResource {
 
     @POST
     @UnitOfWork
-    @Path(PATH_RESERVATIONS)
-    public List<TripReservation> createReservations(@Auth User passenger, @Valid TripQueryDescription requestDescription) throws Exception {
+    @Path(PATH_QUERIES)
+    public List<TripReservation> queryOffers(@Auth User passenger, @Valid TripQueryDescription requestDescription) throws Exception {
         return tripsManager.createReservations(passenger, requestDescription);
     }
 
@@ -96,6 +97,16 @@ public class TripsResource {
     @Path(PATH_RESERVATIONS)
     public List<TripReservation> getReservations() {
         return tripsManager.findAllReservations();
+    }
+
+
+    @GET
+    @UnitOfWork
+    @Path(PATH_RESERVATIONS + "/{reservationId}")
+    public TripReservation getReservation(@PathParam("reservationId") long reservationId) {
+        Optional<TripReservation> reservation = tripsManager.findReservation(reservationId);
+        if (!reservation.isPresent()) throw RestUtils.createNotFoundException();
+        return reservation.get();
     }
 
 
