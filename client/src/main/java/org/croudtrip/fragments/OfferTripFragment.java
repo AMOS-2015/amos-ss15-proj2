@@ -155,7 +155,6 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
                 if (history.size() == 5) {
                     break;
                 }
-                Log.d("alex", "added historical place");
                 PlaceAutocompleteAdapter.PlaceAutocomplete a = adapter.new PlaceAutocomplete(savedPlaces.get(i).getId(), savedPlaces.get(i).getDescription());
                 history.add(a);
             }
@@ -245,11 +244,9 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
 
                 try {
                     if (tempPlace != null) {
-                        Log.d("alex", "Save place");
                         dbHelper.getPlaceDao().delete(tempPlace);
                         dbHelper.getPlaceDao().create(tempPlace);
                     } else {
-                        Log.d("alex", "Save custom place");
                         tempPlace = new org.croudtrip.db.Place();
                         tempPlace.setId(tv_destination.getText().toString());
                         tempPlace.setDescription(tv_destination.getText().toString());
@@ -330,7 +327,6 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
               */
             final PlaceAutocompleteAdapter.PlaceAutocomplete item = adapter.getItem(position);
             final String placeId = String.valueOf(item.placeId);
-            Log.d("alex", "Autocomplete item selected: " + item.description);
 
             /*
              Issue a request to the Places Geo Data API to retrieve a Place object with additional
@@ -340,7 +336,6 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
             placeResult.setResultCallback(mUpdatePlaceDetailsCallback);
 
             Toast.makeText(getActivity().getApplicationContext(), "Clicked: " + item.description, Toast.LENGTH_SHORT).show();
-            Log.d("alex", "Called getPlaceById to get Place details for " + item.placeId);
         }
     };
 
@@ -349,7 +344,6 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
         public void onResult(PlaceBuffer places) {
             if (!places.getStatus().isSuccess()) {
                 // Request did not complete successfully
-                Log.e("alex", "Place query did not complete. Error: " + places.getStatus().toString());
                 places.release();
                 return;
             }
@@ -366,18 +360,11 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
             lastSelected.setDescription(place.getAddress() + "");
             tv_address.setText(place.getAddress());
 
-
-            Log.d("alex", "Place details received: " + place.getName());
-
             places.release();
         }
     };
 
     public void onConnectionFailed(ConnectionResult connectionResult) {
-
-        Log.d("alex", "onConnectionFailed: ConnectionResult.getErrorCode() = "
-                + connectionResult.getErrorCode());
-
         // TODO(Developer): Check error code and notify the user of error state and resolution.
         Toast.makeText(getActivity(),
                 "Could not connect to Google API Client: Error " + connectionResult.getErrorCode(),
@@ -393,14 +380,11 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
     public void onConnected(Bundle bundle) {
         // Successfully connected to the API client. Pass it to the adapter to enable API access.
         adapter.setGoogleApiClient(googleApiClient);
-        Log.d("alex", "GoogleApiClient connected.");
-
     }
 
     @Override
     public void onConnectionSuspended(int i) {
         // Connection to the API client has been suspended. Disable API access in the client.
         adapter.setGoogleApiClient(null);
-        Log.e("alex", "GoogleApiClient connection suspended.");
     }
 }

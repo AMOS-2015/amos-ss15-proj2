@@ -174,7 +174,6 @@ public class JoinTripResultsFragment extends SubscriptionFragment {
 
         //If getArguments() is null this Fragment was called by the NavigationDrawer. This means the server is already searching for trips
         if (getArguments() != null) {
-            Log.d("alex", "START BACKGROUND SEARCH");
             startBackgroundSearch(getArguments());
         }
 
@@ -245,7 +244,6 @@ public class JoinTripResultsFragment extends SubscriptionFragment {
 
                     @Override
                     public void call(Throwable throwable) {
-                        Log.d("alex", "error: " + throwable.getMessage());
                         Timber.e("Error when trying to join a trip: " + throwable.getMessage());
 
                         SharedPreferences.Editor editor = prefs.edit();

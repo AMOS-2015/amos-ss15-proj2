@@ -76,11 +76,27 @@ public class GcmIntentService extends IntentService {
         GcmBroadcastReceiver.completeWakefulIntent(intent);
     }
 
+    /*
+    Should be called if the driver accepted this passenger.
+     */
     private void handleDriverAccepted(Intent intent) {
         SharedPreferences prefs = getApplicationContext().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
         editor.putBoolean(Constants.SHARED_PREF_KEY_SEARCHING, false);
         editor.putBoolean(Constants.SHARED_PREF_KEY_ACCEPTED, true);
+        editor.apply();
+
+        LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(Constants.EVENT_DRIVER_ACCEPTED));
+    }
+
+    /*
+    Should be called if the background search for "join trips" found something.
+     */
+    private void handleDriversFound(Intent intent) {
+        SharedPreferences prefs = getApplicationContext().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putBoolean(Constants.SHARED_PREF_KEY_SEARCHING, false);
+        editor.putBoolean(Constants.SHARED_PREF_KEY_ACCEPTED, false);
         editor.apply();
 
         LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(Constants.EVENT_DRIVER_ACCEPTED));
