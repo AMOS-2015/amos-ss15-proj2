@@ -86,7 +86,7 @@ public class TripsManager {
         // compute passenger route
         List<Route> possiblePassengerRoutes = directionsManager.getDirections(queryDescription.getStart(), queryDescription.getEnd());
         if (possiblePassengerRoutes.isEmpty()) return new ArrayList<>();
-        TripQuery query = new TripQuery(possiblePassengerRoutes.get(0), queryDescription.getMaxWaitingTimeInSeconds(), passenger);
+        TripQuery query = new TripQuery(possiblePassengerRoutes.get(0), queryDescription.getStart(), queryDescription.getEnd(), queryDescription.getMaxWaitingTimeInSeconds(), passenger);
 
         // analyse offers
         List<TripOffer> potentialMatches = new ArrayList<>();
@@ -181,7 +181,10 @@ public class TripsManager {
                     new Pair<String, String>(GcmConstants.GCM_MSG_JOIN_REQUEST_OFFER_ID, "" + joinRequest.getOffer().getId()));
         }
         else {
-            gcmManager.sendGcmMessageToUser(joinRequest.getQuery().getPassenger(), GcmConstants.GCM_MSG_REQUEST_DECLINED, "Your request was declined");
+            gcmManager.sendGcmMessageToUser(joinRequest.getQuery().getPassenger(), GcmConstants.GCM_MSG_REQUEST_DECLINED,
+                    new Pair<String, String>(GcmConstants.GCM_MSG_REQUEST_DECLINED, "Your request was accepted"),
+                    new Pair<String, String>(GcmConstants.GCM_MSG_JOIN_REQUEST_ID, "" + joinRequest.getId()),
+                    new Pair<String, String>(GcmConstants.GCM_MSG_JOIN_REQUEST_OFFER_ID, "" + joinRequest.getOffer().getId()));
         }
 
         System.out.println("Update join request gcm sent");
