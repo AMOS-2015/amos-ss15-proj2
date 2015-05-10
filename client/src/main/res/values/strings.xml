@@ -104,4 +104,6 @@
     <string name="join_request_sending_error">There was an error sending your request.</string>
     <string name="join_request_accepted_title">Accepted Request</string>
     <string name="join_request_accepted_msg">Congratulations! %1$s is taking you to your destination.</string>
+    <string name="join_request_declined_msg">Your request was declined by the driver.</string>
+    <string name="join_request_declined_title">Declined request!</string>
 </resources>

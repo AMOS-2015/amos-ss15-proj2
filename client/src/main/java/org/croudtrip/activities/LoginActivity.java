@@ -270,7 +270,7 @@ public class LoginActivity extends RoboActivity {
                     @Override
                     public void call(User user) {
                         // LOGIN SUCCESS
-
+                        Timber.d("Successful Login as " + user.getFirstName() + " " + user.getLastName());
                         // UI: Hide progress bar
                         loginProgressBar.setVisibility(View.GONE);
 

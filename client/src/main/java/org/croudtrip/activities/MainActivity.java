@@ -1,5 +1,6 @@
 package org.croudtrip.activities;
 
+import android.app.Fragment;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -105,7 +106,7 @@ public class MainActivity extends AbstractRoboDrawerActivity {
         action = action == null ? "" : action;
 
         // join trip/my joined trip
-        if ( false ) {
+        if ( false || action.equalsIgnoreCase(ACTION_SHOW_REQUEST_DECLINED) ) {
             //TODO: this solution works only if we get some kind of notification from the server if there are (no) results. There
             //TODO: we have to set "loading" in the sp to false
             this.addSection(newSection(getString(R.string.menu_my_trip), R.drawable.hitchhiker, new JoinTripResultsFragment()));
@@ -115,7 +116,7 @@ public class MainActivity extends AbstractRoboDrawerActivity {
 
         // offer trip/ my offered trip
         if( action.equalsIgnoreCase(ACTION_SHOW_JOIN_TRIP_REQUESTS) ) {
-            this.addSection(newSection("My Trip", R.drawable.distance, new JoinTripRequestsFragment()));
+            this.addSection(newSection("My Trip Requests", R.drawable.distance, new JoinTripRequestsFragment()));
         }
         else {
             this.addSection(newSection(getString(R.string.menu_offer_trip), R.drawable.ic_directions_car_white, new OfferTripFragment()));
@@ -157,13 +158,24 @@ public class MainActivity extends AbstractRoboDrawerActivity {
         }
 
         // set the section that should be loaded at the start of the application
-        this.setDefaultSectionLoaded(0);
-        if( action.equalsIgnoreCase(ACTION_SHOW_JOIN_TRIP_REQUESTS) ) {
+        if( action.equalsIgnoreCase(ACTION_SHOW_REQUEST_DECLINED) ) {
+            Timber.d("REQUEST WAS DECLINED OPENING MY TRIP");
+            this.setDefaultSectionLoaded(0);
+            MaterialSection section = this.getSectionByTitle(getString(R.string.menu_my_trip));
+
+            Bundle extras = getIntent().getExtras();
+            Bundle bundle = new Bundle();
+            bundle.putAll(extras);
+
+            Fragment requestFrag = (Fragment) section.getTargetFragment();
+            requestFrag.setArguments(bundle);
+        }
+        else if( action.equalsIgnoreCase(ACTION_SHOW_JOIN_TRIP_REQUESTS) ) {
             this.setDefaultSectionLoaded(1);
         }
 
         // do registration for GCM, if we are not registered
-        if( gcmManager.isRegistered() ) {
+        /*if( gcmManager.isRegistered() ) {
             Subscription subscription = gcmManager.register()
                     .compose(new DefaultTransformer<Void>())
                     .subscribe( new Action1<Void>() {
@@ -178,7 +190,7 @@ public class MainActivity extends AbstractRoboDrawerActivity {
                         }
                     });
             subscriptions.add(subscription);
-        }
+        }*/
 
         // download avatar
         if (avatarUrl == null) return;

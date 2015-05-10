@@ -51,6 +51,8 @@ public class JoinTripResultsFragment extends SubscriptionFragment {
     public final static String KEY_CURRENT_LOCATION_LONGITUDE = "current_location_longitude";
     public final static String KEY_DESTINATION_LATITUDE = "destination_latitude";
     public final static String KEY_DESTINATION_LONGITUDE = "destination_longitude";
+    public final static String KEY_MAX_WAITING_TIME = "max_waiting_time";
+
 
     @InjectView(R.id.pb_join_trip)                  private ProgressBar progressBar;
     @InjectView(R.id.tv_join_trip_results_caption)  private TextView caption;

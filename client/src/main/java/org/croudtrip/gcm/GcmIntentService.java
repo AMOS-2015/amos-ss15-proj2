@@ -20,6 +20,7 @@ import org.croudtrip.api.TripsResource;
 import org.croudtrip.api.gcm.GcmConstants;
 import org.croudtrip.api.trips.JoinTripRequest;
 import org.croudtrip.api.trips.JoinTripRequestUpdate;
+import org.croudtrip.fragments.JoinTripResultsFragment;
 import org.croudtrip.utils.LifecycleHandler;
 
 import retrofit.RequestInterceptor;
@@ -77,9 +78,59 @@ public class GcmIntentService extends IntentService {
     }
 
     private void handleRequestDeclined(Intent intent) {
+        Timber.d("REQUEST_DECLINED");
 
+        // create rest request handler
+        TripsResource tripsResource = new RestAdapter.Builder()
+                .setEndpoint(getString(R.string.server_address))
+                .setRequestInterceptor(new RequestInterceptor() {
+                    @Override
+                    public void intercept(RequestFacade request) {
+                        AccountManager.addAuthorizationHeader(getApplicationContext(), request);
+                    }
+                })
+                .build()
+                .create(TripsResource.class);
 
+        // extract join request and offer from message
+        long joinTripRequestId = Long.parseLong( intent.getExtras().getString(GcmConstants.GCM_MSG_JOIN_REQUEST_ID) );
+        long offerId = Long.parseLong( intent.getExtras().getString(GcmConstants.GCM_MSG_JOIN_REQUEST_OFFER_ID) );
 
+        // download the join trip request
+        tripsResource.getJoinRequest(offerId, joinTripRequestId )
+                .observeOn( Schedulers.io() )
+                .subscribeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                        new Action1<JoinTripRequest>() {
+                            @Override
+                            public void call(JoinTripRequest joinTripRequest) {
+
+                                Intent startingIntent = new Intent(getApplicationContext(), MainActivity.class);
+                                startingIntent.putExtra(JoinTripResultsFragment.KEY_CURRENT_LOCATION_LATITUDE, joinTripRequest.getQuery().getStartLocation().getLat());
+                                startingIntent.putExtra(JoinTripResultsFragment.KEY_CURRENT_LOCATION_LONGITUDE, joinTripRequest.getQuery().getStartLocation().getLng());
+                                startingIntent.putExtra(JoinTripResultsFragment.KEY_DESTINATION_LATITUDE, joinTripRequest.getQuery().getDestinationLocation().getLat());
+                                startingIntent.putExtra(JoinTripResultsFragment.KEY_DESTINATION_LONGITUDE, joinTripRequest.getQuery().getDestinationLocation().getLng());
+                                startingIntent.putExtra(JoinTripResultsFragment.KEY_MAX_WAITING_TIME, joinTripRequest.getQuery().getMaxWaitingTimeInSeconds());
+                                startingIntent.setAction(MainActivity.ACTION_SHOW_REQUEST_DECLINED);
+
+                                // create notification for the user
+                                if (LifecycleHandler.isApplicationInForeground()) {
+                                    startingIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                                    getApplicationContext().startActivity(startingIntent);
+
+                                } else {
+                                    PendingIntent contentIntent = PendingIntent.getActivity(getApplicationContext(), 0, startingIntent, 0);
+                                    createNotification(getString(R.string.join_request_declined_title), getString(R.string.join_request_declined_msg),
+                                            GcmConstants.GCM_NOTIFICATION_REQUEST_DECLINED_ID, contentIntent);
+                                }
+                            }
+                        },
+                        new Action1<Throwable>() {
+                            @Override
+                            public void call(Throwable throwable) {
+                                Timber.e("Something went wrong when downloading join request: " + throwable.getMessage());
+                            }
+                        });
     }
 
     private void handleRequestAccepted( Intent intent ){
@@ -191,7 +242,7 @@ public class GcmIntentService extends IntentService {
         // TODO: This is just for testing. Will be done cleanly and combined with the UI and android notifications.
         // TODO: Vanessa you can have a look at this piece of code to get a feeling how to accept or decline requests
         // always accepting for testing
-        JoinTripRequestUpdate requestUpdate = new JoinTripRequestUpdate( true );
+        JoinTripRequestUpdate requestUpdate = new JoinTripRequestUpdate( false );
         tripsResource.updateJoinRequest( offerId, joinTripRequestId, requestUpdate ).observeOn(Schedulers.io()).subscribeOn(Schedulers.newThread()).subscribe(new Action1<JoinTripRequest>() {
             @Override
             public void call(JoinTripRequest joinTripRequest) {
