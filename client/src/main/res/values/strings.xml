@@ -76,6 +76,7 @@
         <item quantity="other">%d people want to join you</item>
     </plurals>
     <string name="join_trip_requests_error">An error occurred when looking up you passengers. Please try again.</string>
+    <string name="join_trip_requests_earnings">Earnings: %s €</string>
 
 
     <string name="offer_choose_destination">What´s your destination?</string>
