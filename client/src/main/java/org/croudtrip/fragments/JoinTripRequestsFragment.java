@@ -101,7 +101,7 @@ public class JoinTripRequestsFragment extends SubscriptionFragment{
                         Timber.i("Received TripOffer with ID: " + tripOffer.getId());
 
                         // Get the JoinTripRequests for this TripOffer
-                        return tripsResource.getJoinRequests(tripOffer.getId());
+                        return tripsResource.getJoinRequests(tripOffer.getId(), true);
                     }
                 })
                 .toList()
