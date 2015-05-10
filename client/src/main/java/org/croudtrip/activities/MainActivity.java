@@ -60,6 +60,7 @@ public class MainActivity extends AbstractRoboDrawerActivity {
     public final static String ACTION_SHOW_JOIN_TRIP_REQUESTS = "SHOW_JOIN_TRIP_REQUESTS";
     public final static String ACTION_SHOW_REQUEST_ACCEPTED = "SHOW_REQUEST_ACCEPTED";
     public final static String ACTION_SHOW_REQUEST_DECLINED = "SHOW_REQUEST_DECLINED";
+    public static final String ACTION_SHOW_FOUND_MATCHES = "SHOW_FOUND_MATCHES";
 
     @Inject private GcmManager gcmManager;
     @Inject private LocationUpdater locationUpdater;
@@ -106,7 +107,7 @@ public class MainActivity extends AbstractRoboDrawerActivity {
         action = action == null ? "" : action;
 
         // join trip/my joined trip
-        if ( false || action.equalsIgnoreCase(ACTION_SHOW_REQUEST_DECLINED) ) {
+        if ( false || action.equalsIgnoreCase(ACTION_SHOW_REQUEST_DECLINED) || action.equalsIgnoreCase(ACTION_SHOW_FOUND_MATCHES) ) {
             //TODO: this solution works only if we get some kind of notification from the server if there are (no) results. There
             //TODO: we have to set "loading" in the sp to false
             this.addSection(newSection(getString(R.string.menu_my_trip), R.drawable.hitchhiker, new JoinTripResultsFragment()));
@@ -158,8 +159,7 @@ public class MainActivity extends AbstractRoboDrawerActivity {
         }
 
         // set the section that should be loaded at the start of the application
-        if( action.equalsIgnoreCase(ACTION_SHOW_REQUEST_DECLINED) ) {
-            Timber.d("REQUEST WAS DECLINED OPENING MY TRIP");
+        if( action.equalsIgnoreCase(ACTION_SHOW_REQUEST_DECLINED) || action.equals(ACTION_SHOW_FOUND_MATCHES) ) {
             this.setDefaultSectionLoaded(0);
             MaterialSection section = this.getSectionByTitle(getString(R.string.menu_my_trip));
 
