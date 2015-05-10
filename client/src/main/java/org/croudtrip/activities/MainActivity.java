@@ -73,6 +73,7 @@ public class MainActivity extends AbstractRoboDrawerActivity {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
         LocalBroadcastManager.getInstance(this).registerReceiver(driverAcceptedReceiver,new IntentFilter(Constants.EVENT_DRIVER_ACCEPTED));
     }
 
