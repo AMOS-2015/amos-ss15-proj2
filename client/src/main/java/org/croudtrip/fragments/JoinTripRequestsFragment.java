@@ -3,7 +3,6 @@ package org.croudtrip.fragments;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,7 +20,6 @@ import org.croudtrip.utils.DefaultTransformer;
 
 import java.util.List;
 
-import it.neokree.materialnavigationdrawer.MaterialNavigationDrawer;
 import retrofit.RequestInterceptor;
 import retrofit.RestAdapter;
 import roboguice.inject.InjectView;
@@ -50,9 +48,7 @@ public class JoinTripRequestsFragment extends SubscriptionFragment {
     @InjectView(R.id.tv_join_trip_requests_error)
     private TextView error;
 
-    private RecyclerView.LayoutManager layoutManager;
     private JoinTripRequestsAdapter adapter;
-
     private TripsResource tripsResource;
 
 
@@ -61,7 +57,7 @@ public class JoinTripRequestsFragment extends SubscriptionFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Toolbar toolbar = ((MaterialNavigationDrawer) this.getActivity()).getToolbar();
+        //Toolbar toolbar = ((MaterialNavigationDrawer) this.getActivity()).getToolbar();
     }
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -77,7 +73,7 @@ public class JoinTripRequestsFragment extends SubscriptionFragment {
         tripsResource = createTripsResource();
 
         // Use a linear layout manager to use the RecyclerView
-        layoutManager = new LinearLayoutManager(getActivity());
+        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getActivity());
         recyclerView.setLayoutManager(layoutManager);
 
         adapter = new JoinTripRequestsAdapter(null);
@@ -114,7 +110,7 @@ public class JoinTripRequestsFragment extends SubscriptionFragment {
 
     private TripsResource createTripsResource() {
 
-        TripsResource tripsResource = new RestAdapter.Builder()
+        return new RestAdapter.Builder()
                 .setEndpoint(getString(R.string.server_address))
                 .setRequestInterceptor(new RequestInterceptor() {
                     @Override
@@ -124,8 +120,6 @@ public class JoinTripRequestsFragment extends SubscriptionFragment {
                 })
                 .build()
                 .create(TripsResource.class);
-
-        return tripsResource;
     }
 
 
@@ -138,8 +132,8 @@ public class JoinTripRequestsFragment extends SubscriptionFragment {
          * a pending JoinTripRequest. As soon as such a decision is received, the server
          * is contacted.
          *
-         * @param accept
-         * @param position
+         * @param accept if this method should handle "accept" (true) or "decline" (false)
+         * @param position the position of the clicked JoinTripRequest in the adapter
          */
         private void handleAcceptDecline(boolean accept, int position) {
 
@@ -203,6 +197,10 @@ public class JoinTripRequestsFragment extends SubscriptionFragment {
 
             // Everything worked out, so remove the request from the adapter
             adapter.removeRequest(position);
+
+            int numRequests = adapter.getItemCount();
+            caption.setText(getResources().getQuantityString(R.plurals.join_trip_requests,
+                    numRequests, numRequests));
         }
 
         @Override
