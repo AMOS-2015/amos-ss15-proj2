@@ -77,7 +77,7 @@ public class JoinTripFragment extends SubscriptionFragment implements GoogleApiC
     private GoogleApiClient googleApiClient;
     private PlaceAutocompleteAdapter adapter;
 
-    private org.croudtrip.db.Place lastSelected; //TODO for po: decide what kind of places to save (real places, coordinates, custom string)
+    private org.croudtrip.db.Place lastSelected;
 
 
     @InjectView(R.id.name) private TextView tv_name;
@@ -105,7 +105,13 @@ public class JoinTripFragment extends SubscriptionFragment implements GoogleApiC
         setHasOptionsMenu(true);
 
         if (googleApiClient == null) {
-            rebuildGoogleApiClient();
+            googleApiClient = new GoogleApiClient.Builder(getActivity().getApplicationContext())
+                    .addConnectionCallbacks(this)
+                    .addOnConnectionFailedListener(this)
+                    .addApi(Places.GEO_DATA_API)
+                    .build();
+
+            googleApiClient.connect();
         } else if (!googleApiClient.isConnected()) {
             googleApiClient.connect();
         }
@@ -310,19 +316,6 @@ public class JoinTripFragment extends SubscriptionFragment implements GoogleApiC
     }
 
 
-    /* Google places API stuff below here - Who wants to refactor? :D */
-
-
-    private void rebuildGoogleApiClient() {
-        googleApiClient = new GoogleApiClient.Builder(getActivity().getApplicationContext())
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .addApi(Places.GEO_DATA_API)
-                .build();
-
-        googleApiClient.connect();
-    }
-
     private AdapterView.OnItemClickListener mAutocompleteClickListener = new AdapterView.OnItemClickListener() {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -339,37 +332,36 @@ public class JoinTripFragment extends SubscriptionFragment implements GoogleApiC
               details about the place.
               */
             PendingResult<PlaceBuffer> placeResult = Places.GeoDataApi.getPlaceById(googleApiClient, placeId);
-            placeResult.setResultCallback(mUpdatePlaceDetailsCallback);
+            placeResult.setResultCallback(new ResultCallback<PlaceBuffer>() {
+                @Override
+                public void onResult(PlaceBuffer places) {
+                    if (!places.getStatus().isSuccess()) {
+                        // Request did not complete successfully
+                        places.release();
+                        return;
+                    }
+
+                    Place place;
+                    try {
+                        place = places.get(0);
+                    } catch (IllegalStateException e) {
+                        places.release();
+                        return;
+                    }
+                    lastSelected = new org.croudtrip.db.Place();
+                    lastSelected.setId(place.getId());
+                    lastSelected.setDescription(place.getAddress() + "");
+                    tv_address.setText(place.getAddress());
+
+
+                    places.release();
+                }
+            });
 
             Toast.makeText(getActivity().getApplicationContext(), "Clicked: " + item.description, Toast.LENGTH_SHORT).show();
         }
     };
 
-    private ResultCallback<PlaceBuffer> mUpdatePlaceDetailsCallback = new ResultCallback<PlaceBuffer>() {
-        @Override
-        public void onResult(PlaceBuffer places) {
-            if (!places.getStatus().isSuccess()) {
-                // Request did not complete successfully
-                places.release();
-                return;
-            }
-
-            Place place;
-            try {
-                place = places.get(0);
-            } catch (IllegalStateException e) {
-                places.release();
-                return;
-            }
-            lastSelected = new org.croudtrip.db.Place();
-            lastSelected.setId(place.getId());
-            lastSelected.setDescription(place.getAddress() + "");
-            tv_address.setText(place.getAddress());
-
-
-            places.release();
-        }
-    };
 
     public void onConnectionFailed(ConnectionResult connectionResult) {
         // TODO(Developer): Check error code and notify the user of error state and resolution.

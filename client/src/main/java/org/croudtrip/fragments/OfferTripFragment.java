@@ -4,16 +4,12 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.res.Resources;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.text.Html;
-import android.text.Spanned;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -21,7 +17,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -58,7 +53,6 @@ import javax.inject.Inject;
 
 import it.neokree.materialnavigationdrawer.MaterialNavigationDrawer;
 import pl.charmas.android.reactivelocation.ReactiveLocationProvider;
-import roboguice.fragment.provided.RoboFragment;
 import roboguice.inject.InjectView;
 import rx.Subscription;
 import rx.functions.Action1;
@@ -107,7 +101,6 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        Toolbar toolbar = ((MaterialNavigationDrawer) this.getActivity()).getToolbar();
         geocoder = new Geocoder(getActivity());
         dbHelper = ((MainApplication) getActivity().getApplication()).getHelper();
     }
@@ -119,7 +112,13 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
         setHasOptionsMenu(true);
 
         if (googleApiClient == null) {
-            rebuildGoogleApiClient();
+            googleApiClient = new GoogleApiClient.Builder(getActivity().getApplicationContext())
+                    .addConnectionCallbacks(this)
+                    .addOnConnectionFailedListener(this)
+                    .addApi(Places.GEO_DATA_API)
+                    .build();
+
+            googleApiClient.connect();
         } else if (!googleApiClient.isConnected()) {
             googleApiClient.connect();
         }
@@ -306,17 +305,6 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
         //inflater.inflate(R.menu.menu_main, menu);
     }
 
-    private void rebuildGoogleApiClient() {
-        googleApiClient = new GoogleApiClient.Builder(getActivity().getApplicationContext())
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .addApi(Places.GEO_DATA_API)
-                .build();
-
-        googleApiClient.connect();
-        Log.d("alex", "building client: " + googleApiClient + " - " + googleApiClient.isConnected());
-    }
-
     private AdapterView.OnItemClickListener mAutocompleteClickListener = new AdapterView.OnItemClickListener() {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -333,34 +321,32 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
               details about the place.
               */
             PendingResult<PlaceBuffer> placeResult = Places.GeoDataApi.getPlaceById(googleApiClient, placeId);
-            placeResult.setResultCallback(mUpdatePlaceDetailsCallback);
+            placeResult.setResultCallback(new ResultCallback<PlaceBuffer>() {
+                @Override
+                public void onResult(PlaceBuffer places) {
+                    if (!places.getStatus().isSuccess()) {
+                        // Request did not complete successfully
+                        places.release();
+                        return;
+                    }
+
+                    Place place;
+                    try {
+                        place = places.get(0);
+                    } catch (IllegalStateException e) {
+                        places.release();
+                        return;
+                    }
+                    lastSelected = new org.croudtrip.db.Place();
+                    lastSelected.setId(place.getId());
+                    lastSelected.setDescription(place.getAddress() + "");
+                    tv_address.setText(place.getAddress());
+
+                    places.release();
+                }
+            });
 
             Toast.makeText(getActivity().getApplicationContext(), "Clicked: " + item.description, Toast.LENGTH_SHORT).show();
-        }
-    };
-
-    private ResultCallback<PlaceBuffer> mUpdatePlaceDetailsCallback = new ResultCallback<PlaceBuffer>() {
-        @Override
-        public void onResult(PlaceBuffer places) {
-            if (!places.getStatus().isSuccess()) {
-                // Request did not complete successfully
-                places.release();
-                return;
-            }
-
-            Place place;
-            try {
-                place = places.get(0);
-            } catch (IllegalStateException e) {
-                places.release();
-                return;
-            }
-            lastSelected = new org.croudtrip.db.Place();
-            lastSelected.setId(place.getId());
-            lastSelected.setDescription(place.getAddress() + "");
-            tv_address.setText(place.getAddress());
-
-            places.release();
         }
     };
 
@@ -374,7 +360,6 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
         adapter.setGoogleApiClient(null);
 
     }
-
 
     @Override
     public void onConnected(Bundle bundle) {

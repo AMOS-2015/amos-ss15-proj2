@@ -8,12 +8,10 @@ import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -61,7 +59,7 @@ public class JoinTripResultsFragment extends SubscriptionFragment {
     @InjectView(R.id.layout_join_trip_waiting)      private View waitingView;
     @InjectView(R.id.layout_join_trip_accepted)     private View acceptedView;
     @InjectView(R.id.btn_joint_trip_stop)           private Button btnStop;
-    @InjectView(R.id.btn_joint_trip_cancel)           private Button btnCancelTrip;
+    @InjectView(R.id.btn_joint_trip_cancel)         private Button btnCancelTrip;
 
 
 
@@ -79,7 +77,6 @@ public class JoinTripResultsFragment extends SubscriptionFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Toolbar toolbar = ((MaterialNavigationDrawer) this.getActivity()).getToolbar();
     }
 
     @Override
