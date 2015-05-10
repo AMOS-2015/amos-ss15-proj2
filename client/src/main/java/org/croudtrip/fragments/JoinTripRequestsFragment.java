@@ -76,7 +76,7 @@ public class JoinTripRequestsFragment extends SubscriptionFragment {
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getActivity());
         recyclerView.setLayoutManager(layoutManager);
 
-        adapter = new JoinTripRequestsAdapter(null);
+        adapter = new JoinTripRequestsAdapter(getActivity(), null);
         adapter.setOnRequestAcceptDeclineListener(new AcceptDeclineRequestListener());
         recyclerView.setAdapter(adapter);
 
