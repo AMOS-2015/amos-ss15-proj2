@@ -295,24 +295,6 @@ public class GcmIntentService extends IntentService {
                                 Timber.e("Something went wrong when downloading join request: " + throwable.getMessage());
                             }
                         });
-
-
-        // TODO: This is just for testing. Will be done cleanly and combined with the UI and android notifications.
-        // TODO: Vanessa you can have a look at this piece of code to get a feeling how to accept or decline requests
-        // always accepting for testing
-        JoinTripRequestUpdate requestUpdate = new JoinTripRequestUpdate( false );
-        tripsResource.updateJoinRequest( offerId, joinTripRequestId, requestUpdate ).observeOn(Schedulers.io()).subscribeOn(Schedulers.newThread()).subscribe(new Action1<JoinTripRequest>() {
-            @Override
-            public void call(JoinTripRequest joinTripRequest) {
-
-            }
-        }, new Action1<Throwable>() {
-            @Override
-            public void call(Throwable throwable) {
-                // on main thread; something went wrong
-                Timber.e("Error when trying to join a trip: " + throwable.getMessage());
-            }
-        });
     }
 
     private void createNotification( String title, String message, int notificationId ) {
