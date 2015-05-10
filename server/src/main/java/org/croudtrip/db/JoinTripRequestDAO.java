@@ -21,21 +21,21 @@ public class JoinTripRequestDAO extends AbstractDAO<JoinTripRequest> {
     }
 
 
-    public List<JoinTripRequest> findByOfferId(long offerId) {
-        return list(namedQuery(JoinTripRequest.QUERY_FIND_BY_OFFER_ID)
-                .setParameter(JoinTripRequest.QUERY_PARAM_OFFER_ID, offerId));
+    public List<JoinTripRequest> findByUserId(long userId) {
+        return list(namedQuery(JoinTripRequest.QUERY_FIND_BY_PASSENGER_OR_DRIVER_ID)
+                .setParameter(JoinTripRequest.QUERY_PARAM_USER_ID, userId));
     }
 
 
-    public List<JoinTripRequest> findByOfferIdAndStatusPassengerAccepted(long offerId) {
-        return list(namedQuery(JoinTripRequest.QUERY_FIND_BY_OFFER_ID_AND_PASSENGER_ACCEPTED_STATUS)
-                .setParameter(JoinTripRequest.QUERY_PARAM_OFFER_ID, offerId));
+    public List<JoinTripRequest> findByUserIdAndStatusPassengerAccepted(long userId) {
+        return list(namedQuery(JoinTripRequest.QUERY_FIND_BY_PASSENGER_OR_DRIVER_ID_AND_PASSENGER_ACCEPTED_STATUS)
+                .setParameter(JoinTripRequest.QUERY_PARAM_USER_ID, userId));
     }
 
 
     public List<JoinTripRequest> findDeclinedRequests( long passengerId ) {
         return list( namedQuery(JoinTripRequest.QUERY_FIND_BY_PASSENGER_ID_AND_DECLINED_STATUS)
-                .setParameter(JoinTripRequest.QUERY_PARAM_PASSENGER_ID, passengerId)  );
+                .setParameter(JoinTripRequest.QUERY_PARAM_USER_ID, passengerId)  );
     }
 
 

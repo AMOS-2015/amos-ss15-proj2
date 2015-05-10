@@ -97,7 +97,7 @@ public class JoinTripRequestsFragment extends SubscriptionFragment {
                         Timber.i("Received TripOffer with ID: " + tripOffer.getId());
 
                         // Get the JoinTripRequests for this TripOffer
-                        return tripsResource.getJoinRequests(tripOffer.getId(), true);
+                        return tripsResource.getJoinRequests(true);
                     }
                 })
                 .toList()
@@ -155,8 +155,7 @@ public class JoinTripRequestsFragment extends SubscriptionFragment {
 
             // Inform server
             JoinTripRequestUpdate requestUpdate = new JoinTripRequestUpdate(accept);
-            Subscription subscription = tripsResource.updateJoinRequest(request.getOffer().getId(),
-                    request.getId(), requestUpdate)
+            Subscription subscription = tripsResource.updateJoinRequest(request.getId(), requestUpdate)
                     .compose(new DefaultTransformer<JoinTripRequest>())
                     .subscribe(new AcceptDeclineRequestSubscriber(accept, position));
 

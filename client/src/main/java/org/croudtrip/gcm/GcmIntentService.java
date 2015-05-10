@@ -163,7 +163,7 @@ public class GcmIntentService extends IntentService {
         long offerId = Long.parseLong( intent.getExtras().getString(GcmConstants.GCM_MSG_JOIN_REQUEST_OFFER_ID) );
 
         // download the join trip request
-        tripsResource.getJoinRequest(offerId, joinTripRequestId )
+        tripsResource.getJoinRequest(joinTripRequestId )
                 .observeOn( Schedulers.io() )
                 .subscribeOn(AndroidSchedulers.mainThread())
                 .subscribe(
@@ -219,7 +219,7 @@ public class GcmIntentService extends IntentService {
         long offerId = Long.parseLong(intent.getExtras().getString(GcmConstants.GCM_MSG_JOIN_REQUEST_OFFER_ID));
 
         // download the join trip request
-        tripsResource.getJoinRequest(offerId, joinTripRequestId)
+        tripsResource.getJoinRequest(joinTripRequestId)
                 .observeOn(Schedulers.io())
                 .subscribeOn(AndroidSchedulers.mainThread())
                 .subscribe(
@@ -296,7 +296,7 @@ public class GcmIntentService extends IntentService {
         long offerId = Long.parseLong( intent.getExtras().getString(GcmConstants.GCM_MSG_JOIN_REQUEST_OFFER_ID) );
 
         // download the join trip request
-        tripsResource.getJoinRequest(offerId, joinTripRequestId).observeOn( Schedulers.io() )
+        tripsResource.getJoinRequest(joinTripRequestId).observeOn( Schedulers.io() )
                 .subscribeOn(AndroidSchedulers.mainThread())
                 .subscribe(
                         new Action1<JoinTripRequest>() {

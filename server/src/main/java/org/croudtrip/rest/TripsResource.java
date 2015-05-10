@@ -44,7 +44,7 @@ public class TripsResource {
 
     private static final String
             PATH_OFFERS = "/offers",
-            PATH_JOINS = "/offers/{offerId}/joins",
+            PATH_JOINS = "/joins",
             PATH_QUERIES = "/queries",
             PATH_RESERVATIONS = "/reservations";
 
@@ -157,18 +157,15 @@ public class TripsResource {
     @GET
     @UnitOfWork
     @Path(PATH_JOINS)
-    public List<JoinTripRequest> getJoinRequests(@Auth User driver, @PathParam("offerId") long offerId, @DefaultValue("false") @QueryParam("open") boolean showOnlyPassengerAccepted) {
-        TripOffer offer = assertIsValidOfferId(offerId);
-        System.out.println("show only open " + showOnlyPassengerAccepted);
-        return tripsManager.findAllJoinRequests(offer, showOnlyPassengerAccepted);
+    public List<JoinTripRequest> getJoinRequests(@Auth User passengerOrDriver, @DefaultValue("false") @QueryParam("open") boolean showOnlyPassengerAccepted) {
+        return tripsManager.findAllJoinRequests(passengerOrDriver, showOnlyPassengerAccepted);
     }
 
 
     @GET
     @UnitOfWork
     @Path(PATH_JOINS + "/{joinRequestId}")
-    public JoinTripRequest getJoinRequest(@Auth User driver, @PathParam("offerId") long offerId, @PathParam("joinRequestId") long joinRequestId) {
-        assertIsValidOfferId(offerId);
+    public JoinTripRequest getJoinRequest(@Auth User driver, @PathParam("joinRequestId") long joinRequestId) {
         Optional<JoinTripRequest> request = tripsManager.findJoinRequest(joinRequestId);
         if (!request.isPresent()) throw RestUtils.createNotFoundException();
         else return request.get();
@@ -180,13 +177,11 @@ public class TripsResource {
     @Path(PATH_JOINS + "/{joinRequestId}")
     public JoinTripRequest updateJoinRequest(
             @Auth User driver,
-            @PathParam("offerId") long offerId,
             @PathParam("joinRequestId") long joinRequestId,
             JoinTripRequestUpdate update) throws IOException {
 
         System.out.println("Update join request start");
 
-        assertIsValidOfferId(offerId);
         Optional<JoinTripRequest> joinRequest = tripsManager.findJoinRequest(joinRequestId);
         if (!joinRequest.isPresent()) throw RestUtils.createNotFoundException();
         if (!joinRequest.get().getStatus().equals(JoinTripStatus.PASSENGER_ACCEPTED)) {

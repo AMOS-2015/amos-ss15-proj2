@@ -203,9 +203,9 @@ public class TripsManager {
     }
 
 
-    public List<JoinTripRequest> findAllJoinRequests(TripOffer offer, boolean showOnlyPassengerAccepted) {
-        if (showOnlyPassengerAccepted) return joinTripRequestDAO.findByOfferIdAndStatusPassengerAccepted(offer.getId());
-        else return joinTripRequestDAO.findByOfferId(offer.getId());
+    public List<JoinTripRequest> findAllJoinRequests(User passengerOrDriver, boolean showOnlyPassengerAccepted) {
+        if (showOnlyPassengerAccepted) return joinTripRequestDAO.findByUserIdAndStatusPassengerAccepted(passengerOrDriver.getId());
+        else return joinTripRequestDAO.findByUserId(passengerOrDriver.getId());
     }
 
 

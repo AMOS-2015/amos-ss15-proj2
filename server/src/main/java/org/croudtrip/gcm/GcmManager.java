@@ -100,13 +100,15 @@ public class GcmManager {
     public void sendGcmMessageToUser(User receiver, String messageType, Pair<String, String>... messageData) throws IOException, IllegalStateException {
         if( receiver == null ) {
             logManager.e("SendToUser failed, because user is null");
-            throw new IllegalStateException("Receiver not specified");
+            return;
+            // throw new IllegalStateException("Receiver not specified");
         }
 
         GcmRegistration gcmRegistration = findRegistrationByUser(receiver).orNull();
         if( gcmRegistration == null ) {
             logManager.e("User " + receiver.getId() + " (" + receiver.getFirstName() + " " + receiver.getLastName() + ") is not registered.");
-            throw new IllegalStateException("Receiver is not registered");
+            return;
+            // throw new IllegalStateException("Receiver is not registered");
         }
 
         final List<String> devices = new ArrayList<>();
