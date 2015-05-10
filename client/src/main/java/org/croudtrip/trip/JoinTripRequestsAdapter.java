@@ -1,5 +1,6 @@
 package org.croudtrip.trip;
 
+import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -24,6 +25,7 @@ public class JoinTripRequestsAdapter extends RecyclerView.Adapter<JoinTripReques
 
     //************************** Variables ***************************//
 
+    private Context context;
     private List<JoinTripRequest> joinRequests;
 
     protected OnRequestAcceptDeclineListener listener;
@@ -43,6 +45,7 @@ public class JoinTripRequestsAdapter extends RecyclerView.Adapter<JoinTripReques
 
         protected TextView tvPassengerName;
         protected TextView tvPassengerLocation;
+        protected TextView tvEarnings;
 
 
         public ViewHolder(View view) {
@@ -51,6 +54,8 @@ public class JoinTripRequestsAdapter extends RecyclerView.Adapter<JoinTripReques
                     view.findViewById(R.id.tv_join_trip_requests_passenger_name);
             this.tvPassengerLocation = (TextView)
                     view.findViewById(R.id.tv_join_trip_requests_passenger_location);
+            this.tvEarnings = (TextView)
+                    view.findViewById(R.id.tv_join_trip_requests_earnings);
 
             // Get notified if the user accepts or declines a request
             ImageButton acceptButton = (ImageButton)
@@ -83,7 +88,8 @@ public class JoinTripRequestsAdapter extends RecyclerView.Adapter<JoinTripReques
 
     //************************** Constructors ***************************//
 
-    public JoinTripRequestsAdapter(List<JoinTripRequest> joinRequests) {
+    public JoinTripRequestsAdapter(Context context, List<JoinTripRequest> joinRequests) {
+        this.context = context;
         this.joinRequests = joinRequests;
     }
 
@@ -107,12 +113,25 @@ public class JoinTripRequestsAdapter extends RecyclerView.Adapter<JoinTripReques
 
         JoinTripRequest joinRequest = joinRequests.get(position);
 
+        // Passenger name
         User passenger = joinRequest.getQuery().getPassenger();
         holder.tvPassengerName.setText(passenger.getFullName());
 
+        // Passenger location
         Route passengerRoute = joinRequest.getQuery().getPassengerRoute();
         String passengerLocation = passengerRoute.getStart().getLat() + " / " + passengerRoute.getStart().getLng();
         holder.tvPassengerLocation.setText(passengerLocation);
+
+        // Earnings for driver
+        String earnings;
+        int cents = joinRequest.getTotalPriceInCents();
+
+        if(cents < 100){
+            earnings = "0," + cents;
+        }else{
+            earnings = (cents / 100) + "," + (cents % 100);
+        }
+        holder.tvEarnings.setText(context.getString(R.string.join_trip_requests_earnings, earnings));
     }
 
     @Override
