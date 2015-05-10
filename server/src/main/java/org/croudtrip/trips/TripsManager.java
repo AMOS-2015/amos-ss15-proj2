@@ -78,7 +78,7 @@ public class TripsManager {
 		tripOfferDAO.save(offer);
 
         // compare offer with running queries
-        for (RunningTripQuery runningQuery : runningTripQueryDAO.findAll()) {
+        for (RunningTripQuery runningQuery : runningTripQueryDAO.findByStatusRunning()) {
             if (!runningQuery.getStatus().equals(RunningTripQueryStatus.RUNNING)) continue;
 
             TripQuery query = runningQuery.getQuery();
@@ -146,8 +146,9 @@ public class TripsManager {
 	}
 
 
-    public List<RunningTripQuery> getRunningQueries(User passenger) {
-        return runningTripQueryDAO.findByPassengerId(passenger.getId());
+    public List<RunningTripQuery> getRunningQueries(User passenger, boolean showOnlyRunning) {
+        if (showOnlyRunning) return runningTripQueryDAO.findByPassengerIdAndSatusRunning(passenger.getId());
+        else return runningTripQueryDAO.findByPassengerId(passenger.getId());
     }
 
 

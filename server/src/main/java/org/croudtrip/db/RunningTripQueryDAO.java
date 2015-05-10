@@ -26,4 +26,15 @@ public class RunningTripQueryDAO extends AbstractDAO<RunningTripQuery> {
 				.setParameter(RunningTripQuery.QUERY_PARAM_PASSENGER_ID, passengerId));
 	}
 
+
+	public List<RunningTripQuery> findByStatusRunning() {
+		return list(namedQuery(RunningTripQuery.QUERY_FIND_BY_STATUS_RUNNING));
+	}
+
+
+	public List<RunningTripQuery> findByPassengerIdAndSatusRunning(long passengerId) {
+		return list(namedQuery(RunningTripQuery.QUERY_FIND_BY_PASSENGER_ID_AND_STATUS_RUNNING)
+				.setParameter(RunningTripQuery.QUERY_PARAM_PASSENGER_ID, passengerId));
+	}
+
 }

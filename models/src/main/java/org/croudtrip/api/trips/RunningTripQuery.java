@@ -29,6 +29,16 @@ import javax.persistence.Table;
 		@NamedQuery(
 				name = RunningTripQuery.QUERY_FIND_BY_PASSENGER_ID,
 				query = "SELECT r FROM " + RunningTripQuery.ENTITY_NAME + " r WHERE r.query.passenger.id = :" + RunningTripQuery.QUERY_PARAM_PASSENGER_ID
+		),
+		@NamedQuery(
+				name = RunningTripQuery.QUERY_FIND_BY_STATUS_RUNNING,
+				query = "SELECT r FROM " + RunningTripQuery.ENTITY_NAME + " r WHERE r.status = 'RUNNING'"
+		),
+		@NamedQuery(
+				name = RunningTripQuery.QUERY_FIND_BY_PASSENGER_ID_AND_STATUS_RUNNING,
+				query = "SELECT r FROM " + RunningTripQuery.ENTITY_NAME + " r WHERE " +
+						"r.query.passenger.id = :" + RunningTripQuery.QUERY_PARAM_PASSENGER_ID + " AND " +
+						"r.status = 'RUNNING'"
 		)
 })
 public class RunningTripQuery {
@@ -38,6 +48,8 @@ public class RunningTripQuery {
 			COLUMN_ID = "running_trip_query_id",
 			QUERY_NAME_FIND_ALL = "org.croudtrip.api.trips.RunningTripQuery.findAll",
 			QUERY_FIND_BY_PASSENGER_ID = "org.croudtrip.api.trips.RunningTripQuery.findByPassengerId",
+			QUERY_FIND_BY_STATUS_RUNNING = "org.croudtrip.api.trips.RunningTripQuery.findByStatusRunning",
+			QUERY_FIND_BY_PASSENGER_ID_AND_STATUS_RUNNING = "org.croudtrip.api.trips.RunningTripQuery.findByPassengerIdAndStatusRunning",
 			QUERY_PARAM_PASSENGER_ID = "passenger_id";
 
 	@Id
