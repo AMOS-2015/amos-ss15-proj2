@@ -156,6 +156,7 @@ public class TripsManager {
         // send push notification to driver
         gcmManager.sendGcmMessageToUser(offer.get().getDriver(), GcmConstants.GCM_MSG_JOIN_REQUEST,
                 new Pair<String, String>(GcmConstants.GCM_MSG_JOIN_REQUEST, "There is a new request to join your trip"),
+                new Pair<String, String>(GcmConstants.GCM_MSG_USER_MAIL, "" + offer.get().getDriver().getEmail()),
                 new Pair<String, String>(GcmConstants.GCM_MSG_JOIN_REQUEST_ID, "" + joinTripRequest.getId()),
                 new Pair<String, String>(GcmConstants.GCM_MSG_JOIN_REQUEST_OFFER_ID, "" + offer.get().getId()));
 
@@ -198,6 +199,7 @@ public class TripsManager {
         // notify the passenger about his trip status
         if( passengerAccepted ) {
             gcmManager.sendGcmMessageToUser(joinRequest.getQuery().getPassenger(), GcmConstants.GCM_MSG_REQUEST_ACCEPTED,
+                    new Pair<String, String>(GcmConstants.GCM_MSG_USER_MAIL, "" + joinRequest.getQuery().getPassenger().getEmail()),
                     new Pair<String, String>(GcmConstants.GCM_MSG_REQUEST_ACCEPTED, "Your request was accepted"),
                     new Pair<String, String>(GcmConstants.GCM_MSG_JOIN_REQUEST_ID, "" + joinRequest.getId()),
                     new Pair<String, String>(GcmConstants.GCM_MSG_JOIN_REQUEST_OFFER_ID, "" + joinRequest.getOffer().getId()));
@@ -205,6 +207,7 @@ public class TripsManager {
         else {
             gcmManager.sendGcmMessageToUser(joinRequest.getQuery().getPassenger(), GcmConstants.GCM_MSG_REQUEST_DECLINED,
                     new Pair<String, String>(GcmConstants.GCM_MSG_REQUEST_DECLINED, "Your request was declined"),
+                    new Pair<String, String>(GcmConstants.GCM_MSG_USER_MAIL, "" + joinRequest.getQuery().getPassenger().getEmail()),
                     new Pair<String, String>(GcmConstants.GCM_MSG_JOIN_REQUEST_ID, "" + joinRequest.getId()),
                     new Pair<String, String>(GcmConstants.GCM_MSG_JOIN_REQUEST_OFFER_ID, "" + joinRequest.getOffer().getId()));
         }

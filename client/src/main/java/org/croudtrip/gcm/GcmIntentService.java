@@ -54,6 +54,7 @@ public class GcmIntentService extends IntentService {
         String gcmMessageType = intent.getExtras().getString(GcmConstants.GCM_TYPE);
         Timber.d(gcmMessageType);
 
+
         switch(gcmMessageType)
         {
             case GcmConstants.GCM_MSG_DUMMY:

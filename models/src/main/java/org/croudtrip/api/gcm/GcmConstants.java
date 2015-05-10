@@ -33,6 +33,12 @@ public class GcmConstants {
      * {@link org.croudtrip.api.trips.JoinTripRequest} from the server */
     public static final String GCM_MSG_JOIN_REQUEST_OFFER_ID = "JOIN_REQUEST_OFFER_ID";
 
+    /** Contains the id of the user where the message is sent to. The user has to check, if it's him,
+     * otherwise it could come to problems if there are multiple user on the same device.
+     */
+    public static final String GCM_MSG_USER_MAIL = "USER_MAIL";
+
+
     /** Messages with this tag are sent to the passenger, if the driver accepted the offer.
      * <br>
      * Contains just a simple string that tells you that your request has been accepted */
