@@ -181,21 +181,4 @@ public class User {
         return Objects.hashCode(id, email, firstName, lastName, phoneNumber, isMale, birthday, address, avatarUrl, lastModified);
     }
 
-    public String getFullName(){
-        String name = "";
-
-        boolean firstNameEmpty = firstName == null || firstName.equals("");
-        boolean lastNameEmpty = lastName == null || lastName.equals("");
-
-        if(!firstNameEmpty && !lastNameEmpty){
-            name = firstName + " " + lastName;
-        }else if(lastNameEmpty){
-            name = lastName;
-        }else{
-            name = firstName;
-        }
-
-        return name;
-    }
-
 }

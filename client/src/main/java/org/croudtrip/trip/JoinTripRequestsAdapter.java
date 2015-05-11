@@ -115,7 +115,7 @@ public class JoinTripRequestsAdapter extends RecyclerView.Adapter<JoinTripReques
 
         // Passenger name
         User passenger = joinRequest.getQuery().getPassenger();
-        holder.tvPassengerName.setText(passenger.getFullName());
+        holder.tvPassengerName.setText(passenger.getFirstName() + " " + passenger.getLastName());
 
         // Passenger location
         List<RouteLocation> passengerWayPoints = joinRequest.getQuery().getPassengerRoute().getWayPoints();
@@ -201,4 +201,5 @@ public class JoinTripRequestsAdapter extends RecyclerView.Adapter<JoinTripReques
 
         return joinRequests.get(position);
     }
+
 }

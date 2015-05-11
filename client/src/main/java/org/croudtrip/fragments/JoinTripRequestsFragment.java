@@ -10,23 +10,19 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import org.croudtrip.R;
-import org.croudtrip.account.AccountManager;
 import org.croudtrip.api.TripsResource;
 import org.croudtrip.api.trips.JoinTripRequest;
 import org.croudtrip.api.trips.JoinTripRequestUpdate;
-import org.croudtrip.api.trips.TripOffer;
 import org.croudtrip.trip.JoinTripRequestsAdapter;
 import org.croudtrip.utils.DefaultTransformer;
 
 import java.util.List;
 
-import retrofit.RequestInterceptor;
-import retrofit.RestAdapter;
+import javax.inject.Inject;
+
 import roboguice.inject.InjectView;
-import rx.Observable;
 import rx.Subscriber;
 import rx.Subscription;
-import rx.functions.Func1;
 import timber.log.Timber;
 
 /**
@@ -49,7 +45,7 @@ public class JoinTripRequestsFragment extends SubscriptionFragment {
     private TextView error;
 
     private JoinTripRequestsAdapter adapter;
-    private TripsResource tripsResource;
+    @Inject private TripsResource tripsResource;
 
 
     //************************* Methods ****************************//
@@ -70,8 +66,6 @@ public class JoinTripRequestsFragment extends SubscriptionFragment {
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        tripsResource = createTripsResource();
-
         // Use a linear layout manager to use the RecyclerView
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getActivity());
         recyclerView.setLayoutManager(layoutManager);
@@ -82,44 +76,10 @@ public class JoinTripRequestsFragment extends SubscriptionFragment {
 
 
         // Ask the server for join-trip-requests
-        Subscription subscription = tripsResource.getOffers()
-                .compose(new DefaultTransformer<List<TripOffer>>())
-                .flatMap(new Func1<List<TripOffer>, Observable<TripOffer>>() {
-                    @Override
-                    public Observable<TripOffer> call(List<TripOffer> tripOffers) {
-                        Timber.i("Received " + tripOffers.size() + " list(s) of TripOffers");
-                        return Observable.from(tripOffers);
-                    }
-                })
-                .flatMap(new Func1<TripOffer, Observable<List<JoinTripRequest>>>() {
-                    @Override
-                    public Observable<List<JoinTripRequest>> call(TripOffer tripOffer) {
-                        Timber.i("Received TripOffer with ID: " + tripOffer.getId());
-
-                        // Get the JoinTripRequests for this TripOffer
-                        return tripsResource.getJoinRequests(true);
-                    }
-                })
-                .toList()
-                .compose(new DefaultTransformer<List<List<JoinTripRequest>>>())
-                .subscribe(new ReceiveRequestsSubscriber());
-
-        subscriptions.add(subscription);
-    }
-
-
-    private TripsResource createTripsResource() {
-
-        return new RestAdapter.Builder()
-                .setEndpoint(getString(R.string.server_address))
-                .setRequestInterceptor(new RequestInterceptor() {
-                    @Override
-                    public void intercept(RequestFacade request) {
-                        AccountManager.addAuthorizationHeader(getActivity(), request);
-                    }
-                })
-                .build()
-                .create(TripsResource.class);
+        subscriptions.add(tripsResource
+                .getJoinRequests(true)
+                .compose(new DefaultTransformer<List<JoinTripRequest>>())
+                .subscribe(new ReceiveRequestsSubscriber()));
     }
 
 
@@ -236,19 +196,17 @@ public class JoinTripRequestsFragment extends SubscriptionFragment {
     /**
      * Subscribes to any newly received JoinTripRequests which are then added to the adapter.
      */
-    private class ReceiveRequestsSubscriber extends Subscriber<List<List<JoinTripRequest>>> {
+    private class ReceiveRequestsSubscriber extends Subscriber<List<JoinTripRequest>> {
 
         @Override
-        public void onNext(List<List<JoinTripRequest>> joinTripRequests) {
+        public void onNext(List<JoinTripRequest> requests) {
             // SUCCESS
             int numRequests = adapter.getItemCount();
 
-            for (List<JoinTripRequest> requests : joinTripRequests) {
-                Timber.d("Received " + requests.size() + " JoinTripRequest(s)");
-                // Fill the list with results
-                numRequests += requests.size();
-                adapter.addRequests(requests);
-            }
+			Timber.d("Received " + requests.size() + " JoinTripRequest(s)");
+			// Fill the list with results
+			numRequests += requests.size();
+			adapter.addRequests(requests);
 
             // Show a summary caption
             caption.setText(getResources().getQuantityString(R.plurals.join_trip_requests,
