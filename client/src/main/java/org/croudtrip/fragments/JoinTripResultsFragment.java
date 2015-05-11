@@ -33,6 +33,9 @@ import java.util.List;
 import javax.inject.Inject;
 
 import it.neokree.materialnavigationdrawer.MaterialNavigationDrawer;
+import retrofit.Callback;
+import retrofit.RetrofitError;
+import retrofit.client.Response;
 import roboguice.inject.InjectView;
 import rx.Subscription;
 import rx.functions.Action0;
@@ -119,7 +122,17 @@ public class JoinTripResultsFragment extends SubscriptionFragment {
 
                 //tell the server to stop the background search
                 if (prefs.getLong(Constants.SHARED_PREF_KEY_QUERY_ID, -1) != -1) {
-                    tripsResource.deleteQuery(prefs.getLong(Constants.SHARED_PREF_KEY_QUERY_ID, -1));
+                    tripsResource.deleteQuery(prefs.getLong(Constants.SHARED_PREF_KEY_QUERY_ID, -1), new Callback<Response>() {
+                        @Override
+                        public void success(Response response, Response response2) {
+                            //yeay
+                        }
+
+                        @Override
+                        public void failure(RetrofitError error) {
+                            //try again?
+                        }
+                    });
                     editor.putLong(Constants.SHARED_PREF_KEY_QUERY_ID, -1);
                 }
 
