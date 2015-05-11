@@ -11,6 +11,7 @@ import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import com.getbase.floatingactionbutton.FloatingActionButton;
@@ -18,12 +19,15 @@ import com.getbase.floatingactionbutton.FloatingActionButton;
 import org.croudtrip.R;
 import org.croudtrip.account.AccountManager;
 import org.croudtrip.api.account.User;
+import org.croudtrip.api.account.Vehicle;
 import org.croudtrip.utils.DefaultTransformer;
+import org.croudtrip.utils.VehicleListAdapter;
 
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -59,6 +63,11 @@ public class ProfileFragment extends SubscriptionFragment {
         setHasOptionsMenu(true);
         final Fragment _this = this;
         final View view = inflater.inflate(R.layout.fragment_profile, container, false);
+
+        final List<Vehicle> vehicleList=null;
+
+        final VehicleListAdapter vehicleListAdapter = new VehicleListAdapter(getActivity(), vehicleList);
+        final ListView vehicleListView = (ListView) view.findViewById(R.id.vehicle_list);
 
         // Restore user from SharedPref file
         User user = AccountManager.getLoggedInUser(this.getActivity().getApplicationContext());
@@ -97,7 +106,7 @@ public class ProfileFragment extends SubscriptionFragment {
             setTextViewContent((TextView) view.findViewById(R.id.tv_profile_gender), gender);
             setTextViewContent((TextView) view.findViewById(R.id.tv_profile_birthyear), birthYear);
 
-
+            vehicleListView.setAdapter(vehicleListAdapter);
             // Edit profile button
             FloatingActionButton editProfile = (FloatingActionButton) view.findViewById(R.id.btn_edit_profile);
             editProfile.setOnClickListener(new View.OnClickListener() {
@@ -157,10 +166,14 @@ public class ProfileFragment extends SubscriptionFragment {
     }
 
 
+
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         menu.clear();
         //inflater.inflate(R.menu.menu_main, menu);
     }
+
+
+
 }
