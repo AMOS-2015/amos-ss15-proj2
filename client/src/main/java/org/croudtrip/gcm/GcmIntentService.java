@@ -271,6 +271,7 @@ public class GcmIntentService extends IntentService {
         SharedPreferences.Editor editor = prefs.edit();
         editor.putBoolean(Constants.SHARED_PREF_KEY_SEARCHING, false);
         editor.putBoolean(Constants.SHARED_PREF_KEY_ACCEPTED, false);
+        editor.putLong(Constants.SHARED_PREF_KEY_QUERY_ID, -1);
         editor.apply();
 
         LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(Constants.EVENT_DRIVER_ACCEPTED));

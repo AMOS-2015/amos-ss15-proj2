@@ -108,7 +108,6 @@ public class JoinTripResultsFragment extends SubscriptionFragment {
                 SharedPreferences prefs = getActivity().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
                 SharedPreferences.Editor editor = prefs.edit();
                 editor.putBoolean(Constants.SHARED_PREF_KEY_SEARCHING, false);
-                editor.apply();
                 Log.d("alex", "set to false 4");
 
 
@@ -118,7 +117,13 @@ public class JoinTripResultsFragment extends SubscriptionFragment {
 
                 Toast.makeText(getActivity().getApplicationContext(), R.string.join_trip_results_canceled, Toast.LENGTH_LONG);
 
-                //TODO: tell the server to stop the background search
+                //tell the server to stop the background search
+                if (prefs.getLong(Constants.SHARED_PREF_KEY_QUERY_ID, -1) != -1) {
+                    tripsResource.deleteQuery(prefs.getLong(Constants.SHARED_PREF_KEY_QUERY_ID, -1));
+                    editor.putLong(Constants.SHARED_PREF_KEY_QUERY_ID, -1);
+                }
+
+                editor.apply();
             }
         });
 
@@ -209,6 +214,7 @@ public class JoinTripResultsFragment extends SubscriptionFragment {
         editor.putBoolean(Constants.SHARED_PREF_KEY_SEARCHING, true);
         editor.apply();
 
+
         Subscription subscription = tripsResource.queryOffers(tripQueryDescription)
                 .compose(new DefaultTransformer<TripQueryResult>())
                 .subscribe(new Action1<TripQueryResult>() {
@@ -217,6 +223,8 @@ public class JoinTripResultsFragment extends SubscriptionFragment {
 
                     @Override
                     public void call(TripQueryResult result) {
+
+
 
                         List<TripReservation> reservations = result.getReservations();
 
@@ -245,6 +253,10 @@ public class JoinTripResultsFragment extends SubscriptionFragment {
                             //TODO: should we save them? no user story -> ask PO
                             ((MaterialNavigationDrawer) getActivity()).getCurrentSection().setTarget(new JoinTripFragment());
                             ((MaterialNavigationDrawer) getActivity()).getCurrentSection().setTitle(getString(R.string.join_trip));
+                        } else if (result.getRunningQuery() != null) {
+                            SharedPreferences.Editor editor = prefs.edit();
+                            editor.putLong(Constants.SHARED_PREF_KEY_QUERY_ID, result.getRunningQuery().getId());
+                            editor.apply();
                         }
                     }
 
