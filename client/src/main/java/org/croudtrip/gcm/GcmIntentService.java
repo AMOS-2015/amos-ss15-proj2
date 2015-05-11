@@ -64,19 +64,18 @@ public class GcmIntentService extends RoboIntentService {
                 break;
             case GcmConstants.GCM_MSG_REQUEST_ACCEPTED:
                 handleRequestAccepted( intent );
+                handleDriverAccepted(intent);
                 break;
             case GcmConstants.GCM_MSG_REQUEST_DECLINED:
                 handleRequestDeclined(intent);
                 break;
             case GcmConstants.GCM_MSG_FOUND_MATCHES:
                 handleFoundMatches(intent);
+                handleDriversFound(intent);
                 break;
             default:
                 break;
         }
-
-        String dummyMessage  = intent.getExtras().getString(gcmMessageType);
-        Timber.d("Server says " + dummyMessage);
 
         GcmBroadcastReceiver.completeWakefulIntent(intent);
     }
@@ -207,39 +206,11 @@ public class GcmIntentService extends RoboIntentService {
                         });
     }
 
-    /*
-    Should be called if the driver accepted this passenger.
-     */
-    private void handleDriverAccepted(Intent intent) {
-        SharedPreferences prefs = getApplicationContext().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.putBoolean(Constants.SHARED_PREF_KEY_SEARCHING, false);
-        editor.putBoolean(Constants.SHARED_PREF_KEY_ACCEPTED, true);
-        editor.apply();
-
-        LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(Constants.EVENT_DRIVER_ACCEPTED));
-    }
-
-    /*
-    Should be called if the background search for "join trips" found something.
-     */
-    private void handleDriversFound(Intent intent) {
-        SharedPreferences prefs = getApplicationContext().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.putBoolean(Constants.SHARED_PREF_KEY_SEARCHING, false);
-        editor.putBoolean(Constants.SHARED_PREF_KEY_ACCEPTED, false);
-        editor.putLong(Constants.SHARED_PREF_KEY_QUERY_ID, -1);
-        editor.apply();
-
-        LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(Constants.EVENT_DRIVER_ACCEPTED));
-    }
-
     private void handleJoinRequest(Intent intent) {
         Timber.d("JOIN_REQUEST");
         
         // extract join request and offer from message
         long joinTripRequestId = Long.parseLong( intent.getExtras().getString(GcmConstants.GCM_MSG_JOIN_REQUEST_ID) );
-        long offerId = Long.parseLong( intent.getExtras().getString(GcmConstants.GCM_MSG_JOIN_REQUEST_OFFER_ID) );
 
         // download the join trip request
         tripsResource.getJoinRequest(joinTripRequestId).observeOn( Schedulers.io() )
@@ -292,5 +263,32 @@ public class GcmIntentService extends RoboIntentService {
         notification.flags |= Notification.FLAG_AUTO_CANCEL;
 
         notificationManager.notify( notificationId, notification );
+    }
+
+    /*
+    Should be called if the driver accepted this passenger.
+     */
+    private void handleDriverAccepted(Intent intent) {
+        SharedPreferences prefs = getApplicationContext().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putBoolean(Constants.SHARED_PREF_KEY_SEARCHING, false);
+        editor.putBoolean(Constants.SHARED_PREF_KEY_ACCEPTED, true);
+        editor.apply();
+
+        LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(Constants.EVENT_DRIVER_ACCEPTED));
+    }
+
+    /*
+    Should be called if the background search for "join trips" found something.
+     */
+    private void handleDriversFound(Intent intent) {
+        SharedPreferences prefs = getApplicationContext().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putBoolean(Constants.SHARED_PREF_KEY_SEARCHING, false);
+        editor.putBoolean(Constants.SHARED_PREF_KEY_ACCEPTED, false);
+        editor.putLong(Constants.SHARED_PREF_KEY_QUERY_ID, -1);
+        editor.apply();
+
+        LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(Constants.EVENT_DRIVER_ACCEPTED));
     }
 }
