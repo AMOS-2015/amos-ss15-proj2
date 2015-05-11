@@ -30,16 +30,7 @@ public class DirectionsManager {
 
 
 	public List<Route> getDirections(RouteLocation startLocation, RouteLocation endLocation) throws NotFoundException, Exception {
-		List<Route> result = new ArrayList<>();
-		DirectionsRoute[] googleRoutes = DirectionsApi.newRequest(geoApiContext)
-				.origin(new LatLng(startLocation.getLat(), startLocation.getLng()))
-				.destination(new LatLng(endLocation.getLat(), endLocation.getLng()))
-				.await();
-
-		for (DirectionsRoute googleRoute : googleRoutes) {
-			result.add(createRoute(startLocation, endLocation, googleRoute));
-		}
-		return result;
+		return getDirections(startLocation, endLocation, new ArrayList<RouteLocation>());
 	}
 
     public List<Route> getDirections(RouteLocation startLocation, RouteLocation endLocation, List<RouteLocation> waypoints) throws NotFoundException, Exception {
@@ -50,7 +41,7 @@ public class DirectionsManager {
 
             // translating one of the waypoints failed
             if( result == null || result.length == 0 )
-                throw new NotFoundException("No address could be extracted from waypoint");
+                throw new NotFoundException("No address could be extracted from way point");
 
             stringWaypoints[i] = result[0].formattedAddress;
         }

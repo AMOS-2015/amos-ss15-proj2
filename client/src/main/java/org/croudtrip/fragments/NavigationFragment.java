@@ -21,6 +21,7 @@ import com.google.maps.android.PolyUtil;
 
 import org.croudtrip.R;
 import org.croudtrip.api.DirectionsResource;
+import org.croudtrip.api.directions.DirectionsRequest;
 import org.croudtrip.api.directions.Route;
 import org.croudtrip.api.directions.RouteLocation;
 import org.croudtrip.utils.DefaultTransformer;
@@ -30,7 +31,6 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-import roboguice.fragment.provided.RoboFragment;
 import rx.Subscription;
 import rx.functions.Action1;
 
@@ -105,7 +105,11 @@ public class NavigationFragment extends SubscriptionFragment {
                 final LinearLayout layout = (LinearLayout) getActivity().findViewById(R.id.progressLayout);
 
                 layout.setVisibility( View.VISIBLE );
-                Subscription subscription = directionsResource.getDirections(locFrom.getLat(), locFrom.getLng(), locTo.getLat(), locTo.getLng())
+                DirectionsRequest directionsRequest = new DirectionsRequest.Builder(
+                        new RouteLocation(locFrom.getLat(), locFrom.getLng()),
+                        new RouteLocation(locTo.getLat(), locTo.getLng()))
+                        .build();
+                Subscription subscription = directionsResource.getDirections(directionsRequest)
                         .compose(new DefaultTransformer<List<Route>>())
                         .subscribe(new Action1<List<Route>>() {
                             @Override

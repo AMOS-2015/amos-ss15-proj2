@@ -2,19 +2,20 @@ package org.croudtrip.rest;
 
 import com.google.maps.errors.NotFoundException;
 
-import org.croudtrip.directions.DirectionsManager;
-import org.croudtrip.api.directions.RouteLocation;
+import org.croudtrip.api.directions.DirectionsRequest;
 import org.croudtrip.api.directions.Route;
-import org.hibernate.validator.constraints.NotEmpty;
+import org.croudtrip.api.directions.RouteLocation;
+import org.croudtrip.directions.DirectionsManager;
 
+import java.util.LinkedList;
 import java.util.List;
 
 import javax.inject.Inject;
+import javax.validation.Valid;
 import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
 import io.dropwizard.hibernate.UnitOfWork;
@@ -35,14 +36,15 @@ public class DirectionsResource {
     }
 
 
-    @GET
+    @POST
     @UnitOfWork
-    public List<Route> getDirections(
-            @QueryParam("fromLat") double fromLat, @QueryParam("fromLng") double fromLng,
-            @NotEmpty @QueryParam("toLat") double toLat, @NotEmpty @QueryParam("toLng") double toLng) throws Exception {
-
+    public List<Route> getDirections(@Valid DirectionsRequest directionsRequest) throws Exception {
+        if (directionsRequest.getWayPoints().size() < 2) throw RestUtils.createJsonFormattedException("must contain at least 2 way points", 400);
         try {
-            return directionsManager.getDirections(new RouteLocation(fromLat, fromLng), new RouteLocation(toLat, toLng));
+            LinkedList<RouteLocation> wayPoints = new LinkedList<>(directionsRequest.getWayPoints());
+            RouteLocation start = wayPoints.remove(0);
+            RouteLocation end = wayPoints.remove(wayPoints.size() - 1);
+            return directionsManager.getDirections(start, end, wayPoints);
 
         } catch (NotFoundException nfe) {
             throw RestUtils.createJsonFormattedException("location not found", 404);
