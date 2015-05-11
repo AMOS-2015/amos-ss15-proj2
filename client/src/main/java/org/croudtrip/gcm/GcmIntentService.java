@@ -1,6 +1,5 @@
 package org.croudtrip.gcm;
 
-import android.app.IntentService;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -9,29 +8,21 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
-import android.widget.Toast;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 
 import org.croudtrip.Constants;
 import org.croudtrip.R;
-import org.croudtrip.account.AccountManager;
 import org.croudtrip.activities.MainActivity;
 import org.croudtrip.api.TripsResource;
 import org.croudtrip.api.gcm.GcmConstants;
 import org.croudtrip.api.trips.JoinTripRequest;
-import org.croudtrip.api.trips.JoinTripRequestUpdate;
 import org.croudtrip.api.trips.RunningTripQuery;
-import org.croudtrip.api.trips.TripQuery;
 import org.croudtrip.fragments.JoinTripResultsFragment;
-import org.croudtrip.fragments.JoinTripFragment;
-import org.croudtrip.utils.LifecycleHandler;
 
-import it.neokree.materialnavigationdrawer.MaterialNavigationDrawer;
-import retrofit.RequestInterceptor;
-import retrofit.RestAdapter;
+import javax.inject.Inject;
+
+import roboguice.service.RoboIntentService;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
 import rx.schedulers.Schedulers;
@@ -42,7 +33,9 @@ import timber.log.Timber;
  * so that the user can react on new offered trips or open requests.
  * Created by Frederik Simon on 08.05.2015.
  */
-public class GcmIntentService extends IntentService {
+public class GcmIntentService extends RoboIntentService {
+
+    @Inject TripsResource tripsResource;
 
     public GcmIntentService() {
         super("GcmIntentService");
@@ -91,18 +84,6 @@ public class GcmIntentService extends IntentService {
     private void handleFoundMatches( Intent intent ) {
         Timber.d("REQUEST_DECLINED");
 
-        // create rest request handler
-        TripsResource tripsResource = new RestAdapter.Builder()
-                .setEndpoint(getString(R.string.server_address))
-                .setRequestInterceptor(new RequestInterceptor() {
-                    @Override
-                    public void intercept(RequestFacade request) {
-                        AccountManager.addAuthorizationHeader(getApplicationContext(), request);
-                    }
-                })
-                .build()
-                .create(TripsResource.class);
-
         // extract join request and offer from message
         long queryId = Long.parseLong( intent.getExtras().getString(GcmConstants.GCM_MSG_FOUND_MATCHES_QUERY_ID) );
 
@@ -145,18 +126,6 @@ public class GcmIntentService extends IntentService {
 
     private void handleRequestDeclined(Intent intent) {
         Timber.d("REQUEST_DECLINED");
-
-        // create rest request handler
-        TripsResource tripsResource = new RestAdapter.Builder()
-                .setEndpoint(getString(R.string.server_address))
-                .setRequestInterceptor(new RequestInterceptor() {
-                    @Override
-                    public void intercept(RequestFacade request) {
-                        AccountManager.addAuthorizationHeader(getApplicationContext(), request);
-                    }
-                })
-                .build()
-                .create(TripsResource.class);
 
         // extract join request and offer from message
         long joinTripRequestId = Long.parseLong( intent.getExtras().getString(GcmConstants.GCM_MSG_JOIN_REQUEST_ID) );
@@ -201,18 +170,6 @@ public class GcmIntentService extends IntentService {
 
     private void handleRequestAccepted( Intent intent ) {
         Timber.d("REQUEST_ACCEPTED");
-
-        // create rest request handler
-        TripsResource tripsResource = new RestAdapter.Builder()
-                .setEndpoint(getString(R.string.server_address))
-                .setRequestInterceptor(new RequestInterceptor() {
-                    @Override
-                    public void intercept(RequestFacade request) {
-                        AccountManager.addAuthorizationHeader(getApplicationContext(), request);
-                    }
-                })
-                .build()
-                .create(TripsResource.class);
 
         // extract join request and offer from message
         long joinTripRequestId = Long.parseLong(intent.getExtras().getString(GcmConstants.GCM_MSG_JOIN_REQUEST_ID));
@@ -279,19 +236,7 @@ public class GcmIntentService extends IntentService {
 
     private void handleJoinRequest(Intent intent) {
         Timber.d("JOIN_REQUEST");
-
-        // create rest request handler
-        TripsResource tripsResource = new RestAdapter.Builder()
-                .setEndpoint(getString(R.string.server_address))
-                .setRequestInterceptor(new RequestInterceptor() {
-                    @Override
-                    public void intercept(RequestFacade request) {
-                        AccountManager.addAuthorizationHeader(getApplicationContext(), request);
-                    }
-                })
-                .build()
-                .create(TripsResource.class);
-
+        
         // extract join request and offer from message
         long joinTripRequestId = Long.parseLong( intent.getExtras().getString(GcmConstants.GCM_MSG_JOIN_REQUEST_ID) );
         long offerId = Long.parseLong( intent.getExtras().getString(GcmConstants.GCM_MSG_JOIN_REQUEST_OFFER_ID) );
