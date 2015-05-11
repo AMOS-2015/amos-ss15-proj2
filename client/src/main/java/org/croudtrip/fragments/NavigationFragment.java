@@ -2,14 +2,20 @@ package org.croudtrip.fragments;
 
 
 import android.app.Fragment;
+import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.InflateException;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.maps.CameraUpdate;
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -21,121 +27,252 @@ import com.google.maps.android.PolyUtil;
 
 import org.croudtrip.R;
 import org.croudtrip.api.DirectionsResource;
+import org.croudtrip.api.TripsResource;
 import org.croudtrip.api.directions.DirectionsRequest;
 import org.croudtrip.api.directions.Route;
 import org.croudtrip.api.directions.RouteLocation;
+import org.croudtrip.api.trips.JoinTripRequest;
+import org.croudtrip.api.trips.TripOffer;
+import org.croudtrip.api.trips.TripOfferDescription;
+import org.croudtrip.location.LocationUpdater;
 import org.croudtrip.utils.DefaultTransformer;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import javax.inject.Inject;
 
+import pl.charmas.android.reactivelocation.ReactiveLocationProvider;
+import roboguice.inject.ContentView;
+import roboguice.inject.InjectFragment;
+import roboguice.inject.InjectView;
+import rx.Observable;
 import rx.Subscription;
+import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
+import rx.functions.Func1;
+import rx.schedulers.Schedulers;
+import timber.log.Timber;
 
 /**
  * A simple {@link Fragment} subclass.
  */
 public class NavigationFragment extends SubscriptionFragment {
 
-    @Inject
-    DirectionsResource directionsResource;
+    public static final String ARG_ACTION = "ARG_ACTION";
+    public static final String ACTION_LOAD = "ACTION_LOAD";
+    public static final String ACTION_CREATE = "ACTION_CREATE";
+
+
+    @Inject TripsResource tripsResource;
+    @Inject DirectionsResource directionsResource;
+
+    private MapFragment mapFragment;
+    @InjectView(R.id.duration_text) private TextView durationText;
+    @InjectView(R.id.distance_text) private TextView distanceText;
+
+
+    @Inject private LocationUpdater locationUpdater;
+
+    private GoogleMap googleMap;
+
+    private static View rootView;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_maps, container, false);
+    public View onCreateView( LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        super.onCreateView(inflater, container, savedInstanceState);
 
-        MapFragment map = (MapFragment) getFragmentManager().findFragmentById(R.id.location_map);
-        map.getMapAsync( new MapReady() );
-        map.getMap().setOnMapClickListener( new MapListeners( map.getMap()) );
+        if( rootView != null ){
+            ViewGroup parent = (ViewGroup) rootView.getParent();
+            if (parent != null )
+                parent.removeView(rootView);
+        }
 
-        return view;
+
+        try {
+            rootView  = inflater.inflate(R.layout.fragment_maps, container, false);
+        } catch (InflateException e) {
+            /* map is already there, just return view as it is */
+        }
+        return rootView;
     }
 
-    class MapReady implements OnMapReadyCallback {
-        @Override
-        public void onMapReady(final GoogleMap map) {
-            map.setMyLocationEnabled(true);
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        Timber.d("ON VIEW CREATED");
+
+        mapFragment = (MapFragment) getFragmentManager().findFragmentById(R.id.location_map);
+        googleMap = mapFragment.getMap();
+        durationText.setText("");
+        distanceText.setText("");
+
+
+        Bundle b = getArguments();
+        if( b == null )
+            b = new Bundle();
+        String action = b.getString(ARG_ACTION, ACTION_LOAD);
+
+        if( action.equals( ACTION_CREATE ) ) {
+            Timber.d("Create Offer");
+            createOffer( b );
+        }
+        else
+        {
+            Timber.d("Load Offer");
+            loadOffer(b);
         }
     }
 
+    private void loadOffer(Bundle arguments) {
 
-    private class MapListeners implements GoogleMap.OnMapClickListener {
+        final RouteLocation[] driverWp = new RouteLocation[2] ;
 
-        private final GoogleMap googleMap;
-        private final List<LatLng> markers;
+        tripsResource.getOffers()
+                .compose(new DefaultTransformer<List<TripOffer>>())
+                .flatMap(new Func1<List<TripOffer>, Observable<TripOffer>>() {
+                    @Override
+                    public Observable<TripOffer> call(List<TripOffer> tripOffers) {
+                        if( tripOffers.isEmpty() )
+                            return Observable.empty();
 
-        public MapListeners(GoogleMap map ) {
-            this.googleMap = map;
-            this.markers = new ArrayList<>();
-        }
+                        return Observable.just(tripOffers.get(0));
+                    }
+                })
+                .subscribe( new Action1<TripOffer>() {
+                    @Override
+                    public void call(TripOffer offer) {
+                        if( offer == null )
+                            throw new NoSuchElementException("There's currently no offer of you");
 
+                        driverWp[0] = offer.getDriverRoute().getWayPoints().get(0);
+                        driverWp[1] = offer.getDriverRoute().getWayPoints().get(1);
 
-        @Override
-        public void onMapClick(LatLng latLng) {
+                    }
+                }, new Action1<Throwable>() {
+                    @Override
+                    public void call(Throwable throwable) {
+                        Timber.e(throwable.getMessage());
+                    }
+                } );
 
-            // clear map if there are more than two markers
-            if( markers.size() >= 2 ){
-                markers.clear();
-                googleMap.clear();
-            }
+        tripsResource.getJoinRequests(true)
+                .compose(new DefaultTransformer<List<JoinTripRequest>>())
+                .flatMap(new Func1<List<JoinTripRequest>, Observable<List<RouteLocation>>>() {
+                    @Override
+                    public Observable<List<RouteLocation>> call(List<JoinTripRequest> joinTripRequests) {
+                        // TODO: Handle multiple join trip request, but we will stick to one for now
+                        List<RouteLocation> waypoints = new LinkedList<RouteLocation>();
+                        if (joinTripRequests == null || joinTripRequests.isEmpty()) {
+                            return Observable.just(waypoints);
+                        }
 
-            if( markers.size() > 0 ) {
-                googleMap.addMarker(new MarkerOptions().position(latLng)
-                         .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
-            }
-            else
-            {
-                googleMap.addMarker(new MarkerOptions().position(latLng)
-                         .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ROSE)));
-            }
-            markers.add(latLng);
+                        JoinTripRequest firstRequest = joinTripRequests.get(0);
+                        List<RouteLocation> reqWaypoints = firstRequest.getQuery().getPassengerRoute().getWayPoints();
 
-            if( markers.size() >= 2 ) {
-                RouteLocation locFrom = new RouteLocation( markers.get(0).latitude, markers.get(0).longitude );
-                RouteLocation locTo = new RouteLocation( markers.get(1).latitude, markers.get(1).longitude );
+                        waypoints.addAll(reqWaypoints);
 
-                Log.d("FROM", markers.get(0).latitude + " " + markers.get(0).longitude);
-                Log.d("FROM", locFrom.getLat() + " " + locFrom.getLng());
+                        return Observable.just(waypoints);
+                    }
+                })
+                .flatMap(new Func1<List<RouteLocation>, Observable<List<Route>>>() {
+                    @Override
+                    public Observable<List<Route>> call(List<RouteLocation> routeLocations) {
+                        routeLocations.add(0, driverWp[0]);
+                        routeLocations.add(driverWp[1]);
+                        DirectionsRequest directionsRequest = new DirectionsRequest(routeLocations);
+                        return directionsResource.getDirections(directionsRequest);
+                    }
+                })
+                .flatMap( new Func1<List<Route>, Observable<Route>>() {
+                    @Override
+                    public Observable<Route> call(List<Route> routes) {
+                        if( routes == null || routes.isEmpty())
+                            return Observable.empty();
 
-                Log.d("TO", markers.get(1).latitude + " " + markers.get(1).longitude);
-                Log.d("TO", locTo.getLat() + " " + locTo.getLng());
+                        return Observable.just( routes.get(0) );
+                    }
+                })
+                .compose(new DefaultTransformer<Route>())
+                .subscribe(new Action1<Route>() {
+                    @Override
+                    public void call(Route route) {
+                        Timber.d("Your offer was successfully loaded from the server");
+                        generateRouteOnMap(route);
+                    }
+                }, new Action1<Throwable>() {
+                    @Override
+                    public void call(Throwable throwable) {
+                        // on main thread; something went wrong
+                        Timber.e(throwable.getMessage());
+                    }
+                });
+    }
 
-                final LinearLayout layout = (LinearLayout) getActivity().findViewById(R.id.progressLayout);
+    private void generateRouteOnMap(Route route) {
+        // show route information on the map
+        googleMap.addPolyline(new PolylineOptions().addAll(PolyUtil.decode(route.getPolyline())));
+        googleMap.setMyLocationEnabled(true);
 
-                layout.setVisibility( View.VISIBLE );
-                DirectionsRequest directionsRequest = new DirectionsRequest.Builder(
-                        new RouteLocation(locFrom.getLat(), locFrom.getLng()),
-                        new RouteLocation(locTo.getLat(), locTo.getLng()))
-                        .build();
-                Subscription subscription = directionsResource.getDirections(directionsRequest)
-                        .compose(new DefaultTransformer<List<Route>>())
-                        .subscribe(new Action1<List<Route>>() {
-                            @Override
-                            public void call(List<Route> routes) {
-                                if (routes == null || routes.isEmpty())
-                                    Toast.makeText(getActivity(), R.string.no_route_found, Toast.LENGTH_SHORT).show();
+        setDurationText(route);
+        distanceText.setText( String.format( getResources().getString(R.string.distance_text ), (route.getDistanceInMeters() / 1000.0) ) );
 
-                                for (Route route : routes) {
-                                    googleMap.addPolyline(new PolylineOptions().addAll(PolyUtil.decode(route.getPolyline())));
-                                }
+        // move camera to current position
+        Location location = locationUpdater.getLastLocation();
+        if( location == null )
+            return;
 
-                                layout.setVisibility(View.GONE);
-                            }
-                        }, new Action1<Throwable>() {
-                            @Override
-                            public void call(Throwable throwable) {
-                                // on main thread; something went wrong
-                                Log.e("COUDTRIP ERROR", throwable.getMessage());
-                                Log.e("COUDTRIP ERROR", throwable.getStackTrace().toString());
-                                layout.setVisibility(View.GONE);
-                            }
-                        });
+        LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
+        CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(latLng, 10);
+        googleMap.animateCamera(cameraUpdate);
+    }
 
-                subscriptions.add(subscription);
-            }
+    private void setDurationText(Route route) {
+        // compute duration for driving
+        long seconds = route.getDurationInSeconds();
+        long hours = seconds/3600;
+        long minutes = (seconds%3600)/60;
+        seconds = (seconds%3600)%60;
+        durationText.setText( String.format( getResources().getString(R.string.duration_text ), hours, minutes, seconds ) );
+    }
 
-        }
+    private void createOffer(Bundle arguments) {
+        int maxDiversion = arguments.getInt( "maxDiversion" );
+        int pricePerKilometer = arguments.getInt("pricePerKilometer");
+
+        double fromLat = arguments.getDouble("fromLat");
+        double fromLng = arguments.getDouble("fromLng");
+
+        double toLat = arguments.getDouble("toLat");
+        double toLng = arguments.getDouble("toLng");
+
+        TripOfferDescription tripOffer = new TripOfferDescription(
+                new RouteLocation( fromLat, fromLng ),
+                new RouteLocation( toLat, toLng ),
+                maxDiversion * 1000L,
+                pricePerKilometer);
+
+        tripsResource.addOffer( tripOffer )
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Action1<TripOffer>() {
+                    @Override
+                    public void call(TripOffer routeNavigations) {
+                        Timber.d("Your offer was successfully sent to the server");
+
+                        // show route information on the map
+                        generateRouteOnMap(routeNavigations.getDriverRoute());
+
+                    }
+                }, new Action1<Throwable>() {
+                    @Override
+                    public void call(Throwable throwable) {
+                        // on main thread; something went wrong
+                        Timber.e(throwable.getMessage());
+                    }
+                });
     }
 }

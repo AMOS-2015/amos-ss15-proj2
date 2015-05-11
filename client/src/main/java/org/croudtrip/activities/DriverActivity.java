@@ -55,13 +55,14 @@ public class DriverActivity extends RoboActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate( savedInstanceState );
 
+        Bundle b = getIntent().getExtras();
+
         durationText.setText("");
         distanceText.setText("");
 
         //mapFragment = (MapFragment) getFragmentManager().findFragmentById(R.id.location_map);
         googleMap = mapFragment.getMap();
 
-        Bundle b = getIntent().getExtras();
         int maxDiversion = b.getInt( "maxDiversion" );
         int pricePerKilometer = b.getInt("pricePerKilometer");
 

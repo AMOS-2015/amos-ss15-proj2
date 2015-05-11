@@ -29,6 +29,7 @@ import org.croudtrip.fragments.GcmTestFragment;
 import org.croudtrip.fragments.JoinTripFragment;
 import org.croudtrip.fragments.JoinTripRequestsFragment;
 import org.croudtrip.fragments.JoinTripResultsFragment;
+import org.croudtrip.fragments.NavigationFragment;
 import org.croudtrip.fragments.OfferTripFragment;
 import org.croudtrip.fragments.PickUpPassengerFragment;
 import org.croudtrip.fragments.ProfileFragment;
@@ -144,7 +145,8 @@ public class MainActivity extends AbstractRoboDrawerActivity {
         }
 
         // TODO: remove navigation tab from drawer
-        this.addSection(newSection(getString(R.string.navigation), R.drawable.distance, new Intent(this, DriverActivity.class ) ) );
+
+        this.addSection(newSection(getString(R.string.navigation), R.drawable.distance, new NavigationFragment()) );
 
         // TODO: remove from navigation drawer and call after push notification with REAL data
         PickUpPassengerFragment fragment = new PickUpPassengerFragment();
