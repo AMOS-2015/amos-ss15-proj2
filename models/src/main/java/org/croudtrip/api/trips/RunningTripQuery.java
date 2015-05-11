@@ -60,6 +60,9 @@ public class RunningTripQuery {
 	@Embedded
 	private TripQuery query;
 
+	@Column(name = "creationTimestamp", nullable = false)
+	private long creationTimestamp; // unix timestamp in seconds
+
 	@Column(name = "status", nullable = false)
 	@Enumerated(EnumType.STRING)
 	private RunningTripQueryStatus status;
@@ -70,10 +73,12 @@ public class RunningTripQuery {
 	public RunningTripQuery(
 			@JsonProperty("id") long id,
 			@JsonProperty("query") TripQuery query,
+			@JsonProperty("creationTimestamp") long creationTimestamp,
 			@JsonProperty("status") RunningTripQueryStatus status) {
 
 		this.id = id;
 		this.query = query;
+		this.creationTimestamp = creationTimestamp;
 		this.status = status;
 	}
 
@@ -83,6 +88,10 @@ public class RunningTripQuery {
 
 	public TripQuery getQuery() {
 		return query;
+	}
+
+	public long getCreationTimestamp() {
+		return creationTimestamp;
 	}
 
 	public RunningTripQueryStatus getStatus() {
@@ -96,12 +105,13 @@ public class RunningTripQuery {
 		RunningTripQuery that = (RunningTripQuery) o;
 		return Objects.equal(id, that.id) &&
 				Objects.equal(query, that.query) &&
+				Objects.equal(creationTimestamp, that.creationTimestamp) &&
 				Objects.equal(status, that.status);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hashCode(id, query, status);
+		return Objects.hashCode(id, query, creationTimestamp, status);
 	}
 
 }

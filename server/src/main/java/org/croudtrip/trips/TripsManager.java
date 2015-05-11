@@ -93,6 +93,7 @@ public class TripsManager {
                         RunningTripQuery updatedRunningQuery = new RunningTripQuery(
                                 runningQuery.getId(),
                                 runningQuery.getQuery(),
+                                runningQuery.getCreationTimestamp(),
                                 RunningTripQueryStatus.FOUND);
                 runningTripQueryDAO.update(updatedRunningQuery);
             }
@@ -138,7 +139,11 @@ public class TripsManager {
         // if no reservations start "background search"
         RunningTripQuery runningQuery = null;
         if (reservations.isEmpty()) {
-            runningQuery = new RunningTripQuery(0, query, RunningTripQueryStatus.RUNNING);
+            runningQuery = new RunningTripQuery(
+                    0,
+                    query,
+                    System.currentTimeMillis() / 1000,
+                    RunningTripQueryStatus.RUNNING);
             runningTripQueryDAO.save(runningQuery);
         }
 
