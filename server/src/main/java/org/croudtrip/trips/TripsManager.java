@@ -80,6 +80,7 @@ public class TripsManager {
         // compare offer with running queries
         for (RunningTripQuery runningQuery : runningTripQueryDAO.findByStatusRunning()) {
             if (!runningQuery.getStatus().equals(RunningTripQueryStatus.RUNNING)) continue;
+            if (runningQuery.getCreationTimestamp() + runningQuery.getQuery().getMaxWaitingTimeInSeconds() < System.currentTimeMillis() / 1000) continue;
 
             TripQuery query = runningQuery.getQuery();
             List<TripOffer> potentialMatches = findPotentialMatches(Lists.newArrayList(offer), query);
@@ -93,6 +94,7 @@ public class TripsManager {
                         RunningTripQuery updatedRunningQuery = new RunningTripQuery(
                                 runningQuery.getId(),
                                 runningQuery.getQuery(),
+                                runningQuery.getCreationTimestamp(),
                                 RunningTripQueryStatus.FOUND);
                 runningTripQueryDAO.update(updatedRunningQuery);
             }
@@ -138,7 +140,11 @@ public class TripsManager {
         // if no reservations start "background search"
         RunningTripQuery runningQuery = null;
         if (reservations.isEmpty()) {
-            runningQuery = new RunningTripQuery(0, query, RunningTripQueryStatus.RUNNING);
+            runningQuery = new RunningTripQuery(
+                    0,
+                    query,
+                    System.currentTimeMillis() / 1000,
+                    RunningTripQueryStatus.RUNNING);
             runningTripQueryDAO.save(runningQuery);
         }
 
