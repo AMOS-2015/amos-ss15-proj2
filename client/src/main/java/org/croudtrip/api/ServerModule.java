@@ -8,17 +8,12 @@ import com.google.inject.Provides;
 
 import org.croudtrip.R;
 import org.croudtrip.account.AccountManager;
-import org.croudtrip.api.DirectionsResource;
-import org.croudtrip.api.GcmRegistrationResource;
-import org.croudtrip.api.TripsResource;
-import org.croudtrip.api.UsersHeadResource;
-import org.croudtrip.api.UsersResource;
-import org.croudtrip.api.VehicleResource;
 
 import javax.inject.Inject;
 
 import retrofit.RequestInterceptor;
 import retrofit.RestAdapter;
+import retrofit.converter.JacksonConverter;
 
 public class ServerModule implements Module {
 
@@ -39,6 +34,7 @@ public class ServerModule implements Module {
 						AccountManager.addAuthorizationHeader(context, request);
 					}
 				})
+				.setConverter(new JacksonConverter())
 				.build();
 	}
 
