@@ -273,13 +273,12 @@ public class TripsManager {
             }
 
             // compute total driver route
-            List<RouteLocation> wayPoints = new ArrayList<>();
-            wayPoints.add(query.getPassengerRoute().getStart());
-            wayPoints.add(query.getPassengerRoute().getEnd());
+            List<RouteLocation> passengerWayPoints = query.getPassengerRoute().getWayPoints();
+            List<RouteLocation> driverWayPoints = offer.getDriverRoute().getWayPoints();
             List<Route> possibleDriverRoutes = directionsManager.getDirections(
-                    offer.getDriverRoute().getStart(),
-                    offer.getDriverRoute().getEnd(),
-                    wayPoints);
+                    driverWayPoints.get(0),
+                    driverWayPoints.get(1),
+                    passengerWayPoints);
 
             if (possibleDriverRoutes == null || possibleDriverRoutes.isEmpty()) continue;
 

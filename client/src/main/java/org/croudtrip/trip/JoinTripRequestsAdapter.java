@@ -10,7 +10,7 @@ import android.widget.TextView;
 
 import org.croudtrip.R;
 import org.croudtrip.api.account.User;
-import org.croudtrip.api.directions.Route;
+import org.croudtrip.api.directions.RouteLocation;
 import org.croudtrip.api.trips.JoinTripRequest;
 
 import java.util.List;
@@ -118,8 +118,8 @@ public class JoinTripRequestsAdapter extends RecyclerView.Adapter<JoinTripReques
         holder.tvPassengerName.setText(passenger.getFullName());
 
         // Passenger location
-        Route passengerRoute = joinRequest.getQuery().getPassengerRoute();
-        String passengerLocation = passengerRoute.getStart().getLat() + " / " + passengerRoute.getStart().getLng();
+        List<RouteLocation> passengerWayPoints = joinRequest.getQuery().getPassengerRoute().getWayPoints();
+        String passengerLocation = passengerWayPoints.get(0).getLat() + " / " + passengerWayPoints.get(1).getLng();
         holder.tvPassengerLocation.setText(passengerLocation);
 
         // Earnings for driver

@@ -1,14 +1,15 @@
 package org.croudtrip.api.directions;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Objects;
 
-import javax.persistence.AttributeOverride;
-import javax.persistence.AttributeOverrides;
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
-import javax.persistence.Embedded;
 
 /**
  * A route between two points.
@@ -16,19 +17,9 @@ import javax.persistence.Embedded;
 @Embeddable
 public class Route {
 
-    @Embedded
-    @AttributeOverrides({
-            @AttributeOverride(name= RouteLocation.COLUMN_LAT, column = @Column(name = "startLat")),
-            @AttributeOverride(name= RouteLocation.COLUMN_LNG, column = @Column(name = "startLng"))
-    })
-    private RouteLocation start;
-
-    @Embedded
-    @AttributeOverrides({
-            @AttributeOverride(name= RouteLocation.COLUMN_LAT, column = @Column(name = "endLat")),
-            @AttributeOverride(name= RouteLocation.COLUMN_LNG, column = @Column(name = "endLng"))
-    })
-    private RouteLocation end;
+    @Column(name = "way_points", nullable = false)
+    @JsonIgnore
+    private String wayPointsString;
 
     @Column(name = "polyLine", nullable = false, length = 65535)
     private String polyline;
@@ -50,21 +41,40 @@ public class Route {
 
     @JsonCreator
     public Route(
-            @JsonProperty("start") RouteLocation start,
-            @JsonProperty("end") RouteLocation end,
+            @JsonProperty("wayPoints") List<RouteLocation> wayPoints,
             @JsonProperty("polyline") String polyline,
             @JsonProperty("distanceInMeters") long distanceInMeters,
             @JsonProperty("durationInSeconds") long durationInSeconds,
             @JsonProperty("copyrights") String googleCopyrights,
             @JsonProperty("warnings") String googleWarnings) {
 
-        this.start = start;
-        this.end = end;
+        // convert JSON fields to string for persistence
+        StringBuilder wayPointsBuilder = new StringBuilder();
+        boolean firstPoint = true;
+        for (RouteLocation location : wayPoints) {
+            if (firstPoint) firstPoint = false;
+            else wayPointsBuilder.append("#");
+            wayPointsBuilder.append(location.getLat()).append(":").append(location.getLng());
+        }
+        this.wayPointsString = wayPointsBuilder.toString();
+
         this.polyline = polyline;
         this.distanceInMeters = distanceInMeters;
         this.durationInSeconds = durationInSeconds;
         this.googleCopyrights = googleCopyrights;
         this.googleWarnings = googleWarnings;
+    }
+
+    @JsonProperty("wayPoints")
+    public List<RouteLocation> getWayPoints() {
+        // parse string to list of way points
+        List<RouteLocation> result = new ArrayList<>();
+        String[] points = wayPointsString.split("#");
+        for (String point : points) {
+            String[] parts = point.split(":");
+            result.add(new RouteLocation(Float.valueOf(parts[0]), Float.valueOf(parts[1])));
+        }
+        return result;
     }
 
     public String getPolyline() {
@@ -83,14 +93,6 @@ public class Route {
         return googleCopyrights;
     }
 
-    public RouteLocation getStart() {
-        return start;
-    }
-
-    public RouteLocation getEnd() {
-        return end;
-    }
-
     @Override
     public boolean equals(Object other) {
         if (other == null || !(other instanceof Route)) return false;
@@ -100,13 +102,12 @@ public class Route {
                 && Objects.equal(durationInSeconds, route.durationInSeconds)
                 && Objects.equal(distanceInMeters, route.distanceInMeters)
                 && Objects.equal(googleWarnings, route.googleWarnings)
-                && Objects.equal(start, route.start)
-                && Objects.equal(end, route.end);
+                && Objects.equal(wayPointsString, route.wayPointsString);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(polyline, googleCopyrights, durationInSeconds, distanceInMeters, googleWarnings, start, end);
+        return Objects.hashCode(polyline, googleCopyrights, durationInSeconds, distanceInMeters, googleWarnings, wayPointsString);
     }
 
 }

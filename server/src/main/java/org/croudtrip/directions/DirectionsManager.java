@@ -99,7 +99,10 @@ public class DirectionsManager {
 			warnings = null;
 		}
 
-		return new Route(startLocation, endLocation, polyline.getEncodedPath(), distanceInMeters, durationInSeconds, googleRoute.copyrights, warnings);
+		List<RouteLocation> wayPoints = new ArrayList<>();
+		wayPoints.add(startLocation);
+		wayPoints.add(endLocation);
+		return new Route(wayPoints, polyline.getEncodedPath(), distanceInMeters, durationInSeconds, googleRoute.copyrights, warnings);
 	}
 
 }
