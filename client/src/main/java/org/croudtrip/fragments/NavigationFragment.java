@@ -183,6 +183,7 @@ public class NavigationFragment extends SubscriptionFragment {
                     public Observable<List<Route>> call(List<RouteLocation> routeLocations) {
                         routeLocations.add(0, driverWp[0]);
                         routeLocations.add(driverWp[1]);
+                        Timber.d("Sending directions request with " + routeLocations.size() + " waypoints");
                         DirectionsRequest directionsRequest = new DirectionsRequest(routeLocations);
                         return directionsResource.getDirections(directionsRequest);
                     }
