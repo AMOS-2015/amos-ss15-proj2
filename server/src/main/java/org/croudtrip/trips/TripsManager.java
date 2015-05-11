@@ -80,6 +80,7 @@ public class TripsManager {
         // compare offer with running queries
         for (RunningTripQuery runningQuery : runningTripQueryDAO.findByStatusRunning()) {
             if (!runningQuery.getStatus().equals(RunningTripQueryStatus.RUNNING)) continue;
+            if (runningQuery.getCreationTimestamp() + runningQuery.getQuery().getMaxWaitingTimeInSeconds() < System.currentTimeMillis() / 1000) continue;
 
             TripQuery query = runningQuery.getQuery();
             List<TripOffer> potentialMatches = findPotentialMatches(Lists.newArrayList(offer), query);
