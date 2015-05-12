@@ -25,6 +25,27 @@
                 android:indeterminate="true" />
         </LinearLayout>
 
+        <RelativeLayout
+            android:id="@+id/errorLayout"
+            android:layout_width="fill_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:visibility="gone"
+            android:background="@color/transparent" >
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:text="Large Text"
+                android:id="@+id/errorText"
+                android:textColor="@color/error"
+                android:layout_gravity="center_horizontal"
+                android:layout_centerVertical="true"
+                android:layout_centerHorizontal="true" />
+        </RelativeLayout>
+
         <fragment
             android:id="@+id/location_map"
             android:layout_width="match_parent"

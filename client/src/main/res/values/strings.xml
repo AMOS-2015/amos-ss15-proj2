@@ -124,4 +124,5 @@
     <string name="join_request_declined_title">Declined request!</string>
     <string name="found_matches_title">Found Matches!</string>
     <string name="found_matches_msg">Found new Matches for your recent query.</string>
+    <string name="navigation_error_no_offer">Error: You have currently no running offer.</string>
 </resources>

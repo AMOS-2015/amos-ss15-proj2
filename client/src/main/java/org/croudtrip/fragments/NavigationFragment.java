@@ -10,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -73,6 +74,8 @@ public class NavigationFragment extends SubscriptionFragment {
     @InjectView(R.id.duration_text) private TextView durationText;
     @InjectView(R.id.distance_text) private TextView distanceText;
     @InjectView(R.id.progressLayout) private LinearLayout progressLayout;
+    @InjectView(R.id.errorLayout) private RelativeLayout errorLayout;
+    @InjectView(R.id.errorText) private TextView errorText;
 
     @Inject private LocationUpdater locationUpdater;
 
@@ -116,6 +119,7 @@ public class NavigationFragment extends SubscriptionFragment {
             b = new Bundle();
         String action = b.getString(ARG_ACTION, ACTION_LOAD);
 
+        errorLayout.setVisibility(View.GONE);
         progressLayout.setVisibility(View.VISIBLE);
 
         if( action.equals( ACTION_CREATE ) ) {
@@ -161,6 +165,12 @@ public class NavigationFragment extends SubscriptionFragment {
                         Timber.e(throwable.getMessage());
                     }
                 } );
+
+        if( driverWp[0] == null ) {
+            errorText.setText(R.string.navigation_error_no_offer);
+            errorLayout.setVisibility(View.VISIBLE);
+            return;
+        }
 
         tripsResource.getDriverAcceptedJoinRequests()
                 .compose(new DefaultTransformer<List<JoinTripRequest>>())
