@@ -72,7 +72,7 @@ public class NavigationFragment extends SubscriptionFragment {
     private MapFragment mapFragment;
     @InjectView(R.id.duration_text) private TextView durationText;
     @InjectView(R.id.distance_text) private TextView distanceText;
-
+    @InjectView(R.id.progressLayout) private LinearLayout progressLayout;
 
     @Inject private LocationUpdater locationUpdater;
 
@@ -115,6 +115,8 @@ public class NavigationFragment extends SubscriptionFragment {
         if( b == null )
             b = new Bundle();
         String action = b.getString(ARG_ACTION, ACTION_LOAD);
+
+        progressLayout.setVisibility(View.VISIBLE);
 
         if( action.equals( ACTION_CREATE ) ) {
             Timber.d("Create Offer");
@@ -203,12 +205,14 @@ public class NavigationFragment extends SubscriptionFragment {
                     @Override
                     public void call(Route route) {
                         Timber.d("Your offer was successfully loaded from the server");
+                        progressLayout.setVisibility(View.GONE);
                         generateRouteOnMap(route);
                     }
                 }, new Action1<Throwable>() {
                     @Override
                     public void call(Throwable throwable) {
                         // on main thread; something went wrong
+                        progressLayout.setVisibility(View.GONE);
                         Timber.e(throwable.getMessage());
                     }
                 });
@@ -266,6 +270,7 @@ public class NavigationFragment extends SubscriptionFragment {
                         Timber.d("Your offer was successfully sent to the server");
 
                         // show route information on the map
+                        progressLayout.setVisibility(View.GONE);
                         generateRouteOnMap(routeNavigations.getDriverRoute());
 
                     }
@@ -273,6 +278,7 @@ public class NavigationFragment extends SubscriptionFragment {
                     @Override
                     public void call(Throwable throwable) {
                         // on main thread; something went wrong
+                        progressLayout.setVisibility(View.GONE);
                         Timber.e(throwable.getMessage());
                     }
                 });
