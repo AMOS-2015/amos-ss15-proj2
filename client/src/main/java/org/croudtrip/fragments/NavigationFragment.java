@@ -163,14 +163,11 @@ public class NavigationFragment extends SubscriptionFragment {
                     @Override
                     public void call(Throwable throwable) {
                         Timber.e(throwable.getMessage());
+
+                        errorText.setText(R.string.navigation_error_no_offer);
+                        errorLayout.setVisibility(View.VISIBLE);
                     }
                 } );
-
-        if( driverWp[0] == null ) {
-            errorText.setText(R.string.navigation_error_no_offer);
-            errorLayout.setVisibility(View.VISIBLE);
-            return;
-        }
 
         tripsResource.getDriverAcceptedJoinRequests()
                 .compose(new DefaultTransformer<List<JoinTripRequest>>())
