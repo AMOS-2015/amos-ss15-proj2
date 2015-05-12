@@ -189,9 +189,10 @@ public class MainActivity extends AbstractRoboDrawerActivity {
         }
 
         // do registration for GCM, if we are not registered
-        /*if( gcmManager.isRegistered() ) {
+        if( !gcmManager.isRegistered() ) {
             Subscription subscription = gcmManager.register()
                     .compose(new DefaultTransformer<Void>())
+                    .retry(3)
                     .subscribe( new Action1<Void>() {
                         @Override
                         public void call(Void aVoid) {
@@ -204,7 +205,7 @@ public class MainActivity extends AbstractRoboDrawerActivity {
                         }
                     });
             subscriptions.add(subscription);
-        }*/
+        }
 
         // download avatar
         if (avatarUrl == null) return;

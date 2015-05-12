@@ -137,7 +137,7 @@ public class NavigationFragment extends SubscriptionFragment {
                     @Override
                     public Observable<TripOffer> call(List<TripOffer> tripOffers) {
                         if( tripOffers.isEmpty() )
-                            return Observable.empty();
+                            throw new NoSuchElementException("There's currently no offer of you");
 
                         return Observable.just(tripOffers.get(0));
                     }
@@ -148,6 +148,7 @@ public class NavigationFragment extends SubscriptionFragment {
                         if( offer == null )
                             throw new NoSuchElementException("There's currently no offer of you");
 
+                        Timber.d("Got Offer: " + offer.getDriver().getFirstName() + " " + offer.getDriver().getLastName());
                         driverWp[0] = offer.getDriverRoute().getWayPoints().get(0);
                         driverWp[1] = offer.getDriverRoute().getWayPoints().get(1);
 

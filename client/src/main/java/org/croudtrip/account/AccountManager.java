@@ -7,8 +7,10 @@ import android.util.Base64;
 
 import org.croudtrip.activities.LoginActivity;
 import org.croudtrip.api.account.User;
+import org.croudtrip.utils.DefaultTransformer;
 
 import retrofit.RequestInterceptor;
+import rx.Subscription;
 import timber.log.Timber;
 
 /**
@@ -111,6 +113,8 @@ public class AccountManager {
       *                otherwise false
      */
     public static void logout(Context context, boolean redirect){
+
+
 
         if(context == null){
             Timber.e("Invalid logout parameters: context is null");

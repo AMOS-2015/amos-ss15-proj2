@@ -12,16 +12,25 @@ import android.widget.Button;
 
 import org.croudtrip.R;
 import org.croudtrip.account.AccountManager;
+import org.croudtrip.gcm.GcmManager;
+import org.croudtrip.utils.DefaultTransformer;
+
+import javax.inject.Inject;
 
 import it.neokree.materialnavigationdrawer.MaterialNavigationDrawer;
+import roboguice.fragment.provided.RoboFragment;
+import rx.Subscription;
+import rx.functions.Action1;
+import timber.log.Timber;
 
 /**
  * Created by alex on 22.04.15.
  */
-public class SettingsFragment extends Fragment {
+public class SettingsFragment extends RoboFragment {
 
     //********************** Variables ***************************//
-
+    @Inject
+    GcmManager gcmManager;
 
 
     //************************ Methods ***************************//
@@ -47,6 +56,23 @@ public class SettingsFragment extends Fragment {
                 @Override
                 public void onClick(View v) {
                     AccountManager.logout(getActivity().getApplicationContext(), true);
+
+                    if (gcmManager.isRegistered()) {
+                        Subscription subscription = gcmManager.unregister()
+                                .compose(new DefaultTransformer<Void>())
+                                .retry(3)
+                                .subscribe(new Action1<Void>() {
+                                    @Override
+                                    public void call(Void aVoid) {
+                                        Timber.d("Successfully unregistered");
+                                    }
+                                }, new Action1<Throwable>() {
+                                    @Override
+                                    public void call(Throwable throwable) {
+                                        Timber.e(throwable.getMessage());
+                                    }
+                                });
+                    }
                 }
             });
         }
