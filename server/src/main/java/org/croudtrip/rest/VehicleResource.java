@@ -7,6 +7,8 @@ import org.croudtrip.api.account.User;
 import org.croudtrip.api.account.Vehicle;
 import org.croudtrip.api.account.VehicleDescription;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -58,7 +60,15 @@ public class VehicleResource {
     @GET
     @UnitOfWork
     public List<Vehicle> getVehicles(@Auth User owner) {
-        return vehicleManager.findAllVehicles(owner);
+        // sort by id
+        List<Vehicle> vehicles = vehicleManager.findAllVehicles(owner);
+        Collections.sort(vehicles, new Comparator<Vehicle>() {
+            @Override
+            public int compare(Vehicle v1, Vehicle v2) {
+                return Long.valueOf(v1.getId()).compareTo(v2.getId());
+            }
+        });
+        return vehicles;
     }
 
 
