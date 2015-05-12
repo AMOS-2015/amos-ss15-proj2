@@ -290,7 +290,8 @@ public class TripsManager {
 
             // check is passenger route is within max diversion
             Route driverRoute = possibleDriverRoutes.get(0);
-            if (driverRoute.getDistanceInMeters() - query.getPassengerRoute().getDistanceInMeters() < offer.getMaxDiversionInMeters()) {
+            logManager.d("Diversion: " + (possibleDriverRoutes.get(0).getDistanceInMeters() - driverRoute.getDistanceInMeters()));
+            if (possibleDriverRoutes.get(0).getDistanceInMeters() - driverRoute.getDistanceInMeters() < offer.getMaxDiversionInMeters()) {
                 potentialMatches.add(offer);
             }
         }
