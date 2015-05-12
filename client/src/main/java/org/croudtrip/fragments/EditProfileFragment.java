@@ -5,7 +5,8 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
-import android.view.KeyEvent;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -57,17 +58,17 @@ public class EditProfileFragment extends roboguice.fragment.provided.RoboFragmen
 
     //************************* Variables ***************************//
     private String email, password = null, newFirstName, newLastName, newNumber, newAddress;
-    String tempFirstName, tempLastName, tempNumber, tempAddress;
-    Boolean newGenderIsMale, tempGender;
-    Integer newYearOfBirth, tempYearOfBirth;
-    Long newBirthDay;
-    String profileImageUrl, tempUrl;
+    private String tempFirstName, tempLastName, tempNumber, tempAddress;
+    private Boolean newGenderIsMale, tempGender;
+    private Integer newYearOfBirth, tempYearOfBirth;
+    private Long newBirthDay;
+    private String profileImageUrl, tempUrl;
 
-    ImageView profilePicture;
-    EditText  firstNameEdit, lastNameEdit, phoneNumberEdit, addressEdit;
-    RadioGroup genderRadio;
-    Button yearPickerButton, save, discard;
-    FloatingActionButton editProfileImage;
+    private ImageView profilePicture;
+    private EditText  firstNameEdit, lastNameEdit, phoneNumberEdit, addressEdit;
+    private RadioGroup genderRadio;
+    private Button yearPickerButton, save, discard;
+    private FloatingActionButton editProfileImage;
 
     private User user;
 
@@ -236,6 +237,19 @@ public class EditProfileFragment extends roboguice.fragment.provided.RoboFragmen
 
         //Listeners for EditTexts, save the string to a variable when Enter is pressed or focus is changed
         //Name
+        firstNameEdit.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                newFirstName = firstNameEdit.getText().toString();
+            }
+        });
+        /*
         firstNameEdit.setOnKeyListener(new View.OnKeyListener() {
             public boolean onKey(View v, int keyCode, KeyEvent event) {
                 if ((event.getAction() == KeyEvent.ACTION_DOWN) &&
@@ -255,8 +269,21 @@ public class EditProfileFragment extends roboguice.fragment.provided.RoboFragmen
                 }
             }
         });
+        */
 
+        lastNameEdit.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                newLastName = lastNameEdit.getText().toString();
+            }
+        });
+        /*
         lastNameEdit.setOnKeyListener(new View.OnKeyListener() {
             public boolean onKey(View v, int keyCode, KeyEvent event) {
                 if ((event.getAction() == KeyEvent.ACTION_DOWN) &&
@@ -276,6 +303,22 @@ public class EditProfileFragment extends roboguice.fragment.provided.RoboFragmen
                 }
             }
         });
+        */
+
+        phoneNumberEdit.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                newNumber = phoneNumberEdit.getText().toString();
+            }
+        });
+
+        /*
         //Phone Number
         phoneNumberEdit.setOnKeyListener(new View.OnKeyListener() {
             public boolean onKey(View v, int keyCode, KeyEvent event) {
@@ -295,8 +338,23 @@ public class EditProfileFragment extends roboguice.fragment.provided.RoboFragmen
                 }
             }
         });
+        */
 
         //Address
+        addressEdit.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                newAddress = addressEdit.getText().toString();
+            }
+        });
+
+        /*
         addressEdit.setOnKeyListener(new View.OnKeyListener() {
             public boolean onKey(View v, int keyCode, KeyEvent event) {
                 if ((event.getAction() == KeyEvent.ACTION_DOWN) &&
@@ -315,7 +373,7 @@ public class EditProfileFragment extends roboguice.fragment.provided.RoboFragmen
                 }
             }
         });
-
+        */
         genderRadio.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener()
         {
             @Override

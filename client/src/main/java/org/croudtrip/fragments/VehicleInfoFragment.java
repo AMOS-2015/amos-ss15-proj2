@@ -3,7 +3,8 @@ package org.croudtrip.fragments;
 import android.app.Dialog;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.view.KeyEvent;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,11 +23,9 @@ import org.croudtrip.api.account.VehicleDescription;
 import org.croudtrip.utils.DataHolder;
 import org.croudtrip.utils.DefaultTransformer;
 
-import java.util.List;
 
 import javax.inject.Inject;
 
-import retrofit.RetrofitError;
 import retrofit.client.Response;
 import rx.Subscription;
 import rx.functions.Action1;
@@ -43,7 +42,8 @@ public class VehicleInfoFragment extends SubscriptionFragment {
     private Integer newCarCapacity;
 
     private EditText carTypeEdit, carPlateEdit;
-    private Button colorPickerButton, capacityPickerButton, updateInfo;
+    private Button colorPickerButton, capacityPickerButton, updateInfo, deleteVehicle;
+    private int vehicleId = DataHolder.getInstance().getVehicle_id();
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -54,24 +54,39 @@ public class VehicleInfoFragment extends SubscriptionFragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        final int vehicleId = DataHolder.getInstance().getVehicle_id();
 
         setHasOptionsMenu(true);
         View view = inflater.inflate(R.layout.fragment_vehicle_info, container, false);
 
+        if (vehicleId != -1)
+            getVehicle(vehicleId);   //Fetches vehicle info from the server and updates the corresponding local variables
 
-        getVehicles();   //Fetches vehicle info from the server and updates the corresponding local variables
         carTypeEdit = (EditText) view.findViewById(R.id.car_type);
         carPlateEdit = (EditText) view.findViewById(R.id.car_plate);
         capacityPickerButton = (Button) view.findViewById(R.id.capacity_picker_button);
         colorPickerButton = (Button) view.findViewById(R.id.color_picker_button);
         updateInfo = (Button) view.findViewById(R.id.update_info);
+        deleteVehicle = (Button) view.findViewById(R.id.delete_vehicle);
+
+        if (vehicleId == -1)
+            updateInfo.setText(getString(R.string.add_vehicle));
+        else
+            updateInfo.setText(getString(R.string.save_changes));
 
         setFields();
         updateInfo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick (View v) {
                 saveCarChanges(vehicleId);
+            }
+        });
+        deleteVehicle.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick (View v) {
+                removeVehicle(vehicleId);
+                deleteVehicle.setVisibility(View.INVISIBLE);
+                vehicleId = -1;
+                updateInfo.setText(getString(R.string.add_vehicle));
             }
         });
         capacityPickerButton.setOnClickListener(new View.OnClickListener(){
@@ -87,6 +102,9 @@ public class VehicleInfoFragment extends SubscriptionFragment {
             }
         });
 
+        if (vehicleId !=-1)
+            deleteVehicle.setVisibility(View.VISIBLE);
+        /*
         carTypeEdit.setOnKeyListener(new View.OnKeyListener() {
             public boolean onKey(View v, int keyCode, KeyEvent event) {
                 if ((event.getAction() == KeyEvent.ACTION_DOWN) &&
@@ -105,7 +123,22 @@ public class VehicleInfoFragment extends SubscriptionFragment {
                 }
             }
         });
+        */
 
+        carTypeEdit.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                newCarType = carTypeEdit.getText().toString();
+            }
+        });
+
+        /*
         carPlateEdit.setOnKeyListener(new View.OnKeyListener() {
             public boolean onKey(View v, int keyCode, KeyEvent event) {
                 if ((event.getAction() == KeyEvent.ACTION_DOWN) &&
@@ -122,6 +155,19 @@ public class VehicleInfoFragment extends SubscriptionFragment {
                 if (!hasFocus) {
                     newCarPlate = carPlateEdit.getText().toString();
                 }
+            }
+        });
+        */
+        carPlateEdit.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                newCarPlate = carPlateEdit.getText().toString();
             }
         });
 
@@ -189,6 +235,7 @@ public class VehicleInfoFragment extends SubscriptionFragment {
 
     }
 
+    /*
     public void getVehicles() {
         Subscription subscription = vehicleResource.getVehicles()
                 .compose(new DefaultTransformer<List<Vehicle>>())
@@ -219,16 +266,21 @@ public class VehicleInfoFragment extends SubscriptionFragment {
 
         subscriptions.add(subscription);
     }
+    */
 
-/*
+
     public void getVehicle(int id) {
         Subscription subscription = vehicleResource.getVehicle(id)
                 .compose(new DefaultTransformer<Vehicle>())
                 .subscribe(new Action1<Vehicle>() {
                     @Override
                     public void call(Vehicle vehicle) {
-                        Toast.makeText(getActivity(), "Vehicle fetched!", Toast.LENGTH_SHORT).show();
-                        Timber.v("New vehicle added!");
+                        newCarPlate = vehicle.getLicensePlate();
+                        newColor = vehicle.getColor();
+                        newCarCapacity = vehicle.getCapacity();
+                        newCarType = vehicle.getType();
+                        //Set fields to values fetched from the server
+                        setFields();
                     }
                 }, new Action1<Throwable>() {
                     @Override
@@ -239,7 +291,7 @@ public class VehicleInfoFragment extends SubscriptionFragment {
                 });
         subscriptions.add(subscription);
     }
-*/
+
 
     public void addVehicle(VehicleDescription vehicleDescription) {
         Subscription subscription = vehicleResource.addVehicle(vehicleDescription)
@@ -261,6 +313,23 @@ public class VehicleInfoFragment extends SubscriptionFragment {
     }
 
 
+    public void removeVehicle(int id) {
+        Subscription subscription = vehicleResource.removeVehicle(id)
+                .compose(new DefaultTransformer<Response>())
+                .subscribe(new Action1<Response>() {
+                    @Override
+                    public void call(Response response) {
+                        Toast.makeText(getActivity(), "Vehicle removed!", Toast.LENGTH_SHORT).show();
+                    }
+                }, new Action1<Throwable>() {
+                    @Override
+                    public void call(Throwable throwable) {
+                        //Response response = ((RetrofitError) throwable).getResponse();
+                        Timber.e("Removal failed with error:\n" + throwable.getMessage());
+                    }
+                });
+        subscriptions.add(subscription);
+    }
 
     public void updateVehicle(int id, VehicleDescription vehicleDescription) {
         Subscription subscription = vehicleResource.updateVehicle(id, vehicleDescription)
@@ -283,9 +352,12 @@ public class VehicleInfoFragment extends SubscriptionFragment {
 
     public void saveCarChanges(int vehicleId) {
         VehicleDescription vehicleDescription = new VehicleDescription(newCarPlate, newColor, newCarType, newCarCapacity);
-        if (carPlateEdit.getText() != null && carPlateEdit.length() > 0)
-            if (vehicleId == 0)
+        if (carPlateEdit.getText() != null && carPlateEdit.length() > 0) {
+            if (vehicleId == -1)
                 addVehicle(vehicleDescription);
+            else if (vehicleId != 0)
+                updateVehicle(vehicleId, vehicleDescription);
+        }
         else
             Toast.makeText(getActivity(), "Car Plate field is mandatory", Toast.LENGTH_SHORT).show();
     }
@@ -303,7 +375,7 @@ public class VehicleInfoFragment extends SubscriptionFragment {
         else
         {
             carTypeEdit.setHint(R.string.car_type_hint);
-            newCarType="e.g Porsche 911";
+            newCarType="Porsche 911";
         }
 
         if (newColor != null)

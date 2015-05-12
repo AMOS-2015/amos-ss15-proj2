@@ -112,6 +112,12 @@
     <string name="car_plate_hint">e.g 123456</string>
     <string name="car_type_hint">e.g Porsche 911</string>
     <string name="ask_register">Unfortunately you cannot join a trip without registration, please sign up here</string>
+    <string name="car_type_side">Car Type: \u0020</string>
+    <string name="car_plate_side">Car Plate: \u0020</string>
+    <string name="car_capacity_side">Car Capacity: \u0020</string>
+    <string name="delete_vehicle_button">Delete This Vehicle</string>
+    <string name="add_vehicle">Add New Vehicle</string>
+    <string name="vehicles_title">Your Vehicles</string>
 
     <string name="join_request_title">New join request!</string>
     <string name="joint_request_msg">%1$s wants to join your trip.</string>

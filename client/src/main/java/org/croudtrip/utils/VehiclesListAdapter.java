@@ -5,12 +5,19 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import org.croudtrip.R;
 import org.croudtrip.api.account.Vehicle;
+import org.croudtrip.fragments.VehicleInfoFragment;
 
 import java.util.List;
+
+
+import it.neokree.materialnavigationdrawer.MaterialNavigationDrawer;
+import timber.log.Timber;
 
 /**
  * This Adapter is used in the ProfilePageFragment to display the list of user owned cars.
@@ -19,12 +26,9 @@ import java.util.List;
 public class VehiclesListAdapter extends RecyclerView.Adapter<VehiclesListAdapter.ViewHolder> {
 
     //************************** Variables ***************************//
-
     private final Context context;
     private List<Vehicle> vehicles;
-
     protected OnItemClickListener listener;
-
 
     //************************** Inner classes ***************************//
 
@@ -38,28 +42,37 @@ public class VehiclesListAdapter extends RecyclerView.Adapter<VehiclesListAdapte
      */
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
 
-
         protected TextView carType;
         protected TextView carPlate;
         protected TextView carCapacity;
-        protected TextView carColor;
-
+        protected Button carColor;
+        protected ImageButton edit;
         public ViewHolder(View view) {
             super(view);
 
-            this.carType = (TextView)
-                    view.findViewById(R.id.type);
+            this.carType = (TextView) view.findViewById(R.id.type);
             this.carPlate = (TextView) view.findViewById(R.id.plate);
             this.carCapacity = (TextView) view.findViewById(R.id.capacity);
-
+            this.carColor = (Button) view.findViewById(R.id.car_color);
+            this.edit = (ImageButton) view.findViewById(R.id.edit_vehicle);
+            edit.setOnClickListener(this);
             view.setOnClickListener(this);
         }
 
+        //Listener to detect to edit button and start the VehicleInfoFragment (after setting vehicleId to the clicked vehicle in DataHolder)
         @Override
         public void onClick(View view) {
             if (listener != null) {
                 listener.onItemClicked(view, getPosition());
             }
+            Vehicle vehicle=vehicles.get(getPosition());
+            long vehicleId = vehicle.getId();
+            if (view == edit) {
+                DataHolder.getInstance().setVehicle_id((int) vehicleId);
+                ((MaterialNavigationDrawer) context).setFragmentChild(new VehicleInfoFragment(), "Edit Vehicle Info");
+                Timber.v("button clicked for vehicle: " + vehicleId);
+            }
+
         }
     }
 
@@ -78,8 +91,7 @@ public class VehiclesListAdapter extends RecyclerView.Adapter<VehiclesListAdapte
     public VehiclesListAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
 
         // Create new views (invoked by the layout manager)
-        View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.cardview_vehicles_list, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.cardview_vehicles_list, parent, false);
 
         return new ViewHolder(view);
     }
@@ -88,11 +100,12 @@ public class VehiclesListAdapter extends RecyclerView.Adapter<VehiclesListAdapte
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
 
+        //Set each vehicle's data to values fetched from the server
         Vehicle vehicle = vehicles.get(position);
-
-        holder.carType.setText(vehicle.getType());
-        holder.carPlate.setText(vehicle.getLicensePlate());
-        holder.carCapacity.setText(vehicle.getCapacity()+"");
+        holder.carType.setText(context.getString(R.string.car_type_side) + vehicle.getType());
+        holder.carPlate.setText(context.getString(R.string.car_plate_side) + vehicle.getLicensePlate());
+        holder.carCapacity.setText(context.getString(R.string.car_capacity_side) + vehicle.getCapacity()+"");
+        holder.carColor.setBackgroundColor(Integer.parseInt(vehicle.getColor()));
     }
 
 

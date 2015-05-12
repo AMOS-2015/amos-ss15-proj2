@@ -72,27 +72,31 @@
                         android:text="Color: "/>
 
                     <Button
+                        android:id="@+id/car_color"
                         android:layout_marginLeft="5dp"
                         android:layout_width="15dp"
                         android:layout_height="15dp"
-                        android:background="@android:color/black"
+                        android:background="@android:color/white"
                         />
                 </LinearLayout>
 
             </LinearLayout>
 
             <ImageButton
+                android:id="@+id/edit_vehicle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:src="@android:drawable/ic_menu_edit"
                 />
 
+            <!--
             <ImageButton
+                android:id="@+id/delete_vehicle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:src="@android:drawable/ic_menu_delete"
                 />
-
+                -->
         </LinearLayout>
 
 

@@ -85,7 +85,17 @@
             android:id="@+id/update_info"
             android:layout_below="@id/color_picker_button"
             android:layout_marginTop="40dp"
-            android:text="Update Changes"
+            android:text="@string/save_changes"
+            android:textSize="13dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+        <Button
+            android:id="@+id/delete_vehicle"
+            android:layout_below="@id/update_info"
+            android:visibility="invisible"
+            android:layout_marginTop="20dp"
+            android:text="@string/delete_vehicle_button"
             android:textSize="13dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>

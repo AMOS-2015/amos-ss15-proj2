@@ -14,7 +14,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.ListView;
 import android.widget.TextView;
 
 import com.getbase.floatingactionbutton.FloatingActionButton;
@@ -24,7 +23,6 @@ import org.croudtrip.account.AccountManager;
 import org.croudtrip.api.VehicleResource;
 import org.croudtrip.api.account.User;
 import org.croudtrip.api.account.Vehicle;
-import org.croudtrip.trip.JoinTripResultsAdapter;
 import org.croudtrip.utils.DataHolder;
 import org.croudtrip.utils.DefaultTransformer;
 import org.croudtrip.utils.VehiclesListAdapter;
@@ -58,7 +56,6 @@ public class ProfileFragment extends SubscriptionFragment {
     //************************* Variables ***************************//
     @InjectView(R.id.vehicles_list)          private RecyclerView recyclerView;
     @Inject  VehicleResource vehicleResource;
-
 
 
     private RecyclerView.LayoutManager layoutManager;
@@ -123,11 +120,10 @@ public class ProfileFragment extends SubscriptionFragment {
                 public void onClick(View v) {
                    // ((MaterialNavigationDrawer) getActivity()).getCurrentSection().setTarget(new VehicleInfoFragment());
                    //((MaterialNavigationDrawer) getActivity()).getCurrentSection().setTitle("Add new vehicle");
-                    DataHolder.getInstance().setVehicle_id(0);
+                    DataHolder.getInstance().setVehicle_id(-1);
                     ((MaterialNavigationDrawer) _this.getActivity()).setFragmentChild(new VehicleInfoFragment(), "Add new vehicle");
                 }
             });
-            //vehicleListView.setAdapter(vehicleListAdapter);
             // Edit profile button
             FloatingActionButton editProfile = (FloatingActionButton) view.findViewById(R.id.btn_edit_profile);
             editProfile.setOnClickListener(new View.OnClickListener() {
@@ -193,6 +189,7 @@ public class ProfileFragment extends SubscriptionFragment {
         adapter = new VehiclesListAdapter(getActivity(), null);
         recyclerView.setAdapter(adapter);
 
+        //Get a list of user vehicles and add it to the RecyclerView
         Subscription subscription = vehicleResource.getVehicles()
                 .compose(new DefaultTransformer<List<Vehicle>>())
                 .subscribe(new Action1<List<Vehicle>>() {
@@ -215,6 +212,8 @@ public class ProfileFragment extends SubscriptionFragment {
                 });
 
         subscriptions.add(subscription);
+
+
     }
 
 
