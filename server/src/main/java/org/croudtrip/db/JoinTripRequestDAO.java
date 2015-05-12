@@ -32,6 +32,11 @@ public class JoinTripRequestDAO extends AbstractDAO<JoinTripRequest> {
                 .setParameter(JoinTripRequest.QUERY_PARAM_USER_ID, userId));
     }
 
+    public List<JoinTripRequest> findByUserIdAndStatusDriverAccepted(long userId) {
+        return list(namedQuery(JoinTripRequest.QUERY_FIND_BY_PASSENGER_OR_DRIVER_ID_AND_DRIVER_ACCEPTED_STATUS)
+                .setParameter(JoinTripRequest.QUERY_PARAM_USER_ID, userId));
+    }
+
 
     public List<JoinTripRequest> findDeclinedRequests( long passengerId ) {
         return list( namedQuery(JoinTripRequest.QUERY_FIND_BY_PASSENGER_ID_AND_DECLINED_STATUS)

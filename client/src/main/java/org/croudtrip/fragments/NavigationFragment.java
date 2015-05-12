@@ -160,7 +160,7 @@ public class NavigationFragment extends SubscriptionFragment {
                     }
                 } );
 
-        tripsResource.getJoinRequests(true)
+        tripsResource.getDriverAcceptedJoinRequests()
                 .compose(new DefaultTransformer<List<JoinTripRequest>>())
                 .flatMap(new Func1<List<JoinTripRequest>, Observable<List<RouteLocation>>>() {
                     @Override

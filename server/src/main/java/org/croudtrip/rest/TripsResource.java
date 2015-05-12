@@ -45,6 +45,7 @@ public class TripsResource {
     private static final String
             PATH_OFFERS = "/offers",
             PATH_JOINS = "/joins",
+            PATH_ACCEPTED_JOINS = "/accepted",
             PATH_QUERIES = "/queries",
             PATH_RESERVATIONS = "/reservations";
 
@@ -161,6 +162,12 @@ public class TripsResource {
         return tripsManager.findAllJoinRequests(passengerOrDriver, showOnlyPassengerAccepted);
     }
 
+    @GET
+    @UnitOfWork
+    @Path(PATH_ACCEPTED_JOINS)
+    public List<JoinTripRequest> getDriverAcceptedJoinRequests(@Auth User passengerOrDriver ) {
+        return tripsManager.findDriverAcceptedJoinRequests(passengerOrDriver);
+    }
 
     @GET
     @UnitOfWork

@@ -214,6 +214,10 @@ public class TripsManager {
         else return joinTripRequestDAO.findByUserId(passengerOrDriver.getId());
     }
 
+    public List<JoinTripRequest> findDriverAcceptedJoinRequests(User passengerOrDriver) {
+        return joinTripRequestDAO.findByUserIdAndStatusDriverAccepted(passengerOrDriver.getId());
+    }
+
 
     public Optional<JoinTripRequest> findJoinRequest(long joinRequestId) {
         return joinTripRequestDAO.findById(joinRequestId);
