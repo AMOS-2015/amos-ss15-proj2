@@ -52,8 +52,8 @@ public class VehicleResource {
     @GET
     @UnitOfWork
     @Path("/{vehicleId}")
-    public Optional<Vehicle> getVehicle(@Auth User owner, @PathParam("vehicleId") long vehicleId) {
-        return vehicleManager.findVehicleById(vehicleId);
+    public Vehicle getVehicle(@Auth User owner, @PathParam("vehicleId") long vehicleId) {
+        return assertValidVehicleId(owner, vehicleId);
     }
 
 
