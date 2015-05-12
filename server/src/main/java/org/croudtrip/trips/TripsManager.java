@@ -128,7 +128,7 @@ public class TripsManager {
         // find declined trips for this user
         TripQuery query = new TripQuery(possiblePassengerRoutes.get(0), queryDescription.getStart(), queryDescription.getEnd(), queryDescription.getMaxWaitingTimeInSeconds(), passenger);
         List<JoinTripRequest> declinedRequests = joinTripRequestDAO.findDeclinedRequests( passenger.getId() );
-        logManager.d("Found " + declinedRequests.size() + "declined entries in the database.");
+        logManager.d("Found " + declinedRequests.size() + " declined entries in the database.");
 
         // analyse offers
         List<TripOffer> potentialMatches = findPotentialMatches(tripOfferDAO.findAll(), query);
@@ -312,11 +312,10 @@ public class TripsManager {
         List<TripOffer> matches = new ArrayList<>();
 
         // find prices
-        int lowestPricePerKmInCents  = -1, secondLowestPricePerKmInCents = -1;
+        int lowestPricePerKmInCents  = potentialMatches.get(0).getPricePerKmInCents(), secondLowestPricePerKmInCents = -1;
         for (TripOffer potentialMatch : potentialMatches) {
-            if (potentialMatch.getPricePerKmInCents() != lowestPricePerKmInCents) {
+            if (potentialMatch.getPricePerKmInCents() == lowestPricePerKmInCents) {
                 // all cheapest trips are matches
-                lowestPricePerKmInCents = potentialMatch.getPricePerKmInCents();
                 matches.add(potentialMatch);
 
             } else if (potentialMatch.getPricePerKmInCents() != secondLowestPricePerKmInCents) {
