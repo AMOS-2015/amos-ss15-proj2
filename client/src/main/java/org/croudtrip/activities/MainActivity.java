@@ -166,7 +166,7 @@ public class MainActivity extends AbstractRoboDrawerActivity {
 
         // test gcm section TODO remove this at some point after the next demo
         addSection(newSection("GCM Demo", (Bitmap) null, new GcmTestFragment()));
-        this.addSection(newSection("Vehicle", R.drawable.ic_directions_car_white, new VehicleInfoFragment()));
+        //this.addSection(newSection("Vehicle", R.drawable.ic_directions_car_white, new VehicleInfoFragment()));
 
         if (!GPSavailable()) {
             checkForGPS();

@@ -19,6 +19,7 @@ import org.croudtrip.R;
 import org.croudtrip.api.VehicleResource;
 import org.croudtrip.api.account.Vehicle;
 import org.croudtrip.api.account.VehicleDescription;
+import org.croudtrip.utils.DataHolder;
 import org.croudtrip.utils.DefaultTransformer;
 
 import java.util.List;
@@ -53,10 +54,13 @@ public class VehicleInfoFragment extends SubscriptionFragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
+        final int vehicleId = DataHolder.getInstance().getVehicle_id();
+
         setHasOptionsMenu(true);
         View view = inflater.inflate(R.layout.fragment_vehicle_info, container, false);
 
-        getVehicle();   //Fetches vehicle info from the server and updates the corresponding local variables
+
+        getVehicles();   //Fetches vehicle info from the server and updates the corresponding local variables
         carTypeEdit = (EditText) view.findViewById(R.id.car_type);
         carPlateEdit = (EditText) view.findViewById(R.id.car_plate);
         capacityPickerButton = (Button) view.findViewById(R.id.capacity_picker_button);
@@ -67,7 +71,7 @@ public class VehicleInfoFragment extends SubscriptionFragment {
         updateInfo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick (View v) {
-                saveCarChanges();
+                saveCarChanges(vehicleId);
             }
         });
         capacityPickerButton.setOnClickListener(new View.OnClickListener(){
@@ -120,6 +124,7 @@ public class VehicleInfoFragment extends SubscriptionFragment {
                 }
             }
         });
+
 
         return view;
     }
@@ -184,7 +189,7 @@ public class VehicleInfoFragment extends SubscriptionFragment {
 
     }
 
-    public void getVehicle() {
+    public void getVehicles() {
         Subscription subscription = vehicleResource.getVehicles()
                 .compose(new DefaultTransformer<List<Vehicle>>())
                 .subscribe(new Action1<List<Vehicle>>() {
@@ -215,15 +220,56 @@ public class VehicleInfoFragment extends SubscriptionFragment {
         subscriptions.add(subscription);
     }
 
-    public void saveVehicle(VehicleDescription vehicleDescription) {
-        // TODO changed from "setVehicle" to "addVehicle"
+/*
+    public void getVehicle(int id) {
+        Subscription subscription = vehicleResource.getVehicle(id)
+                .compose(new DefaultTransformer<Vehicle>())
+                .subscribe(new Action1<Vehicle>() {
+                    @Override
+                    public void call(Vehicle vehicle) {
+                        Toast.makeText(getActivity(), "Vehicle fetched!", Toast.LENGTH_SHORT).show();
+                        Timber.v("New vehicle added!");
+                    }
+                }, new Action1<Throwable>() {
+                    @Override
+                    public void call(Throwable throwable) {
+                        //Response response = ((RetrofitError) throwable).getResponse();
+                        Timber.e("Failed to fetch with error:\n" + throwable.getMessage());
+                    }
+                });
+        subscriptions.add(subscription);
+    }
+*/
+
+    public void addVehicle(VehicleDescription vehicleDescription) {
         Subscription subscription = vehicleResource.addVehicle(vehicleDescription)
                 .compose(new DefaultTransformer<Vehicle>())
                 .subscribe(new Action1<Vehicle>() {
                     @Override
                     public void call(Vehicle vehicle) {
-                            Toast.makeText(getActivity(), "Updated vehicle info", Toast.LENGTH_SHORT).show();
-                            Timber.v("Updated vehicle info");
+                            Toast.makeText(getActivity(), "New vehicle added!", Toast.LENGTH_SHORT).show();
+                            Timber.v("New vehicle added!");
+                    }
+                }, new Action1<Throwable>() {
+                    @Override
+                    public void call(Throwable throwable) {
+                        //Response response = ((RetrofitError) throwable).getResponse();
+                        Timber.e("Creation failed with error:\n" + throwable.getMessage());
+                    }
+                });
+        subscriptions.add(subscription);
+    }
+
+
+
+    public void updateVehicle(int id, VehicleDescription vehicleDescription) {
+        Subscription subscription = vehicleResource.updateVehicle(id, vehicleDescription)
+                .compose(new DefaultTransformer<Vehicle>())
+                .subscribe(new Action1<Vehicle>() {
+                    @Override
+                    public void call(Vehicle vehicle) {
+                        Toast.makeText(getActivity(), "Updated vehicle info", Toast.LENGTH_SHORT).show();
+                        Timber.v("Updated vehicle info");
                     }
                 }, new Action1<Throwable>() {
                     @Override
@@ -235,10 +281,11 @@ public class VehicleInfoFragment extends SubscriptionFragment {
         subscriptions.add(subscription);
     }
 
-    public void saveCarChanges() {
+    public void saveCarChanges(int vehicleId) {
         VehicleDescription vehicleDescription = new VehicleDescription(newCarPlate, newColor, newCarType, newCarCapacity);
         if (carPlateEdit.getText() != null && carPlateEdit.length() > 0)
-            saveVehicle(vehicleDescription);
+            if (vehicleId == 0)
+                addVehicle(vehicleDescription);
         else
             Toast.makeText(getActivity(), "Car Plate field is mandatory", Toast.LENGTH_SHORT).show();
     }
