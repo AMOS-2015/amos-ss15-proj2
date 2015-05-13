@@ -112,7 +112,7 @@ public class JoinTripResultsAdapter extends RecyclerView.Adapter<JoinTripResults
 
         // Driver info
         User driver = reservation.getDriver();
-        holder.tvDriverName.setText(driver.getFirstName() + " " + driver.getLastName());
+        holder.tvDriverName.setText(driver.getFirstName());
 
 
         // Distance information
