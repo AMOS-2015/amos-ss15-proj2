@@ -297,6 +297,10 @@ public class JoinTripRequestsAdapter extends RecyclerView.Adapter<JoinTripReques
         @Override
         public void onClick(View view) {
 
+            if(listener == null){
+                return;
+            }
+
             if (view.getId() == R.id.btn_join_trip_request_yes) {
                 // Accept
                 listener.onJoinRequestAccept(view, getPosition());

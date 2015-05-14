@@ -6,24 +6,6 @@
     android:layout_height="match_parent"
     android:layout_margin="5dp">
 
-    <LinearLayout
-        android:orientation="vertical"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-        <TextView
-            android:id="@+id/tv_join_trip_requests_caption"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="@dimen/activity_vertical_margin"
-            android:textAppearance="@android:style/TextAppearance.Large"/>
-
-        <android.support.v7.widget.RecyclerView
-            android:id="@+id/rv_join_trip_requests"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-    </LinearLayout>
-
 
     <ProgressBar
         android:id="@+id/pb_join_trip_requests"
@@ -32,6 +14,31 @@
         android:layout_height="wrap_content"
         android:layout_gravity = "center_vertical|center_horizontal" />
 
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/rv_join_trip_requests"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+
+
+    <TextView
+        android:id="@+id/tv_join_trip_requests_caption"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:text="@string/join_trip_requests_no_requests"
+        android:textAppearance="@android:style/TextAppearance.Large"
+        android:layout_gravity = "center_vertical|center_horizontal"
+        android:layout_margin="10dp"
+        android:gravity="center"/>
+
+
     <TextView
         android:id="@+id/tv_join_trip_requests_error"
         android:layout_width="wrap_content"
@@ -39,6 +46,8 @@
         android:visibility="gone"
         android:text="@string/join_trip_requests_error"
         android:textColor="@color/error"
+        android:gravity="center"
+        android:textAppearance="@android:style/TextAppearance.Large"
         android:layout_gravity = "center_vertical|center_horizontal"/>
 
 </FrameLayout>

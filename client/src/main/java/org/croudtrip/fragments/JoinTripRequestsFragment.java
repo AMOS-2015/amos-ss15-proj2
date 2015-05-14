@@ -157,8 +157,11 @@ public class JoinTripRequestsFragment extends SubscriptionFragment {
             adapter.removeRequest(position);
 
             int numRequests = adapter.getItemCount();
-            caption.setText(getResources().getQuantityString(R.plurals.join_trip_requests,
-                    numRequests, numRequests));
+            if(numRequests == 0) {
+                caption.setVisibility(View.VISIBLE);
+            }else{
+                caption.setVisibility(View.GONE);
+            }
         }
 
         @Override
@@ -200,24 +203,25 @@ public class JoinTripRequestsFragment extends SubscriptionFragment {
         @Override
         public void onNext(List<JoinTripRequest> requests) {
             // SUCCESS
+            Timber.d("Received " + requests.size() + " JoinTripRequest(s)");
+
             int numRequests = adapter.getItemCount();
+            numRequests += requests.size();
 
-			Timber.d("Received " + requests.size() + " JoinTripRequest(s)");
-			// Fill the list with results
-			numRequests += requests.size();
-            adapter.addRequests(requests);
-
-            // Show a summary caption
-            caption.setText(getResources().getQuantityString(R.plurals.join_trip_requests,
-                    numRequests, numRequests));
+            if(numRequests == 0){
+                // Show a summary caption
+                caption.setVisibility(View.VISIBLE);
+            }else{
+                // Fill the list with results
+                adapter.addRequests(requests);
+                caption.setVisibility(View.GONE);
+            }
         }
 
         @Override
         public void onError(Throwable e) {
             // ERROR
             error.setVisibility(View.VISIBLE);
-            caption.setText(getResources().getQuantityString(R.plurals.join_trip_requests,
-                    0, 0));
 
             Timber.e("Receiving JoinTripRequests failed:\n" + e.getMessage());
             onDone();
