@@ -47,7 +47,6 @@ public class JoinTripRequestsFragment extends SubscriptionFragment {
     private JoinTripRequestsAdapter adapter;
     @Inject private TripsResource tripsResource;
 
-
     //************************* Methods ****************************//
 
     @Override
@@ -70,7 +69,7 @@ public class JoinTripRequestsFragment extends SubscriptionFragment {
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getActivity());
         recyclerView.setLayoutManager(layoutManager);
 
-        adapter = new JoinTripRequestsAdapter(getActivity(), null);
+        adapter = new JoinTripRequestsAdapter(getActivity());
         adapter.setOnRequestAcceptDeclineListener(new AcceptDeclineRequestListener());
         recyclerView.setAdapter(adapter);
 
