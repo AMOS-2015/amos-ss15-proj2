@@ -1,6 +1,5 @@
 package org.croudtrip.trip;
 
-import android.content.Context;
 import android.location.Address;
 import android.location.Geocoder;
 import android.support.v7.widget.RecyclerView;
@@ -18,6 +17,7 @@ import org.croudtrip.api.account.User;
 import org.croudtrip.api.directions.RouteLocation;
 import org.croudtrip.api.trips.JoinTripRequest;
 import org.croudtrip.api.trips.TripQuery;
+import org.croudtrip.fragments.JoinTripRequestsFragment;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -30,24 +30,21 @@ import timber.log.Timber;
  * Adapter for the JoinTripRequests-CardView/List
  * Created by Vanessa Lange on 08.05.15.
  */
-public class JoinTripRequestsAdapter extends RecyclerView.Adapter<JoinTripRequestsAdapter.ViewHolder> {
+public class JoinTripRequestsAdapter extends RecyclerView.Adapter<JoinTripRequestsAdapter.ViewHolder>
+        implements OnDiversionUpdateListener {
 
     //************************** Variables ***************************//
 
-    private Context context;
+    private JoinTripRequestsFragment fragment;
     private List<JoinMatch> joinMatches;
 
     protected OnRequestAcceptDeclineListener listener;
 
-    //private DirectionsResource dirResource;
-
 
     //************************** Constructors ***************************//
 
-    public JoinTripRequestsAdapter(Context context/*, DirectionsResource dirResource*/) {
-
-        this.context = context;
-        //this.dirResource = dirResource;
+    public JoinTripRequestsAdapter(JoinTripRequestsFragment fragment) {
+        this.fragment = fragment;
         this.joinMatches = new ArrayList<JoinMatch>();
     }
 
@@ -78,9 +75,9 @@ public class JoinTripRequestsAdapter extends RecyclerView.Adapter<JoinTripReques
 
         // Passenger image/avatar
         String avatarURL = passenger.getAvatarUrl();
-        if(avatarURL != null) {
-            Picasso.with(context).load(avatarURL).into(holder.ivAvatar);
-        }else{
+        if (avatarURL != null) {
+            Picasso.with(fragment.getActivity()).load(avatarURL).into(holder.ivAvatar);
+        } else {
             holder.ivAvatar.setImageResource(R.drawable.profile);
         }
 
@@ -94,10 +91,12 @@ public class JoinTripRequestsAdapter extends RecyclerView.Adapter<JoinTripReques
         int diversionInMinutes = joinMatch.diversionInMinutes;
         if (diversionInMinutes == -1) {
             // no data yet -> ask server
-            // TODO
-            showDiversion(holder, 2562);
+            Timber.d("Asking server for diversion");
+            fragment.informAboutDiversion(joinMatch.joinRequest, this, holder.tvDiversion);
+
         } else {
-            showDiversion(holder, diversionInMinutes);
+            Timber.d("Used cached result for diversion");
+            showDiversion(holder.tvDiversion, diversionInMinutes);
         }
     }
 
@@ -108,7 +107,7 @@ public class JoinTripRequestsAdapter extends RecyclerView.Adapter<JoinTripReques
         // Receive addresses for Latitude/Longitude
         Geocoder geocoder;
         List<Address> addresses;
-        geocoder = new Geocoder(context, Locale.getDefault());
+        geocoder = new Geocoder(fragment.getActivity(), Locale.getDefault());
 
         try {
             addresses = geocoder.getFromLocation(location.getLat(), location.getLng(), 1);
@@ -152,30 +151,33 @@ public class JoinTripRequestsAdapter extends RecyclerView.Adapter<JoinTripReques
             pCents = cents + "";
         }
 
-        holder.tvEarnings.setText(context.getString(R.string.join_trip_requests_earnings, pEuros, pCents));
+        holder.tvEarnings.setText(fragment.getActivity().getString(R.string.join_trip_requests_earnings,
+                pEuros, pCents));
     }
 
 
-    private void showDiversion(ViewHolder holder, int diversionInMinutes) {
+    private void showDiversion(TextView textView, int diversionInMinutes) {
 
         String minutes;
 
         int min = diversionInMinutes % 60;
-        if (min == 0) {
-            minutes = "00";
-        } else if (min < 10) {
-            minutes = "0" + min;
-        } else {
-            minutes = min + "";
-        }
 
         if (diversionInMinutes >= 60) {
             String hours = diversionInMinutes / 60 + "";
-            holder.tvDiversion.setText(context.getString(R.string.join_trip_requests_diversion_hmin,
+
+            if (min == 0) {
+                minutes = "00";
+            } else if (min < 10) {
+                minutes = "0" + min;
+            } else {
+                minutes = min + "";
+            }
+
+            textView.setText(fragment.getActivity().getString(R.string.join_trip_requests_diversion_hmin,
                     hours, minutes));
         } else {
-            holder.tvDiversion.setText(context.getString(R.string.join_trip_requests_diversion_min,
-                    minutes));
+            textView.setText(fragment.getActivity().getString(R.string.join_trip_requests_diversion_min,
+                    min));
         }
     }
 
@@ -250,6 +252,19 @@ public class JoinTripRequestsAdapter extends RecyclerView.Adapter<JoinTripReques
     }
 
 
+    @Override
+    public void onDiversionUpdate(JoinTripRequest joinRequest, TextView textView, int diversionInMinutes) {
+        showDiversion(textView, diversionInMinutes);
+
+        // Cache the result
+        for (JoinMatch match : joinMatches) {
+            if (match.joinRequest.equals(joinRequest)) {
+                match.diversionInMinutes = diversionInMinutes;
+            }
+        }
+    }
+
+
     //************************** Inner classes ***************************//
 
     public interface OnRequestAcceptDeclineListener {
@@ -257,6 +272,7 @@ public class JoinTripRequestsAdapter extends RecyclerView.Adapter<JoinTripReques
 
         void onJoinRequestAccept(View view, int position);
     }
+
 
     /**
      * Provides a reference to the views for each data item.
@@ -297,7 +313,7 @@ public class JoinTripRequestsAdapter extends RecyclerView.Adapter<JoinTripReques
         @Override
         public void onClick(View view) {
 
-            if(listener == null){
+            if (listener == null) {
                 return;
             }
 

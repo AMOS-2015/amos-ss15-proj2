@@ -10,12 +10,18 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import org.croudtrip.R;
+import org.croudtrip.api.DirectionsResource;
 import org.croudtrip.api.TripsResource;
+import org.croudtrip.api.directions.DirectionsRequest;
+import org.croudtrip.api.directions.Route;
+import org.croudtrip.api.directions.RouteLocation;
 import org.croudtrip.api.trips.JoinTripRequest;
 import org.croudtrip.api.trips.JoinTripRequestUpdate;
 import org.croudtrip.trip.JoinTripRequestsAdapter;
+import org.croudtrip.trip.OnDiversionUpdateListener;
 import org.croudtrip.utils.DefaultTransformer;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -23,6 +29,7 @@ import javax.inject.Inject;
 import roboguice.inject.InjectView;
 import rx.Subscriber;
 import rx.Subscription;
+import rx.functions.Action1;
 import timber.log.Timber;
 
 /**
@@ -45,7 +52,9 @@ public class JoinTripRequestsFragment extends SubscriptionFragment {
     private TextView error;
 
     private JoinTripRequestsAdapter adapter;
+
     @Inject private TripsResource tripsResource;
+    @Inject private DirectionsResource dirResource;
 
     //************************* Methods ****************************//
 
@@ -69,7 +78,7 @@ public class JoinTripRequestsFragment extends SubscriptionFragment {
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getActivity());
         recyclerView.setLayoutManager(layoutManager);
 
-        adapter = new JoinTripRequestsAdapter(getActivity());
+        adapter = new JoinTripRequestsAdapter(this);
         adapter.setOnRequestAcceptDeclineListener(new AcceptDeclineRequestListener());
         recyclerView.setAdapter(adapter);
 
@@ -79,6 +88,55 @@ public class JoinTripRequestsFragment extends SubscriptionFragment {
                 .getJoinRequests(true)
                 .compose(new DefaultTransformer<List<JoinTripRequest>>())
                 .subscribe(new ReceiveRequestsSubscriber()));
+    }
+
+
+    public void informAboutDiversion(final JoinTripRequest joinRequest, final OnDiversionUpdateListener listener,
+                                     final TextView textView){
+
+        List<RouteLocation> wayPoints = new ArrayList<RouteLocation>();
+
+        // Driver start -> Passenger start -> Passenger end -> Driver end
+        List<RouteLocation> driverWay = joinRequest.getOffer().getDriverRoute().getWayPoints();
+        List<RouteLocation> passengerWay = joinRequest.getQuery().getPassengerRoute().getWayPoints();
+
+        wayPoints.add(driverWay.get(0));
+        wayPoints.add(passengerWay.get(0));
+        wayPoints.add(passengerWay.get(passengerWay.size() - 1));
+        wayPoints.add(driverWay.get(driverWay.size() - 1));
+
+        DirectionsRequest request = new DirectionsRequest(wayPoints);
+
+
+        // Ask the server for the diversion
+        subscriptions.add(dirResource
+                .getDirections(request)
+                .compose(new DefaultTransformer<List<Route>>())
+                .subscribe(new Action1<List<Route>>() {
+                    @Override
+                    public void call(List<Route> routes) {
+
+                        Timber.i("Found " + routes.size() + " routes when taking the passenger");
+
+                        if (routes.size() > 0) {
+                            long durationWithPassenger = routes.get(0).getDurationInSeconds();
+                            long durationWithoutPassenger = joinRequest.getOffer().getDriverRoute()
+                                    .getDurationInSeconds();
+
+                            int diversionInMinutes = Math.max(0,
+                                    Math.round((durationWithPassenger - durationWithoutPassenger) / 60.0f));
+
+                            listener.onDiversionUpdate(joinRequest, textView, diversionInMinutes);
+                        }
+                    }
+
+                }, new Action1<Throwable>() {
+                    @Override
+                    public void call(Throwable throwable) {
+                        Timber.i("Error when searching for routes with passenger: " + throwable.getMessage());
+                    }
+                })
+        );
     }
 
 
