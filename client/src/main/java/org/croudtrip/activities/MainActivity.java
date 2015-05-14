@@ -34,7 +34,6 @@ import org.croudtrip.fragments.OfferTripFragment;
 import org.croudtrip.fragments.PickUpPassengerFragment;
 import org.croudtrip.fragments.ProfileFragment;
 import org.croudtrip.fragments.SettingsFragment;
-import org.croudtrip.fragments.VehicleInfoFragment;
 import org.croudtrip.gcm.GcmManager;
 import org.croudtrip.location.LocationUpdater;
 import org.croudtrip.utils.DefaultTransformer;

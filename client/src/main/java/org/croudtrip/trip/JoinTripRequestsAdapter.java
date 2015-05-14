@@ -8,7 +8,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.squareup.picasso.Picasso;
 
 import org.croudtrip.R;
 import org.croudtrip.api.account.User;
@@ -72,6 +75,14 @@ public class JoinTripRequestsAdapter extends RecyclerView.Adapter<JoinTripReques
         // Passenger name
         User passenger = query.getPassenger();
         holder.tvPassengerName.setText(passenger.getFirstName() + " " + passenger.getLastName());
+
+        // Passenger image/avatar
+        String avatarURL = passenger.getAvatarUrl();
+        if(avatarURL != null) {
+            Picasso.with(context).load(avatarURL).into(holder.ivAvatar);
+        }else{
+            holder.ivAvatar.setImageResource(R.drawable.profile);
+        }
 
         // Passenger location
         showPassengerLocation(holder, query.getPassengerRoute().getWayPoints().get(0));
@@ -256,6 +267,7 @@ public class JoinTripRequestsAdapter extends RecyclerView.Adapter<JoinTripReques
         protected TextView tvPassengerLocation;
         protected TextView tvEarnings;
         protected TextView tvDiversion;
+        protected ImageView ivAvatar;
 
 
         public ViewHolder(View view) {
@@ -268,6 +280,8 @@ public class JoinTripRequestsAdapter extends RecyclerView.Adapter<JoinTripReques
                     view.findViewById(R.id.tv_join_trip_requests_earnings);
             this.tvDiversion = (TextView)
                     view.findViewById(R.id.tv_join_trip_requests_diversion);
+            this.ivAvatar = (ImageView)
+                    view.findViewById(R.id.iv_join_trip_requests_user_image);
 
             // Get notified if the user accepts or declines a request
             ImageButton acceptButton = (ImageButton)

@@ -205,7 +205,7 @@ public class JoinTripRequestsFragment extends SubscriptionFragment {
 			Timber.d("Received " + requests.size() + " JoinTripRequest(s)");
 			// Fill the list with results
 			numRequests += requests.size();
-			adapter.addRequests(requests);
+            adapter.addRequests(requests);
 
             // Show a summary caption
             caption.setText(getResources().getQuantityString(R.plurals.join_trip_requests,
