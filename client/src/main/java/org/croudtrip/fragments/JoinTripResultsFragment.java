@@ -111,7 +111,6 @@ public class JoinTripResultsFragment extends SubscriptionFragment {
                 SharedPreferences prefs = getActivity().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
                 SharedPreferences.Editor editor = prefs.edit();
                 editor.putBoolean(Constants.SHARED_PREF_KEY_SEARCHING, false);
-                Log.d("alex", "set to false 4");
 
 
                 ((MaterialNavigationDrawer) getActivity()).getCurrentSection().setTarget(new JoinTripFragment());
@@ -199,7 +198,6 @@ public class JoinTripResultsFragment extends SubscriptionFragment {
         }
 
         SharedPreferences prefs = getActivity().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
-        Log.d("alex", "SEARCHING: " + prefs.getBoolean(Constants.SHARED_PREF_KEY_SEARCHING, false));
 
         if (prefs.getBoolean(Constants.SHARED_PREF_KEY_SEARCHING, false)) {
             waitingView.setVisibility(View.VISIBLE);
@@ -283,7 +281,6 @@ public class JoinTripResultsFragment extends SubscriptionFragment {
                         SharedPreferences.Editor editor = prefs.edit();
                         editor.putBoolean(Constants.SHARED_PREF_KEY_SEARCHING, false);
                         editor.apply();
-                        Log.d("alex", "set to false 3");
 
 
                         ((MaterialNavigationDrawer) getActivity()).getCurrentSection().setTarget(new JoinTripFragment());
