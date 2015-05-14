@@ -1,6 +1,8 @@
 package org.croudtrip.trip;
 
 import android.content.Context;
+import android.location.Address;
+import android.location.Geocoder;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,10 +12,14 @@ import android.widget.TextView;
 
 import org.croudtrip.R;
 import org.croudtrip.api.account.User;
+import org.croudtrip.api.directions.RouteLocation;
 import org.croudtrip.api.trips.JoinTripRequest;
+import org.croudtrip.api.trips.TripQuery;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import timber.log.Timber;
 
@@ -61,15 +67,14 @@ public class JoinTripRequestsAdapter extends RecyclerView.Adapter<JoinTripReques
     public void onBindViewHolder(ViewHolder holder, int position) {
 
         JoinMatch joinMatch = joinMatches.get(position);
+        TripQuery query = joinMatch.joinRequest.getQuery();
 
         // Passenger name
-        User passenger = joinMatch.joinRequest.getQuery().getPassenger();
+        User passenger = query.getPassenger();
         holder.tvPassengerName.setText(passenger.getFirstName() + " " + passenger.getLastName());
 
         // Passenger location
-        //List<RouteLocation> passengerWayPoints = joinRequest.getQuery().getPassengerRoute().getWayPoints();
-        //String passengerLocation = passengerWayPoints.get(0).getLat() + " / " + passengerWayPoints.get(1).getLng();
-        holder.tvPassengerLocation.setText("Nuremberg");//TODO
+        showPassengerLocation(holder, query.getPassengerRoute().getWayPoints().get(0));
 
         // Earnings for driver
         showEarning(holder, joinMatch.joinRequest.getTotalPriceInCents());
@@ -82,6 +87,41 @@ public class JoinTripRequestsAdapter extends RecyclerView.Adapter<JoinTripReques
             showDiversion(holder, 2562);
         } else {
             showDiversion(holder, diversionInMinutes);
+        }
+    }
+
+    private void showPassengerLocation(ViewHolder holder, RouteLocation location) {
+
+        holder.tvPassengerLocation.setVisibility(View.VISIBLE);
+
+        // Receive addresses for Latitude/Longitude
+        Geocoder geocoder;
+        List<Address> addresses;
+        geocoder = new Geocoder(context, Locale.getDefault());
+
+        try {
+            addresses = geocoder.getFromLocation(location.getLat(), location.getLng(), 1);
+
+            String city = addresses.get(0).getLocality();
+            String featureName = addresses.get(0).getFeatureName();
+
+            if (city == null && featureName == null) {
+                // no data -> hide TextView
+                holder.tvPassengerLocation.setVisibility(View.GONE);
+
+            } else if (city != null && featureName != null && !featureName.equals(city)) {
+                // both data
+                holder.tvPassengerLocation.setText(city + ", " + featureName);
+
+            } else {
+                // either only city of featureName (or both the same)
+                String loc = (city != null) ? city : featureName;
+                holder.tvPassengerLocation.setText(loc);
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            holder.tvPassengerLocation.setVisibility(View.GONE);
         }
     }
 
