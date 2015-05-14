@@ -72,8 +72,8 @@
     <string name="join_trip_requests_error">An error occurred when looking up you passengers. Please try again.</string>
     <string name="join_trip_requests_earnings">%1$s.%2$s €</string>
     <string name="join_trip_requests_diversion_loading">Div.: loading&#8230;</string>
-    <string name="join_trip_requests_diversion_m">Div.: %d m</string>
-    <string name="join_trip_requests_diversion_km">Div.: %d km</string>
+    <string name="join_trip_requests_diversion_hmin">Div.: %1$sh %2$smin</string>
+    <string name="join_trip_requests_diversion_min">Div.: %smin</string>
 
 
     <string name="offer_choose_destination">What´s your destination?</string>

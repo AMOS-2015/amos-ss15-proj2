@@ -21,7 +21,7 @@ import timber.log.Timber;
  * Adapter for the JoinTripRequests-CardView/List
  * Created by Vanessa Lange on 08.05.15.
  */
-public class JoinTripRequestsAdapter extends RecyclerView.Adapter<JoinTripRequestsAdapter.ViewHolder>{
+public class JoinTripRequestsAdapter extends RecyclerView.Adapter<JoinTripRequestsAdapter.ViewHolder> {
 
     //************************** Variables ***************************//
 
@@ -75,17 +75,17 @@ public class JoinTripRequestsAdapter extends RecyclerView.Adapter<JoinTripReques
         showEarning(holder, joinMatch.joinRequest.getTotalPriceInCents());
 
         // Diversion to pick up passenger
-        int diversionInMeters = joinMatch.diversionInMeters;
-        if(diversionInMeters == -1){
+        int diversionInMinutes = joinMatch.diversionInMinutes;
+        if (diversionInMinutes == -1) {
             // no data yet -> ask server
             // TODO
-            showDiversion(holder, 42000);
-        }else{
-            showDiversion(holder, diversionInMeters);
+            showDiversion(holder, 2562);
+        } else {
+            showDiversion(holder, diversionInMinutes);
         }
     }
 
-    private void showEarning(ViewHolder holder, int earningsInCents){
+    private void showEarning(ViewHolder holder, int earningsInCents) {
 
         String pEuros = (earningsInCents / 100) + "";
         String pCents;
@@ -93,11 +93,11 @@ public class JoinTripRequestsAdapter extends RecyclerView.Adapter<JoinTripReques
         // Format cents correctly
         int cents = (earningsInCents % 100);
 
-        if(cents == 0){
+        if (cents == 0) {
             pCents = "00";
-        }else if(cents < 10){
+        } else if (cents < 10) {
             pCents = "0" + cents;
-        }else{
+        } else {
             pCents = cents + "";
         }
 
@@ -105,16 +105,26 @@ public class JoinTripRequestsAdapter extends RecyclerView.Adapter<JoinTripReques
     }
 
 
-    private void showDiversion(ViewHolder holder, int diversionInMeters){
+    private void showDiversion(ViewHolder holder, int diversionInMinutes) {
 
-        if(diversionInMeters >= 1000){
-            // round to km
-            holder.tvDiversion.setText(context.getString(R.string.join_trip_requests_diversion_km,
-                    Math.round(diversionInMeters / 1000.0)));
-        }else{
-            // just m
-            holder.tvDiversion.setText(context.getString(R.string.join_trip_requests_diversion_m,
-                    diversionInMeters));
+        String minutes;
+
+        int min = diversionInMinutes % 60;
+        if (min == 0) {
+            minutes = "00";
+        } else if (min < 10) {
+            minutes = "0" + min;
+        } else {
+            minutes = min + "";
+        }
+
+        if (diversionInMinutes >= 60) {
+            String hours = diversionInMinutes / 60 + "";
+            holder.tvDiversion.setText(context.getString(R.string.join_trip_requests_diversion_hmin,
+                    hours, minutes));
+        } else {
+            holder.tvDiversion.setText(context.getString(R.string.join_trip_requests_diversion_min,
+                    minutes));
         }
     }
 
@@ -122,7 +132,7 @@ public class JoinTripRequestsAdapter extends RecyclerView.Adapter<JoinTripReques
     @Override
     public int getItemCount() {
 
-        if(joinMatches == null){
+        if (joinMatches == null) {
             return 0;
         }
 
@@ -132,15 +142,16 @@ public class JoinTripRequestsAdapter extends RecyclerView.Adapter<JoinTripReques
 
     /**
      * Adds the given items to the adapter.
+     *
      * @param additionalRequests new elements to add to the adapter
      */
-    public void addRequests(List<JoinTripRequest> additionalRequests){
+    public void addRequests(List<JoinTripRequest> additionalRequests) {
 
-        if(additionalRequests == null){
+        if (additionalRequests == null) {
             return;
         }
 
-        for(JoinTripRequest joinRequest : additionalRequests){
+        for (JoinTripRequest joinRequest : additionalRequests) {
             this.joinMatches.add(new JoinMatch(joinRequest));
         }
 
@@ -150,12 +161,13 @@ public class JoinTripRequestsAdapter extends RecyclerView.Adapter<JoinTripReques
 
     /**
      * Removes the JoinTripRequest at the specific position from the adapter.
+     *
      * @param position the position of the JoinTripRequest in the adapter
      * @return the removed JoinTripRequest
      */
-    public JoinTripRequest removeRequest(int position){
+    public JoinTripRequest removeRequest(int position) {
 
-        if(position < 0 || position >= joinMatches.size()){
+        if (position < 0 || position >= joinMatches.size()) {
             return null;
         }
 
@@ -173,12 +185,13 @@ public class JoinTripRequestsAdapter extends RecyclerView.Adapter<JoinTripReques
 
     /**
      * Returns the JoinTripRequest at the specific position
+     *
      * @param position the position in the adapter of the JoinTripRequest to return
      * @return the JoinTripRequest at the specific position
      */
-    public JoinTripRequest getRequest(int position){
+    public JoinTripRequest getRequest(int position) {
 
-        if(position < 0 || position >= joinMatches.size()){
+        if (position < 0 || position >= joinMatches.size()) {
             return null;
         }
 
@@ -186,18 +199,18 @@ public class JoinTripRequestsAdapter extends RecyclerView.Adapter<JoinTripReques
     }
 
 
-
     //************************** Inner classes ***************************//
 
     public interface OnRequestAcceptDeclineListener {
         void onJoinRequestDecline(View view, int position);
+
         void onJoinRequestAccept(View view, int position);
     }
 
     /**
      * Provides a reference to the views for each data item.
      */
-    class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
+    class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         protected TextView tvPassengerName;
         protected TextView tvPassengerLocation;
@@ -230,15 +243,15 @@ public class JoinTripRequestsAdapter extends RecyclerView.Adapter<JoinTripReques
         @Override
         public void onClick(View view) {
 
-            if(view.getId() == R.id.btn_join_trip_request_yes){
+            if (view.getId() == R.id.btn_join_trip_request_yes) {
                 // Accept
                 listener.onJoinRequestAccept(view, getPosition());
 
-            }else if(view.getId() == R.id.btn_join_trip_request_no){
+            } else if (view.getId() == R.id.btn_join_trip_request_no) {
                 // Decline
                 listener.onJoinRequestDecline(view, getPosition());
 
-            }else{
+            } else {
                 Timber.e("Received click from unknown View with ID: " + view.getId());
             }
         }
@@ -248,14 +261,14 @@ public class JoinTripRequestsAdapter extends RecyclerView.Adapter<JoinTripReques
     /**
      * A simple class to keep data together
      */
-   private class JoinMatch {
+    private class JoinMatch {
 
-       private JoinTripRequest joinRequest;
-       private int diversionInMeters;
+        private JoinTripRequest joinRequest;
+        private int diversionInMinutes;
 
-       public JoinMatch(JoinTripRequest joinRequest){
-           this.joinRequest = joinRequest;
-           this.diversionInMeters = -1;
-       }
-   }
+        public JoinMatch(JoinTripRequest joinRequest) {
+            this.joinRequest = joinRequest;
+            this.diversionInMinutes = -1;
+        }
+    }
 }
