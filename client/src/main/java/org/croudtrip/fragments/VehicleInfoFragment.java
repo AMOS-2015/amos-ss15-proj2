@@ -68,10 +68,18 @@ public class VehicleInfoFragment extends SubscriptionFragment {
         updateInfo = (Button) view.findViewById(R.id.update_info);
         deleteVehicle = (Button) view.findViewById(R.id.delete_vehicle);
 
-        if (vehicleId == -1)
+        if (vehicleId == -1 || vehicleId == -2)
             updateInfo.setText(getString(R.string.add_vehicle));
         else
             updateInfo.setText(getString(R.string.save_changes));
+
+        if (vehicleId == -2)
+            carPlateEdit.requestFocus();
+
+
+        if (vehicleId !=-1 && vehicleId != -2)
+            deleteVehicle.setVisibility(View.VISIBLE);
+
 
         setFields();
         updateInfo.setOnClickListener(new View.OnClickListener() {
@@ -102,8 +110,7 @@ public class VehicleInfoFragment extends SubscriptionFragment {
             }
         });
 
-        if (vehicleId !=-1)
-            deleteVehicle.setVisibility(View.VISIBLE);
+
         /*
         carTypeEdit.setOnKeyListener(new View.OnKeyListener() {
             public boolean onKey(View v, int keyCode, KeyEvent event) {
@@ -353,7 +360,7 @@ public class VehicleInfoFragment extends SubscriptionFragment {
     public void saveCarChanges(int vehicleId) {
         VehicleDescription vehicleDescription = new VehicleDescription(newCarPlate, newColor, newCarType, newCarCapacity);
         if (carPlateEdit.getText() != null && carPlateEdit.length() > 0) {
-            if (vehicleId == -1)
+            if (vehicleId == -1 || vehicleId == -2)
                 addVehicle(vehicleDescription);
             else if (vehicleId != 0)
                 updateVehicle(vehicleId, vehicleDescription);
