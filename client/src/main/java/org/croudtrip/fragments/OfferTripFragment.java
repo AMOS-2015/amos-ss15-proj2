@@ -2,13 +2,14 @@ package org.croudtrip.fragments;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.os.Bundle;
-import android.support.v7.widget.Toolbar;
+import android.support.v7.app.AlertDialog;
 import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -39,10 +40,14 @@ import org.croudtrip.MainApplication;
 import org.croudtrip.R;
 import org.croudtrip.activities.DriverActivity;
 import org.croudtrip.api.TripsResource;
+import org.croudtrip.api.VehicleResource;
+import org.croudtrip.api.account.Vehicle;
 import org.croudtrip.db.DatabaseHelper;
 import org.croudtrip.location.LocationUpdater;
 import org.croudtrip.location.MyAutoCompleteTextView;
 import org.croudtrip.location.PlaceAutocompleteAdapter;
+import org.croudtrip.utils.DataHolder;
+import org.croudtrip.utils.DefaultTransformer;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -53,6 +58,8 @@ import javax.inject.Inject;
 
 import it.neokree.materialnavigationdrawer.MaterialNavigationDrawer;
 import pl.charmas.android.reactivelocation.ReactiveLocationProvider;
+import retrofit.RetrofitError;
+import retrofit.client.Response;
 import roboguice.inject.InjectView;
 import rx.Subscription;
 import rx.functions.Action1;
@@ -84,7 +91,8 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
 
     @Inject
     TripsResource tripsResource;
-
+    @Inject
+    VehicleResource vehicleResource;
     private Geocoder geocoder;
 
     public static OfferTripFragment get() {
@@ -255,7 +263,7 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
                     e.printStackTrace();
                 }
 
-                Intent intent = new Intent( getActivity(), DriverActivity.class);
+                final Intent intent = new Intent( getActivity(), DriverActivity.class);
                 Bundle b = new Bundle();
                 b.putInt("maxDiversion", Integer.valueOf(maxDiversion.getText().toString()) );
                 b.putInt("pricePerKilometer", Integer.valueOf(pricePerKm.getText().toString()));
@@ -264,9 +272,38 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
                 b.putDouble("toLat", destination.latitude );
                 b.putDouble("toLng", destination.longitude );
                 intent.putExtras(b);
-                startActivity(intent);
 
-                Toast.makeText(getActivity().getApplicationContext(), R.string.offer_trip, Toast.LENGTH_SHORT).show();
+                Subscription subscription = vehicleResource.getVehicles()
+                        .compose(new DefaultTransformer<List<Vehicle>>())
+                        .subscribe(new Action1<List<Vehicle>>() {
+                            @Override
+                            public void call(List<Vehicle> vehicles) {
+                                if (vehicles.size() > 0)
+                                {
+                                    startActivity(intent);
+                                    Toast.makeText(getActivity().getApplicationContext(), R.string.offer_trip, Toast.LENGTH_SHORT).show();
+                                }
+                                else
+                                    showCarPlateDialog();
+                            }
+                        }, new Action1<Throwable>() {
+                            @Override
+                            public void call(Throwable throwable) {
+                                Response response = ((RetrofitError) throwable).getResponse();
+                                if (response != null && response.getStatus() == 401) {  // Not Authorized
+                                } else {
+                                    Timber.e("error" + throwable.getMessage());
+                                }
+                                Timber.e("Couldn't get data" + throwable.getMessage());
+                            }
+                        });
+
+                subscriptions.add(subscription);
+
+
+
+
+
             }
         });
     }
@@ -372,4 +409,30 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
         // Connection to the API client has been suspended. Disable API access in the client.
         adapter.setGoogleApiClient(null);
     }
+
+    public void showCarPlateDialog () {
+        AlertDialog.Builder carPlateDialog = new AlertDialog.Builder(getActivity());
+        carPlateDialog.setTitle(R.string.no_car_plate_title);
+        carPlateDialog.setMessage(R.string.no_car_plate_message);
+        carPlateDialog.setCancelable(true);
+        carPlateDialog.setPositiveButton("Yes, will do!",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        DataHolder.getInstance().setVehicle_id(-2);
+                        ((MaterialNavigationDrawer) getActivity()).setFragmentChild(new VehicleInfoFragment(), "Add new vehicle");
+                    }
+                });
+        carPlateDialog.setNegativeButton("Not now",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.cancel();
+                    }
+                });
+
+        AlertDialog alert11 = carPlateDialog.create();
+        alert11.show();
+    }
 }
+
+
+

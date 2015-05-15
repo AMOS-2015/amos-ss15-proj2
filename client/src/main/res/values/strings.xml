@@ -112,7 +112,8 @@
     <string name="delete_vehicle_button">Delete This Vehicle</string>
     <string name="add_vehicle">Add New Vehicle</string>
     <string name="vehicles_title">Your Vehicles</string>
-
+    <string name="no_car_plate_title">Add Car Plate Info</string>
+    <string name="no_car_plate_message">Your passengers cannot identify you without information about your car. Update information now?</string>
     <string name="join_request_title">New join request!</string>
     <string name="joint_request_msg">%1$s wants to join your trip.</string>
     
