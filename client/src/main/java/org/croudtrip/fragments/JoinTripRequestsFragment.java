@@ -12,11 +12,13 @@ import android.widget.TextView;
 import org.croudtrip.R;
 import org.croudtrip.api.DirectionsResource;
 import org.croudtrip.api.TripsResource;
+import org.croudtrip.api.account.User;
 import org.croudtrip.api.directions.DirectionsRequest;
 import org.croudtrip.api.directions.Route;
 import org.croudtrip.api.directions.RouteLocation;
 import org.croudtrip.api.trips.JoinTripRequest;
 import org.croudtrip.api.trips.JoinTripRequestUpdate;
+import org.croudtrip.api.trips.TripQuery;
 import org.croudtrip.trip.JoinTripRequestsAdapter;
 import org.croudtrip.trip.OnDiversionUpdateListener;
 import org.croudtrip.utils.DefaultTransformer;
@@ -81,6 +83,15 @@ public class JoinTripRequestsFragment extends SubscriptionFragment {
         adapter = new JoinTripRequestsAdapter(this);
         adapter.setOnRequestAcceptDeclineListener(new AcceptDeclineRequestListener());
         recyclerView.setAdapter(adapter);
+
+        List<JoinTripRequest> requests = new ArrayList<>();
+        for (int i=0; i<5; i++) {
+            TripQuery q = new TripQuery();
+            JoinTripRequest r = new JoinTripRequest((long) Math.random(), q, 33, 44, null, null);
+            requests.add(r);
+        }
+        adapter.addRequests(requests);
+        caption.setVisibility(View.GONE);
 
 
         // Ask the server for join-trip-requests

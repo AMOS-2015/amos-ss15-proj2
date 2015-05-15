@@ -201,9 +201,12 @@ public class JoinTripResultsFragment extends SubscriptionFragment {
 
         if (prefs.getBoolean(Constants.SHARED_PREF_KEY_SEARCHING, false)) {
             waitingView.setVisibility(View.VISIBLE);
-            ((MaterialNavigationDrawer) getActivity()).getCurrentSection().setNotificationsText("searching");
+            ((MaterialNavigationDrawer) getActivity()).getCurrentSection().setNotificationsText("...");
         } else if (prefs.getBoolean(Constants.SHARED_PREF_KEY_ACCEPTED, false)) {
             acceptedView.setVisibility(View.VISIBLE);
+            ((MaterialNavigationDrawer) getActivity()).getCurrentSection().setNotificationsText("");
+        } else {
+            ((MaterialNavigationDrawer) getActivity()).getCurrentSection().setNotificationsText("");
         }
     }
 
@@ -246,6 +249,8 @@ public class JoinTripResultsFragment extends SubscriptionFragment {
                             editor.putBoolean(Constants.SHARED_PREF_KEY_SEARCHING, false);
                             editor.apply();
 
+                            ((MaterialNavigationDrawer) getActivity()).getCurrentSection().setNotifications(numMatches);
+
                             waitingView.setVisibility(View.GONE);
                             resultView.setVisibility(View.VISIBLE);
 
@@ -281,6 +286,7 @@ public class JoinTripResultsFragment extends SubscriptionFragment {
                         SharedPreferences.Editor editor = prefs.edit();
                         editor.putBoolean(Constants.SHARED_PREF_KEY_SEARCHING, false);
                         editor.apply();
+                        ((MaterialNavigationDrawer) getActivity()).getCurrentSection().setNotificationsText("");
 
 
                         ((MaterialNavigationDrawer) getActivity()).getCurrentSection().setTarget(new JoinTripFragment());

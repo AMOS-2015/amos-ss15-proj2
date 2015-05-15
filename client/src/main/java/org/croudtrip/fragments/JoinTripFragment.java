@@ -116,7 +116,7 @@ public class JoinTripFragment extends SubscriptionFragment implements GoogleApiC
             googleApiClient.connect();
         }
 
-
+        ((MaterialNavigationDrawer) getActivity()).getCurrentSection().setNotificationsText("");
 
         View view = inflater.inflate(R.layout.fragment_join_trip, container, false);
         return view;
