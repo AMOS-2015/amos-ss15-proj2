@@ -16,6 +16,8 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.croudtrip.Constants;
 import org.croudtrip.R;
 import org.croudtrip.account.AccountManager;
@@ -28,6 +30,7 @@ import org.croudtrip.api.trips.TripReservation;
 import org.croudtrip.trip.JoinTripResultsAdapter;
 import org.croudtrip.utils.DefaultTransformer;
 
+import java.io.IOException;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -57,6 +60,12 @@ public class JoinTripResultsFragment extends SubscriptionFragment {
     public final static String KEY_DESTINATION_LONGITUDE = "destination_longitude";
     public final static String KEY_MAX_WAITING_TIME = "max_waiting_time";
 
+    public final static String KEY_JOIN_TRIP_REQUEST_RESULT = "join_trip_request_result";
+
+    public final static String KEY_ACTION_TO_RUN = "action_to_run";
+    public final static String ACTION_SHOW_RESULT = "show_result";
+    public final static String ACTION_START_BACKGROUND_SEARCH = "start_background_search";
+
 
     //@InjectView(R.id.pb_join_trip)                  private ProgressBar progressBar;
     @InjectView(R.id.tv_join_trip_results_caption)  private TextView caption;
@@ -67,7 +76,7 @@ public class JoinTripResultsFragment extends SubscriptionFragment {
     @InjectView(R.id.layout_join_trip_accepted)     private View acceptedView;
     @InjectView(R.id.btn_joint_trip_stop)           private Button btnStop;
     @InjectView(R.id.btn_joint_trip_cancel)         private Button btnCancelTrip;
-
+    @InjectView(R.id.tv_joint_description)          private TextView jointDescription;
 
 
 
@@ -194,7 +203,26 @@ public class JoinTripResultsFragment extends SubscriptionFragment {
 
         //If getArguments() is null this Fragment was called by the NavigationDrawer. This means the server is already searching for trips
         if (getArguments() != null) {
-            startBackgroundSearch(getArguments());
+            Bundle args = getArguments();
+            if( args.getString(KEY_ACTION_TO_RUN).equals(ACTION_START_BACKGROUND_SEARCH) )
+                startBackgroundSearch(getArguments());
+            else if( args.getString(KEY_ACTION_TO_RUN).equals(ACTION_SHOW_RESULT) )
+            {
+                JoinTripRequest request = null;
+                ObjectMapper mapper = new ObjectMapper();
+                try {
+                    request = mapper.readValue( args.getString(KEY_JOIN_TRIP_REQUEST_RESULT), JoinTripRequest.class );
+                } catch (IOException e) {
+                    Timber.e("Could not parse JoinTripRequest");
+                    e.printStackTrace();
+                }
+
+                if( request != null )
+                {
+                    jointDescription.setText( getString(R.string.join_trip_results_pickup, request.getOffer().getDriver().getFirstName(), request.getTotalPriceInCents()/100.0f));
+                }
+            }
+
         }
 
         SharedPreferences prefs = getActivity().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);

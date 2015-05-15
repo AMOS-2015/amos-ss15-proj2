@@ -9,6 +9,8 @@ import android.content.SharedPreferences;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 
 import org.croudtrip.Constants;
@@ -64,7 +66,6 @@ public class GcmIntentService extends RoboIntentService {
                 break;
             case GcmConstants.GCM_MSG_REQUEST_ACCEPTED:
                 handleRequestAccepted( intent );
-                handleDriverAccepted(intent);
                 break;
             case GcmConstants.GCM_MSG_REQUEST_DECLINED:
                 handleRequestDeclined(intent);
@@ -185,6 +186,14 @@ public class GcmIntentService extends RoboIntentService {
                                 // create notification for the user
                                 Intent startingIntent = new Intent(getApplicationContext(), MainActivity.class);
                                 startingIntent.setAction(MainActivity.ACTION_SHOW_REQUEST_ACCEPTED);
+                                ObjectMapper mapper = new ObjectMapper();
+                                startingIntent.putExtra(JoinTripResultsFragment.KEY_ACTION_TO_RUN, JoinTripResultsFragment.ACTION_SHOW_RESULT);
+                                try {
+                                    startingIntent.putExtra( JoinTripResultsFragment.KEY_JOIN_TRIP_REQUEST_RESULT, mapper.writeValueAsString(joinTripRequest) );
+                                } catch (JsonProcessingException e) {
+                                    Timber.e("Could not map join trip result");
+                                    e.printStackTrace();
+                                }
 
                                 /*if (LifecycleHandler.isApplicationInForeground()) {
                                     startingIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -195,6 +204,8 @@ public class GcmIntentService extends RoboIntentService {
                                 createNotification(getString(R.string.join_request_accepted_title), getString(R.string.join_request_accepted_msg,
                                                 joinTripRequest.getOffer().getDriver().getFirstName()),
                                         GcmConstants.GCM_NOTIFICATION_REQUEST_ACCEPTED_ID, contentIntent);
+
+                                handleDriverAccepted(joinTripRequest);
                                 //}
                             }
                         },
@@ -268,14 +279,24 @@ public class GcmIntentService extends RoboIntentService {
     /*
     Should be called if the driver accepted this passenger.
      */
-    private void handleDriverAccepted(Intent intent) {
+    private void handleDriverAccepted( JoinTripRequest request ) {
         SharedPreferences prefs = getApplicationContext().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
         editor.putBoolean(Constants.SHARED_PREF_KEY_SEARCHING, false);
         editor.putBoolean(Constants.SHARED_PREF_KEY_ACCEPTED, true);
         editor.apply();
 
-        LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(Constants.EVENT_DRIVER_ACCEPTED));
+        Intent startingIntent = new Intent(Constants.EVENT_DRIVER_ACCEPTED);
+        ObjectMapper mapper = new ObjectMapper();
+        startingIntent.putExtra(JoinTripResultsFragment.KEY_ACTION_TO_RUN, JoinTripResultsFragment.ACTION_SHOW_RESULT);
+        try {
+            startingIntent.putExtra( JoinTripResultsFragment.KEY_JOIN_TRIP_REQUEST_RESULT, mapper.writeValueAsString(request) );
+        } catch (JsonProcessingException e) {
+            Timber.e("Could not map join trip result");
+            e.printStackTrace();
+        }
+
+        LocalBroadcastManager.getInstance(this).sendBroadcast(startingIntent);
     }
 
     /*

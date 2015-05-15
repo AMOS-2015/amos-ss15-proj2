@@ -122,7 +122,15 @@ public class MainActivity extends AbstractRoboDrawerActivity {
             //TODO: this solution works only if we get some kind of notification from the server if there are (no) results. There
             //TODO: we have to set "loading" in the sp to false
             this.addSection(newSection(getString(R.string.menu_my_trip), R.drawable.hitchhiker, new JoinTripResultsFragment()));
+        } else if ( action.equalsIgnoreCase(ACTION_SHOW_REQUEST_ACCEPTED) ) {
+            Bundle args = intent.getExtras();
+
+            Timber.d(args.getString(JoinTripResultsFragment.KEY_ACTION_TO_RUN));
+            Fragment frag = new JoinTripResultsFragment();
+            frag.setArguments(args);
+            this.addSection(newSection(getString(R.string.menu_my_trip), R.drawable.hitchhiker, frag));
         }
+
         if (prefs.getBoolean(Constants.SHARED_PREF_KEY_SEARCHING, false) || prefs.getBoolean(Constants.SHARED_PREF_KEY_ACCEPTED, false)) {
             this.addSection(newSection(getString(R.string.menu_my_trip), R.drawable.hitchhiker, new JoinTripResultsFragment()));
         } else {
@@ -263,9 +271,15 @@ public class MainActivity extends AbstractRoboDrawerActivity {
     private BroadcastReceiver driverAcceptedReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            getSectionList().get(0).setTarget(new JoinTripResultsFragment());
+            Bundle args = intent.getExtras();
+
+            Timber.d(args.getString(JoinTripResultsFragment.KEY_ACTION_TO_RUN));
+            Fragment frag = new JoinTripResultsFragment();
+            frag.setArguments(args);
+
+            getSectionList().get(0).setTarget( frag );
             getSectionList().get(0).setTitle(getString(R.string.menu_my_trip));
-            setFragment(new JoinTripResultsFragment(), getString(R.string.menu_my_trip));
+            setFragment( frag, getString(R.string.menu_my_trip));
         }
     };
 

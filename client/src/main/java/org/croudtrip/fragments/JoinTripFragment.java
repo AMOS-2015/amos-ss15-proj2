@@ -261,6 +261,8 @@ public class JoinTripFragment extends SubscriptionFragment implements GoogleApiC
 
                 // Show the results for this search
                 Bundle extras = new Bundle();
+                extras.putString(JoinTripResultsFragment.KEY_ACTION_TO_RUN, JoinTripResultsFragment.ACTION_START_BACKGROUND_SEARCH);
+                extras.putInt(JoinTripResultsFragment.KEY_MAX_WAITING_TIME, Integer.parseInt(maxWaitingTime.getText().toString()));
                 extras.putDouble(JoinTripResultsFragment.KEY_CURRENT_LOCATION_LATITUDE,
                         currentLocation.getLatitude());
                 extras.putDouble(JoinTripResultsFragment.KEY_CURRENT_LOCATION_LONGITUDE,
