@@ -72,7 +72,7 @@ public class JoinTripRequestsAdapter extends RecyclerView.Adapter<JoinTripReques
         // Passenger name
         User passenger = query.getPassenger();
         //holder.tvPassengerName.setText(passenger.getFirstName() + " " + passenger.getLastName());
-/*
+
         // Passenger image/avatar
         String avatarURL = passenger.getAvatarUrl();
         if (avatarURL != null) {
@@ -97,7 +97,7 @@ public class JoinTripRequestsAdapter extends RecyclerView.Adapter<JoinTripReques
         } else {
             Timber.d("Used cached result for diversion");
             showDiversion(holder.tvDiversion, diversionInMinutes);
-        }*/
+        }
     }
 
     private void showPassengerLocation(ViewHolder holder, RouteLocation location) {

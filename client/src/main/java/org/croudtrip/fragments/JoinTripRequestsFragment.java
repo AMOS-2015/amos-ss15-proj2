@@ -87,14 +87,6 @@ public class JoinTripRequestsFragment extends SubscriptionFragment {
         adapter.setOnRequestAcceptDeclineListener(new AcceptDeclineRequestListener());
         recyclerView.setAdapter(adapter);
 
-        List<JoinTripRequest> requests = new ArrayList<>();
-        for (int i=0; i<5; i++) {
-            TripQuery q = new TripQuery();
-            JoinTripRequest r = new JoinTripRequest((long) Math.random(), q, 33, 44, null, null);
-            requests.add(r);
-        }
-        adapter.addRequests(requests);
-        caption.setVisibility(View.GONE);
 
         SwipeListener touchListener = new SwipeListener(
                 recyclerView,
