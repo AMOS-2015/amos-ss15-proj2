@@ -118,9 +118,7 @@ public class MainActivity extends AbstractRoboDrawerActivity {
         action = action == null ? "" : action;
 
         // join trip/my joined trip
-        if ( false || action.equalsIgnoreCase(ACTION_SHOW_REQUEST_DECLINED) || action.equalsIgnoreCase(ACTION_SHOW_FOUND_MATCHES) ) {
-            //TODO: this solution works only if we get some kind of notification from the server if there are (no) results. There
-            //TODO: we have to set "loading" in the sp to false
+        if ( action.equalsIgnoreCase(ACTION_SHOW_REQUEST_DECLINED) || action.equalsIgnoreCase(ACTION_SHOW_FOUND_MATCHES) ) {
             this.addSection(newSection(getString(R.string.menu_my_trip), R.drawable.hitchhiker, new JoinTripResultsFragment()));
         } else if ( action.equalsIgnoreCase(ACTION_SHOW_REQUEST_ACCEPTED) ) {
             Bundle args = intent.getExtras();
