@@ -200,6 +200,7 @@ public class JoinTripResultsFragment extends SubscriptionFragment {
             }
         });
 
+        SharedPreferences prefs = getActivity().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
 
         //If getArguments() is null this Fragment was called by the NavigationDrawer. This means the server is already searching for trips
         if (getArguments() != null) {
@@ -216,30 +217,34 @@ public class JoinTripResultsFragment extends SubscriptionFragment {
                     Timber.e("Could not parse JoinTripRequest");
                     e.printStackTrace();
                 }
-
-                if( request != null )
-                {
-                    int earningsInCents = request.getTotalPriceInCents();
-                    String pEuros = (earningsInCents / 100) + "";
-                    String pCents;
-
-                    // Format cents correctly
-                    int cents = (earningsInCents % 100);
-
-                    if (cents == 0) {
-                        pCents = "00";
-                    } else if (cents < 10) {
-                        pCents = "0" + cents;
-                    } else {
-                        pCents = cents + "";
-                    }
-                    jointDescription.setText( getString(R.string.join_trip_results_pickup, request.getOffer().getDriver().getFirstName(), pEuros, pCents));
-                }
+                showJoinedTrip(request);
             }
 
         }
+        else if(prefs.getBoolean(Constants.SHARED_PREF_KEY_ACCEPTED, false)) {
+            tripsResource.getDriverAcceptedJoinRequests()
+                    .compose(new DefaultTransformer<List<JoinTripRequest>>())
+                    .subscribe( new Action1<List<JoinTripRequest>>() {
+                        @Override
+                        public void call(List<JoinTripRequest> jtr) {
+                            if( jtr == null || jtr.isEmpty() ) {
+                                Timber.d("Currently there are no trips running.");
+                                // The user is here though he should not - send him back to join trip
+                                sendUserBackToJoinTripFragment();
+                                return;
+                            }
 
-        SharedPreferences prefs = getActivity().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
+                            acceptedView.setVisibility(View.VISIBLE);
+                            showJoinedTrip( jtr.get(0) );
+                        }
+                    }, new Action1<Throwable>() {
+                        @Override
+                        public void call(Throwable throwable) {
+                            // The user is here though he should not - send him back to join trip
+                            sendUserBackToJoinTripFragment();
+                        }
+                    });
+        }
 
         if (prefs.getBoolean(Constants.SHARED_PREF_KEY_SEARCHING, false)) {
             waitingView.setVisibility(View.VISIBLE);
@@ -249,6 +254,36 @@ public class JoinTripResultsFragment extends SubscriptionFragment {
             ((MaterialNavigationDrawer) getActivity()).getCurrentSection().setNotificationsText("");
         } else {
             ((MaterialNavigationDrawer) getActivity()).getCurrentSection().setNotificationsText("");
+        }
+    }
+
+    private void sendUserBackToJoinTripFragment() {
+        JoinTripFragment fragment = new JoinTripFragment();
+        ((MaterialNavigationDrawer) getActivity()).getCurrentSection().setTarget(fragment);
+        ((MaterialNavigationDrawer) getActivity()).getCurrentSection().setTitle(getString(R.string.menu_join_trip));
+        ((MaterialNavigationDrawer) getActivity()).setFragment(fragment, getString(R.string.menu_join_trip));
+    }
+
+    private void showJoinedTrip(JoinTripRequest request) {
+
+
+        if( request != null )
+        {
+            int earningsInCents = request.getTotalPriceInCents();
+            String pEuros = (earningsInCents / 100) + "";
+            String pCents;
+
+            // Format cents correctly
+            int cents = (earningsInCents % 100);
+
+            if (cents == 0) {
+                pCents = "00";
+            } else if (cents < 10) {
+                pCents = "0" + cents;
+            } else {
+                pCents = cents + "";
+            }
+            jointDescription.setText( getString(R.string.join_trip_results_pickup, request.getOffer().getDriver().getFirstName(), pEuros, pCents));
         }
     }
 
