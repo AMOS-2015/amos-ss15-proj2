@@ -134,18 +134,15 @@ public class PlaceAutocompleteAdapter
      */
     @Override
     public Filter getFilter() {
-        Log.d("alex", "filter");
         Filter filter = new Filter() {
             @Override
             protected FilterResults performFiltering(CharSequence constraint) {
                 FilterResults results = new FilterResults();
 
-                Log.d("alex", "perform filtering: " + constraint);
                 if (constraint == null || constraint.length() < 2) {
                     results.values = history;
                     results.count = history.size();
                     mResultList = history;
-                    Log.d("alex", "history mode");
                     return results;
                 }
 
@@ -165,11 +162,9 @@ public class PlaceAutocompleteAdapter
             @Override
             protected void publishResults(CharSequence constraint, FilterResults results) {
                 if (results != null && results.count > 0) {
-                    Log.d("alex", "2");
                     // The API returned at least one result, update the data.
                     notifyDataSetChanged();
                 } else {
-                    Log.d("alex", "3");
                     // The API did not return any results, invalidate the data set.
                     notifyDataSetInvalidated();
                 }

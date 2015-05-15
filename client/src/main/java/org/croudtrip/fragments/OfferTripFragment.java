@@ -140,7 +140,10 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
 
         tv_destination.setOnItemClickListener(mAutocompleteClickListener);
         tv_destination.setThreshold(0);
-        LatLngBounds bounds = LatLngBounds.builder().include(new LatLng(locationUpdater.getLastLocation().getLatitude(), locationUpdater.getLastLocation().getLongitude())).build();
+        LatLngBounds bounds = null;
+        if (locationUpdater.getLastLocation() != null) {
+            bounds = LatLngBounds.builder().include(new LatLng(locationUpdater.getLastLocation().getLatitude(), locationUpdater.getLastLocation().getLongitude())).build();
+        }
         adapter = new PlaceAutocompleteAdapter(getActivity(), android.R.layout.simple_list_item_1, bounds, null);
         tv_destination.setAdapter(adapter);
         adapter.setGoogleApiClient(googleApiClient);
