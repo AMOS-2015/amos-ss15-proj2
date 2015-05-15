@@ -219,7 +219,21 @@ public class JoinTripResultsFragment extends SubscriptionFragment {
 
                 if( request != null )
                 {
-                    jointDescription.setText( getString(R.string.join_trip_results_pickup, request.getOffer().getDriver().getFirstName(), request.getTotalPriceInCents()/100.0f));
+                    int earningsInCents = request.getTotalPriceInCents();
+                    String pEuros = (earningsInCents / 100) + "";
+                    String pCents;
+
+                    // Format cents correctly
+                    int cents = (earningsInCents % 100);
+
+                    if (cents == 0) {
+                        pCents = "00";
+                    } else if (cents < 10) {
+                        pCents = "0" + cents;
+                    } else {
+                        pCents = cents + "";
+                    }
+                    jointDescription.setText( getString(R.string.join_trip_results_pickup, request.getOffer().getDriver().getFirstName(), pEuros, pCents));
                 }
             }
 
