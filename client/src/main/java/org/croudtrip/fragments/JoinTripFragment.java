@@ -78,6 +78,7 @@ public class JoinTripFragment extends SubscriptionFragment implements GoogleApiC
     private PlaceAutocompleteAdapter adapter;
 
     private org.croudtrip.db.Place lastSelected;
+    private Location specifiedLocation;
 
 
     @InjectView(R.id.name) private TextView tv_name;
@@ -128,7 +129,11 @@ public class JoinTripFragment extends SubscriptionFragment implements GoogleApiC
 
         tv_destination.setOnItemClickListener(mAutocompleteClickListener);
         tv_destination.setThreshold(0);
-        LatLngBounds bounds = LatLngBounds.builder().include(new LatLng(locationUpdater.getLastLocation().getLatitude(), locationUpdater.getLastLocation().getLongitude())).build();
+        LatLngBounds bounds = null;
+        if (locationUpdater.getLastLocation() != null) {
+            bounds = LatLngBounds.builder().include(new LatLng(locationUpdater.getLastLocation().getLatitude(), locationUpdater.getLastLocation().getLongitude())).build();
+
+        }
         adapter = new PlaceAutocompleteAdapter(getActivity(), android.R.layout.simple_list_item_1, bounds, null);
         tv_destination.setAdapter(adapter);
         adapter.setGoogleApiClient(googleApiClient);
@@ -205,13 +210,22 @@ public class JoinTripFragment extends SubscriptionFragment implements GoogleApiC
                 org.croudtrip.db.Place tempPlace = lastSelected;
                 lastSelected = null;
 
-
-                // retrieve current position
-                Location currentLocation = locationUpdater.getLastLocation();
-                if (currentLocation == null) {
-                    Toast.makeText(getActivity().getApplicationContext(), R.string.offer_trip_no_location, Toast.LENGTH_SHORT).show();
-                    return;
+                Location currentLocation;
+                if (specifiedLocation == null) {
+                    // retrieve current position
+                    currentLocation = locationUpdater.getLastLocation();
+                    if (currentLocation == null) {
+                        /*
+                        TODO: popup + redirect to placepicker
+                         */
+                        Toast.makeText(getActivity().getApplicationContext(), R.string.offer_trip_no_location, Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                } else {
+                    currentLocation = specifiedLocation;
+                    specifiedLocation = null;
                 }
+
 
                 // get destination from string
                 LatLng destination = null;
@@ -238,6 +252,7 @@ public class JoinTripFragment extends SubscriptionFragment implements GoogleApiC
                         tempPlace = new org.croudtrip.db.Place();
                         tempPlace.setId(tv_destination.getText().toString());
                         tempPlace.setDescription(tv_destination.getText().toString());
+                        dbHelper.getPlaceDao().delete(tempPlace);
                         dbHelper.getPlaceDao().create(tempPlace);
                     }
                 } catch (SQLException e) {
@@ -287,8 +302,12 @@ public class JoinTripFragment extends SubscriptionFragment implements GoogleApiC
 
             // The user has selected a place. Extract the tv_name and tv_address.
             final Place place = PlacePicker.getPlace(data, getActivity());
+            Location l = new Location("placePicker");
+            l.setLatitude(place.getLatLng().latitude);
+            l.setLongitude(place.getLatLng().longitude);
+            specifiedLocation = l;
 
-            String name = place.getName().toString();
+            /*String name = place.getName().toString();
             String address = place.getAddress().toString();
             String attributions = PlacePicker.getAttributions(data);
             if (attributions == null) {
@@ -302,7 +321,7 @@ public class JoinTripFragment extends SubscriptionFragment implements GoogleApiC
             tv_name.setText(name);
             tv_address.setText(address);
             tv_attributions.setText(Html.fromHtml(attributions));
-            btn_destination.setText(getResources().getString(R.string.join_change_destination));
+            btn_destination.setText(getResources().getString(R.string.join_change_destination));*/
         } else {
             super.onActivityResult(requestCode, resultCode, data);
         }

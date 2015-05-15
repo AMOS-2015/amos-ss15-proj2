@@ -19,13 +19,6 @@ public class LocationUpdater {
     }
 
     public Location getLastLocation () {
-
-        /* For testing purposes. What shoud we do if we cant get a location?*/
-        if (lastLocation == null) {
-            lastLocation = new Location("test");
-            lastLocation.setLatitude(49.5891772);
-            lastLocation.setLongitude(10.9844836);
-        }
         return this.lastLocation;
     }
 }

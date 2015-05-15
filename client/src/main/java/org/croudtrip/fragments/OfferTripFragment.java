@@ -83,7 +83,6 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
     @InjectView(R.id.name) private TextView tv_name;
     @InjectView(R.id.attributions) private TextView tv_attributions;
     @InjectView(R.id.address) private TextView tv_address;
-    @InjectView(R.id.places) private Button btn_destination;
     @InjectView(R.id.destination) private MyAutoCompleteTextView tv_destination;
 
 
@@ -183,20 +182,6 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
 
         subscriptions.add(subscription);
 
-        // choose a destination by using the place picker
-        btn_destination.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                try {
-                    PlacePicker.IntentBuilder intentBuilder = new PlacePicker.IntentBuilder();
-                    Intent intent = intentBuilder.build(getActivity().getApplicationContext());
-
-                    startActivityForResult(intent, REQUEST_PLACE_PICKER);
-                } catch (GooglePlayServicesRepairableException | GooglePlayServicesNotAvailableException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
 
         // define maximum waiting time
         final MaterialEditText maxDiversion = (MaterialEditText) view.findViewById(R.id.diversion);
@@ -257,6 +242,7 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
                         tempPlace = new org.croudtrip.db.Place();
                         tempPlace.setId(tv_destination.getText().toString());
                         tempPlace.setDescription(tv_destination.getText().toString());
+                        dbHelper.getPlaceDao().delete(tempPlace);
                         dbHelper.getPlaceDao().create(tempPlace);
                     }
                 } catch (SQLException e) {
@@ -329,7 +315,6 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
             tv_name.setText(name);
             tv_address.setText(address);
             tv_attributions.setText(Html.fromHtml(attributions));
-            btn_destination.setText(getResources().getString(R.string.offer_change_destination));
         } else {
             super.onActivityResult(requestCode, resultCode, data);
         }
