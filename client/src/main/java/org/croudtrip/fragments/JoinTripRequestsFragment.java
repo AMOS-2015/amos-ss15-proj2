@@ -3,6 +3,7 @@ package org.croudtrip.fragments;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,8 +23,10 @@ import org.croudtrip.api.trips.TripQuery;
 import org.croudtrip.trip.JoinTripRequestsAdapter;
 import org.croudtrip.trip.OnDiversionUpdateListener;
 import org.croudtrip.utils.DefaultTransformer;
+import org.croudtrip.utils.SwipeListener;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -92,6 +95,31 @@ public class JoinTripRequestsFragment extends SubscriptionFragment {
         }
         adapter.addRequests(requests);
         caption.setVisibility(View.GONE);
+
+        SwipeListener touchListener = new SwipeListener(
+                recyclerView,
+                new SwipeListener.DismissCallbacks() {
+                    @Override
+                    public boolean canDismiss(int position) {
+                        return true;
+                    }
+
+                    public void onSwipeLeft(RecyclerView listView, int[] dismissedItems) {
+                       /*
+                       In dismisseditems sind alle positionen drinnen, die weggeswiped wurden.
+                       Ist in den meisten fällen nur eines. Aufgrund der Verzögerung durch die Animation kann
+                        es vorkommen, dass wenn jemand ganz schnell mehrere wegswiped die Methode nur einmal für mehrere
+                        swipes aufgerufen wird
+                        */
+                    }
+
+                    public void onSwipeRight(RecyclerView listView, int[] dismissedItems) {
+                        //siehe kommentar oben :)
+                    }
+                });
+
+        recyclerView.setOnTouchListener(touchListener);
+        recyclerView.setOnScrollListener(touchListener.makeScrollListener());
 
 
         // Ask the server for join-trip-requests
