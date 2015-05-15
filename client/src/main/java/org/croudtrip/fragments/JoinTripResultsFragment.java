@@ -262,6 +262,10 @@ public class JoinTripResultsFragment extends SubscriptionFragment {
         ((MaterialNavigationDrawer) getActivity()).getCurrentSection().setTarget(fragment);
         ((MaterialNavigationDrawer) getActivity()).getCurrentSection().setTitle(getString(R.string.menu_join_trip));
         ((MaterialNavigationDrawer) getActivity()).setFragment(fragment, getString(R.string.menu_join_trip));
+
+        // reset information that there is a result
+        SharedPreferences prefs = getActivity().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
+        prefs.edit().putBoolean(Constants.SHARED_PREF_KEY_ACCEPTED, false);
     }
 
     private void showJoinedTrip(JoinTripRequest request) {
