@@ -2,7 +2,6 @@ package org.croudtrip.trips;
 
 
 import com.google.common.base.Optional;
-import com.google.common.collect.Lists;
 
 import org.croudtrip.account.VehicleManager;
 import org.croudtrip.api.account.User;
@@ -35,11 +34,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import javax.ws.rs.NotFoundException;
 
 @Singleton
 public class TripsManager {
@@ -102,10 +101,10 @@ public class TripsManager {
             if (runningQuery.getCreationTimestamp() + runningQuery.getQuery().getMaxWaitingTimeInSeconds() < System.currentTimeMillis() / 1000) continue;
 
             TripQuery query = runningQuery.getQuery();
-            List<TripOffer> potentialMatches = findPotentialMatches(Lists.newArrayList(offer), query);
+            boolean isPotentialMatch = isPotentialMatch(offer, query);
 
             // notify passenger about potential match
-            if (!potentialMatches.isEmpty()) {
+            if (isPotentialMatch) {
                 gcmManager.sendGcmMessageToUser(
                         query.getPassenger(),
                         GcmConstants.GCM_MSG_FOUND_MATCHES,
@@ -144,23 +143,9 @@ public class TripsManager {
         List<Route> possiblePassengerRoutes = directionsManager.getDirections(queryDescription.getStart(), queryDescription.getEnd());
         if (possiblePassengerRoutes.isEmpty()) return new TripQueryResult(new ArrayList<TripReservation>(), null);
 
-        // find declined trips for this user
-        TripQuery query = new TripQuery(possiblePassengerRoutes.get(0), queryDescription.getStart(), queryDescription.getEnd(), queryDescription.getMaxWaitingTimeInSeconds(), passenger);
-        List<JoinTripRequest> declinedRequests = joinTripRequestDAO.findDeclinedRequests(passenger.getId());
-        logManager.d("Found " + declinedRequests.size() + " declined entries in the database.");
-
-        // get all offers which don't have car capacity many jon requests
-        List<TripOffer> potentialMatches = tripOfferDAO.findAllActive();
-        Iterator<TripOffer> offerIterator = potentialMatches.iterator();
-        while (offerIterator.hasNext()) {
-            TripOffer offer = offerIterator.next();
-            int passengerCount = getActiveJoinRequestsForOffer(offer);
-            if (passengerCount >= offer.getVehicle().getCapacity()) offerIterator.remove();
-        }
-
         // analyse offers
-        potentialMatches = findPotentialMatches(potentialMatches, query);
-
+        TripQuery query = new TripQuery(possiblePassengerRoutes.get(0), queryDescription.getStart(), queryDescription.getEnd(), queryDescription.getMaxWaitingTimeInSeconds(), passenger);
+        List<TripOffer> potentialMatches = findPotentialMatches(tripOfferDAO.findAllActive(), query);
 
         // find and store reservations
         List<TripReservation> reservations = findCheapestMatch(query, potentialMatches);
@@ -207,21 +192,15 @@ public class TripsManager {
     }
 
 
-    public Optional<JoinTripRequest> joinTrip(TripReservation tripReservation) throws IOException {
+    public Optional<JoinTripRequest> joinTrip(TripReservation tripReservation) throws Exception {
         // remove reservation (either it has now been accepted or is can be discarded)
         tripReservationDAO.delete(tripReservation);
 
-        // find trip
+        // find and check trip
         Optional<TripOffer> offerOptional = tripOfferDAO.findById(tripReservation.getOfferId());
         if (!offerOptional.isPresent()) return Optional.absent();
         TripOffer offer = offerOptional.get();
-
-        // check trip status
-        if (!offer.getStatus().equals(TripOfferStatus.ACTIVE_NOT_FULL)) return Optional.absent();
-
-        // check space in vehicle
-        int passengerCount = getActiveJoinRequestsForOffer(offer);
-        if (passengerCount >= offer.getVehicle().getCapacity()) return Optional.absent();
+        if (!isPotentialMatch(offer, tripReservation.getQuery())) return Optional.absent();
 
         // update join request
         JoinTripRequest joinTripRequest = new JoinTripRequest(
@@ -313,38 +292,60 @@ public class TripsManager {
 
 
     private List<TripOffer> findPotentialMatches(List<TripOffer> offers, TripQuery query) throws Exception {
-        // find declined trips for this user
-        List<JoinTripRequest> declinedRequests = joinTripRequestDAO.findDeclinedRequests(query.getPassenger().getId());
-
         // analyse offers
         List<TripOffer> potentialMatches = new ArrayList<>();
-        offersLabel: for (TripOffer offer : offers) {
-            // skip already declined offers
-            for( JoinTripRequest request : declinedRequests ) {
-                if( offer.getId() == request.getOffer().getId()) {
-                    continue offersLabel;
-                }
-            }
-
-            // compute total driver route
-            List<RouteLocation> passengerWayPoints = query.getPassengerRoute().getWayPoints();
-            List<RouteLocation> driverWayPoints = offer.getDriverRoute().getWayPoints();
-            List<Route> possibleDriverRoutes = directionsManager.getDirections(
-                    driverWayPoints.get(0),
-                    driverWayPoints.get(1),
-                    passengerWayPoints);
-
-            if (possibleDriverRoutes == null || possibleDriverRoutes.isEmpty()) continue;
-
-            // check is passenger route is within max diversion
-            Route driverRoute = possibleDriverRoutes.get(0);
-            logManager.d("Diversion: " + (possibleDriverRoutes.get(0).getDistanceInMeters() - driverRoute.getDistanceInMeters()));
-            if (possibleDriverRoutes.get(0).getDistanceInMeters() - driverRoute.getDistanceInMeters() < offer.getMaxDiversionInMeters()) {
+        for (TripOffer offer : offers) {
+            if (isPotentialMatch(offer, query)) {
                 potentialMatches.add(offer);
             }
         }
 
         return potentialMatches;
+    }
+
+
+    private boolean isPotentialMatch(TripOffer offer, TripQuery query) throws NotFoundException, Exception {
+        // find declined trips for this user
+        List<JoinTripRequest> declinedRequests = joinTripRequestDAO.findDeclinedRequests(query.getPassenger().getId());
+
+        // check trip status
+        if (!offer.getStatus().equals(TripOfferStatus.ACTIVE_NOT_FULL)) return false;
+
+		// skip already declined offers
+		for( JoinTripRequest request : declinedRequests ) {
+			if( offer.getId() == request.getOffer().getId()) {
+                return false;
+			}
+		}
+
+        // check current passenger count
+        int passengerCount = getActiveJoinRequestsForOffer(offer);
+        if (passengerCount >= offer.getVehicle().getCapacity()) return false;
+
+		// compute total driver route
+		List<RouteLocation> passengerWayPoints = query.getPassengerRoute().getWayPoints();
+		List<RouteLocation> driverWayPoints = offer.getDriverRoute().getWayPoints();
+		List<Route> possibleDriverRoutes = directionsManager.getDirections(
+				driverWayPoints.get(0),
+				driverWayPoints.get(1),
+				passengerWayPoints);
+
+		if (possibleDriverRoutes == null || possibleDriverRoutes.isEmpty()) return false;
+
+		// check is passenger route is within max diversion
+		Route driverRoute = possibleDriverRoutes.get(0);
+		logManager.d("Diversion: " + (possibleDriverRoutes.get(0).getDistanceInMeters() - driverRoute.getDistanceInMeters()));
+		if (possibleDriverRoutes.get(0).getDistanceInMeters() - driverRoute.getDistanceInMeters() > offer.getMaxDiversionInMeters()) {
+            return false;
+		}
+
+		// check passenger max waiting time
+		Route routeToPassenger = directionsManager.getDirections(driverWayPoints.get(0), passengerWayPoints.get(0)).get(0);
+		if (routeToPassenger.getDurationInSeconds() > query.getMaxWaitingTimeInSeconds()) {
+            return false;
+		}
+
+        return true;
     }
 
 

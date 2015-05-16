@@ -167,7 +167,7 @@ public class TripsResource {
     @PUT
     @UnitOfWork
     @Path(PATH_RESERVATIONS + "/{reservationId}")
-    public JoinTripRequest joinTrip(@PathParam("reservationId") long reservationId, @Auth User passenger) throws IOException {
+    public JoinTripRequest joinTrip(@PathParam("reservationId") long reservationId, @Auth User passenger) throws Exception {
         Optional<TripReservation> reservation = tripsManager.findReservation(reservationId);
         if (!reservation.isPresent()) throw RestUtils.createNotFoundException("reservation does not exist");
 
