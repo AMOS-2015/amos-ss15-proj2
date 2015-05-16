@@ -71,7 +71,7 @@ public class JoinTripRequestsAdapter extends RecyclerView.Adapter<JoinTripReques
 
         // Passenger name
         User passenger = query.getPassenger();
-        //holder.tvPassengerName.setText(passenger.getFirstName() + " " + passenger.getLastName());
+        holder.tvPassengerName.setText(passenger.getFirstName() + " " + passenger.getLastName());
 
         // Passenger image/avatar
         String avatarURL = passenger.getAvatarUrl();
