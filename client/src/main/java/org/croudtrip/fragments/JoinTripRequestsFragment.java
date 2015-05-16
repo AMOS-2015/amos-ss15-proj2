@@ -3,7 +3,6 @@ package org.croudtrip.fragments;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,20 +12,17 @@ import android.widget.TextView;
 import org.croudtrip.R;
 import org.croudtrip.api.DirectionsResource;
 import org.croudtrip.api.TripsResource;
-import org.croudtrip.api.account.User;
 import org.croudtrip.api.directions.DirectionsRequest;
 import org.croudtrip.api.directions.Route;
 import org.croudtrip.api.directions.RouteLocation;
 import org.croudtrip.api.trips.JoinTripRequest;
 import org.croudtrip.api.trips.JoinTripRequestUpdate;
-import org.croudtrip.api.trips.TripQuery;
 import org.croudtrip.trip.JoinTripRequestsAdapter;
 import org.croudtrip.trip.OnDiversionUpdateListener;
 import org.croudtrip.utils.DefaultTransformer;
 import org.croudtrip.utils.SwipeListener;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -84,32 +80,11 @@ public class JoinTripRequestsFragment extends SubscriptionFragment {
         recyclerView.setLayoutManager(layoutManager);
 
         adapter = new JoinTripRequestsAdapter(this);
-        adapter.setOnRequestAcceptDeclineListener(new AcceptDeclineRequestListener());
+        AcceptDeclineRequestListener acceptDeclineListener = new AcceptDeclineRequestListener();
+        SwipeListener touchListener = new SwipeListener(recyclerView, acceptDeclineListener);
+        adapter.setOnRequestAcceptDeclineListener(acceptDeclineListener);
+
         recyclerView.setAdapter(adapter);
-
-
-        SwipeListener touchListener = new SwipeListener(
-                recyclerView,
-                new SwipeListener.DismissCallbacks() {
-                    @Override
-                    public boolean canDismiss(int position) {
-                        return true;
-                    }
-
-                    public void onSwipeLeft(RecyclerView listView, int[] dismissedItems) {
-                       /*
-                       In dismisseditems sind alle positionen drinnen, die weggeswiped wurden.
-                       Ist in den meisten fällen nur eines. Aufgrund der Verzögerung durch die Animation kann
-                        es vorkommen, dass wenn jemand ganz schnell mehrere wegswiped die Methode nur einmal für mehrere
-                        swipes aufgerufen wird
-                        */
-                    }
-
-                    public void onSwipeRight(RecyclerView listView, int[] dismissedItems) {
-                        //siehe kommentar oben :)
-                    }
-                });
-
         recyclerView.setOnTouchListener(touchListener);
         recyclerView.setOnScrollListener(touchListener.makeScrollListener());
 
@@ -173,7 +148,8 @@ public class JoinTripRequestsFragment extends SubscriptionFragment {
 
     //*************************** Inner classes **********************//
 
-    private class AcceptDeclineRequestListener implements JoinTripRequestsAdapter.OnRequestAcceptDeclineListener {
+    private class AcceptDeclineRequestListener implements SwipeListener.DismissCallbacks,
+            JoinTripRequestsAdapter.OnRequestAcceptDeclineListener {
 
         /**
          * Listener to listen for any driver decisions to accept or decline
@@ -183,7 +159,7 @@ public class JoinTripRequestsFragment extends SubscriptionFragment {
          * @param accept if this method should handle "accept" (true) or "decline" (false)
          * @param position the position of the clicked JoinTripRequest in the adapter
          */
-        private void handleAcceptDecline(boolean accept, int position) {
+        private synchronized void handleAcceptDecline(boolean accept, int position) {
 
             String task;
             if (accept) {
@@ -218,6 +194,28 @@ public class JoinTripRequestsFragment extends SubscriptionFragment {
         @Override
         public void onJoinRequestAccept(View view, int position) {
             handleAcceptDecline(true, position);
+        }
+
+        @Override
+        public boolean canDismiss(int position) {
+            return true;
+        }
+
+        @Override
+        public void onSwipeLeft(RecyclerView recyclerView, int[] dismissedItems) {
+            // Decline only the first item and ignore the rest
+            if(dismissedItems != null && dismissedItems.length > 0) {
+                handleAcceptDecline(false, 0);
+            }
+
+        }
+
+        @Override
+        public void onSwipeRight(RecyclerView recyclerView, int[] dismissedItems) {
+            // Accept only the first item and ignore the rest
+            if(dismissedItems != null && dismissedItems.length > 0) {
+                handleAcceptDecline(true, 0);
+            }
         }
     }
 

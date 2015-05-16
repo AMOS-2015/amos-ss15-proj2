@@ -6,7 +6,6 @@ import android.animation.ValueAnimator;
 import android.graphics.Rect;
 import android.os.SystemClock;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.VelocityTracker;
 import android.view.View;
