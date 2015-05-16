@@ -35,6 +35,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -145,11 +146,21 @@ public class TripsManager {
 
         // find declined trips for this user
         TripQuery query = new TripQuery(possiblePassengerRoutes.get(0), queryDescription.getStart(), queryDescription.getEnd(), queryDescription.getMaxWaitingTimeInSeconds(), passenger);
-        List<JoinTripRequest> declinedRequests = joinTripRequestDAO.findDeclinedRequests( passenger.getId() );
+        List<JoinTripRequest> declinedRequests = joinTripRequestDAO.findDeclinedRequests(passenger.getId());
         logManager.d("Found " + declinedRequests.size() + " declined entries in the database.");
 
+        // get all offers which don't have car capacity many jon requests
+        List<TripOffer> potentialMatches = tripOfferDAO.findAllActive();
+        Iterator<TripOffer> offerIterator = potentialMatches.iterator();
+        while (offerIterator.hasNext()) {
+            TripOffer offer = offerIterator.next();
+            int passengerCount = getActiveJoinRequestsForOffer(offer);
+            if (passengerCount >= offer.getVehicle().getCapacity()) offerIterator.remove();
+        }
+
         // analyse offers
-        List<TripOffer> potentialMatches = findPotentialMatches(tripOfferDAO.findAllActive(), query);
+        potentialMatches = findPotentialMatches(potentialMatches, query);
+
 
         // find and store reservations
         List<TripReservation> reservations = findCheapestMatch(query, potentialMatches);
@@ -200,28 +211,35 @@ public class TripsManager {
         // remove reservation (either it has now been accepted or is can be discarded)
         tripReservationDAO.delete(tripReservation);
 
-        // find and check trip
-        Optional<TripOffer> offer = tripOfferDAO.findById(tripReservation.getOfferId());
-        if (!offer.isPresent()) return Optional.absent();
-        // TODO ensure that offer is actually still valid
+        // find trip
+        Optional<TripOffer> offerOptional = tripOfferDAO.findById(tripReservation.getOfferId());
+        if (!offerOptional.isPresent()) return Optional.absent();
+        TripOffer offer = offerOptional.get();
 
-        // notify driver
+        // check trip status
+        if (!offer.getStatus().equals(TripOfferStatus.ACTIVE_NOT_FULL)) return Optional.absent();
+
+        // check space in vehicle
+        int passengerCount = getActiveJoinRequestsForOffer(offer);
+        if (passengerCount >= offer.getVehicle().getCapacity()) return Optional.absent();
+
+        // update join request
         JoinTripRequest joinTripRequest = new JoinTripRequest(
                 0,
                 tripReservation.getQuery(),
                 tripReservation.getTotalPriceInCents(),
                 tripReservation.getPricePerKmInCents(),
-                offer.get(),
+                offer,
                 JoinTripStatus.PASSENGER_ACCEPTED);
 
         joinTripRequestDAO.save(joinTripRequest);
 
         // send push notification to driver
-        gcmManager.sendGcmMessageToUser(offer.get().getDriver(), GcmConstants.GCM_MSG_JOIN_REQUEST,
+        gcmManager.sendGcmMessageToUser(offerOptional.get().getDriver(), GcmConstants.GCM_MSG_JOIN_REQUEST,
                 new Pair<String, String>(GcmConstants.GCM_MSG_JOIN_REQUEST, "There is a new request to join your trip"),
-                new Pair<String, String>(GcmConstants.GCM_MSG_USER_MAIL, "" + offer.get().getDriver().getEmail()),
+                new Pair<String, String>(GcmConstants.GCM_MSG_USER_MAIL, "" + offerOptional.get().getDriver().getEmail()),
                 new Pair<String, String>(GcmConstants.GCM_MSG_JOIN_REQUEST_ID, "" + joinTripRequest.getId()),
-                new Pair<String, String>(GcmConstants.GCM_MSG_JOIN_REQUEST_OFFER_ID, "" + offer.get().getId()));
+                new Pair<String, String>(GcmConstants.GCM_MSG_JOIN_REQUEST_OFFER_ID, "" + offerOptional.get().getId()));
 
         return Optional.of(joinTripRequest);
     }
@@ -245,12 +263,10 @@ public class TripsManager {
     public JoinTripRequest updateJoinRequest(JoinTripRequest joinRequest, boolean passengerAccepted) throws IOException {
         Assert.assertTrue(joinRequest.getStatus().equals(JoinTripStatus.PASSENGER_ACCEPTED), "cannot modify join request");
 
+        // update join request status
         JoinTripStatus newStatus;
         if (passengerAccepted) newStatus = JoinTripStatus.DRIVER_ACCEPTED;
         else newStatus = JoinTripStatus.DRIVER_DECLINED;
-
-        System.out.println("Update join request manager");
-
         JoinTripRequest updatedRequest = new JoinTripRequest(
                 joinRequest.getId(),
                 joinRequest.getQuery(),
@@ -260,11 +276,23 @@ public class TripsManager {
                 newStatus);
         joinTripRequestDAO.update(updatedRequest);
 
-        System.out.println("Update join request db stored");
+        // update offer if vehicle is full
+        TripOffer offer = joinRequest.getOffer();
+        int passengerCount = getActiveJoinRequestsForOffer(offer);
+        if (passengerCount >= offer.getVehicle().getCapacity()) {
+            TripOffer updatedOffer = new TripOffer(
+                    offer.getId(),
+                    offer.getDriverRoute(),
+                    offer.getMaxDiversionInMeters(),
+                    offer.getPricePerKmInCents(),
+                    offer.getDriver(),
+                    offer.getVehicle(),
+                    TripOfferStatus.ACTIVE_FULL);
+            tripOfferDAO.update(updatedOffer);
+        }
 
+        // notify the passenger about status
         logManager.d("User " + joinRequest.getQuery().getPassenger().getId() + " (" + joinRequest.getQuery().getPassenger().getFirstName() + " " + joinRequest.getQuery().getPassenger().getLastName() + ") got status update for joinTripRequest.");
-
-        // notify the passenger about his trip status
         if( passengerAccepted ) {
             gcmManager.sendGcmMessageToUser(joinRequest.getQuery().getPassenger(), GcmConstants.GCM_MSG_REQUEST_ACCEPTED,
                     new Pair<String, String>(GcmConstants.GCM_MSG_USER_MAIL, "" + joinRequest.getQuery().getPassenger().getEmail()),
@@ -280,9 +308,7 @@ public class TripsManager {
                     new Pair<String, String>(GcmConstants.GCM_MSG_JOIN_REQUEST_OFFER_ID, "" + joinRequest.getOffer().getId()));
         }
 
-        System.out.println("Update join request gcm sent");
-
-        return updatedRequest;
+        return joinTripRequestDAO.findById(joinRequest.getId()).get();
     }
 
 
@@ -368,6 +394,15 @@ public class TripsManager {
         }
 
         return reservations;
+    }
+
+
+    private int getActiveJoinRequestsForOffer(TripOffer offer) {
+        int requestsCount = 0;
+        for (JoinTripRequest request : joinTripRequestDAO.findByOfferId(offer.getId())) {
+            if (!request.getStatus().equals(JoinTripStatus.DRIVER_DECLINED)) ++requestsCount;
+        }
+        return requestsCount;
     }
 
 }

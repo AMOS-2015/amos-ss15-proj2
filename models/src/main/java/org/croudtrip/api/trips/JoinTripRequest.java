@@ -51,7 +51,11 @@ import javax.persistence.Table;
         @NamedQuery(
                 name = JoinTripRequest.QUERY_FIND_BY_PASSENGER_ID_AND_DECLINED_STATUS,
                 query = "SELECT r FROM " + JoinTripRequest.ENTITY_NAME + " r WHERE r.status = 'DRIVER_DECLINED' AND r.query.passenger.id = :" + JoinTripRequest.QUERY_PARAM_USER_ID
-        )
+        ),
+		@NamedQuery(
+				name = JoinTripRequest.QUERY_FIND_BY_OFFER_ID,
+				query = "SELECT r FROM " + JoinTripRequest.ENTITY_NAME + " r WHERE r.offer.id = :" + JoinTripRequest.QUERY_PARAM_OFFER_ID
+		)
 })
 public class JoinTripRequest {
 
@@ -63,7 +67,9 @@ public class JoinTripRequest {
 			QUERY_FIND_BY_PASSENGER_OR_DRIVER_ID_AND_PASSENGER_ACCEPTED_STATUS = "org.croudtrip.api.trips.JoinTripRequest.findByPassengerOrDriverIdAndPassengerAcceptStatus",
             QUERY_FIND_BY_PASSENGER_ID_AND_DECLINED_STATUS = "org.croudtrip.api.trips.JoinTripRequest.findDeclinedRequests",
             QUERY_FIND_BY_PASSENGER_OR_DRIVER_ID_AND_DRIVER_ACCEPTED_STATUS = "org.croudtrip.api.trips.JoinTripRequest.findAcceptedRequests",
-            QUERY_PARAM_USER_ID = "user_id";
+			QUERY_FIND_BY_OFFER_ID = "org.croudtrip.api.trips.JoinTripRequest.findByOfferId",
+            QUERY_PARAM_USER_ID = "user_id",
+			QUERY_PARAM_OFFER_ID = "offer_id";
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
