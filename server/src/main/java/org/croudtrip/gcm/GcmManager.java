@@ -69,10 +69,8 @@ public class GcmManager {
      * @param receiver the user that should receive the message
      * @param messageType the type of the message (see {@link org.croudtrip.api.gcm.GcmConstants})
      * @throws IOException if the connection to Google was not successful and msg could not be sen
-     * @throws java.lang.IllegalArgumentException if the receiver is not valid or not registered.
-     * @throws java.lang.IllegalArgumentException if the receiver is not valid or not registered.
      */
-    public void sendGcmMessageToUser(User receiver, String messageType) throws IOException, IllegalStateException {
+    public void sendGcmMessageToUser(User receiver, String messageType) {
         sendGcmMessageToUser(receiver, messageType, new Pair<String, String>("",""));
     }
 
@@ -82,10 +80,8 @@ public class GcmManager {
      * @param receiver the user that should receive the message
      * @param messageType the type of the message (see {@link org.croudtrip.api.gcm.GcmConstants})
      * @param message the message that is sent itself
-     * @throws IOException if the connection to Google was not successful and msg could not be sent.
-     * @throws java.lang.IllegalArgumentException if the receiver is not valid or not registered.
      */
-    public void sendGcmMessageToUser(User receiver, String messageType, String message) throws IOException, IllegalStateException {
+    public void sendGcmMessageToUser(User receiver, String messageType, String message) {
         sendGcmMessageToUser(receiver, messageType, new Pair<String, String>(messageType, message));
     }
 
@@ -97,60 +93,64 @@ public class GcmManager {
      * @throws IOException IOException if the connection to Google was not successful and msg could not be sent
      * @throws java.lang.IllegalArgumentException if the receiver is not valid or not registered.
      */
-    public void sendGcmMessageToUser(User receiver, String messageType, Pair<String, String>... messageData) throws IOException, IllegalStateException {
-        if( receiver == null ) {
-            logManager.e("SendToUser failed, because user is null");
-            return;
-            // throw new IllegalStateException("Receiver not specified");
-        }
+    public void sendGcmMessageToUser(User receiver, String messageType, Pair<String, String>... messageData) {
+        try {
+			if (receiver == null) {
+				logManager.e("SendToUser failed, because user is null");
+				return;
+				// throw new IllegalStateException("Receiver not specified");
+			}
 
-        GcmRegistration gcmRegistration = findRegistrationByUser(receiver).orNull();
-        if( gcmRegistration == null ) {
-            logManager.e("User " + receiver.getId() + " (" + receiver.getFirstName() + " " + receiver.getLastName() + ") is not registered.");
-            return;
-            // throw new IllegalStateException("Receiver is not registered");
-        }
+			GcmRegistration gcmRegistration = findRegistrationByUser(receiver).orNull();
+			if (gcmRegistration == null) {
+				logManager.e("User " + receiver.getId() + " (" + receiver.getFirstName() + " " + receiver.getLastName() + ") is not registered.");
+				return;
+				// throw new IllegalStateException("Receiver is not registered");
+			}
 
-        final List<String> devices = new ArrayList<>();
-        devices.add(gcmRegistration.getGcmId());
+			final List<String> devices = new ArrayList<>();
+			devices.add(gcmRegistration.getGcmId());
 
-        // send
-        Message.Builder builder = new Message.Builder();
-        builder.addData( GcmConstants.GCM_TYPE, messageType );
+			// send
+			Message.Builder builder = new Message.Builder();
+			builder.addData(GcmConstants.GCM_TYPE, messageType);
 
-        for( Pair<String, String> p : messageData )
-            builder.addData( p.getKey(), p.getValue() );
+			for (Pair<String, String> p : messageData)
+				builder.addData(p.getKey(), p.getValue());
 
-        MulticastResult multicastResult = sender.send(builder.build(), devices, 5);
+			MulticastResult multicastResult = sender.send(builder.build(), devices, 5);
 
-        // analyze the results
-        List<Result> results = multicastResult.getResults();
-        for (int i = 0; i < devices.size(); i++) {
-            String gcmId = devices.get(i);
-            Result result = results.get(i);
-            String messageId = result.getMessageId();
-            if (messageId != null) {
-                logManager.d("send msg to " + gcmId + " with msg id " + messageId);
-                String canonicalRegId = result.getCanonicalRegistrationId();
+			// analyze the results
+			List<Result> results = multicastResult.getResults();
+			for (int i = 0; i < devices.size(); i++) {
+				String gcmId = devices.get(i);
+				Result result = results.get(i);
+				String messageId = result.getMessageId();
+				if (messageId != null) {
+					logManager.d("send msg to " + gcmId + " with msg id " + messageId);
+					String canonicalRegId = result.getCanonicalRegistrationId();
 
-                // update gcm id
-                if (canonicalRegId != null) {
-                    logManager.i("updating gcmId from " + gcmId + " to " + canonicalRegId);
-                    register(gcmRegistration.getUser(), new GcmRegistrationDescription(canonicalRegId));
-                }
+					// update gcm id
+					if (canonicalRegId != null) {
+						logManager.i("updating gcmId from " + gcmId + " to " + canonicalRegId);
+						register(gcmRegistration.getUser(), new GcmRegistrationDescription(canonicalRegId));
+					}
 
-            } else {
-                String error = result.getErrorCodeName();
-                if (error.equals(Constants.ERROR_NOT_REGISTERED)) {
-                    // application has been removed from device - unregister it
-                    unregister(gcmRegistration);
+				} else {
+					String error = result.getErrorCodeName();
+					if (error.equals(Constants.ERROR_NOT_REGISTERED)) {
+						// application has been removed from device - unregister it
+						unregister(gcmRegistration);
 
-                } else {
-                    // unknown error
-                    logManager.e("unknown gcm error " + error);
-                }
-            }
-        }
+					} else {
+						// unknown error
+						logManager.e("unknown gcm error " + error);
+					}
+				}
+			}
+		} catch (IOException ioe) {
+			throw new RuntimeException(ioe);
+		}
     }
 
 }

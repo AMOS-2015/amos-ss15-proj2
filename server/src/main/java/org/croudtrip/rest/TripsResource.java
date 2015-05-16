@@ -16,9 +16,9 @@ import org.croudtrip.api.trips.TripOfferUpdate;
 import org.croudtrip.api.trips.TripQueryDescription;
 import org.croudtrip.api.trips.TripQueryResult;
 import org.croudtrip.api.trips.TripReservation;
+import org.croudtrip.directions.RouteNotFoundException;
 import org.croudtrip.trips.TripsManager;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -68,7 +68,7 @@ public class TripsResource {
     @POST
     @UnitOfWork
     @Path(PATH_OFFERS)
-    public TripOffer addOffer(@Auth User user, @Valid TripOfferDescription offerDescription) throws Exception {
+    public TripOffer addOffer(@Auth User user, @Valid TripOfferDescription offerDescription) throws RouteNotFoundException {
         Optional<Vehicle> vehicle = vehicleManager.findVehicleById(offerDescription.getVehicleId());
         if (!vehicle.isPresent() || vehicle.get().getOwner().getId() != user.getId()) {
             throw RestUtils.createNotFoundException("not vehicle with id " + offerDescription.getVehicleId() + " found");
@@ -107,7 +107,7 @@ public class TripsResource {
     @PUT
     @Path(PATH_OFFERS + "/{offerId}")
     @UnitOfWork
-    public TripOffer updateOffer(@Auth User driver, @PathParam("offerId") long offerId, @Valid TripOfferUpdate offerUpdate) throws Exception {
+    public TripOffer updateOffer(@Auth User driver, @PathParam("offerId") long offerId, @Valid TripOfferUpdate offerUpdate) throws RouteNotFoundException {
         TripOffer offer = assertIsValidOfferId(offerId);
         if (offer.getDriver().getId() != driver.getId()) throw RestUtils.createUnauthorizedException();
         return tripsManager.updateOffer(offer, offerUpdate);
@@ -125,7 +125,7 @@ public class TripsResource {
     @POST
     @UnitOfWork
     @Path(PATH_QUERIES)
-    public TripQueryResult queryOffers(@Auth User passenger, @Valid TripQueryDescription requestDescription) throws Exception {
+    public TripQueryResult queryOffers(@Auth User passenger, @Valid TripQueryDescription requestDescription) throws RouteNotFoundException {
         return tripsManager.queryOffers(passenger, requestDescription);
     }
 
@@ -178,7 +178,7 @@ public class TripsResource {
     @PUT
     @UnitOfWork
     @Path(PATH_RESERVATIONS + "/{reservationId}")
-    public JoinTripRequest joinTrip(@PathParam("reservationId") long reservationId, @Auth User passenger) throws Exception {
+    public JoinTripRequest joinTrip(@PathParam("reservationId") long reservationId, @Auth User passenger) {
         Optional<TripReservation> reservation = tripsManager.findReservation(reservationId);
         if (!reservation.isPresent()) throw RestUtils.createNotFoundException("reservation does not exist");
 
@@ -218,7 +218,7 @@ public class TripsResource {
     public JoinTripRequest updateJoinRequest(
             @Auth User driver,
             @PathParam("joinRequestId") long joinRequestId,
-            JoinTripRequestUpdate update) throws IOException {
+            JoinTripRequestUpdate update) {
 
         System.out.println("Update join request start");
 

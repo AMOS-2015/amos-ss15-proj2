@@ -3,7 +3,6 @@ package org.croudtrip.directions;
 import com.google.maps.DirectionsApi;
 import com.google.maps.GeoApiContext;
 import com.google.maps.GeocodingApi;
-import com.google.maps.errors.NotFoundException;
 import com.google.maps.model.DirectionsLeg;
 import com.google.maps.model.DirectionsRoute;
 import com.google.maps.model.DirectionsStep;
@@ -29,34 +28,37 @@ public class DirectionsManager {
 	}
 
 
-	public List<Route> getDirections(RouteLocation startLocation, RouteLocation endLocation) throws NotFoundException, Exception {
+	public List<Route> getDirections(RouteLocation startLocation, RouteLocation endLocation) {
 		return getDirections(startLocation, endLocation, new ArrayList<RouteLocation>());
 	}
 
-    public List<Route> getDirections(RouteLocation startLocation, RouteLocation endLocation, List<RouteLocation> waypoints) throws NotFoundException, Exception {
-        String[] stringWaypoints = new String[waypoints.size()];
-        for( int i = 0; i < stringWaypoints.length; ++i ) {
-            RouteLocation loc = waypoints.get(i);
-            GeocodingResult[] result = GeocodingApi.newRequest(geoApiContext).latlng( new LatLng( loc.getLat(), loc.getLng() )).await();
+    public List<Route> getDirections(RouteLocation startLocation, RouteLocation endLocation, List<RouteLocation> waypoints) {
+		try {
+			String[] stringWaypoints = new String[waypoints.size()];
+			for (int i = 0; i < stringWaypoints.length; ++i) {
+				RouteLocation loc = waypoints.get(i);
+				GeocodingResult[] result = GeocodingApi.newRequest(geoApiContext).latlng(new LatLng(loc.getLat(), loc.getLng())).await();
 
-            // translating one of the waypoints failed
-            if( result == null || result.length == 0 )
-                throw new NotFoundException("No address could be extracted from way point");
+				// no route found ...
+				if (result == null || result.length == 0) return new ArrayList<>();
 
-            stringWaypoints[i] = result[0].formattedAddress;
-        }
+				stringWaypoints[i] = result[0].formattedAddress;
+			}
 
-        List<Route> result = new ArrayList<>();
-        DirectionsRoute[] googleRoutes = DirectionsApi.newRequest(geoApiContext)
-                .origin(new LatLng(startLocation.getLat(), startLocation.getLng()))
-                .destination(new LatLng(endLocation.getLat(), endLocation.getLng()))
-                .waypoints( stringWaypoints )
-                .await();
+			List<Route> result = new ArrayList<>();
+			DirectionsRoute[] googleRoutes = DirectionsApi.newRequest(geoApiContext)
+					.origin(new LatLng(startLocation.getLat(), startLocation.getLng()))
+					.destination(new LatLng(endLocation.getLat(), endLocation.getLng()))
+					.waypoints(stringWaypoints)
+					.await();
 
-        for (DirectionsRoute googleRoute : googleRoutes) {
-            result.add(createRoute(startLocation, endLocation, googleRoute));
-        }
-        return result;
+			for (DirectionsRoute googleRoute : googleRoutes) {
+				result.add(createRoute(startLocation, endLocation, googleRoute));
+			}
+			return result;
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
     }
 
 

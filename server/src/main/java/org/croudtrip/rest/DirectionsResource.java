@@ -1,7 +1,5 @@
 package org.croudtrip.rest;
 
-import com.google.maps.errors.NotFoundException;
-
 import org.croudtrip.api.directions.DirectionsRequest;
 import org.croudtrip.api.directions.Route;
 import org.croudtrip.api.directions.RouteLocation;
@@ -40,15 +38,10 @@ public class DirectionsResource {
     @UnitOfWork
     public List<Route> getDirections(@Valid DirectionsRequest directionsRequest) throws Exception {
         if (directionsRequest.getWayPoints().size() < 2) throw RestUtils.createJsonFormattedException("must contain at least 2 way points", 400);
-        try {
-            LinkedList<RouteLocation> wayPoints = new LinkedList<>(directionsRequest.getWayPoints());
-            RouteLocation start = wayPoints.remove(0);
-            RouteLocation end = wayPoints.remove(wayPoints.size() - 1);
-            return directionsManager.getDirections(start, end, wayPoints);
-
-        } catch (NotFoundException nfe) {
-            throw RestUtils.createJsonFormattedException("location not found", 404);
-        }
+		LinkedList<RouteLocation> wayPoints = new LinkedList<>(directionsRequest.getWayPoints());
+		RouteLocation start = wayPoints.remove(0);
+		RouteLocation end = wayPoints.remove(wayPoints.size() - 1);
+		return directionsManager.getDirections(start, end, wayPoints);
     }
 
 }

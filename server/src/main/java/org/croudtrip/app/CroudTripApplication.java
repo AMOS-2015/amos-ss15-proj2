@@ -4,14 +4,16 @@ package org.croudtrip.app;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 
+import org.croudtrip.account.Avatar;
+import org.croudtrip.api.account.User;
 import org.croudtrip.api.account.Vehicle;
 import org.croudtrip.api.gcm.GcmRegistration;
 import org.croudtrip.api.trips.JoinTripRequest;
 import org.croudtrip.api.trips.RunningTripQuery;
+import org.croudtrip.api.trips.TripOffer;
 import org.croudtrip.api.trips.TripReservation;
 import org.croudtrip.auth.BasicAuthenticator;
 import org.croudtrip.auth.BasicCredentials;
-import org.croudtrip.api.account.User;
 import org.croudtrip.db.DbModule;
 import org.croudtrip.directions.DirectionsModule;
 import org.croudtrip.gcm.GcmModule;
@@ -22,13 +24,12 @@ import org.croudtrip.rest.GcmRegistrationResource;
 import org.croudtrip.rest.JsonExceptionMapper;
 import org.croudtrip.rest.LogsResource;
 import org.croudtrip.rest.NotFoundExceptionMapper;
+import org.croudtrip.rest.RouteNotFoundExceptionMapper;
+import org.croudtrip.rest.ThrowableExceptionMapper;
 import org.croudtrip.rest.TripsResource;
 import org.croudtrip.rest.UsersHeadResource;
 import org.croudtrip.rest.UsersResource;
 import org.croudtrip.rest.VehicleResource;
-import org.croudtrip.api.trips.TripOffer;
-import org.croudtrip.account.Avatar;
-import org.croudtrip.rest.ThrowableExceptionMapper;
 import org.croudtrip.trips.RunningTripQueryGarbageCollection;
 import org.croudtrip.trips.TripReservationGarbageCollector;
 
@@ -78,6 +79,7 @@ public final class CroudTripApplication extends Application<CroudTripConfig> {
 		environment.jersey().register(injector.getInstance(LogsResource.class));
 		environment.jersey().register(injector.getInstance(NotFoundExceptionMapper.class));
 		environment.jersey().register(injector.getInstance(JsonExceptionMapper.class));
+		environment.jersey().register(injector.getInstance(RouteNotFoundExceptionMapper.class));
 		environment.jersey().register(injector.getInstance(ThrowableExceptionMapper.class));
 		environment.jersey().register(AuthFactory.binder(new BasicAuthFactory<>(
 				injector.getInstance(BasicAuthenticator.class),

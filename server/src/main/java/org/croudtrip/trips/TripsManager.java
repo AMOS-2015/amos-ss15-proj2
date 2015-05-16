@@ -26,12 +26,12 @@ import org.croudtrip.db.RunningTripQueryDAO;
 import org.croudtrip.db.TripOfferDAO;
 import org.croudtrip.db.TripReservationDAO;
 import org.croudtrip.directions.DirectionsManager;
+import org.croudtrip.directions.RouteNotFoundException;
 import org.croudtrip.gcm.GcmManager;
 import org.croudtrip.logs.LogManager;
 import org.croudtrip.utils.Assert;
 import org.croudtrip.utils.Pair;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -39,7 +39,6 @@ import java.util.List;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import javax.ws.rs.NotFoundException;
 
 @Singleton
 public class TripsManager {
@@ -76,10 +75,10 @@ public class TripsManager {
 	}
 
 
-	public TripOffer addOffer(User owner, TripOfferDescription description) throws Exception {
+	public TripOffer addOffer(User owner, TripOfferDescription description) throws RouteNotFoundException {
         // check if there is a route
 		List<Route> route = directionsManager.getDirections(description.getStart(), description.getEnd());
-		if (route.size() == 0) throw new Exception("not route found");
+		if (route.size() == 0) throw new RouteNotFoundException();
 
         // find vehicle
         Optional<Vehicle>vehicle = vehicleManager.findVehicleById(description.getVehicleId());
@@ -137,10 +136,10 @@ public class TripsManager {
 	}
 
 
-    public TripOffer updateOffer(TripOffer offer, TripOfferUpdate offerUpdate) throws Exception {
+    public TripOffer updateOffer(TripOffer offer, TripOfferUpdate offerUpdate) throws RouteNotFoundException {
         // check if there is a route
         List<Route> routes = directionsManager.getDirections(offerUpdate.getUpdatedStart(), offer.getDriverRoute().getWayPoints().get(1));
-        if (routes.size() == 0) throw new Exception("no route found");
+        if (routes.size() == 0) throw new RouteNotFoundException();
 
         // update and store offer
         TripOffer updatedOffer = new TripOffer(
@@ -156,12 +155,12 @@ public class TripsManager {
     }
 
 
-	public TripQueryResult queryOffers(User passenger, TripQueryDescription queryDescription) throws Exception {
+	public TripQueryResult queryOffers(User passenger, TripQueryDescription queryDescription) throws RouteNotFoundException {
         logManager.d("User " + passenger.getId() + " (" + passenger.getFirstName() + " " + passenger.getLastName() + ") sent query.");
 
         // compute passenger route
         List<Route> possiblePassengerRoutes = directionsManager.getDirections(queryDescription.getStart(), queryDescription.getEnd());
-        if (possiblePassengerRoutes.isEmpty()) return new TripQueryResult(new ArrayList<TripReservation>(), null);
+        if (possiblePassengerRoutes.isEmpty()) throw new RouteNotFoundException();
 
         // analyse offers
         TripQuery query = new TripQuery(possiblePassengerRoutes.get(0), queryDescription.getStart(), queryDescription.getEnd(), queryDescription.getMaxWaitingTimeInSeconds(), passenger);
@@ -212,7 +211,7 @@ public class TripsManager {
     }
 
 
-    public Optional<JoinTripRequest> joinTrip(TripReservation tripReservation) throws Exception {
+    public Optional<JoinTripRequest> joinTrip(TripReservation tripReservation) {
         // remove reservation (either it has now been accepted or is can be discarded)
         tripReservationDAO.delete(tripReservation);
 
@@ -259,7 +258,7 @@ public class TripsManager {
     }
 
 
-    public JoinTripRequest updateJoinRequest(JoinTripRequest joinRequest, boolean passengerAccepted) throws IOException {
+    public JoinTripRequest updateJoinRequest(JoinTripRequest joinRequest, boolean passengerAccepted) {
         Assert.assertTrue(joinRequest.getStatus().equals(JoinTripStatus.PASSENGER_ACCEPTED), "cannot modify join request");
 
         // update join request status
@@ -311,7 +310,7 @@ public class TripsManager {
     }
 
 
-    private List<TripOffer> findPotentialMatches(List<TripOffer> offers, TripQuery query) throws Exception {
+    private List<TripOffer> findPotentialMatches(List<TripOffer> offers, TripQuery query) {
         // analyse offers
         List<TripOffer> potentialMatches = new ArrayList<>();
         for (TripOffer offer : offers) {
@@ -324,7 +323,7 @@ public class TripsManager {
     }
 
 
-    private boolean isPotentialMatch(TripOffer offer, TripQuery query) throws NotFoundException, Exception {
+    private boolean isPotentialMatch(TripOffer offer, TripQuery query) {
         // find declined trips for this user
         List<JoinTripRequest> declinedRequests = joinTripRequestDAO.findDeclinedRequests(query.getPassenger().getId());
 
