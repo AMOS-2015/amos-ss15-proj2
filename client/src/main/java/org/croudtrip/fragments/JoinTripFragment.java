@@ -3,6 +3,7 @@ package org.croudtrip.fragments;
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
@@ -11,6 +12,7 @@ import android.location.Geocoder;
 import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.Toolbar;
 import android.text.Html;
 import android.text.Spanned;
@@ -215,10 +217,29 @@ public class JoinTripFragment extends SubscriptionFragment implements GoogleApiC
                     // retrieve current position
                     currentLocation = locationUpdater.getLastLocation();
                     if (currentLocation == null) {
-                        /*
-                        TODO: popup + redirect to placepicker
-                         */
                         Toast.makeText(getActivity().getApplicationContext(), R.string.offer_trip_no_location, Toast.LENGTH_SHORT).show();
+
+                        AlertDialog.Builder adb = new AlertDialog.Builder(getActivity());
+                        adb.setTitle(getResources().getString(R.string.enable_gps_title));
+                        adb.setMessage(getResources().getString(R.string.gpd_not_available));
+                        adb.setPositiveButton(getResources().getString(R.string.redirect_to_placepicker), new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+
+                                try {
+                                    PlacePicker.IntentBuilder intentBuilder = new PlacePicker.IntentBuilder();
+                                    Intent intent = intentBuilder.build(getActivity().getApplicationContext());
+
+                                    startActivityForResult(intent, REQUEST_PLACE_PICKER);
+                                } catch (GooglePlayServicesRepairableException e) {
+                                    e.printStackTrace();
+                                } catch (GooglePlayServicesNotAvailableException e) {
+                                    e.printStackTrace();
+                                }
+
+                                return;
+                            }
+                        });
+                        adb.show();
                         return;
                     }
                 } else {

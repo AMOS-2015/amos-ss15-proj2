@@ -18,6 +18,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -77,6 +78,8 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
     private DatabaseHelper dbHelper;
     private GoogleApiClient googleApiClient;
     private PlaceAutocompleteAdapter adapter;
+    private Location specifiedLocation;
+
 
     private org.croudtrip.db.Place lastSelected;
 
@@ -213,12 +216,39 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
                 org.croudtrip.db.Place tempPlace = lastSelected;
                 lastSelected = null;
 
-                // retrieve current position
-                Location currentLocation = locationUpdater.getLastLocation();
-                if( currentLocation == null ) {
-                    Toast.makeText(getActivity().getApplicationContext(), R.string.offer_trip_no_location, Toast.LENGTH_SHORT).show();
-                    return;
+                Location currentLocation;
+                if (specifiedLocation == null) {
+                    currentLocation = locationUpdater.getLastLocation();
+                    if (currentLocation == null) {
+                        Toast.makeText(getActivity().getApplicationContext(), R.string.offer_trip_no_location, Toast.LENGTH_SHORT).show();
+
+                        AlertDialog.Builder adb = new AlertDialog.Builder(getActivity());
+                        adb.setTitle(getResources().getString(R.string.enable_gps_title));
+                        adb.setMessage(getResources().getString(R.string.gpd_not_available));
+                        adb.setPositiveButton(getResources().getString(R.string.redirect_to_placepicker), new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+
+                                try {
+                                    PlacePicker.IntentBuilder intentBuilder = new PlacePicker.IntentBuilder();
+                                    Intent intent = intentBuilder.build(getActivity().getApplicationContext());
+
+                                    startActivityForResult(intent, REQUEST_PLACE_PICKER);
+                                } catch (GooglePlayServicesRepairableException e) {
+                                    e.printStackTrace();
+                                } catch (GooglePlayServicesNotAvailableException e) {
+                                    e.printStackTrace();
+                                }
+
+                                return;
+                            }
+                        });
+                        adb.show();
+                    }
+                } else {
+                    currentLocation = specifiedLocation;
+                    specifiedLocation = null;
                 }
+
 
                 // get destination from string
                 LatLng destination = null;
@@ -300,24 +330,11 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_PLACE_PICKER && resultCode == Activity.RESULT_OK) {
-
-            // The user has selected a place. Extract the tv_name and tv_address.
             final Place place = PlacePicker.getPlace(data, getActivity());
-
-            String name = place.getName().toString();
-            String address = place.getAddress().toString();
-            String attributions = PlacePicker.getAttributions(data);
-            if (attributions == null) {
-                attributions = "";
-            }
-
-            if (address.contains(name)) {
-                name = "";
-            }
-
-            tv_name.setText(name);
-            tv_address.setText(address);
-            tv_attributions.setText(Html.fromHtml(attributions));
+            Location l = new Location("placePicker");
+            l.setLatitude(place.getLatLng().latitude);
+            l.setLongitude(place.getLatLng().longitude);
+            specifiedLocation = l;
         } else {
             super.onActivityResult(requestCode, resultCode, data);
         }

@@ -100,6 +100,10 @@
     <string name="enable_gps_ok">ok</string>
     <string name="enable_gps_cancel">cancel</string>
     <string name="join_trip_no_matches">No matches were found on your route</string>
+    <string name="gpd_not_available">Sorry! We couldn´t find your current location!</string>
+    <string name="redirect_to_placepicker">Tell us where you are</string>
+
+
 
     <string name="place_details">&lt;b&gt;%1$s&lt;/b&gt;&lt;br/&gt;&lt;i&gt;Place Id: %2$s&lt;/i&gt;&lt;br/&gt;Address: %3$s&lt;br/&gt;Phone: %4$s&lt;br/&gt;Website: %5$s</string>
 
