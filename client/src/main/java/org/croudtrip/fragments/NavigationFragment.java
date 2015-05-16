@@ -4,7 +4,6 @@ package org.croudtrip.fragments;
 import android.app.Fragment;
 import android.location.Location;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.InflateException;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,17 +11,12 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
-import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.maps.android.PolyUtil;
 
@@ -38,19 +32,14 @@ import org.croudtrip.api.trips.TripOfferDescription;
 import org.croudtrip.location.LocationUpdater;
 import org.croudtrip.utils.DefaultTransformer;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
 import javax.inject.Inject;
 
-import pl.charmas.android.reactivelocation.ReactiveLocationProvider;
-import roboguice.inject.ContentView;
-import roboguice.inject.InjectFragment;
 import roboguice.inject.InjectView;
 import rx.Observable;
-import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
 import rx.functions.Func1;
@@ -262,11 +251,14 @@ public class NavigationFragment extends SubscriptionFragment {
         double toLat = arguments.getDouble("toLat");
         double toLng = arguments.getDouble("toLng");
 
+        // TODO INSERT VALID VEHICLE ID!!
+        long vehicleId = 0;
         TripOfferDescription tripOffer = new TripOfferDescription(
                 new RouteLocation( fromLat, fromLng ),
                 new RouteLocation( toLat, toLng ),
                 maxDiversion * 1000L,
-                pricePerKilometer);
+                pricePerKilometer,
+                vehicleId);
 
         tripsResource.addOffer( tripOffer )
                 .subscribeOn(Schedulers.io())

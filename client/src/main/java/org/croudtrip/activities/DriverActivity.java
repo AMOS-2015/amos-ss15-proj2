@@ -72,11 +72,14 @@ public class DriverActivity extends RoboActivity {
         double toLat = b.getDouble("toLat");
         double toLng = b.getDouble("toLng");
 
+        // TODO INSERT A VALID VEHICLE ID!!
+        long vehicleId = 0;
         TripOfferDescription tripOffer = new TripOfferDescription(
                 new RouteLocation( fromLat, fromLng ),
                 new RouteLocation( toLat, toLng ),
                 maxDiversion * 1000L,
-                pricePerKilometer);
+                pricePerKilometer,
+                vehicleId);
 
         tripsResource.addOffer( tripOffer )
                 .subscribeOn(Schedulers.io())

@@ -4,7 +4,9 @@ package org.croudtrip.trips;
 import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
 
+import org.croudtrip.account.VehicleManager;
 import org.croudtrip.api.account.User;
+import org.croudtrip.api.account.Vehicle;
 import org.croudtrip.api.directions.Route;
 import org.croudtrip.api.directions.RouteLocation;
 import org.croudtrip.api.gcm.GcmConstants;
@@ -45,6 +47,7 @@ public class TripsManager {
     private final TripReservationDAO tripReservationDAO;
     private final JoinTripRequestDAO joinTripRequestDAO;
 	private final DirectionsManager directionsManager;
+    private final VehicleManager vehicleManager;
     private final GcmManager gcmManager;
     private final LogManager logManager;
 
@@ -56,6 +59,7 @@ public class TripsManager {
             TripReservationDAO tripReservationDAO,
             JoinTripRequestDAO joinTripRequestDAO,
             DirectionsManager directionsManager,
+            VehicleManager vehicleManager,
             GcmManager gcmManager,
             LogManager logManager) {
 
@@ -64,17 +68,23 @@ public class TripsManager {
         this.tripReservationDAO = tripReservationDAO;
         this.joinTripRequestDAO = joinTripRequestDAO;
 		this.directionsManager = directionsManager;
+        this.vehicleManager = vehicleManager;
         this.gcmManager = gcmManager;
         this.logManager = logManager;
 	}
 
 
 	public TripOffer addOffer(User owner, TripOfferDescription description) throws Exception {
+        // check if there is a route
 		List<Route> route = directionsManager.getDirections(description.getStart(), description.getEnd());
 		if (route.size() == 0) throw new Exception("not route found");
 
+        // find vehicle
+        Optional<Vehicle>vehicle = vehicleManager.findVehicleById(description.getVehicleId());
+        Assert.assertTrue(vehicle.isPresent() && vehicle.get().getOwner().getId() == owner.getId(), "no vehilce for id " + description.getVehicleId());
+
         // create and store offer
-		TripOffer offer = new TripOffer(0, route.get(0), description.getMaxDiversionInMeters(), description.getPricePerKmInCents(), owner);
+		TripOffer offer = new TripOffer(0, route.get(0), description.getMaxDiversionInMeters(), description.getPricePerKmInCents(), owner, vehicle.get());
 		tripOfferDAO.save(offer);
 
         // compare offer with running queries

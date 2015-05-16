@@ -2,7 +2,9 @@ package org.croudtrip.rest;
 
 import com.google.common.base.Optional;
 
+import org.croudtrip.account.VehicleManager;
 import org.croudtrip.api.account.User;
+import org.croudtrip.api.account.Vehicle;
 import org.croudtrip.api.trips.JoinTripRequest;
 import org.croudtrip.api.trips.JoinTripRequestUpdate;
 import org.croudtrip.api.trips.JoinTripStatus;
@@ -50,10 +52,12 @@ public class TripsResource {
             PATH_RESERVATIONS = "/reservations";
 
     private final TripsManager tripsManager;
+    private final VehicleManager vehicleManager;
 
     @Inject
-    TripsResource(TripsManager tripsManager) {
+    TripsResource(TripsManager tripsManager, VehicleManager vehicleManager) {
         this.tripsManager = tripsManager;
+        this.vehicleManager = vehicleManager;
     }
 
 
@@ -61,6 +65,11 @@ public class TripsResource {
     @UnitOfWork
     @Path(PATH_OFFERS)
     public TripOffer addOffer(@Auth User user, @Valid TripOfferDescription offerDescription) throws Exception {
+        Optional<Vehicle> vehicle = vehicleManager.findVehicleById(offerDescription.getVehicleId());
+        if (!vehicle.isPresent() || vehicle.get().getOwner().getId() != user.getId()) {
+            throw RestUtils.createNotFoundException("not vehicle with id " + offerDescription.getVehicleId() + " found");
+        }
+
         return tripsManager.addOffer(user, offerDescription);
     }
 

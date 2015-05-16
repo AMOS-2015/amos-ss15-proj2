@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Objects;
 
 import org.croudtrip.api.account.User;
+import org.croudtrip.api.account.Vehicle;
 import org.croudtrip.api.directions.Route;
 
 import javax.persistence.Column;
@@ -61,6 +62,10 @@ public class TripOffer {
 	@JoinColumn(name = User.COLUMN_ID, nullable = false)
 	private User driver;
 
+	@ManyToOne
+	@JoinColumn(name = Vehicle.COLUMN_ID, nullable = false)
+	private Vehicle vehicle;
+
 
 	public TripOffer() { }
 
@@ -70,13 +75,15 @@ public class TripOffer {
 			@JsonProperty("driverRoute") Route driverRoute,
 			@JsonProperty("maxDiversionsInMeters") long maxDiversionInMeters,
 			@JsonProperty("pricePerKmInCents") int pricePerKmInCents,
-			@JsonProperty("driver") User driver) {
+			@JsonProperty("driver") User driver,
+			@JsonProperty("vehicle") Vehicle vehicle) {
 
 		this.id = id;
 		this.driverRoute = driverRoute;
 		this.maxDiversionInMeters = maxDiversionInMeters;
 		this.pricePerKmInCents = pricePerKmInCents;
 		this.driver = driver;
+		this.vehicle = vehicle;
 	}
 
 
@@ -105,6 +112,11 @@ public class TripOffer {
 	}
 
 
+	public Vehicle getVehicle() {
+		return vehicle;
+	}
+
+
 	@Override
 	public boolean equals(Object other) {
 		if (other == null || !(other instanceof TripOffer)) return false;
@@ -113,13 +125,14 @@ public class TripOffer {
 				&& Objects.equal(driverRoute, offer.driverRoute)
 				&& Objects.equal(maxDiversionInMeters, offer.maxDiversionInMeters)
 				&& Objects.equal(pricePerKmInCents, offer.pricePerKmInCents)
-				&& Objects.equal(driver, offer.driver);
+				&& Objects.equal(driver, offer.driver)
+				&& Objects.equal(vehicle, offer.vehicle);
 	}
 
 
 	@Override
 	public int hashCode() {
-		return Objects.hashCode(id, driverRoute, maxDiversionInMeters, pricePerKmInCents, driver);
+		return Objects.hashCode(id, driverRoute, maxDiversionInMeters, pricePerKmInCents, driver, vehicle);
 	}
 
 }
