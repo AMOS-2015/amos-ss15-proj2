@@ -11,12 +11,15 @@ import org.croudtrip.api.trips.JoinTripStatus;
 import org.croudtrip.api.trips.RunningTripQuery;
 import org.croudtrip.api.trips.TripOffer;
 import org.croudtrip.api.trips.TripOfferDescription;
+import org.croudtrip.api.trips.TripOfferStatus;
 import org.croudtrip.api.trips.TripQueryDescription;
 import org.croudtrip.api.trips.TripQueryResult;
 import org.croudtrip.api.trips.TripReservation;
 import org.croudtrip.trips.TripsManager;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -85,8 +88,18 @@ public class TripsResource {
     @GET
     @Path(PATH_OFFERS)
     @UnitOfWork
-    public List<TripOffer> getOffers(@Auth User driver) {
-        return tripsManager.findOffersByDriver(driver);
+    public List<TripOffer> getOffers(@Auth User driver, @DefaultValue("true") @QueryParam("active") boolean showActiveAndNotFullOnly) {
+        List<TripOffer> offers = new ArrayList<>(tripsManager.findOffersByDriver(driver));
+        if (!showActiveAndNotFullOnly) return offers;
+
+        // filter by active status
+        Iterator<TripOffer> iterator = offers.iterator();
+        while (iterator.hasNext()) {
+            if (!iterator.next().getStatus().equals(TripOfferStatus.ACTIVE_NOT_FULL)) {
+                iterator.remove();
+            }
+        }
+        return offers;
     }
 
 

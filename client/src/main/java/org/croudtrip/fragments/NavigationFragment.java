@@ -126,7 +126,7 @@ public class NavigationFragment extends SubscriptionFragment {
 
         final RouteLocation[] driverWp = new RouteLocation[2] ;
 
-        tripsResource.getOffers()
+        tripsResource.getOffers(true)
                 .compose(new DefaultTransformer<List<TripOffer>>())
                 .flatMap(new Func1<List<TripOffer>, Observable<TripOffer>>() {
                     @Override

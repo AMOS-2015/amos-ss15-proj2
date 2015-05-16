@@ -16,6 +16,7 @@ import org.croudtrip.api.trips.RunningTripQuery;
 import org.croudtrip.api.trips.RunningTripQueryStatus;
 import org.croudtrip.api.trips.TripOffer;
 import org.croudtrip.api.trips.TripOfferDescription;
+import org.croudtrip.api.trips.TripOfferStatus;
 import org.croudtrip.api.trips.TripQuery;
 import org.croudtrip.api.trips.TripQueryDescription;
 import org.croudtrip.api.trips.TripQueryResult;
@@ -84,7 +85,14 @@ public class TripsManager {
         Assert.assertTrue(vehicle.isPresent() && vehicle.get().getOwner().getId() == owner.getId(), "no vehilce for id " + description.getVehicleId());
 
         // create and store offer
-		TripOffer offer = new TripOffer(0, route.get(0), description.getMaxDiversionInMeters(), description.getPricePerKmInCents(), owner, vehicle.get());
+		TripOffer offer = new TripOffer(
+                0,
+                route.get(0),
+                description.getMaxDiversionInMeters(),
+                description.getPricePerKmInCents(),
+                owner,
+                vehicle.get(),
+                TripOfferStatus.ACTIVE_NOT_FULL);
 		tripOfferDAO.save(offer);
 
         // compare offer with running queries
@@ -141,7 +149,7 @@ public class TripsManager {
         logManager.d("Found " + declinedRequests.size() + " declined entries in the database.");
 
         // analyse offers
-        List<TripOffer> potentialMatches = findPotentialMatches(tripOfferDAO.findAll(), query);
+        List<TripOffer> potentialMatches = findPotentialMatches(tripOfferDAO.findAllActive(), query);
 
         // find and store reservations
         List<TripReservation> reservations = findCheapestMatch(query, potentialMatches);

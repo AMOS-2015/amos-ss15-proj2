@@ -11,6 +11,8 @@ import org.croudtrip.api.directions.Route;
 import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -31,6 +33,10 @@ import javax.persistence.Table;
 				query = "SELECT t FROM " + TripOffer.ENTITY_NAME + " t"
 		),
 		@NamedQuery(
+				name = TripOffer.QUERY_NAME_FIND_ALL_ACTIVE,
+				query = "SELECT t FROM " + TripOffer.ENTITY_NAME + " t WHERE t.status = 'ACTIVE_NOT_FULL'"
+		),
+		@NamedQuery(
 				name = TripOffer.QUERY_FIND_BY_DRIVER_ID,
 				query = "SELECT t FROM " + TripOffer.ENTITY_NAME + " t WHERE t.driver.id = :" + TripOffer.QUERY_PARAM_DRIVER_ID
 		)
@@ -41,6 +47,7 @@ public class TripOffer {
 			ENTITY_NAME =  "TripOffer",
 			COLUMN_ID = "trip_offer_id",
 			QUERY_NAME_FIND_ALL = "org.croudtrip.api.trips.TripOffer.findAll",
+			QUERY_NAME_FIND_ALL_ACTIVE = "org.croudtrip.api.trips.TripOffer.findAllActive",
 			QUERY_FIND_BY_DRIVER_ID = "org.croudtrip.api.trips.TripOffer.findByDriverId",
 			QUERY_PARAM_DRIVER_ID = "driver_id";
 
@@ -66,6 +73,9 @@ public class TripOffer {
 	@JoinColumn(name = Vehicle.COLUMN_ID, nullable = false)
 	private Vehicle vehicle;
 
+	@Column(name = "status", nullable = false)
+	@Enumerated(EnumType.STRING)
+	private TripOfferStatus status;
 
 	public TripOffer() { }
 
@@ -76,7 +86,8 @@ public class TripOffer {
 			@JsonProperty("maxDiversionsInMeters") long maxDiversionInMeters,
 			@JsonProperty("pricePerKmInCents") int pricePerKmInCents,
 			@JsonProperty("driver") User driver,
-			@JsonProperty("vehicle") Vehicle vehicle) {
+			@JsonProperty("vehicle") Vehicle vehicle,
+			@JsonProperty("status") TripOfferStatus status) {
 
 		this.id = id;
 		this.driverRoute = driverRoute;
@@ -84,6 +95,7 @@ public class TripOffer {
 		this.pricePerKmInCents = pricePerKmInCents;
 		this.driver = driver;
 		this.vehicle = vehicle;
+		this.status = status;
 	}
 
 
@@ -117,6 +129,11 @@ public class TripOffer {
 	}
 
 
+	public TripOfferStatus getStatus() {
+		return status;
+	}
+
+
 	@Override
 	public boolean equals(Object other) {
 		if (other == null || !(other instanceof TripOffer)) return false;
@@ -126,13 +143,14 @@ public class TripOffer {
 				&& Objects.equal(maxDiversionInMeters, offer.maxDiversionInMeters)
 				&& Objects.equal(pricePerKmInCents, offer.pricePerKmInCents)
 				&& Objects.equal(driver, offer.driver)
-				&& Objects.equal(vehicle, offer.vehicle);
+				&& Objects.equal(vehicle, offer.vehicle)
+				&& Objects.equal(status, offer.status);
 	}
 
 
 	@Override
 	public int hashCode() {
-		return Objects.hashCode(id, driverRoute, maxDiversionInMeters, pricePerKmInCents, driver, vehicle);
+		return Objects.hashCode(id, driverRoute, maxDiversionInMeters, pricePerKmInCents, driver, vehicle, status);
 	}
 
 }
