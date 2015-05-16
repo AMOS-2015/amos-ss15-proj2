@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.util.Base64;
 
+import org.croudtrip.activities.DispatchActivity;
 import org.croudtrip.activities.LoginActivity;
 import org.croudtrip.api.account.User;
 import org.croudtrip.utils.DefaultTransformer;
@@ -127,8 +128,10 @@ public class AccountManager {
 
         if(redirect) {
             // Redirect to login-screen and delete any activities "before"
-            Intent intent = new Intent(context, LoginActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            Intent intent = new Intent(context, DispatchActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP |
+                    Intent.FLAG_ACTIVITY_CLEAR_TASK |
+                    Intent.FLAG_ACTIVITY_NEW_TASK);
             context.startActivity(intent);
         }
     }

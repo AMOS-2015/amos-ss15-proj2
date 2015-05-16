@@ -2,9 +2,11 @@ package org.croudtrip.activities;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -243,7 +245,6 @@ public class LoginActivity extends RoboActivity {
      * @param password the user's password
      */
     private void loginUser(final String email, final String password) {
-
         // UI: Show progress bar, disable login button
         loginButton.setEnabled(false);
         loginProgressBar.setVisibility(View.VISIBLE);
@@ -315,7 +316,14 @@ public class LoginActivity extends RoboActivity {
     private void loginAndRedirect(User user, String password){
         Context appContext = LoginActivity.this.getApplicationContext();
         AccountManager.login(appContext, user, password);
-        setResult(RESULT_AUTHENTICATED);
+
+        Intent returnIntent = getIntent();
+        if (getParent() == null) {
+            setResult(RESULT_OK, returnIntent);
+        } else {
+            getParent().setResult(RESULT_AUTHENTICATED, returnIntent);
+        }
         finish();
+
     }
 }
