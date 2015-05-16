@@ -53,6 +53,7 @@ public class JoinTripRequestsFragment extends SubscriptionFragment {
     private TextView error;
 
     private JoinTripRequestsAdapter adapter;
+    private SwipeListener touchListener;
 
     @Inject private TripsResource tripsResource;
     @Inject private DirectionsResource dirResource;
@@ -81,7 +82,7 @@ public class JoinTripRequestsFragment extends SubscriptionFragment {
 
         adapter = new JoinTripRequestsAdapter(this);
         AcceptDeclineRequestListener acceptDeclineListener = new AcceptDeclineRequestListener();
-        SwipeListener touchListener = new SwipeListener(recyclerView, acceptDeclineListener);
+        this.touchListener = new SwipeListener(recyclerView, acceptDeclineListener);
         adapter.setOnRequestAcceptDeclineListener(acceptDeclineListener);
 
         recyclerView.setAdapter(adapter);
@@ -175,7 +176,8 @@ public class JoinTripRequestsFragment extends SubscriptionFragment {
             progressBar.setVisibility(View.VISIBLE);
 
             // Don't allow other user clicks while the task is performed
-            adapter.setOnRequestAcceptDeclineListener(null);
+            //adapter.setOnRequestAcceptDeclineListener(null);
+            recyclerView.setOnTouchListener(null);
 
             // Inform server
             JoinTripRequestUpdate requestUpdate = new JoinTripRequestUpdate(accept);
@@ -274,7 +276,8 @@ public class JoinTripRequestsFragment extends SubscriptionFragment {
         private void onDone(){
 
             // Allow clicks on trips again
-            adapter.setOnRequestAcceptDeclineListener(new AcceptDeclineRequestListener());
+            //adapter.setOnRequestAcceptDeclineListener(new AcceptDeclineRequestListener());
+            recyclerView.setOnTouchListener(touchListener);
 
             // UI
             progressBar.setVisibility(View.GONE);
