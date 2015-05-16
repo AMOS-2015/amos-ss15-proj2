@@ -16,6 +16,7 @@ import org.croudtrip.api.trips.RunningTripQueryStatus;
 import org.croudtrip.api.trips.TripOffer;
 import org.croudtrip.api.trips.TripOfferDescription;
 import org.croudtrip.api.trips.TripOfferStatus;
+import org.croudtrip.api.trips.TripOfferUpdate;
 import org.croudtrip.api.trips.TripQuery;
 import org.croudtrip.api.trips.TripQueryDescription;
 import org.croudtrip.api.trips.TripQueryResult;
@@ -134,6 +135,25 @@ public class TripsManager {
 	public void deleteOffer(TripOffer offer) {
 		tripOfferDAO.delete(offer);
 	}
+
+
+    public TripOffer updateOffer(TripOffer offer, TripOfferUpdate offerUpdate) throws Exception {
+        // check if there is a route
+        List<Route> routes = directionsManager.getDirections(offerUpdate.getUpdatedStart(), offer.getDriverRoute().getWayPoints().get(1));
+        if (routes.size() == 0) throw new Exception("no route found");
+
+        // update and store offer
+        TripOffer updatedOffer = new TripOffer(
+                offer.getId(),
+                routes.get(0),
+                offer.getMaxDiversionInMeters(),
+                offer.getPricePerKmInCents(),
+                offer.getDriver(),
+                offer.getVehicle(),
+                offer.getStatus());
+        tripOfferDAO.update(updatedOffer);
+        return updatedOffer;
+    }
 
 
 	public TripQueryResult queryOffers(User passenger, TripQueryDescription queryDescription) throws Exception {

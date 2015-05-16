@@ -12,6 +12,7 @@ import org.croudtrip.api.trips.RunningTripQuery;
 import org.croudtrip.api.trips.TripOffer;
 import org.croudtrip.api.trips.TripOfferDescription;
 import org.croudtrip.api.trips.TripOfferStatus;
+import org.croudtrip.api.trips.TripOfferUpdate;
 import org.croudtrip.api.trips.TripQueryDescription;
 import org.croudtrip.api.trips.TripQueryResult;
 import org.croudtrip.api.trips.TripReservation;
@@ -103,10 +104,20 @@ public class TripsResource {
     }
 
 
+    @PUT
+    @Path(PATH_OFFERS + "/{offerId}")
+    @UnitOfWork
+    public TripOffer updateOffer(@Auth User driver, @PathParam("offerId") long offerId, @Valid TripOfferUpdate offerUpdate) throws Exception {
+        TripOffer offer = assertIsValidOfferId(offerId);
+        if (offer.getDriver().getId() != driver.getId()) throw RestUtils.createUnauthorizedException();
+        return tripsManager.updateOffer(offer, offerUpdate);
+    }
+
+
     @DELETE
     @UnitOfWork
     @Path(PATH_OFFERS + "/{offerId}")
-    public void deleteOff(@PathParam("offerId") long offerId) {
+    public void deleteOffer(@PathParam("offerId") long offerId) {
         tripsManager.deleteOffer(assertIsValidOfferId(offerId));
     }
 
