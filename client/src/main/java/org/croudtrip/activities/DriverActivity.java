@@ -65,6 +65,7 @@ public class DriverActivity extends RoboActivity {
 
         int maxDiversion = b.getInt( "maxDiversion" );
         int pricePerKilometer = b.getInt("pricePerKilometer");
+        long vehicleId = b.getLong("vehicle_id");
 
         double fromLat = b.getDouble("fromLat");
         double fromLng = b.getDouble("fromLng");
@@ -72,8 +73,6 @@ public class DriverActivity extends RoboActivity {
         double toLat = b.getDouble("toLat");
         double toLng = b.getDouble("toLng");
 
-        // TODO INSERT A VALID VEHICLE ID!!
-        long vehicleId = 0;
         TripOfferDescription tripOffer = new TripOfferDescription(
                 new RouteLocation( fromLat, fromLng ),
                 new RouteLocation( toLat, toLng ),

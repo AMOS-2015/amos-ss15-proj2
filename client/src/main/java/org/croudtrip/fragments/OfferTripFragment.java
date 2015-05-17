@@ -304,6 +304,8 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
                             public void call(List<Vehicle> vehicles) {
                                 if (vehicles.size() > 0)
                                 {
+                                    // TODO: SELECT YOUR VEHICLE
+                                    intent.putExtra( "vehicle_id", vehicles.get(0).getId());
                                     startActivity(intent);
                                     Toast.makeText(getActivity().getApplicationContext(), R.string.offer_trip, Toast.LENGTH_SHORT).show();
                                 }
