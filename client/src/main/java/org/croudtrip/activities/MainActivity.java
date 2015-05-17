@@ -24,6 +24,7 @@ import com.google.android.gms.location.LocationRequest;
 import org.croudtrip.Constants;
 import org.croudtrip.R;
 import org.croudtrip.account.AccountManager;
+import org.croudtrip.api.TripsResource;
 import org.croudtrip.api.account.User;
 import org.croudtrip.fragments.GcmTestFragment;
 import org.croudtrip.fragments.JoinTripFragment;
@@ -36,10 +37,12 @@ import org.croudtrip.fragments.ProfileFragment;
 import org.croudtrip.fragments.SettingsFragment;
 import org.croudtrip.gcm.GcmManager;
 import org.croudtrip.location.LocationUpdater;
+import org.croudtrip.location.LocationUploadTimerTask;
 import org.croudtrip.utils.DefaultTransformer;
 
 import java.io.InputStream;
 import java.net.URL;
+import java.util.Timer;
 
 import javax.inject.Inject;
 import javax.net.ssl.HttpsURLConnection;
@@ -67,6 +70,7 @@ public class MainActivity extends AbstractRoboDrawerActivity {
 
     @Inject private GcmManager gcmManager;
     @Inject private LocationUpdater locationUpdater;
+    @Inject private TripsResource tripsResource;
     private CompositeSubscription subscriptions = new CompositeSubscription();
     private Subscription locationUpdateSubscription;
 
@@ -95,6 +99,11 @@ public class MainActivity extends AbstractRoboDrawerActivity {
         final MaterialAccount account = new MaterialAccount(this.getResources(),firstName+ " " + lastName,email,R.drawable.profile, R.drawable.background_drawer);
         this.addAccount(account);
 
+        // start timer to update your offers all the time
+        if( AccountManager.isUserLoggedIn( this ) ){
+            Timer timer = new Timer();
+            timer.scheduleAtFixedRate( new LocationUploadTimerTask( locationUpdater, tripsResource), 1000, 120000);
+        }
 
         // subscribe to location updates
         LocationRequest request = LocationRequest.create() //standard GMS LocationRequest
