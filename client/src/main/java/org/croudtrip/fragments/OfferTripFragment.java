@@ -10,7 +10,6 @@ import android.location.Geocoder;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
-import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -18,7 +17,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -87,7 +85,6 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
     @InjectView(R.id.attributions) private TextView tv_attributions;
     @InjectView(R.id.address) private TextView tv_address;
     @InjectView(R.id.destination) private MyAutoCompleteTextView tv_destination;
-
 
     @Inject LocationUpdater locationUpdater;
 
@@ -203,6 +200,14 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
 
         if( locationUpdater == null )
             Timber.d("Location Updater is null");
+
+        Button myCar = (Button) view.findViewById(R.id.my_car);
+        myCar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ((MaterialNavigationDrawer) getActivity()).setFragmentChild(new VehicleSelectionFragment(), "Select a car as default");
+            }
+        });
 
         // By clicking on the offer-trip-button the driver makes his choice public
         Button btn_join = (Button) view.findViewById(R.id.offer);
