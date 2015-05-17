@@ -37,7 +37,6 @@ import com.rengwuxian.materialedittext.MaterialEditText;
 import org.croudtrip.Constants;
 import org.croudtrip.MainApplication;
 import org.croudtrip.R;
-import org.croudtrip.activities.DriverActivity;
 import org.croudtrip.api.TripsResource;
 import org.croudtrip.api.VehicleResource;
 import org.croudtrip.api.account.Vehicle;
@@ -259,6 +258,11 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
                 LatLng destination = null;
                 try {
                     List<Address> addresses = null;
+                    if( tv_address.getText() == null || tv_address.getText().equals("")) {
+                        addresses = geocoder.getFromLocationName(tv_destination.getText().toString(), 1);
+                    } else {
+                        addresses = geocoder.getFromLocationName(tv_address.getText().toString(), 1);
+                    }
                     addresses = geocoder.getFromLocationName(tv_address.getText().toString(), 1);
                     if( addresses == null || addresses.size() > 0 )
                         destination = new LatLng( addresses.get(0).getLatitude(), addresses.get(0).getLongitude() );
