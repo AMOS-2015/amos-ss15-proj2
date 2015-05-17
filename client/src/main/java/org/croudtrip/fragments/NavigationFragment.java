@@ -251,8 +251,8 @@ public class NavigationFragment extends SubscriptionFragment {
         double toLat = arguments.getDouble("toLat");
         double toLng = arguments.getDouble("toLng");
 
-        // TODO INSERT VALID VEHICLE ID!!
-        long vehicleId = 0;
+        long vehicleId = arguments.getLong("vehicle_id");
+
         TripOfferDescription tripOffer = new TripOfferDescription(
                 new RouteLocation( fromLat, fromLng ),
                 new RouteLocation( toLat, toLng ),

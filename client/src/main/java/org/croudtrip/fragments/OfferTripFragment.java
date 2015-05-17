@@ -258,8 +258,9 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
                 // get destination from string
                 LatLng destination = null;
                 try {
-                    List<Address> addresses = geocoder.getFromLocationName( tv_address.getText().toString(), 1 );
-                    if( addresses.size() > 0 )
+                    List<Address> addresses = null;
+                    addresses = geocoder.getFromLocationName(tv_address.getText().toString(), 1);
+                    if( addresses == null || addresses.size() > 0 )
                         destination = new LatLng( addresses.get(0).getLatitude(), addresses.get(0).getLongitude() );
                 } catch (IOException e) {
                     Toast.makeText(getActivity().getApplicationContext(), R.string.offer_trip_no_destination, Toast.LENGTH_SHORT).show();
@@ -287,15 +288,15 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
                     e.printStackTrace();
                 }
 
-                final Intent intent = new Intent( getActivity(), DriverActivity.class);
-                Bundle b = new Bundle();
+                final Bundle b = new Bundle();
+                b.putString(NavigationFragment.ARG_ACTION, NavigationFragment.ACTION_CREATE);
                 b.putInt("maxDiversion", Integer.valueOf(maxDiversion.getText().toString()) );
                 b.putInt("pricePerKilometer", Integer.valueOf(pricePerKm.getText().toString()));
                 b.putDouble("fromLat", currentLocation.getLatitude());
                 b.putDouble("fromLng", currentLocation.getLongitude() );
                 b.putDouble("toLat", destination.latitude );
                 b.putDouble("toLng", destination.longitude );
-                intent.putExtras(b);
+                final NavigationFragment navigationFragment = new NavigationFragment();
 
                 Subscription subscription = vehicleResource.getVehicles()
                         .compose(new DefaultTransformer<List<Vehicle>>())
@@ -305,8 +306,10 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
                                 if (vehicles.size() > 0)
                                 {
                                     // TODO: SELECT YOUR VEHICLE
-                                    intent.putExtra( "vehicle_id", vehicles.get(0).getId());
-                                    startActivity(intent);
+                                    b.putLong( "vehicle_id", vehicles.get(0).getId());
+                                    navigationFragment.setArguments(b);
+                                    ((MaterialNavigationDrawer) getActivity()).setSection( ((MaterialNavigationDrawer) getActivity()).getSectionByTitle(getString(R.string.navigation)) );
+                                    ((MaterialNavigationDrawer) getActivity()).setFragment( navigationFragment, getString(R.string.navigation) );
                                     Toast.makeText(getActivity().getApplicationContext(), R.string.offer_trip, Toast.LENGTH_SHORT).show();
                                 }
                                 else

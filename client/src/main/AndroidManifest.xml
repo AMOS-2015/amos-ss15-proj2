@@ -53,10 +53,6 @@
             android:label="@string/app_name">
         </activity>
 
-        <activity
-            android:name=".activities.DriverActivity"
-            android:label="@string/app_name" >
-        </activity>
         <receiver
             android:name=".gcm.GcmBroadcastReceiver"
             android:permission="com.google.android.c2dm.permission.SEND" >
