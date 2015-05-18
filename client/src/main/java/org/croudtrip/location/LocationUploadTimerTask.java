@@ -20,8 +20,10 @@ import timber.log.Timber;
  */
 public class LocationUploadTimerTask extends TimerTask {
 
-    LocationUpdater locationUpdater;
-    TripsResource tripsResource;
+    private final float MIN_ACCURACY = 200.0f;
+
+    private LocationUpdater locationUpdater;
+    private TripsResource tripsResource;
 
     public LocationUploadTimerTask(LocationUpdater locationUpdater, TripsResource tripsResource) {
         this.locationUpdater = locationUpdater;
@@ -30,7 +32,6 @@ public class LocationUploadTimerTask extends TimerTask {
 
     @Override
     public void run() {
-        // TODO: Maybe we provide some REST-Method to make it possible to update all offers at once.
         tripsResource.getOffers(false)
                 .subscribe(new Action1<List<TripOffer>>() {
                     @Override
@@ -45,7 +46,7 @@ public class LocationUploadTimerTask extends TimerTask {
 
                         Timber.d("Your location accuracy is " + location.getAccuracy());
 
-                        if( location.getAccuracy() > 200.0f ) {
+                        if( location.getAccuracy() > MIN_ACCURACY ) {
                             Timber.e("Your location is not accurate enough: " + location.getAccuracy());
                             return;
                         }
