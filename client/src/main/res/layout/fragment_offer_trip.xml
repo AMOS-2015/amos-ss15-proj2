@@ -200,7 +200,7 @@
                 android:layout_alignParentTop="true"
                 android:layout_toLeftOf="@+id/Lb3"
                 android:layout_toStartOf="@+id/Lb3"
-                android:layout_marginRight="45dp"
+                android:layout_marginRight="46dp"
                 android:layout_marginEnd="57dp" />
 
             <TextView
