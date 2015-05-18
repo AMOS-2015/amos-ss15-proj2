@@ -76,7 +76,7 @@
             android:orientation="horizontal"
             android:layout_below="@+id/seekBar"
             android:layout_centerHorizontal="true"
-            android:id="@+id/relativeLayout">
+            >
 
             <TextView
                 android:id="@+id/Label0"
@@ -169,7 +169,6 @@
             android:indeterminate="false"
             android:max="99"
             android:progress="25"
-            android:layout_above="@+id/relativeLayout"
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"
             android:layout_alignParentRight="true"
@@ -180,7 +179,6 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:orientation="horizontal"
-            android:id="@+id/relativeLayout"
             android:layout_above="@+id/my_car"
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true">
@@ -208,7 +206,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="50ct"
-                android:layout_alignTop="@+id/relativeLayout"
                 android:layout_centerHorizontal="true" />
 
             <TextView
