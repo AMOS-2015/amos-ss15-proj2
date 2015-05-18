@@ -53,6 +53,8 @@
             android:label="@string/app_name">
         </activity>
 
+        <receiver android:name=".location.LocationUploadTimerReceiver" />
+
         <receiver
             android:name=".gcm.GcmBroadcastReceiver"
             android:permission="com.google.android.c2dm.permission.SEND" >

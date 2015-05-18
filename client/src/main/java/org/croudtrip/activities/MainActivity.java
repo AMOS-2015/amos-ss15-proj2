@@ -1,7 +1,9 @@
 package org.croudtrip.activities;
 
 
+import android.app.AlarmManager;
 import android.app.Fragment;
+import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -37,12 +39,11 @@ import org.croudtrip.fragments.ProfileFragment;
 import org.croudtrip.fragments.SettingsFragment;
 import org.croudtrip.gcm.GcmManager;
 import org.croudtrip.location.LocationUpdater;
-import org.croudtrip.location.LocationUploadTimerTask;
+import org.croudtrip.location.LocationUploadTimerReceiver;
 import org.croudtrip.utils.DefaultTransformer;
 
 import java.io.InputStream;
 import java.net.URL;
-import java.util.Timer;
 
 import javax.inject.Inject;
 import javax.net.ssl.HttpsURLConnection;
@@ -101,8 +102,12 @@ public class MainActivity extends AbstractRoboDrawerActivity {
 
         // start timer to update your offers all the time
         if( AccountManager.isUserLoggedIn( this ) ){
-            Timer timer = new Timer();
-            timer.scheduleAtFixedRate( new LocationUploadTimerTask( locationUpdater, tripsResource), 1000, 120000);
+            Intent alarmIntent = new Intent(this, LocationUploadTimerReceiver.class);
+            PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, alarmIntent, 0);
+
+            AlarmManager alarmManager = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
+            alarmManager.cancel(pendingIntent);
+            alarmManager.setRepeating( AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), 120 * 1000, pendingIntent );
         }
 
         // subscribe to location updates
