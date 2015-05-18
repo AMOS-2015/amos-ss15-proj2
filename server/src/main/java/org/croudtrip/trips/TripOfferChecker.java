@@ -4,6 +4,7 @@ import org.croudtrip.api.trips.TripOffer;
 import org.croudtrip.api.trips.TripOfferStatus;
 import org.croudtrip.db.TripOfferDAO;
 import org.croudtrip.logs.LogManager;
+import org.croudtrip.utils.AbstractScheduledTaskExecutor;
 import org.hibernate.SessionFactory;
 
 import java.util.concurrent.TimeUnit;
@@ -13,7 +14,7 @@ import javax.inject.Inject;
 /**
  * Created by Frederik Simon on 18.05.2015.
  */
-public class TripOfferChecker extends AbstractGarbageCollection {
+public class TripOfferChecker extends AbstractScheduledTaskExecutor {
 
     private final long MAX_TIME_UNTIL_LOST = 360;
 

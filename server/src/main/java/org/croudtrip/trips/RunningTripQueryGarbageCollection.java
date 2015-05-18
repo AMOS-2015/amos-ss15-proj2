@@ -3,6 +3,7 @@ package org.croudtrip.trips;
 import org.croudtrip.api.trips.RunningTripQuery;
 import org.croudtrip.db.RunningTripQueryDAO;
 import org.croudtrip.logs.LogManager;
+import org.croudtrip.utils.AbstractScheduledTaskExecutor;
 import org.hibernate.SessionFactory;
 
 import java.util.concurrent.TimeUnit;
@@ -12,7 +13,7 @@ import javax.inject.Inject;
 /**
  * Removes unused {@link RunningTripQuery} after they have expired.
  */
-public class RunningTripQueryGarbageCollection extends AbstractGarbageCollection {
+public class RunningTripQueryGarbageCollection extends AbstractScheduledTaskExecutor {
 
 	/**
 	 * Keeps {@link RunningTripQuery} around a little longer to give clients a chance to download results.
@@ -22,10 +23,10 @@ public class RunningTripQueryGarbageCollection extends AbstractGarbageCollection
 	private final RunningTripQueryDAO runningTripQueryDAO;
 
 	@Inject
-	RunningTripQueryGarbageCollection(
-			RunningTripQueryDAO runningTripQueryDAO,
-			SessionFactory sessionFactory,
-			LogManager logManager) {
+    RunningTripQueryGarbageCollection(
+            RunningTripQueryDAO runningTripQueryDAO,
+            SessionFactory sessionFactory,
+            LogManager logManager) {
 
 		super(sessionFactory, logManager, 15, TimeUnit.SECONDS);
 		this.runningTripQueryDAO = runningTripQueryDAO;

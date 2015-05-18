@@ -1,4 +1,4 @@
-package org.croudtrip.trips;
+package org.croudtrip.utils;
 
 import org.croudtrip.logs.LogManager;
 import org.hibernate.Session;
@@ -15,7 +15,7 @@ import io.dropwizard.lifecycle.Managed;
 /**
  * Base class for various garbage collection task.
  */
-abstract class AbstractGarbageCollection implements Managed, Runnable {
+public abstract class AbstractScheduledTaskExecutor implements Managed, Runnable {
 
 	private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 	private final SessionFactory sessionFactory;
@@ -25,11 +25,11 @@ abstract class AbstractGarbageCollection implements Managed, Runnable {
 
 	private ScheduledFuture<?> gcTask = null;
 
-	AbstractGarbageCollection(
-			SessionFactory sessionFactory,
-			LogManager logManager,
-			long runIntervalValue,
-			TimeUnit runIntervalUnit) {
+	protected AbstractScheduledTaskExecutor(
+            SessionFactory sessionFactory,
+            LogManager logManager,
+            long runIntervalValue,
+            TimeUnit runIntervalUnit) {
 
 		this.sessionFactory = sessionFactory;
 		this.logManager = logManager;
