@@ -10,7 +10,8 @@
     <LinearLayout
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:id="@+id/linearLayout">
 
 
         <org.croudtrip.location.MyAutoCompleteTextView
@@ -55,6 +56,101 @@
             fab:met_floatingLabel="normal"
             android:layout_gravity="center_horizontal" />
 
+        <SeekBar
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/seekBar"
+
+
+            android:layout_below="@+id/linearLayout"
+
+            android:layout_alignParentRight="true"
+            android:layout_alignParentLeft="true"
+            android:indeterminate="false"
+            android:max="100"
+            android:progress="25" />
+        <RelativeLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:orientation="horizontal"
+            android:layout_below="@+id/seekBar"
+            android:layout_centerHorizontal="true"
+            android:id="@+id/relativeLayout">
+
+            <TextView
+                android:id="@+id/Label0"
+                android:paddingLeft="10dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0" />
+
+            <TextView
+                android:id="@+id/Label2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="3"
+                android:layout_alignParentTop="true"
+                android:layout_toRightOf="@+id/Label1"
+                android:layout_toEndOf="@+id/Label1"
+                android:layout_marginLeft="17dp"
+                android:layout_marginStart="48dp" />
+
+            <TextView
+                android:id="@+id/Label3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="5"
+                android:layout_alignParentTop="true"
+                android:layout_toRightOf="@+id/Label2"
+                android:layout_toEndOf="@+id/Label2"
+                android:layout_marginLeft="22dp"
+                android:layout_marginStart="57dp" />
+
+            <TextView
+                android:id="@+id/Label4"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingRight="10dp"
+                android:text="10"
+                android:layout_alignParentTop="true"
+                android:layout_centerHorizontal="true" />
+
+            <TextView
+                android:id="@+id/Label1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="1"
+                android:layout_alignParentTop="true"
+                android:layout_toRightOf="@+id/Label0"
+                android:layout_toEndOf="@+id/Label0"
+                android:layout_marginLeft="10dp"
+                android:layout_marginStart="48dp" />
+
+            <TextView
+                android:id="@+id/Label5"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingRight="10dp"
+                android:text="20"
+                android:layout_alignParentTop="true"
+                android:layout_toRightOf="@+id/Label4"
+                android:layout_toEndOf="@+id/Label4"
+                android:layout_marginLeft="50dp"
+                android:layout_marginStart="66dp" />
+
+            <TextView
+                android:id="@+id/Label6"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingRight="10dp"
+                android:text="50"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentEnd="true" />
+        </RelativeLayout>
+
+
         <com.rengwuxian.materialedittext.MaterialEditText
             android:id="@+id/price"
             android:inputType="number"
@@ -66,20 +162,95 @@
             fab:met_floatingLabel="normal"
             android:layout_gravity="center_horizontal" />
 
-        <Button
-            android:layout_width="wrap_content"
+        <SeekBar
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/offer_trip"
-            android:id="@+id/offer"
-            android:layout_gravity="center_horizontal" />
+            android:id="@+id/seekBar2"
+            android:indeterminate="false"
+            android:max="99"
+            android:progress="25"
+            android:layout_above="@+id/relativeLayout"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true" />
 
-        <Button
-            android:layout_width="wrap_content"
+        <RelativeLayout
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:text="My Cars"
-            android:id="@+id/my_car"
-            android:layout_gravity="center_horizontal" />
+            android:layout_gravity="center"
+            android:orientation="horizontal"
+            android:id="@+id/relativeLayout"
+            android:layout_above="@+id/my_car"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true">
+
+            <TextView
+                android:id="@+id/Lb1"
+                android:paddingLeft="10dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0" />
+
+            <TextView
+                android:id="@+id/Lb2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="25ct"
+                android:layout_alignParentTop="true"
+                android:layout_toLeftOf="@+id/Lb3"
+                android:layout_toStartOf="@+id/Lb3"
+                android:layout_marginRight="45dp"
+                android:layout_marginEnd="57dp" />
+
+            <TextView
+                android:id="@+id/Lb3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="50ct"
+                android:layout_alignTop="@+id/relativeLayout"
+                android:layout_centerHorizontal="true" />
+
+            <TextView
+                android:id="@+id/Lb4"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="75ct"
+                android:layout_marginRight="50dp"
+                android:layout_marginEnd="40dp"
+                android:layout_alignParentTop="true"
+                android:layout_toLeftOf="@+id/Lb5"
+                android:layout_toStartOf="@+id/Lb5" />
+
+            <TextView
+                android:id="@+id/Lb5"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:paddingRight="10dp"
+                android:text="99ct" />
+
+        </RelativeLayout>
 
     </LinearLayout>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="My Cars"
+        android:id="@+id/my_car"
+        android:layout_gravity="center_horizontal"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/offer_trip"
+        android:id="@+id/offer"
+        android:layout_gravity="center_horizontal"
+        android:layout_above="@+id/my_car"
+        android:layout_alignLeft="@+id/my_car"
+        android:layout_alignStart="@+id/my_car" />
 
 </RelativeLayout>
