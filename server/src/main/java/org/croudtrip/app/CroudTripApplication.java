@@ -31,6 +31,7 @@ import org.croudtrip.rest.UsersHeadResource;
 import org.croudtrip.rest.UsersResource;
 import org.croudtrip.rest.VehicleResource;
 import org.croudtrip.trips.RunningTripQueryGarbageCollection;
+import org.croudtrip.trips.TripOfferChecker;
 import org.croudtrip.trips.TripReservationGarbageCollector;
 
 import io.dropwizard.Application;
@@ -69,6 +70,7 @@ public final class CroudTripApplication extends Application<CroudTripConfig> {
 
 		environment.lifecycle().manage(injector.getInstance(TripReservationGarbageCollector.class));
 		environment.lifecycle().manage(injector.getInstance(RunningTripQueryGarbageCollection.class));
+        environment.lifecycle().manage(injector.getInstance(TripOfferChecker.class));
         environment.jersey().register(injector.getInstance(UsersResource.class));
 		environment.jersey().register(injector.getInstance(UsersHeadResource.class));
 		environment.jersey().register(injector.getInstance(AvatarsResource.class));

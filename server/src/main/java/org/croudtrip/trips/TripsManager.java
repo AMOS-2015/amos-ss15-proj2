@@ -92,7 +92,8 @@ public class TripsManager {
                 description.getPricePerKmInCents(),
                 owner,
                 vehicle.get(),
-                TripOfferStatus.ACTIVE_NOT_FULL);
+                TripOfferStatus.ACTIVE_NOT_FULL,
+                System.currentTimeMillis()/1000);
 		tripOfferDAO.save(offer);
 
         // compare offer with running queries
@@ -149,7 +150,8 @@ public class TripsManager {
                 offer.getPricePerKmInCents(),
                 offer.getDriver(),
                 offer.getVehicle(),
-                offer.getStatus());
+                offer.getStatus(),
+                System.currentTimeMillis() / 1000);
         tripOfferDAO.update(updatedOffer);
         return updatedOffer;
     }
@@ -285,7 +287,8 @@ public class TripsManager {
                     offer.getPricePerKmInCents(),
                     offer.getDriver(),
                     offer.getVehicle(),
-                    TripOfferStatus.ACTIVE_FULL);
+                    TripOfferStatus.ACTIVE_FULL,
+                    offer.getLastPositonUpdate() );
             tripOfferDAO.update(updatedOffer);
         }
 
@@ -417,7 +420,7 @@ public class TripsManager {
     }
 
 
-    private int getActiveJoinRequestsForOffer(TripOffer offer) {
+    public int getActiveJoinRequestsForOffer(TripOffer offer) {
         int requestsCount = 0;
         for (JoinTripRequest request : joinTripRequestDAO.findByOfferId(offer.getId())) {
             if (!request.getStatus().equals(JoinTripStatus.DRIVER_DECLINED)) ++requestsCount;

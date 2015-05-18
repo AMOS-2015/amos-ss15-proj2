@@ -73,6 +73,9 @@ public class TripOffer {
 	@JoinColumn(name = Vehicle.COLUMN_ID, nullable = false)
 	private Vehicle vehicle;
 
+    @Column(name="lastPositionUpdate", nullable = false)
+    private long lastPositonUpdate;
+
 	@Column(name = "status", nullable = false)
 	@Enumerated(EnumType.STRING)
 	private TripOfferStatus status;
@@ -87,7 +90,8 @@ public class TripOffer {
 			@JsonProperty("pricePerKmInCents") int pricePerKmInCents,
 			@JsonProperty("driver") User driver,
 			@JsonProperty("vehicle") Vehicle vehicle,
-			@JsonProperty("status") TripOfferStatus status) {
+			@JsonProperty("status") TripOfferStatus status,
+            @JsonProperty("lastPositionUpdate") long lastPositonUpdate) {
 
 		this.id = id;
 		this.driverRoute = driverRoute;
@@ -96,6 +100,7 @@ public class TripOffer {
 		this.driver = driver;
 		this.vehicle = vehicle;
 		this.status = status;
+        this.lastPositonUpdate = lastPositonUpdate;
 	}
 
 
@@ -133,6 +138,11 @@ public class TripOffer {
 		return status;
 	}
 
+
+    public long getLastPositonUpdate() { return lastPositonUpdate; }
+
+    @JsonProperty("lastPositionUpdate")
+    public void setLastPositonUpdate( long lastPositonUpdate ) { this.lastPositonUpdate = lastPositonUpdate; }
 
 	@Override
 	public boolean equals(Object other) {
