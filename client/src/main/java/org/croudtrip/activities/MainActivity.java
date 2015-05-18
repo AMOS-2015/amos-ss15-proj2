@@ -113,8 +113,7 @@ public class MainActivity extends AbstractRoboDrawerActivity {
         // subscribe to location updates
         LocationRequest request = LocationRequest.create() //standard GMS LocationRequest
                 .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
-                .setNumUpdates(5)
-                .setInterval(100);
+                .setInterval(10000);
         ReactiveLocationProvider locationProvider = new ReactiveLocationProvider(this);
         Subscription locationUpdateSubscription = locationProvider.getUpdatedLocation(request)
                 .subscribe(new Action1<Location>() {
