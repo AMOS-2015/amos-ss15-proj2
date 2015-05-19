@@ -132,4 +132,6 @@
     <string name="navigation_error_no_offer">Error: You have currently no running offer.</string>
     <string name="error_position_update_title">No position update possible</string>
     <string name="error_position_update_message">Sorry, seems like we lost you. Once your connection is restored more passengers will find your trip.</string>
+    <string name="success_position_update_message">Your position could be successfully uploaded. Your trip will be reenabled.</string>
+    <string name="success_position_update_title">Position update was successfull</string>
 </resources>
