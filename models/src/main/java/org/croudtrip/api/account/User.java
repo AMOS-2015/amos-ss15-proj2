@@ -3,7 +3,11 @@ package org.croudtrip.api.account;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Objects;
+
+import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -13,6 +17,8 @@ import javax.persistence.Id;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 import javax.validation.constraints.NotNull;
 
 /**
@@ -65,7 +71,10 @@ public class User {
     private Boolean isMale;
 
     @Column(name = "birthday", nullable = true)
-    private Long birthday; // unix timestamp in seconds
+    @Temporal(TemporalType.DATE)
+    @JsonSerialize(using = DateSerializer.class)
+    @JsonDeserialize(using = DateDeserializer.class)
+    private Date birthday;
 
     @Column(name = "address", nullable = true)
     private String address;
@@ -86,7 +95,7 @@ public class User {
             @JsonProperty("lastName") String lastName,
             @JsonProperty("phoneNumber") String phoneNumber,
             @JsonProperty("isMale") Boolean isMale,
-            @JsonProperty("birthday") Long birthday,
+            @JsonProperty("birthday") Date birthday,
             @JsonProperty("address") String address,
             @JsonProperty("avatarUrl") String avatarUrl,
             @JsonProperty("lastModified") long lastModified) {
@@ -134,7 +143,7 @@ public class User {
     }
 
 
-    public Long getBirthday() {
+    public Date getBirthday() {
         return birthday;
     }
 

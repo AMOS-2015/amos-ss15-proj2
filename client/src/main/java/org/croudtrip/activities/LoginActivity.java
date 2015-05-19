@@ -2,11 +2,9 @@ package org.croudtrip.activities;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -27,6 +25,7 @@ import retrofit.RequestInterceptor;
 import retrofit.RestAdapter;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
+import retrofit.converter.JacksonConverter;
 import roboguice.activity.RoboActivity;
 import roboguice.inject.ContentView;
 import roboguice.inject.InjectView;
@@ -259,6 +258,7 @@ public class LoginActivity extends RoboActivity {
                         AccountManager.addAuthorizationHeader(email, password, request);
                     }
                 })
+                .setConverter(new JacksonConverter())
                 .build()
                 .create(UsersResource.class);
 

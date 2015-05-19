@@ -30,7 +30,6 @@ import org.croudtrip.utils.VehiclesListAdapter;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -95,7 +94,7 @@ public class ProfileFragment extends SubscriptionFragment {
             String birthYear = null;
             if(user.getBirthday() != null){
                 Calendar calendar = Calendar.getInstance();
-                calendar.setTime(new Date(user.getBirthday()));
+                calendar.setTime(user.getBirthday());
                 birthYear = calendar.get(Calendar.YEAR) + "";
             }
 

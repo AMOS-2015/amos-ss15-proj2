@@ -6,12 +6,11 @@ import android.content.SharedPreferences;
 import android.util.Base64;
 
 import org.croudtrip.activities.DispatchActivity;
-import org.croudtrip.activities.LoginActivity;
 import org.croudtrip.api.account.User;
-import org.croudtrip.utils.DefaultTransformer;
+
+import java.util.Date;
 
 import retrofit.RequestInterceptor;
-import rx.Subscription;
 import timber.log.Timber;
 
 /**
@@ -85,7 +84,7 @@ public class AccountManager {
         editor.putLong(SHARED_PREF_KEY_LAST_MODIFIED, user.getLastModified());
 
         if(user.getBirthday() != null) {
-            editor.putLong(SHARED_PREF_KEY_BIRTHDAY, user.getBirthday());
+            editor.putLong(SHARED_PREF_KEY_BIRTHDAY, user.getBirthday().getTime());
         }else{
             editor.remove(SHARED_PREF_KEY_BIRTHDAY);
         }
@@ -157,6 +156,12 @@ public class AccountManager {
             isMale = prefs.getBoolean(SHARED_PREF_KEY_MALE, true);
         }
 
+        Date birthday = null;
+        if (prefs.contains(SHARED_PREF_KEY_BIRTHDAY)) {
+            birthday = new Date(prefs.getLong(SHARED_PREF_KEY_BIRTHDAY, 0));
+        }
+
+
         User user = new User(
                 prefs.getLong(SHARED_PREF_KEY_ID, -1),
                 prefs.getString(SHARED_PREF_KEY_EMAIL, null),
@@ -164,7 +169,7 @@ public class AccountManager {
                 prefs.getString(SHARED_PREF_KEY_LASTNAME, null),
                 prefs.getString(SHARED_PREF_KEY_PHONE, null),
                 isMale,
-                prefs.getLong(SHARED_PREF_KEY_BIRTHDAY, 0),
+                birthday,
                 prefs.getString(SHARED_PREF_KEY_ADDRESS, null),
                 prefs.getString(SHARED_PREF_KEY_AVATAR_URL, null),
                 prefs.getLong(SHARED_PREF_KEY_LAST_MODIFIED, 0));

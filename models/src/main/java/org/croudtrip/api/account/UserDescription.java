@@ -3,7 +3,11 @@ package org.croudtrip.api.account;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Objects;
+
+import java.util.Date;
 
 /**
  * A user which can be (but has not been) registered.
@@ -12,7 +16,10 @@ public class UserDescription {
 
     private final String password, email, firstName, lastName, phoneNumber, address, avatarUrl;
     private final Boolean isMale;
-    private final Long birthday; // unix timestamp in seconds
+
+    @JsonSerialize(using = DateSerializer.class)
+    @JsonDeserialize(using = DateDeserializer.class)
+    private Date birthday;
 
 
     public UserDescription(
@@ -32,7 +39,7 @@ public class UserDescription {
             @JsonProperty("password") String password,
             @JsonProperty("phoneNumber") String phoneNumber,
             @JsonProperty("isMale") Boolean isMale,
-            @JsonProperty("birthday") Long birthday,
+            @JsonProperty("birthday") Date birthday,
             @JsonProperty("address") String address,
             @JsonProperty("avatarUrl") String avatarUrl) {
 
@@ -79,7 +86,7 @@ public class UserDescription {
         return isMale;
     }
 
-    public Long getBirthday() {
+    public Date getBirthday() {
         return birthday;
     }
 
