@@ -67,10 +67,10 @@ public final class CroudTripApplication extends Application<CroudTripConfig> {
                 new DirectionsModule(configuration),
 				new GcmModule(configuration.getGoogleAPIKey()));
 
+		injector.getInstance(TripReservationGarbageCollector.class).start();
+		injector.getInstance(RunningTripQueryGarbageCollection.class).start();
+		injector.getInstance(TripOfferChecker.class).start();
 
-		environment.lifecycle().manage(injector.getInstance(TripReservationGarbageCollector.class));
-		environment.lifecycle().manage(injector.getInstance(RunningTripQueryGarbageCollection.class));
-        environment.lifecycle().manage(injector.getInstance(TripOfferChecker.class));
         environment.jersey().register(injector.getInstance(UsersResource.class));
 		environment.jersey().register(injector.getInstance(UsersHeadResource.class));
 		environment.jersey().register(injector.getInstance(AvatarsResource.class));
