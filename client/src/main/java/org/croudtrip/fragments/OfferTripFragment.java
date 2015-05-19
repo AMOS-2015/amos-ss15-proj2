@@ -1,6 +1,7 @@
 package org.croudtrip.fragments;
 
 import android.app.Activity;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -10,6 +11,8 @@ import android.location.Geocoder;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -46,6 +49,7 @@ import org.croudtrip.location.MyAutoCompleteTextView;
 import org.croudtrip.location.PlaceAutocompleteAdapter;
 import org.croudtrip.utils.DataHolder;
 import org.croudtrip.utils.DefaultTransformer;
+import org.croudtrip.utils.VehiclesListSelectAdapter;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -92,6 +96,10 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
     @Inject
     VehicleResource vehicleResource;
     private Geocoder geocoder;
+
+
+    private RecyclerView.LayoutManager layoutManager;
+    private VehiclesListSelectAdapter carListAdapter;
 
     public static OfferTripFragment get() {
         synchronized (OfferTripFragment.class) {
@@ -204,7 +212,8 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
         myCar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ((MaterialNavigationDrawer) getActivity()).setFragmentChild(new VehicleSelectionFragment(), "Select a car as default");
+                //((MaterialNavigationDrawer) getActivity()).setFragmentChild(new VehicleSelectionFragment(), "Select a car as default");
+                showCarSelectionDialog();
             }
         });
 
@@ -312,7 +321,7 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
                                     b.putLong( "vehicle_id", vehicles.get(0).getId());
                                     navigationFragment.setArguments(b);
                                     ((MaterialNavigationDrawer) getActivity()).setSection( ((MaterialNavigationDrawer) getActivity()).getSectionByTitle(getString(R.string.navigation)) );
-                                    ((MaterialNavigationDrawer) getActivity()).setFragment( navigationFragment, getString(R.string.navigation) );
+                                    ((MaterialNavigationDrawer) getActivity()).setFragment(navigationFragment, getString(R.string.navigation));
                                     Toast.makeText(getActivity().getApplicationContext(), R.string.offer_trip, Toast.LENGTH_SHORT).show();
                                 }
                                 else
@@ -449,6 +458,83 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
 
         AlertDialog alert11 = carPlateDialog.create();
         alert11.show();
+    }
+
+    public void showCarSelectionDialog() {
+        final Dialog selectDialog = new Dialog(getActivity());
+        selectDialog.setTitle("Select your default car");
+        selectDialog.setContentView(R.layout.fragment_vehicle_select);
+        RecyclerView recyclerView = (RecyclerView) selectDialog.findViewById(R.id.vehicles_list_select);
+        final Button selectButton = (Button) selectDialog.findViewById(R.id.select);
+        final TextView no_vehicle = (TextView) selectDialog.findViewById(R.id.no_vehicles_text);
+        int selectedVehicleId = 0;
+        Button select = (Button) selectDialog.findViewById(R.id.select);
+        final Button cancel = (Button) selectDialog.findViewById(R.id.cancel);
+        final Button ok = (Button) selectDialog.findViewById(R.id.ok);
+
+        // Use a linear layout manager to use the RecyclerView
+        layoutManager = new LinearLayoutManager(getActivity());
+        recyclerView.setLayoutManager(layoutManager);
+
+        carListAdapter = new VehiclesListSelectAdapter(getActivity(), null);
+        recyclerView.setAdapter(carListAdapter);
+
+        //Get a list of user vehicles and add it to the RecyclerView
+        Subscription subscription = vehicleResource.getVehicles()
+                .compose(new DefaultTransformer<List<Vehicle>>())
+                .subscribe(new Action1<List<Vehicle>>() {
+                    @Override
+                    public void call(List<Vehicle> vehicles) {
+                        if (vehicles.size() > 0) {
+                            carListAdapter.addElements(vehicles);
+                        }
+                        else
+                        {
+                            ok.setVisibility(View.VISIBLE);
+                            no_vehicle.setVisibility(View.VISIBLE);
+                            selectButton.setVisibility(View.GONE);
+                            cancel.setVisibility(View.GONE);
+                        }
+                    }
+                }, new Action1<Throwable>() {
+                    @Override
+                    public void call(Throwable throwable) {
+                        Response response = ((RetrofitError) throwable).getResponse();
+                        if (response != null && response.getStatus() == 401) {  // Not Authorized
+                        } else {
+                            Timber.e("error" + throwable.getMessage());
+                        }
+                        Timber.e("Couldn't get data" + throwable.getMessage());
+                    }
+                });
+
+        subscriptions.add(subscription);
+        selectDialog.show();
+
+        select.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int vehicleId = DataHolder.getInstance().getVehicle_id();
+                Toast.makeText(getActivity(), vehicleId + " was saved", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        cancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                selectDialog.hide();
+            }
+        });
+        ok.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                selectDialog.hide();
+                DataHolder.getInstance().setVehicle_id(-2);
+                ((MaterialNavigationDrawer) getActivity()).setFragmentChild(new VehicleInfoFragment(), "Add new vehicle");
+            }
+        });
+
+
     }
 }
 

@@ -6,8 +6,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.ImageButton;
+import android.widget.RadioButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.croudtrip.R;
 import org.croudtrip.api.account.Vehicle;
@@ -40,17 +41,14 @@ public class VehiclesListSelectAdapter extends RecyclerView.Adapter<VehiclesList
 
         protected TextView carType;
         protected TextView carPlate;
-        protected TextView carCapacity;
-        protected Button carColor;
+
         protected Button selectButton;
         public ViewHolder(View view) {
             super(view);
 
             this.carType = (TextView) view.findViewById(R.id.type);
             this.carPlate = (TextView) view.findViewById(R.id.plate);
-            this.carCapacity = (TextView) view.findViewById(R.id.capacity);
-            this.carColor = (Button) view.findViewById(R.id.car_color);
-            this.selectButton = (Button) view.findViewById(R.id.select_vehicle);
+            this.selectButton = (RadioButton) view.findViewById(R.id.select_vehicle);
             selectButton.setOnClickListener(this);
             view.setOnClickListener(this);
         }
@@ -64,7 +62,8 @@ public class VehiclesListSelectAdapter extends RecyclerView.Adapter<VehiclesList
             Vehicle vehicle=vehicles.get(getPosition());
             long vehicleId = vehicle.getId();
             if (view == selectButton) {
-
+                DataHolder.getInstance().setVehicle_id((int) vehicleId);
+                Toast.makeText(context, vehicleId + " was checked", Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -85,7 +84,6 @@ public class VehiclesListSelectAdapter extends RecyclerView.Adapter<VehiclesList
 
         // Create new views (invoked by the layout manager)
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.cardview_vehicles_select, parent, false);
-
         return new ViewHolder(view);
     }
 
@@ -97,8 +95,9 @@ public class VehiclesListSelectAdapter extends RecyclerView.Adapter<VehiclesList
         Vehicle vehicle = vehicles.get(position);
         holder.carType.setText(context.getString(R.string.car_type_side) + vehicle.getType());
         holder.carPlate.setText(context.getString(R.string.car_plate_side) + vehicle.getLicensePlate());
-        holder.carCapacity.setText(context.getString(R.string.car_capacity_side) + vehicle.getCapacity()+"");
-        holder.carColor.setBackgroundColor(Integer.parseInt(vehicle.getColor()));
+
+
+        //Toast.makeText(context, holder.getPosition()+"", Toast.LENGTH_SHORT).show();
     }
 
 

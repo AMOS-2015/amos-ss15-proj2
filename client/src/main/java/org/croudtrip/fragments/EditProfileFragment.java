@@ -229,9 +229,9 @@ public class EditProfileFragment extends roboguice.fragment.provided.RoboFragmen
             }
             else
             {
-                yearPickerButton.setText("2015");
-                tempYearOfBirth = 2015;
-                newYearOfBirth = 2015;
+                yearPickerButton.setText("Unknown");
+                tempYearOfBirth = null;
+                newYearOfBirth = null;
             }
         }
 
@@ -457,14 +457,23 @@ public class EditProfileFragment extends roboguice.fragment.provided.RoboFragmen
         else
             genderRadio.check(R.id.radio_female);
 
-        yearPickerButton.setText(tempYearOfBirth+"");
+        if (tempYearOfBirth == null)
+            yearPickerButton.setText("Unknown");
+        else
+            yearPickerButton.setText(tempYearOfBirth+"");
+
         Toast.makeText(getActivity(), "Changes discarded", Toast.LENGTH_SHORT)
                 .show();
     }
     public void saveProfileChanges() {
         Calendar calendar = Calendar.getInstance();
-        calendar.set(Calendar.YEAR, newYearOfBirth);
-        newBirthDay = calendar.getTime();
+        if (newYearOfBirth !=null) {
+            calendar.set(Calendar.YEAR, newYearOfBirth);
+            newBirthDay = calendar.getTime();
+        }
+        else
+            newBirthDay = null;
+
 
         user = new User(
                 user.getId(),
@@ -497,7 +506,11 @@ public class EditProfileFragment extends roboguice.fragment.provided.RoboFragmen
         yearPicker.setMaxValue(2015);
         yearPicker.setMinValue(1920);
         yearPicker.setWrapSelectorWheel(false);
-        yearPicker.setValue(Integer.parseInt(yearPickerButton.getText().toString()));
+        if (yearPickerButton.getText() != null && ! yearPickerButton.getText().equals("Unknown"))
+            yearPicker.setValue(Integer.parseInt(yearPickerButton.getText().toString()));
+        else
+            yearPicker.setValue(2015);
+
         yearDialog.show();
 
         set.setOnClickListener(new View.OnClickListener() {
