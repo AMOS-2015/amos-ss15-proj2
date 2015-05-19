@@ -10,10 +10,27 @@ android:
   - extra-android-support
 
 before_script:
+  - sudo service postgresql stop || true
+  - sudo service mysql stop || true
+  - sudo service memcached stop || true
+  - sudo service bootlogd stop || true
+  - sudo service elasticsearch stop || true
+  - sudo service mongodb stop || true
+  - sudo service neo4j stop || true
+  - sudo service cassandra stop || true
+  - sudo service riak stop || true
+  - sudo service rsync stop || true
+  - sudo service x11-common stop || true
   - openssl aes-256-cbc -K $encrypted_2f0e027c7173_key -iv $encrypted_2f0e027c7173_iv -in keys.tar.enc -out ./keys.tar -d
   - tar xvf ./keys.tar
   - mv ./client/keys.xml ./client/src/main/res/values/keys.xml
+
+install:
+  - 'echo "Download Gradle Wrapper"; chmod +x ./gradlew; ls -l gradlew; ./gradlew -v'
+
+
 script: ./gradlew build --stacktrace
+
 notifications:
   slack:
     secure: KsOb+qM3B5u7zcV+ELu4lVPUdkqFVX6rEuK1Alf0mwTCdkL0taIoRFaNsPB0GcJPyG5y70if33cpNBmb1bTz6tGWzp5jx8TWNg7WxpNK19VV8KlUa9+DZ/2CqFjuqY7kcL5gGWeIjFJi9pVWVWvZ7h5cSmWtWu4SSS5j7IKmSes=
@@ -27,7 +44,3 @@ deploy:
   on:
     repo: AMOS-2015/amos-ss15-proj2
     tags: true
-
-env:
-    global:
-        MALLOC_ARENA_MAX=2
