@@ -27,3 +27,7 @@ deploy:
   on:
     repo: AMOS-2015/amos-ss15-proj2
     tags: true
+
+env:
+    global:
+        MALLOC_ARENA_MAX=2
