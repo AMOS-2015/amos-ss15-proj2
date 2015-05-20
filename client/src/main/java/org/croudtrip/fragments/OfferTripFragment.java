@@ -37,6 +37,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.rengwuxian.materialedittext.MaterialEditText;
 
+import org.croudtrip.account.VehicleManager;
 import org.croudtrip.Constants;
 import org.croudtrip.MainApplication;
 import org.croudtrip.R;
@@ -310,6 +311,17 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
                 b.putDouble("toLng", destination.longitude );
                 final NavigationFragment navigationFragment = new NavigationFragment();
 
+                if (VehicleManager.getDefaultVehicleId(getActivity()) == -3)
+                    showCarPlateDialog();
+                else
+                {
+                    b.putLong( "vehicle_id", VehicleManager.getDefaultVehicleId(getActivity()));
+                    navigationFragment.setArguments(b);
+                    ((MaterialNavigationDrawer) getActivity()).setSection( ((MaterialNavigationDrawer) getActivity()).getSectionByTitle(getString(R.string.navigation)) );
+                    ((MaterialNavigationDrawer) getActivity()).setFragment(navigationFragment, getString(R.string.navigation));
+                    Toast.makeText(getActivity().getApplicationContext(), R.string.offer_trip, Toast.LENGTH_SHORT).show();
+                }
+/*
                 Subscription subscription = vehicleResource.getVehicles()
                         .compose(new DefaultTransformer<List<Vehicle>>())
                         .subscribe(new Action1<List<Vehicle>>() {
@@ -340,8 +352,7 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
                         });
 
                 subscriptions.add(subscription);
-
-
+*/
 
 
 
@@ -515,7 +526,10 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
             @Override
             public void onClick(View v) {
                 int vehicleId = DataHolder.getInstance().getVehicle_id();
-                Toast.makeText(getActivity(), vehicleId + " was saved", Toast.LENGTH_SHORT).show();
+                long vehicleIdLong = ((long) vehicleId);
+                VehicleManager.saveDefaultVehicle(getActivity(), vehicleIdLong);
+                Toast.makeText(getActivity(), "Default car set!", Toast.LENGTH_SHORT).show();
+                selectDialog.hide();
             }
         });
 

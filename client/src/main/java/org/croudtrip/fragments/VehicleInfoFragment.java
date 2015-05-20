@@ -16,6 +16,7 @@ import android.widget.Toast;
 import com.larswerkman.holocolorpicker.ColorPicker;
 import com.larswerkman.holocolorpicker.SVBar;
 
+import org.croudtrip.account.VehicleManager;
 import org.croudtrip.R;
 import org.croudtrip.api.VehicleResource;
 import org.croudtrip.api.account.Vehicle;
@@ -91,10 +92,14 @@ public class VehicleInfoFragment extends SubscriptionFragment {
         deleteVehicle.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick (View v) {
+                vehicleId = DataHolder.getInstance().getVehicle_id();
                 removeVehicle(vehicleId);
                 deleteVehicle.setVisibility(View.INVISIBLE);
                 vehicleId = -1;
                 updateInfo.setText(getString(R.string.add_vehicle));
+
+                if (DataHolder.getInstance().getIsLast() == true)
+                    VehicleManager.saveDefaultVehicle(getActivity(),-3);
             }
         });
         capacityPickerButton.setOnClickListener(new View.OnClickListener(){
@@ -300,7 +305,7 @@ public class VehicleInfoFragment extends SubscriptionFragment {
     }
 
 
-    public void addVehicle(VehicleDescription vehicleDescription) {
+    public void addVehicle(final VehicleDescription vehicleDescription) {
         Subscription subscription = vehicleResource.addVehicle(vehicleDescription)
                 .compose(new DefaultTransformer<Vehicle>())
                 .subscribe(new Action1<Vehicle>() {
@@ -308,6 +313,8 @@ public class VehicleInfoFragment extends SubscriptionFragment {
                     public void call(Vehicle vehicle) {
                             Toast.makeText(getActivity(), "New vehicle added!", Toast.LENGTH_SHORT).show();
                             Timber.v("New vehicle added!");
+                        if (VehicleManager.getDefaultVehicleId(getActivity()) == -3)
+                            VehicleManager.saveDefaultVehicle(getActivity(), vehicle.getId());
                     }
                 }, new Action1<Throwable>() {
                     @Override

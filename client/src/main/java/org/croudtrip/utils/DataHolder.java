@@ -15,6 +15,7 @@ public class DataHolder {
             dataObject = new DataHolder();
         return dataObject;
     }
+    private boolean isLast = false;
     private int vehicle_id;
 
     public int getVehicle_id() {
@@ -23,5 +24,13 @@ public class DataHolder {
 
     public void setVehicle_id(int vehicle_id) {
         this.vehicle_id = vehicle_id;
+    }
+
+    public boolean getIsLast() {
+        return isLast;
+    }
+
+    public void setIsLast(boolean isLast) {
+        this.isLast = isLast;
     }
 }

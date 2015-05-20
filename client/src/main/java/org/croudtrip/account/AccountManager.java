@@ -7,7 +7,6 @@ import android.util.Base64;
 
 import org.croudtrip.activities.DispatchActivity;
 import org.croudtrip.api.account.User;
-
 import java.util.Date;
 
 import retrofit.RequestInterceptor;
@@ -124,6 +123,9 @@ public class AccountManager {
         // Remove any saved login data
         SharedPreferences prefs = context.getSharedPreferences(SHARED_PREF_FILE_USER, Context.MODE_PRIVATE);
         prefs.edit().clear().apply();
+
+        //Revert default vehicle
+        VehicleManager.saveDefaultVehicle(context, -3);
 
         if(redirect) {
             // Redirect to login-screen and delete any activities "before"

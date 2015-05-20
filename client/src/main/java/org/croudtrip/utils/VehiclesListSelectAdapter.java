@@ -8,7 +8,6 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.RadioButton;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import org.croudtrip.R;
 import org.croudtrip.api.account.Vehicle;
@@ -63,7 +62,6 @@ public class VehiclesListSelectAdapter extends RecyclerView.Adapter<VehiclesList
             long vehicleId = vehicle.getId();
             if (view == selectButton) {
                 DataHolder.getInstance().setVehicle_id((int) vehicleId);
-                Toast.makeText(context, vehicleId + " was checked", Toast.LENGTH_SHORT).show();
             }
         }
     }

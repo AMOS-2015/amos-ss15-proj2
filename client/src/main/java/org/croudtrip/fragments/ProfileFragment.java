@@ -197,6 +197,10 @@ public class ProfileFragment extends SubscriptionFragment {
                         if (vehicles.size() > 0) {
                             adapter.addElements(vehicles);
                         }
+                        //Check if this is the only vehicle the user has
+                        if (vehicles.size() == 1) {
+                            DataHolder.getInstance().setIsLast(true);
+                        }
                     }
                 }, new Action1<Throwable>() {
                     @Override
