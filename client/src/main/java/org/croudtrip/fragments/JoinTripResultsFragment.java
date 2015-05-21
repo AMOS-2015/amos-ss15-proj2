@@ -111,6 +111,8 @@ public class JoinTripResultsFragment extends SubscriptionFragment {
         layoutManager = new LinearLayoutManager(getActivity());
         recyclerView.setLayoutManager(layoutManager);
 
+        jointDescription.setText("");
+
         adapter = new JoinTripResultsAdapter(getActivity(), null);
         recyclerView.setAdapter(adapter);
 
