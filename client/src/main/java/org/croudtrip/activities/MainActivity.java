@@ -140,9 +140,7 @@ public class MainActivity extends AbstractRoboDrawerActivity {
             Fragment frag = new JoinTripResultsFragment();
             frag.setArguments(args);
             this.addSection(newSection(getString(R.string.menu_my_trip), R.drawable.hitchhiker, frag));
-        }
-
-        if (prefs.getBoolean(Constants.SHARED_PREF_KEY_SEARCHING, false) || prefs.getBoolean(Constants.SHARED_PREF_KEY_ACCEPTED, false)) {
+        } else if (prefs.getBoolean(Constants.SHARED_PREF_KEY_SEARCHING, false) || prefs.getBoolean(Constants.SHARED_PREF_KEY_ACCEPTED, false)) {
             this.addSection(newSection(getString(R.string.menu_my_trip), R.drawable.hitchhiker, new JoinTripResultsFragment()));
         } else {
             this.addSection(newSection(getString(R.string.menu_join_trip), R.drawable.hitchhiker, new JoinTripFragment()));
