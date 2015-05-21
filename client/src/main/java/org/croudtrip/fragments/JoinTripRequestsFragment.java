@@ -207,7 +207,7 @@ public class JoinTripRequestsFragment extends SubscriptionFragment {
         public void onSwipeLeft(RecyclerView recyclerView, int[] dismissedItems) {
             // Decline only the first item and ignore the rest
             if(dismissedItems != null && dismissedItems.length > 0) {
-                handleAcceptDecline(false, 0);
+                handleAcceptDecline(false, dismissedItems[0]);
             }
 
         }
@@ -216,7 +216,7 @@ public class JoinTripRequestsFragment extends SubscriptionFragment {
         public void onSwipeRight(RecyclerView recyclerView, int[] dismissedItems) {
             // Accept only the first item and ignore the rest
             if(dismissedItems != null && dismissedItems.length > 0) {
-                handleAcceptDecline(true, 0);
+                handleAcceptDecline(true, dismissedItems[0]);
             }
         }
     }
