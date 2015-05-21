@@ -284,7 +284,6 @@ public class MainActivity extends AbstractRoboDrawerActivity {
         public void onReceive(Context context, Intent intent) {
             Bundle args = intent.getExtras();
 
-            Timber.d(args.getString(JoinTripResultsFragment.KEY_ACTION_TO_RUN));
             Fragment frag = new JoinTripResultsFragment();
             frag.setArguments(args);
 

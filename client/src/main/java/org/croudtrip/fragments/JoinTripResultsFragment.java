@@ -205,9 +205,10 @@ public class JoinTripResultsFragment extends SubscriptionFragment {
         //If getArguments() is null this Fragment was called by the NavigationDrawer. This means the server is already searching for trips
         if (getArguments() != null) {
             Bundle args = getArguments();
-            if( args.getString(KEY_ACTION_TO_RUN).equals(ACTION_START_BACKGROUND_SEARCH) )
+            String actionToRun = args.getString(KEY_ACTION_TO_RUN, ACTION_START_BACKGROUND_SEARCH);
+            if( actionToRun.equals(ACTION_START_BACKGROUND_SEARCH) )
                 startBackgroundSearch(getArguments());
-            else if( args.getString(KEY_ACTION_TO_RUN).equals(ACTION_SHOW_RESULT) )
+            else if( actionToRun.equals(ACTION_SHOW_RESULT) )
             {
                 JoinTripRequest request = null;
                 ObjectMapper mapper = new ObjectMapper();
