@@ -54,4 +54,9 @@ public class RouteLocation {
         return Objects.hashCode(lat, lng);
     }
 
+    @Override
+    public String toString() {
+        return "lat: " + lat + " ; " + " long: " + lng;
+    }
+
 }

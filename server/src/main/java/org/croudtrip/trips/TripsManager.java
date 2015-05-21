@@ -158,7 +158,7 @@ public class TripsManager {
 
 
 	public TripQueryResult queryOffers(User passenger, TripQueryDescription queryDescription) throws RouteNotFoundException {
-        logManager.d("User " + passenger.getId() + " (" + passenger.getFirstName() + " " + passenger.getLastName() + ") sent query.");
+        logManager.d("User " + passenger.getId() + " (" + passenger.getFirstName() + " " + passenger.getLastName() + ") sent query from " + queryDescription.getStart() + " " + queryDescription.getEnd() + ".");
 
         // compute passenger route
         List<Route> possiblePassengerRoutes = directionsManager.getDirections(queryDescription.getStart(), queryDescription.getEnd());
@@ -347,6 +347,9 @@ public class TripsManager {
 		// compute total driver route
 		List<RouteLocation> passengerWayPoints = query.getPassengerRoute().getWayPoints();
 		List<RouteLocation> driverWayPoints = offer.getDriverRoute().getWayPoints();
+
+        logManager.d("passenger Waypoints: " + driverWayPoints.get(0) + " " + driverWayPoints.get(1) + " : Passenger: " + passengerWayPoints.get(0) + " " + passengerWayPoints.get(1));
+
 		List<Route> possibleDriverRoutes = directionsManager.getDirections(
 				driverWayPoints.get(0),
 				driverWayPoints.get(1),
@@ -355,7 +358,9 @@ public class TripsManager {
 		if (possibleDriverRoutes == null || possibleDriverRoutes.isEmpty()) return false;
 
 		// check is passenger route is within max diversion
-		Route driverRoute = possibleDriverRoutes.get(0);
+		Route driverRoute = offer.getDriverRoute();
+        logManager.d("Driver Route Distance: " + driverRoute.getDistanceInMeters() );
+        logManager.d("Passenger Route: " + possibleDriverRoutes.get(0).getDistanceInMeters());
 		logManager.d("Diversion: " + (possibleDriverRoutes.get(0).getDistanceInMeters() - driverRoute.getDistanceInMeters()));
 		if (possibleDriverRoutes.get(0).getDistanceInMeters() - driverRoute.getDistanceInMeters() > offer.getMaxDiversionInMeters()) {
             return false;
