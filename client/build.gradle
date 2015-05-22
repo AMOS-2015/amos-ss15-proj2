@@ -15,7 +15,7 @@ buildscript {
         classpath('io.dropwizard:dropwizard-auth:0.8.0') {
             exclude group: 'com.google.guava'
         }
-        classpath 'com.android.tools.build:gradle:1.1.0'
+        classpath 'com.android.tools.build:gradle:1.2.3'
     }
 }
 
