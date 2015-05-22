@@ -144,9 +144,7 @@
             <Button
                 android:id="@+id/btn_login_with_email"
                 android:layout_width="200dp"
-                android:background="@color/text"
                 android:layout_height="wrap_content"
-                android:textColor="@color/white"
                 android:text="@string/login_email"/>
 
             <ImageView
@@ -171,9 +169,7 @@
             <Button
                 android:id="@+id/btn_register_email"
                 android:layout_width="200dp"
-                android:background="@color/text"
                 android:layout_height="wrap_content"
-                android:textColor="@color/white"
                 android:text="@string/register"
                 android:layout_marginTop="@dimen/activity_vertical_margin"/>
 

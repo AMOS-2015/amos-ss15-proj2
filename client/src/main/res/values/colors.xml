@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="primary">#5f8dd3</color>
-    <color name="primary_dark">#5f8dd3</color>
-    <color name="primary_light">#f34d4d6d</color>
-    <color name="accent">#ffc400</color>
+    <color name="primary">#4caf50</color>
+    <color name="primary_dark">#388e3c</color>
+    <color name="primary_light">#a5d6a7</color>
+    <color name="accent">#388e3c</color>
     <color name="text_primary">#D9555555</color>
     <color name="text_secondary">#D9000000</color>
 
@@ -17,15 +17,5 @@
     <color name="semitransparent">#44FFFFFF</color>
 
     <color name="error">#FF434E</color>
-
-    <color name="join_trip_request_button_no">#d7333b</color>
-    <color name="join_trip_request_button_no_pressed">#e27f83</color>
-    <color name="join_trip_request_button_no_focused">#a1484d</color>
-
-    <color name="join_trip_request_button_yes">#32bb3d</color>
-    <color name="join_trip_request_button_yes_pressed">#90d296</color>
-    <color name="join_trip_request_button_yes_focused">#5aa660</color>
-
-
 
 </resources>
