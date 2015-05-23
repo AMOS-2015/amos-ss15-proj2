@@ -1,7 +1,5 @@
 package org.croudtrip.activities;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
@@ -41,6 +39,7 @@ import timber.log.Timber;
  * Start this activity via {@link android.app.Activity#startActivityForResult(Intent, int)}.
  * Returns {@link LoginActivity#RESULT_AUTHENTICATED} on logged in user.
  * Returns {@link LoginActivity#RESULT_SKIPPED} when login was skipped.
+ *
  * @author Frederik Simon, Vanessa Lange
  */
 @ContentView(R.layout.activity_login)
@@ -50,26 +49,43 @@ public class LoginActivity extends RoboActionBarActivity {
             RESULT_AUTHENTICATED = 1,
             RESULT_SKIPPED = 2;
 
-    @Inject private UsersResource usersResource;
+    @Inject
+    private UsersResource usersResource;
 
-    @InjectView(R.id.layout_choose)         private View loginChoiceView;
-    @InjectView(R.id.btn_register_email)    private Button chooseRegisterButton;
-    @InjectView(R.id.btn_login_with_email)  private Button chooseLoginButton;
+    @InjectView(R.id.layout_choose)
+    private View loginChoiceView;
+    @InjectView(R.id.btn_register_email)
+    private Button chooseRegisterButton;
+    @InjectView(R.id.btn_login_with_email)
+    private Button chooseLoginButton;
 
-    @InjectView(R.id.layout_register)   private View registerView;
-    @InjectView(R.id.btn_register)      private Button registerButton;
-    @InjectView(R.id.pb_register)       private ProgressBar registerProgressBar;
-    @InjectView(R.id.et_firstName)      private EditText registerFirstName;
-    @InjectView(R.id.et_lastName)       private EditText registerLastName;
-    @InjectView(R.id.et_password)       private EditText registerPassword;
-    @InjectView(R.id.et_email)          private EditText registerEmail;
+    @InjectView(R.id.layout_register)
+    private View registerView;
+    @InjectView(R.id.btn_register)
+    private Button registerButton;
+    @InjectView(R.id.pb_register)
+    private ProgressBar registerProgressBar;
+    @InjectView(R.id.et_firstName)
+    private EditText registerFirstName;
+    @InjectView(R.id.et_lastName)
+    private EditText registerLastName;
+    @InjectView(R.id.et_password)
+    private EditText registerPassword;
+    @InjectView(R.id.et_email)
+    private EditText registerEmail;
 
-    @InjectView(R.id.layout_login)      private View loginView;
-    @InjectView(R.id.btn_login)         private Button loginButton;
-    @InjectView(R.id.pb_login)          private ProgressBar loginProgressBar;
-    @InjectView(R.id.tv_invalid_login)  private TextView loginErrorTextView;
-    @InjectView(R.id.et_login_email)    private EditText loginEmail;
-    @InjectView(R.id.et_login_password) private EditText loginPassword;
+    @InjectView(R.id.layout_login)
+    private View loginView;
+    @InjectView(R.id.btn_login)
+    private Button loginButton;
+    @InjectView(R.id.pb_login)
+    private ProgressBar loginProgressBar;
+    @InjectView(R.id.tv_invalid_login)
+    private TextView loginErrorTextView;
+    @InjectView(R.id.et_login_email)
+    private EditText loginEmail;
+    @InjectView(R.id.et_login_password)
+    private EditText loginPassword;
 
     private int animationDuration;
     private View activeView;
@@ -89,6 +105,7 @@ public class LoginActivity extends RoboActionBarActivity {
             window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
             window.setStatusBarColor(getResources().getColor(R.color.primary_dark));
         }
+
 
         // Animation to blend over from the login choice view to registerButton or login view
         animationDuration = getResources().getInteger(android.R.integer.config_shortAnimTime);
@@ -144,6 +161,7 @@ public class LoginActivity extends RoboActionBarActivity {
         });
     }
 
+
     @Override
     public void onBackPressed() {
 
@@ -160,6 +178,11 @@ public class LoginActivity extends RoboActionBarActivity {
 
     private void showView(final View view) {
 
+        activeView.setVisibility(View.GONE);
+        view.setVisibility(View.VISIBLE);
+        activeView = view;
+
+        /* FIXME: translation is not working
         // Make the new view visible
         view.setAlpha(0f);
         view.setVisibility(View.VISIBLE);
@@ -188,15 +211,18 @@ public class LoginActivity extends RoboActionBarActivity {
                         activeView = view;
                     }
                 });
+
+         */
     }
 
 
     /**
      * Registers the user with the given data at the server
+     *
      * @param firstName the user's first name
-     * @param lastName the user's last name
-     * @param email the user's registerEmail address
-     * @param password the user's password
+     * @param lastName  the user's last name
+     * @param email     the user's registerEmail address
+     * @param password  the user's password
      */
     private void registerUser(final String firstName, final String lastName, final String email,
                               final String password) {
@@ -253,7 +279,8 @@ public class LoginActivity extends RoboActionBarActivity {
 
     /**
      * Logs a user in by connecting to the server and checking the given registerEmail and password
-     * @param email the user's registerEmail address
+     *
+     * @param email    the user's registerEmail address
      * @param password the user's password
      */
     private void loginUser(final String email, final String password) {
@@ -309,7 +336,7 @@ public class LoginActivity extends RoboActionBarActivity {
                             loginErrorTextView.setVisibility(View.VISIBLE);
                         } else {
                             // Show an error for general errors e.g. connection issues
-                            String errorMessage =  LoginActivity.this.getString(R.string.login_error_general);
+                            String errorMessage = LoginActivity.this.getString(R.string.login_error_general);
                             Toast.makeText(LoginActivity.this, errorMessage, Toast.LENGTH_LONG).show();
                         }
 
@@ -323,10 +350,11 @@ public class LoginActivity extends RoboActionBarActivity {
     /**
      * After having been authorized by the server, this method logs the user in locally and
      * redirects him to the main app.
-     * @param user the user to log in
+     *
+     * @param user     the user to log in
      * @param password the user's password
      */
-    private void loginAndRedirect(User user, String password){
+    private void loginAndRedirect(User user, String password) {
         Context appContext = LoginActivity.this.getApplicationContext();
         AccountManager.login(appContext, user, password);
 
