@@ -85,16 +85,19 @@ public class JoinDispatchFragment extends SubscriptionFragment {
         SharedPreferences prefs = getActivity().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
         if (prefs.getBoolean(Constants.SHARED_PREF_KEY_SEARCHING, false)) {
             if (args != null) {
+                resultsFragment = new JoinResultsFragment();
                 resultsFragment.setArguments(args);
             }
             transaction.replace(R.id.child_fragment, resultsFragment).commitAllowingStateLoss();
         } else if (prefs.getBoolean(Constants.SHARED_PREF_KEY_ACCEPTED, false)) {
             if (args != null) {
+                drivingFragment = new JoinDrivingFragment();
                 drivingFragment.setArguments(args);
             }
             transaction.replace(R.id.child_fragment, drivingFragment).commitAllowingStateLoss();
         } else {
             if (args != null) {
+                searchFragment = new JoinSearchFragment();
                 searchFragment.setArguments(args);
             }
             transaction.replace(R.id.child_fragment, searchFragment).commitAllowingStateLoss();

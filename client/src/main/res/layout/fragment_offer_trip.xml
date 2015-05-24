@@ -34,7 +34,7 @@
             android:textColor="@color/text"
             android:id="@+id/address"
             android:minWidth="200dp"
-            android:hint="Enter address"
+            android:hint=""
             android:layout_gravity="center_horizontal"/>
 
 

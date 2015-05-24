@@ -65,13 +65,13 @@ public class GcmIntentService extends RoboIntentService {
             case GcmConstants.GCM_MSG_DUMMY:
                 break;
             case GcmConstants.GCM_MSG_JOIN_REQUEST:
-                handleJoinRequest(intent); //IRRELEVANT
+                handleJoinRequest(intent);
                 break;
             case GcmConstants.GCM_MSG_REQUEST_ACCEPTED:
-                handleRequestAccepted( intent ); //DONE
+                handleRequestAccepted( intent );
                 break;
             case GcmConstants.GCM_MSG_REQUEST_DECLINED:
-                handleRequestDeclined(intent); //DONE
+                handleRequestDeclined(intent);
                 break;
             case GcmConstants.GCM_MSG_FOUND_MATCHES:
                 handleFoundMatches(intent);
@@ -137,14 +137,14 @@ public class GcmIntentService extends RoboIntentService {
                                     Intent startingIntent = new Intent(Constants.EVENT_CHANGE_JOIN_UI);
                                     startingIntent.putExtras(extras);
                                     LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(startingIntent);
-                                } else {
+                                } //else {
                                     // create notification for the user
                                     Intent startingIntent = new Intent(getApplicationContext(), MainActivity.class);
                                     startingIntent.putExtras(extras);
                                     PendingIntent contentIntent = PendingIntent.getActivity(getApplicationContext(), 0, startingIntent, PendingIntent.FLAG_UPDATE_CURRENT);
                                     createNotification(getString(R.string.found_matches_title), getString(R.string.found_matches_msg),
                                             GcmConstants.GCM_NOTIFICATION_FOUND_MATCHES_ID , contentIntent);
-                                }
+                                //}
                             }
                         },
                         new Action1<Throwable>() {
