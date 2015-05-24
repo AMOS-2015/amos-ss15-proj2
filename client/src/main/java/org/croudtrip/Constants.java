@@ -16,6 +16,8 @@ public class Constants {
     public final static String SHARED_PREF_KEY_PROFILE_IMAGE_URI = "profileImg";
 
     public final static String EVENT_DRIVER_ACCEPTED = "driver_accepted";
+    public final static String EVENT_CHANGE_JOIN_UI = "change_join_ui";
+
 
 
 }

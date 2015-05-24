@@ -37,6 +37,7 @@ import org.croudtrip.fragments.OfferTripFragment;
 import org.croudtrip.fragments.PickUpPassengerFragment;
 import org.croudtrip.fragments.ProfileFragment;
 import org.croudtrip.fragments.SettingsFragment;
+import org.croudtrip.fragments.join.JoinDispatchFragment;
 import org.croudtrip.gcm.GcmManager;
 import org.croudtrip.location.LocationUpdater;
 import org.croudtrip.location.LocationUploadTimerReceiver;
@@ -91,12 +92,14 @@ public class MainActivity extends AbstractRoboDrawerActivity {
 
         SharedPreferences prefs = getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
 
+        //Get all the saved user data
         User user = AccountManager.getLoggedInUser(getApplicationContext());
         String firstName = (user == null || user.getFirstName() == null) ? "" : user.getFirstName();
         String lastName = (user == null || user.getLastName() == null) ? "" : user.getLastName();
         String email = (user == null || user.getEmail() == null) ? "" : user.getEmail();
         final String avatarUrl = (user == null || user.getAvatarUrl() == null) ? null : user.getAvatarUrl();
 
+        //Show user data in navigation drawer
         final MaterialAccount account = new MaterialAccount(this.getResources(),firstName+ " " + lastName,email,R.drawable.profile, R.drawable.background_drawer);
         this.addAccount(account);
 
@@ -124,12 +127,15 @@ public class MainActivity extends AbstractRoboDrawerActivity {
                 });
         subscriptions.add(locationUpdateSubscription);
 
-        // create sections
-        //if (prefs.getBoolean(Constants.SHARED_PREF_KEY_SEARCHING, false)) {
+        /**
+         * CREATE SECTIONS
+         */
+
+
         Intent intent = getIntent();
         String action = intent.getAction();
         action = action == null ? "" : action;
-
+        /* OLD
         // join trip/my joined trip
         if ( action.equalsIgnoreCase(ACTION_SHOW_REQUEST_DECLINED) || action.equalsIgnoreCase(ACTION_SHOW_FOUND_MATCHES) ) {
             this.addSection(newSection(getString(R.string.menu_my_trip), R.drawable.hitchhiker, new JoinTripResultsFragment()));
@@ -144,7 +150,13 @@ public class MainActivity extends AbstractRoboDrawerActivity {
             this.addSection(newSection(getString(R.string.menu_my_trip), R.drawable.hitchhiker, new JoinTripResultsFragment()));
         } else {
             this.addSection(newSection(getString(R.string.menu_join_trip), R.drawable.hitchhiker, new JoinTripFragment()));
-        }
+        } */
+
+        //NEW
+        JoinDispatchFragment joinDispatchFragment = new JoinDispatchFragment();
+        joinDispatchFragment.setArguments(getIntent().getExtras());
+        this.addSection(newSection("Join Trip New", R.drawable.hitchhiker, joinDispatchFragment));
+
 
         // offer trip/ my offered trip
         if( action.equalsIgnoreCase(ACTION_SHOW_JOIN_TRIP_REQUESTS) ) {

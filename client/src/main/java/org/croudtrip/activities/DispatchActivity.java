@@ -35,15 +35,10 @@ public class DispatchActivity extends Activity {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent intent) {
 
-        // wrong activity request (??)
-        if (requestCode != REQUEST_LOGIN) return;
-
-        if (resultCode == RESULT_CANCELED) {
-            // user cancelled login
-
+        //wrong requestCode logIn canceled
+        if (requestCode != REQUEST_LOGIN || resultCode == RESULT_CANCELED) {
             finish();
         } else {
-
             // all good (logged in or skipped)
             startActivity(new Intent(this, MainActivity.class));
             finish();

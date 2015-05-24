@@ -6,6 +6,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
 
@@ -21,6 +22,7 @@ import org.croudtrip.api.gcm.GcmConstants;
 import org.croudtrip.api.trips.JoinTripRequest;
 import org.croudtrip.api.trips.RunningTripQuery;
 import org.croudtrip.fragments.JoinTripResultsFragment;
+import org.croudtrip.fragments.join.JoinDispatchFragment;
 import org.croudtrip.utils.LifecycleHandler;
 
 import javax.inject.Inject;
@@ -63,13 +65,13 @@ public class GcmIntentService extends RoboIntentService {
             case GcmConstants.GCM_MSG_DUMMY:
                 break;
             case GcmConstants.GCM_MSG_JOIN_REQUEST:
-                handleJoinRequest(intent);
+                handleJoinRequest(intent); //IRRELEVANT
                 break;
             case GcmConstants.GCM_MSG_REQUEST_ACCEPTED:
-                handleRequestAccepted( intent );
+                handleRequestAccepted( intent ); //DONE
                 break;
             case GcmConstants.GCM_MSG_REQUEST_DECLINED:
-                handleRequestDeclined(intent);
+                handleRequestDeclined(intent); //DONE
                 break;
             case GcmConstants.GCM_MSG_FOUND_MATCHES:
                 handleFoundMatches(intent);
@@ -96,6 +98,7 @@ public class GcmIntentService extends RoboIntentService {
                             @Override
                             public void call(RunningTripQuery query) {
 
+                                /*OLD
                                 Intent startingIntent = new Intent(getApplicationContext(), MainActivity.class);
 
                                 // fill the arguments for the started fragment (main activity will dispatch to correct fragment) with information about the requested search
@@ -115,7 +118,33 @@ public class GcmIntentService extends RoboIntentService {
                                 createNotification(getString(R.string.found_matches_title), getString(R.string.found_matches_msg),
                                         GcmConstants.GCM_NOTIFICATION_FOUND_MATCHES_ID, contentIntent);
 
-                                handleDriversFound(query);
+                                handleDriversFound(query);*/
+
+                                //NEW
+                                final SharedPreferences prefs = getApplicationContext().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
+                                SharedPreferences.Editor editor = prefs.edit();
+                                editor.putBoolean(Constants.SHARED_PREF_KEY_SEARCHING, true);
+                                editor.apply();
+
+                                Bundle extras = new Bundle();
+                                extras.putDouble(JoinDispatchFragment.KEY_CURRENT_LOCATION_LATITUDE, query.getQuery().getStartLocation().getLat());
+                                extras.putDouble(JoinDispatchFragment.KEY_CURRENT_LOCATION_LONGITUDE, query.getQuery().getStartLocation().getLng());
+                                extras.putDouble(JoinDispatchFragment.KEY_DESTINATION_LATITUDE, query.getQuery().getDestinationLocation().getLat());
+                                extras.putDouble(JoinDispatchFragment.KEY_DESTINATION_LONGITUDE, query.getQuery().getDestinationLocation().getLng());
+                                extras.putInt(JoinDispatchFragment.KEY_MAX_WAITING_TIME, (int) query.getQuery().getMaxWaitingTimeInSeconds());
+
+                                if(LifecycleHandler.isApplicationInForeground()) {
+                                    Intent startingIntent = new Intent(Constants.EVENT_CHANGE_JOIN_UI);
+                                    startingIntent.putExtras(extras);
+                                    LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(startingIntent);
+                                } else {
+                                    // create notification for the user
+                                    Intent startingIntent = new Intent(getApplicationContext(), MainActivity.class);
+                                    startingIntent.putExtras(extras);
+                                    PendingIntent contentIntent = PendingIntent.getActivity(getApplicationContext(), 0, startingIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+                                    createNotification(getString(R.string.found_matches_title), getString(R.string.found_matches_msg),
+                                            GcmConstants.GCM_NOTIFICATION_FOUND_MATCHES_ID , contentIntent);
+                                }
                             }
                         },
                         new Action1<Throwable>() {
@@ -142,6 +171,9 @@ public class GcmIntentService extends RoboIntentService {
                             @Override
                             public void call(JoinTripRequest joinTripRequest) {
 
+                                /*
+                                OLD
+
                                 Intent startingIntent = new Intent(getApplicationContext(), MainActivity.class);
 
                                 // fill the arguments for the started fragment (main activity will dispatch to correct fragment) with information about the requested search
@@ -159,7 +191,36 @@ public class GcmIntentService extends RoboIntentService {
                                 // create notification for the user
                                 PendingIntent contentIntent = PendingIntent.getActivity(getApplicationContext(), 0, startingIntent, PendingIntent.FLAG_UPDATE_CURRENT);
                                 createNotification(getString(R.string.join_request_declined_title), getString(R.string.join_request_declined_msg),
-                                        GcmConstants.GCM_NOTIFICATION_REQUEST_DECLINED_ID, contentIntent);
+                                        GcmConstants.GCM_NOTIFICATION_REQUEST_DECLINED_ID, contentIntent);*/
+
+
+                                //NEW
+                                final SharedPreferences prefs = getApplicationContext().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
+                                SharedPreferences.Editor editor = prefs.edit();
+                                editor.putBoolean(Constants.SHARED_PREF_KEY_SEARCHING, true);
+                                editor.apply();
+
+                                Bundle extras = new Bundle();
+                                extras.putDouble(JoinDispatchFragment.KEY_CURRENT_LOCATION_LATITUDE, joinTripRequest.getQuery().getStartLocation().getLat());
+                                extras.putDouble(JoinDispatchFragment.KEY_CURRENT_LOCATION_LONGITUDE, joinTripRequest.getQuery().getStartLocation().getLng());
+                                extras.putDouble(JoinDispatchFragment.KEY_DESTINATION_LATITUDE, joinTripRequest.getQuery().getDestinationLocation().getLat());
+                                extras.putDouble(JoinDispatchFragment.KEY_DESTINATION_LONGITUDE, joinTripRequest.getQuery().getDestinationLocation().getLng());
+                                extras.putInt(JoinDispatchFragment.KEY_MAX_WAITING_TIME, (int) joinTripRequest.getQuery().getMaxWaitingTimeInSeconds());
+
+                                if(LifecycleHandler.isApplicationInForeground()) {
+                                    Intent startingIntent = new Intent(Constants.EVENT_CHANGE_JOIN_UI);
+                                    startingIntent.putExtras(extras);
+                                    LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(startingIntent);
+                                } else {
+                                    // create notification for the user
+                                    Intent startingIntent = new Intent(getApplicationContext(), MainActivity.class);
+                                    startingIntent.putExtras(extras);
+                                    PendingIntent contentIntent = PendingIntent.getActivity(getApplicationContext(), 0, startingIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+                                    createNotification(getString(R.string.join_request_declined_title), getString(R.string.join_request_declined_msg),
+                                            GcmConstants.GCM_NOTIFICATION_REQUEST_DECLINED_ID, contentIntent);
+                                }
+
+
                             }
                         },
                         new Action1<Throwable>() {
@@ -185,6 +246,8 @@ public class GcmIntentService extends RoboIntentService {
                         new Action1<JoinTripRequest>() {
                             @Override
                             public void call(JoinTripRequest joinTripRequest) {
+
+                                /* OLD
                                 // create notification for the user
                                 Intent startingIntent = new Intent(getApplicationContext(), MainActivity.class);
                                 startingIntent.setAction(MainActivity.ACTION_SHOW_REQUEST_ACCEPTED);
@@ -204,7 +267,37 @@ public class GcmIntentService extends RoboIntentService {
                                                 joinTripRequest.getOffer().getDriver().getFirstName()),
                                         GcmConstants.GCM_NOTIFICATION_REQUEST_ACCEPTED_ID, contentIntent);
 
-                                handleDriverAccepted(joinTripRequest);
+                                handleDriverAccepted(joinTripRequest);*/
+
+
+                                //NEW
+                                final SharedPreferences prefs = getApplicationContext().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
+                                SharedPreferences.Editor editor = prefs.edit();
+                                editor.putBoolean(Constants.SHARED_PREF_KEY_ACCEPTED, true);
+                                editor.apply();
+
+                                Bundle extras = new Bundle();
+                                ObjectMapper mapper = new ObjectMapper();
+                                try {
+                                    extras.putString(JoinDispatchFragment.KEY_JOIN_TRIP_REQUEST_RESULT, mapper.writeValueAsString(joinTripRequest));
+                                } catch (JsonProcessingException e) {
+                                    Timber.e("Could not map join trip result");
+                                    e.printStackTrace();
+                                }
+
+                                if(LifecycleHandler.isApplicationInForeground()) {
+                                    Intent startingIntent = new Intent(Constants.EVENT_CHANGE_JOIN_UI);
+                                    startingIntent.putExtras(extras);
+                                    LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(startingIntent);
+                                } else {
+                                    // create notification for the user
+                                    Intent startingIntent = new Intent(getApplicationContext(), MainActivity.class);
+                                    startingIntent.putExtras(extras);
+                                    PendingIntent contentIntent = PendingIntent.getActivity(getApplicationContext(), 0, startingIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+                                    createNotification(getString(R.string.join_request_accepted_title), getString(R.string.join_request_accepted_msg),
+                                            GcmConstants.GCM_NOTIFICATION_REQUEST_ACCEPTED_ID, contentIntent);
+                                }
+
                             }
                         },
                         new Action1<Throwable>() {
