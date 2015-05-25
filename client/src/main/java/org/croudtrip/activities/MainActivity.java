@@ -17,6 +17,7 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AlertDialog;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.CheckBox;
@@ -275,6 +276,17 @@ public class MainActivity extends AbstractRoboDrawerActivity {
     }
 
     @Override
+    public void onBackPressed() {
+        if (getCurrentSection().getTargetFragment() instanceof JoinDispatchFragment) {
+            JoinDispatchFragment currentFragment = (JoinDispatchFragment) getCurrentSection().getTargetFragment();
+            if (!currentFragment.allowBackPressed()) {
+                return;
+            }
+        }
+        super.onBackPressed();
+    }
+
+    @Override
     public void onPause() {
         super.onPause();
 
@@ -349,5 +361,7 @@ public class MainActivity extends AbstractRoboDrawerActivity {
             adb.show();
         //}
     }
+
+
 
 }

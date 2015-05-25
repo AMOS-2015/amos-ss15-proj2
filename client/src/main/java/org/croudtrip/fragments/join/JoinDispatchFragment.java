@@ -41,6 +41,7 @@ public class JoinDispatchFragment extends SubscriptionFragment {
 
 
     private android.app.Fragment searchFragment, resultsFragment, drivingFragment;
+    private boolean allowBackPressed = true;
 
     private BroadcastReceiver changeUiReceiver = new BroadcastReceiver() {
         @Override
@@ -90,18 +91,21 @@ public class JoinDispatchFragment extends SubscriptionFragment {
                     resultsFragment = new JoinResultsFragment();
                     resultsFragment.setArguments(args);
                 }
+                allowBackPressed = false;
                 transaction.replace(R.id.child_fragment, resultsFragment).commitAllowingStateLoss();
             } else if (prefs.getBoolean(Constants.SHARED_PREF_KEY_ACCEPTED, false)) {
                 if (args != null) {
                     drivingFragment = new JoinDrivingFragment();
                     drivingFragment.setArguments(args);
                 }
+                allowBackPressed = false;
                 transaction.replace(R.id.child_fragment, drivingFragment).commitAllowingStateLoss();
             } else {
                 if (args != null) {
                     searchFragment = new JoinSearchFragment();
                     searchFragment.setArguments(args);
                 }
+                allowBackPressed = true;
                 transaction.replace(R.id.child_fragment, searchFragment).commitAllowingStateLoss();
             }
         }
@@ -141,5 +145,21 @@ public class JoinDispatchFragment extends SubscriptionFragment {
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public boolean allowBackPressed() {
+        if (!allowBackPressed) {
+            SharedPreferences prefs = getActivity().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor = prefs.edit();
+            editor.putBoolean(Constants.SHARED_PREF_KEY_SEARCHING, false);
+            editor.putBoolean(Constants.SHARED_PREF_KEY_ACCEPTED, false);
+            editor.putLong(Constants.SHARED_PREF_KEY_QUERY_ID, -1);
+            editor.apply();
+
+            replaceChildFragment(null);
+            return false;
+        }
+
+        return true;
     }
 }
