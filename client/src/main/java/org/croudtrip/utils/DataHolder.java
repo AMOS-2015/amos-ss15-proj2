@@ -17,6 +17,7 @@ public class DataHolder {
     }
     private boolean isLast = false;
     private int vehicle_id;
+    private String vehicle_type;
 
     public int getVehicle_id() {
         return vehicle_id;
@@ -26,6 +27,13 @@ public class DataHolder {
         this.vehicle_id = vehicle_id;
     }
 
+    public String getVehicle_type() {return vehicle_type;}
+
+    public void setVehicle_type(String vehicle_type) {this.vehicle_type = vehicle_type;}
+
+
+
+    //isLast is a flag that should be set to true when there is only one car left, in order to default to it automatically
     public boolean getIsLast() {
         return isLast;
     }
@@ -33,4 +41,5 @@ public class DataHolder {
     public void setIsLast(boolean isLast) {
         this.isLast = isLast;
     }
+
 }

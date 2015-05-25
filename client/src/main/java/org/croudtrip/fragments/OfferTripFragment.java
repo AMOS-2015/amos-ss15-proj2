@@ -89,7 +89,7 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
     @InjectView(R.id.attributions) private TextView tv_attributions;
     @InjectView(R.id.address) private TextView tv_address;
     @InjectView(R.id.destination) private MyAutoCompleteTextView tv_destination;
-
+    @InjectView(R.id.my_car) private Button myCar;
     @Inject LocationUpdater locationUpdater;
 
     @Inject
@@ -209,7 +209,9 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
         if( locationUpdater == null )
             Timber.d("Location Updater is null");
 
-        Button myCar = (Button) view.findViewById(R.id.my_car);
+
+
+
         myCar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -217,6 +219,28 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
                 showCarSelectionDialog();
             }
         });
+
+        //Get default car's type from server and set the button text accordingly
+        Subscription Vsubscription = vehicleResource.getVehicle(VehicleManager.getDefaultVehicleId(getActivity()))
+                .compose(new DefaultTransformer<Vehicle>())
+                .subscribe(new Action1<Vehicle>() {
+                    @Override
+                    public void call(Vehicle vehicle) {
+                        if (vehicle != null) {
+                            if (vehicle.getType() != null)
+                                myCar.setText(vehicle.getType());
+                        }
+                        else
+                                myCar.setText("My Cars");
+                    }
+                }, new Action1<Throwable>() {
+                    @Override
+                    public void call(Throwable throwable) {
+                        //Response response = ((RetrofitError) throwable).getResponse();
+                        Timber.e("Failed to fetch with error:\n" + throwable.getMessage());
+                    }
+                });
+        subscriptions.add(Vsubscription);
 
         // By clicking on the offer-trip-button the driver makes his choice public
         Button btn_join = (Button) view.findViewById(R.id.offer);
@@ -482,7 +506,6 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
         Button select = (Button) selectDialog.findViewById(R.id.select);
         final Button cancel = (Button) selectDialog.findViewById(R.id.cancel);
         final Button ok = (Button) selectDialog.findViewById(R.id.ok);
-
         // Use a linear layout manager to use the RecyclerView
         layoutManager = new LinearLayoutManager(getActivity());
         recyclerView.setLayoutManager(layoutManager);
@@ -529,6 +552,10 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
                 long vehicleIdLong = ((long) vehicleId);
                 VehicleManager.saveDefaultVehicle(getActivity(), vehicleIdLong);
                 Toast.makeText(getActivity(), "Default car set!", Toast.LENGTH_SHORT).show();
+                //Set MyCars button text to default car type
+                if (DataHolder.getInstance().getVehicle_type() != null)
+                    myCar.setText(DataHolder.getInstance().getVehicle_type());
+
                 selectDialog.hide();
             }
         });
@@ -550,6 +577,8 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
 
 
     }
+
+
 }
 
 

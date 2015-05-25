@@ -5,10 +5,10 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.RadioButton;
 import android.widget.TextView;
 
+import org.croudtrip.account.VehicleManager;
 import org.croudtrip.R;
 import org.croudtrip.api.account.Vehicle;
 
@@ -41,7 +41,7 @@ public class VehiclesListSelectAdapter extends RecyclerView.Adapter<VehiclesList
         protected TextView carType;
         protected TextView carPlate;
 
-        protected Button selectButton;
+        protected RadioButton selectButton;
         public ViewHolder(View view) {
             super(view);
 
@@ -60,8 +60,10 @@ public class VehiclesListSelectAdapter extends RecyclerView.Adapter<VehiclesList
             }
             Vehicle vehicle=vehicles.get(getPosition());
             long vehicleId = vehicle.getId();
+            String vehicleType = vehicle.getType();
             if (view == selectButton) {
                 DataHolder.getInstance().setVehicle_id((int) vehicleId);
+                DataHolder.getInstance().setVehicle_type(vehicleType);
             }
         }
     }
@@ -89,12 +91,16 @@ public class VehiclesListSelectAdapter extends RecyclerView.Adapter<VehiclesList
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
 
+        long defaultVehicleID = VehicleManager.getDefaultVehicleId(context);
+
         //Set each vehicle's data to values fetched from the server
         Vehicle vehicle = vehicles.get(position);
         holder.carType.setText(context.getString(R.string.car_type_side) + vehicle.getType());
         holder.carPlate.setText(context.getString(R.string.car_plate_side) + vehicle.getLicensePlate());
 
-
+        //Check the radio button which corresponds to user's default vehicle
+        if (defaultVehicleID == vehicle.getId())
+            holder.selectButton.setChecked(true);
         //Toast.makeText(context, holder.getPosition()+"", Toast.LENGTH_SHORT).show();
     }
 

@@ -98,8 +98,6 @@ public class VehicleInfoFragment extends SubscriptionFragment {
                 vehicleId = -1;
                 updateInfo.setText(getString(R.string.add_vehicle));
 
-                if (DataHolder.getInstance().getIsLast() == true)
-                    VehicleManager.saveDefaultVehicle(getActivity(),-3);
             }
         });
         capacityPickerButton.setOnClickListener(new View.OnClickListener(){
@@ -334,6 +332,9 @@ public class VehicleInfoFragment extends SubscriptionFragment {
                     @Override
                     public void call(Response response) {
                         Toast.makeText(getActivity(), "Vehicle removed!", Toast.LENGTH_SHORT).show();
+                        //Set default to -3 if the user deletes the last available car
+                        if (DataHolder.getInstance().getIsLast() == true)
+                            VehicleManager.saveDefaultVehicle(getActivity(),-3);
                     }
                 }, new Action1<Throwable>() {
                     @Override
