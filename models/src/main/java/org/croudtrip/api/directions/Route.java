@@ -21,7 +21,7 @@ public class Route {
     @JsonIgnore
     private String wayPointsString;
 
-    @Column(name = "polyLine", nullable = false, length = 65535)
+    @Column(name = "polyLine", nullable = false, length =((1<<20)-1))
     private String polyline;
 
     @Column(name = "distance_in_meters", nullable = false)
