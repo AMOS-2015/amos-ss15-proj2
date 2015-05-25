@@ -94,7 +94,7 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
     @InjectView(R.id.slider_price) private Slider slider_price;
     @InjectView(R.id.diversion) private TextView tv_diversion;
     @InjectView(R.id.price) private TextView tv_price;
-
+    @InjectView(R.id.my_car) private Button myCar;
 
 
 
@@ -233,7 +233,29 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
         if( locationUpdater == null )
             Timber.d("Location Updater is null");
 
-        Button myCar = (Button) view.findViewById(R.id.my_car);
+
+        //Get default car's type from server and set the button text accordingly
+        Subscription Vsubscription = vehicleResource.getVehicle(VehicleManager.getDefaultVehicleId(getActivity()))
+                .compose(new DefaultTransformer<Vehicle>())
+                .subscribe(new Action1<Vehicle>() {
+                    @Override
+                    public void call(Vehicle vehicle) {
+                        if (vehicle != null) {
+                            if (vehicle.getType() != null)
+                                myCar.setText(vehicle.getType());
+                        }
+                        else
+                            myCar.setText("My Cars");
+                    }
+                }, new Action1<Throwable>() {
+                    @Override
+                    public void call(Throwable throwable) {
+                        //Response response = ((RetrofitError) throwable).getResponse();
+                        Timber.e("Failed to fetch with error:\n" + throwable.getMessage());
+                    }
+                });
+        subscriptions.add(Vsubscription);
+
         myCar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -478,14 +500,14 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
         carPlateDialog.setTitle(R.string.no_car_plate_title);
         carPlateDialog.setMessage(R.string.no_car_plate_message);
         carPlateDialog.setCancelable(true);
-        carPlateDialog.setPositiveButton("Yes, will do!",
+        carPlateDialog.setPositiveButton(getString(R.string.yes),
                 new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         DataHolder.getInstance().setVehicle_id(-2);
                         ((MaterialNavigationDrawer) getActivity()).setFragmentChild(new VehicleInfoFragment(), "Add new vehicle");
                     }
                 });
-        carPlateDialog.setNegativeButton("Not now",
+        carPlateDialog.setNegativeButton(getString(R.string.no),
                 new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         dialog.cancel();
@@ -554,6 +576,9 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
                 long vehicleIdLong = ((long) vehicleId);
                 VehicleManager.saveDefaultVehicle(getActivity(), vehicleIdLong);
                 Toast.makeText(getActivity(), "Default car set!", Toast.LENGTH_SHORT).show();
+                //Set MyCars button text to default car type
+                if (DataHolder.getInstance().getVehicle_type() != null)
+                    myCar.setText(DataHolder.getInstance().getVehicle_type());
                 selectDialog.hide();
             }
         });

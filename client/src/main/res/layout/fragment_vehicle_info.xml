@@ -24,7 +24,7 @@
 
     <TextView
         android:id="@+id/car_type_title"
-        android:text="Car Type"
+        android:text="Type"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textColor="@color/primary_dark"
@@ -40,7 +40,7 @@
 
     <TextView
         android:id="@+id/car_plate_title"
-        android:text="Car License Plate"
+        android:text="License Plate"
         android:textColor="@color/primary_dark"
         android:layout_marginTop="@dimen/activity_vertical_margin"
         android:layout_width="wrap_content"
@@ -57,7 +57,7 @@
 
     <TextView
             android:id="@+id/car_capacity_title"
-            android:text="Car Capacity"
+            android:text="Capacity"
             android:layout_marginTop="25dp"
             android:textColor="@color/primary_dark"
             android:layout_below="@id/car_plate"
@@ -72,7 +72,7 @@
 
     <TextView
         android:id="@+id/car_color_title"
-        android:text="Car Color"
+        android:text="Color"
         android:layout_marginTop="25dp"
         android:textColor="@color/primary_dark"
         android:layout_below="@id/capacity_picker_button"

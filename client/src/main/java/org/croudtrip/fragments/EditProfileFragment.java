@@ -50,7 +50,7 @@ import timber.log.Timber;
  * etc.).
  * @author Nazeeh Ammari
  */
-public class EditProfileFragment extends roboguice.fragment.provided.RoboFragment {
+public class EditProfileFragment extends SubscriptionFragment {
 
     @Inject
     private UsersResource usersResource;
@@ -498,7 +498,7 @@ public class EditProfileFragment extends roboguice.fragment.provided.RoboFragmen
     public void showYearPicker() {
 
         final Dialog yearDialog = new Dialog(getActivity());
-        yearDialog.setTitle("Year of Birth");
+        yearDialog.setTitle("Birth Year");
         yearDialog.setContentView(R.layout.year_picker_dialog);
         Button set = (Button) yearDialog.findViewById(R.id.set);
         Button cancel = (Button) yearDialog.findViewById(R.id.cancel);

@@ -187,7 +187,7 @@
                     android:layout_height="wrap_content"
                     android:layout_width="match_parent"
                     android:textColor="@color/primary_dark"
-                    android:text="Year of Birth"
+                    android:text="Birth Year"
                     android:layout_marginTop="5dp"
                     style="?android:attr/listSeparatorTextViewStyle" />
 

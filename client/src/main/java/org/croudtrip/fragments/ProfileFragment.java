@@ -102,7 +102,7 @@ public class ProfileFragment extends SubscriptionFragment {
             if(user.getIsMale() != null){
                 if(user.getIsMale()) {
                     gender = getString(R.string.profile_male);
-                }else {
+                }else if (!user.getIsMale()) {
                     gender = getString(R.string.profile_female);
                 }
             }
@@ -120,7 +120,7 @@ public class ProfileFragment extends SubscriptionFragment {
                    // ((MaterialNavigationDrawer) getActivity()).getCurrentSection().setTarget(new VehicleInfoFragment());
                    //((MaterialNavigationDrawer) getActivity()).getCurrentSection().setTitle("Add new vehicle");
                     DataHolder.getInstance().setVehicle_id(-1);
-                    ((MaterialNavigationDrawer) _this.getActivity()).setFragmentChild(new VehicleInfoFragment(), "Add new vehicle");
+                    ((MaterialNavigationDrawer) _this.getActivity()).setFragmentChild(new VehicleInfoFragment(), "Add car");
                 }
             });
             // Edit profile button
