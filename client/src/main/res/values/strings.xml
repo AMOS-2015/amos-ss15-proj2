@@ -48,7 +48,7 @@
     <string name="join_specify_start">Specify your starting point</string>
     <string name="join_choose_destination">What´s your destination?</string>
     <string name="join_change_destination">Change destination</string>
-    <string name="join_max_waiting">Max waiting time (in minutes)</string>
+    <string name="join_max_waiting">Max waiting time (in minutes):</string>
     <string name="join_trip">Join Trip</string>
     <plurals name="join_trip_results">
         <item quantity="one">We found %d ride for you</item>

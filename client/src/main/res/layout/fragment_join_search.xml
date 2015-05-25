@@ -23,7 +23,7 @@
 
         <org.croudtrip.location.MyAutoCompleteTextView
             android:id="@+id/destination"
-            android:layout_width="200dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:hint="@string/join_choose_destination"/>
@@ -39,15 +39,22 @@
             android:layout_gravity="center_horizontal"/>
 
 
-        <com.rengwuxian.materialedittext.MaterialEditText
+        <TextView
             android:id="@+id/waitingTime"
-            android:inputType="number"
             android:layout_marginTop="@dimen/default_margin"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:hint="@string/join_max_waiting"
-            fab:met_floatingLabel="normal"
+            android:textColor="@color/text"
             android:layout_gravity="center_horizontal" />
+
+        <com.gc.materialdesign.views.Slider
+            android:id="@+id/slider_waitingTime"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/primary"
+            fab:max="60"
+            fab:min="1"
+            fab:showNumberIndicator="true"/>
 
         <Button
             android:layout_width="wrap_content"

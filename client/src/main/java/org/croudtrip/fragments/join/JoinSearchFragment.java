@@ -49,6 +49,7 @@ import org.croudtrip.fragments.SubscriptionFragment;
 import org.croudtrip.location.LocationUpdater;
 import org.croudtrip.location.MyAutoCompleteTextView;
 import org.croudtrip.location.PlaceAutocompleteAdapter;
+import com.gc.materialdesign.views.Slider;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -82,6 +83,9 @@ public class JoinSearchFragment extends SubscriptionFragment implements GoogleAp
     @InjectView(R.id.address) private TextView tv_address;
     @InjectView(R.id.places) private Button btn_destination;
     @InjectView(R.id.destination) private MyAutoCompleteTextView tv_destination;
+    @InjectView(R.id.slider_waitingTime) private Slider slider_waitingTime;
+    @InjectView(R.id.waitingTime) private TextView tv_waitingTime;
+
 
     @Inject
     LocationUpdater locationUpdater;
@@ -199,10 +203,17 @@ public class JoinSearchFragment extends SubscriptionFragment implements GoogleAp
         /*
         Load and set the maximum waiting time
          */
-        final MaterialEditText maxWaitingTime = (MaterialEditText) view.findViewById(R.id.waitingTime);
         final SharedPreferences prefs = getActivity().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
         int waitingTime = prefs.getInt(Constants.SHARED_PREF_KEY_WAITING_TIME, 10);
-        maxWaitingTime.setText("" + waitingTime);
+        tv_waitingTime.setText(getString(R.string.join_max_waiting) + " " + waitingTime);
+        slider_waitingTime.setValue(waitingTime);
+
+        slider_waitingTime.setOnValueChangedListener(new Slider.OnValueChangedListener() {
+            @Override
+            public void onValueChanged(int i) {
+                tv_waitingTime.setText(getString(R.string.join_max_waiting) + " " + i);
+            }
+        });
 
 
         /*
@@ -217,7 +228,7 @@ public class JoinSearchFragment extends SubscriptionFragment implements GoogleAp
                 Save maximum waiting time
                  */
                 SharedPreferences.Editor editor = prefs.edit();
-                editor.putInt(Constants.SHARED_PREF_KEY_WAITING_TIME, Integer.valueOf(maxWaitingTime.getText().toString()));
+                editor.putInt(Constants.SHARED_PREF_KEY_WAITING_TIME, slider_waitingTime.getValue());
                 editor.apply();
 
                 org.croudtrip.db.Place tempPlace = lastSelected;
@@ -310,7 +321,7 @@ public class JoinSearchFragment extends SubscriptionFragment implements GoogleAp
                  */
                 Bundle extras = new Bundle();
                 //extras.putString(JoinDispatchFragment.KEY_ACTION_TO_RUN, JoinDispatchFragment.ACTION_START_BACKGROUND_SEARCH);
-                extras.putInt(JoinDispatchFragment.KEY_MAX_WAITING_TIME, Integer.parseInt(maxWaitingTime.getText().toString()));
+                extras.putInt(JoinDispatchFragment.KEY_MAX_WAITING_TIME, slider_waitingTime.getValue());
                 extras.putDouble(JoinDispatchFragment.KEY_CURRENT_LOCATION_LATITUDE, currentLocation.getLatitude());
                 extras.putDouble(JoinDispatchFragment.KEY_CURRENT_LOCATION_LONGITUDE,currentLocation.getLongitude());
                 extras.putDouble(JoinDispatchFragment.KEY_DESTINATION_LATITUDE, destination.latitude);
