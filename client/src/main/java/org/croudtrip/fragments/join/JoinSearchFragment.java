@@ -1,7 +1,6 @@
 package org.croudtrip.fragments.join;
 
 import android.app.Activity;
-import android.app.Fragment;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -10,6 +9,7 @@ import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
@@ -327,11 +327,10 @@ public class JoinSearchFragment extends SubscriptionFragment implements GoogleAp
         Open the "Offer Trip" Fragment on click at the floating action button
          */
         FloatingActionButton btn_offer = (FloatingActionButton) view.findViewById(R.id.btn_offer_trip);
-        final Fragment _this = this;
         btn_offer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                MaterialNavigationDrawer drawer = (MaterialNavigationDrawer) _this.getActivity();
+                MaterialNavigationDrawer drawer = (MaterialNavigationDrawer) getActivity();
                 drawer.setFragment(OfferTripFragment.get(), getString(R.string.menu_offer_trip));
                 MaterialSection section = drawer.getSectionByTitle(getString(R.string.menu_offer_trip));
                 drawer.setSection(section);

@@ -1,6 +1,7 @@
 package org.croudtrip.fragments;
 
 
+
 import roboguice.fragment.provided.RoboFragment;
 import rx.subscriptions.CompositeSubscription;
 import timber.log.Timber;
@@ -24,6 +25,5 @@ public class SubscriptionFragment extends RoboFragment {
         subscriptions.clear();
         subscriptions = new CompositeSubscription();
     }
-
 
 }

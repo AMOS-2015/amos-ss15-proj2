@@ -1,8 +1,11 @@
 package org.croudtrip.fragments.join;
 
+import android.annotation.TargetApi;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
+import android.os.Build;
 import android.content.BroadcastReceiver;
+import android.support.v4.app.FragmentManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -37,7 +40,7 @@ public class JoinDispatchFragment extends SubscriptionFragment {
     public final static String KEY_JOIN_TRIP_REQUEST_RESULT = "join_trip_request_result";
 
 
-    private Fragment searchFragment, resultsFragment, drivingFragment;
+    private android.app.Fragment searchFragment, resultsFragment, drivingFragment;
 
     private BroadcastReceiver changeUiReceiver = new BroadcastReceiver() {
         @Override
@@ -70,37 +73,37 @@ public class JoinDispatchFragment extends SubscriptionFragment {
     }
 
 
-    /*
-    Inflate the correct child fragment.
 
-    Default is "JoinSearchFragment"; if we are currently looking for a trip on the server or there some trips were
-    found then the "JoinResultsFragment" should be visible; if the user is on a trip he sees the "JoinDrivingFragment".
-    These three Views are persistent -> they are dependent on what is in the Shared Prefs.
-     */
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     private void replaceChildFragment(Bundle args) {
-        ((MaterialNavigationDrawer) getActivity()).getCurrentSection().setNotificationsText("");
-        ((MaterialNavigationDrawer) getActivity()).getCurrentSection().setTitle(getString(R.string.menu_join_trip));
 
-        FragmentTransaction transaction = getChildFragmentManager().beginTransaction();
-        SharedPreferences prefs = getActivity().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
-        if (prefs.getBoolean(Constants.SHARED_PREF_KEY_SEARCHING, false)) {
-            if (args != null) {
-                resultsFragment = new JoinResultsFragment();
-                resultsFragment.setArguments(args);
-            }
-            transaction.replace(R.id.child_fragment, resultsFragment).commitAllowingStateLoss();
-        } else if (prefs.getBoolean(Constants.SHARED_PREF_KEY_ACCEPTED, false)) {
-            if (args != null) {
-                drivingFragment = new JoinDrivingFragment();
-                drivingFragment.setArguments(args);
-            }
-            transaction.replace(R.id.child_fragment, drivingFragment).commitAllowingStateLoss();
+        if (Build.VERSION.SDK_INT<Build.VERSION_CODES.JELLY_BEAN_MR1) {
+
         } else {
-            if (args != null) {
-                searchFragment = new JoinSearchFragment();
-                searchFragment.setArguments(args);
+            ((MaterialNavigationDrawer) getActivity()).getCurrentSection().setNotificationsText("");
+            ((MaterialNavigationDrawer) getActivity()).getCurrentSection().setTitle(getString(R.string.menu_join_trip));
+
+            FragmentTransaction transaction = getChildFragmentManager().beginTransaction();
+            SharedPreferences prefs = getActivity().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
+            if (prefs.getBoolean(Constants.SHARED_PREF_KEY_SEARCHING, false)) {
+                if (args != null) {
+                    resultsFragment = new JoinResultsFragment();
+                    resultsFragment.setArguments(args);
+                }
+                transaction.replace(R.id.child_fragment, resultsFragment).commitAllowingStateLoss();
+            } else if (prefs.getBoolean(Constants.SHARED_PREF_KEY_ACCEPTED, false)) {
+                if (args != null) {
+                    drivingFragment = new JoinDrivingFragment();
+                    drivingFragment.setArguments(args);
+                }
+                transaction.replace(R.id.child_fragment, drivingFragment).commitAllowingStateLoss();
+            } else {
+                if (args != null) {
+                    searchFragment = new JoinSearchFragment();
+                    searchFragment.setArguments(args);
+                }
+                transaction.replace(R.id.child_fragment, searchFragment).commitAllowingStateLoss();
             }
-            transaction.replace(R.id.child_fragment, searchFragment).commitAllowingStateLoss();
         }
     }
 

@@ -152,11 +152,13 @@ public class MainActivity extends AbstractRoboDrawerActivity {
             this.addSection(newSection(getString(R.string.menu_join_trip), R.drawable.hitchhiker, new JoinTripFragment()));
         } */
 
+
         //NEW
         JoinDispatchFragment joinDispatchFragment = new JoinDispatchFragment();
         joinDispatchFragment.setArguments(getIntent().getExtras());
-        this.addSection(newSection("Join Trip New", R.drawable.hitchhiker, joinDispatchFragment));
-
+        //Intent dispatchIntent = new Intent(this, DispatchActivity.class);
+        //dispatchIntent.putExtras(getIntent().getExtras());
+        this.addSection(newSection(getString(R.string.menu_join_trip), R.drawable.hitchhiker, joinDispatchFragment));
 
         // offer trip/ my offered trip
         if( action.equalsIgnoreCase(ACTION_SHOW_JOIN_TRIP_REQUESTS) ) {
@@ -165,6 +167,8 @@ public class MainActivity extends AbstractRoboDrawerActivity {
         else {
             this.addSection(newSection(getString(R.string.menu_offer_trip), R.drawable.ic_directions_car_white, new OfferTripFragment()));
         }
+
+
 
         // profile
         if(AccountManager.isUserLoggedIn(this)) {
