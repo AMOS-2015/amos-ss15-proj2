@@ -2,7 +2,7 @@ package org.croudtrip.fragments;
 
 
 
-import roboguice.fragment.provided.RoboFragment;
+import roboguice.fragment.RoboFragment;
 import rx.subscriptions.CompositeSubscription;
 import timber.log.Timber;
 

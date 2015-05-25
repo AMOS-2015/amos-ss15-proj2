@@ -1,8 +1,9 @@
 package org.croudtrip.fragments.join;
 
 import android.app.Activity;
-import android.app.Fragment;
-import android.app.FragmentTransaction;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentTransaction;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -26,7 +27,7 @@ import it.neokree.materialnavigationdrawer.MaterialNavigationDrawer;
 /**
  * Created by alex on 22.04.15.
  */
-public class JoinDispatchActivity extends Activity {
+public class JoinDispatchActivity extends FragmentActivity {
 
     public final static String KEY_CURRENT_LOCATION_LATITUDE = "current_location_latitude";
     public final static String KEY_CURRENT_LOCATION_LONGITUDE = "current_location_longitude";
@@ -67,7 +68,7 @@ public class JoinDispatchActivity extends Activity {
         ((MaterialNavigationDrawer) getApplicationContext()).getCurrentSection().setNotificationsText("");
         ((MaterialNavigationDrawer) getApplicationContext()).getCurrentSection().setTitle(getString(R.string.menu_join_trip));
 
-        FragmentTransaction transaction = getFragmentManager().beginTransaction();
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         SharedPreferences prefs = getApplicationContext().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
 
         //SEARCHING -> Show the results fragment (waiting screen + results)

@@ -17,6 +17,7 @@ import org.croudtrip.api.trips.TripQueryDescription;
 import org.croudtrip.api.trips.TripQueryResult;
 import org.croudtrip.api.trips.TripReservation;
 import org.croudtrip.directions.RouteNotFoundException;
+import org.croudtrip.logs.LogManager;
 import org.croudtrip.trips.TripsManager;
 
 import java.util.ArrayList;
@@ -57,11 +58,13 @@ public class TripsResource {
 
     private final TripsManager tripsManager;
     private final VehicleManager vehicleManager;
+    private final LogManager logManager;
 
     @Inject
-    TripsResource(TripsManager tripsManager, VehicleManager vehicleManager) {
+    TripsResource(TripsManager tripsManager, VehicleManager vehicleManager, LogManager logManager) {
         this.tripsManager = tripsManager;
         this.vehicleManager = vehicleManager;
+        this.logManager = logManager;
     }
 
 
@@ -69,6 +72,7 @@ public class TripsResource {
     @UnitOfWork
     @Path(PATH_OFFERS)
     public TripOffer addOffer(@Auth User user, @Valid TripOfferDescription offerDescription) throws RouteNotFoundException {
+        logManager.d("Add offer");
         Optional<Vehicle> vehicle = vehicleManager.findVehicleById(offerDescription.getVehicleId());
         if (!vehicle.isPresent() || vehicle.get().getOwner().getId() != user.getId()) {
             throw RestUtils.createNotFoundException("not vehicle with id " + offerDescription.getVehicleId() + " found");

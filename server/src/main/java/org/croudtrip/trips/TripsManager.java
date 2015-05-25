@@ -76,9 +76,13 @@ public class TripsManager {
 
 
 	public TripOffer addOffer(User owner, TripOfferDescription description) throws RouteNotFoundException {
+        logManager.d("Searching for routes");
+
         // check if there is a route
 		List<Route> route = directionsManager.getDirections(description.getStart(), description.getEnd());
 		if (route.size() == 0) throw new RouteNotFoundException();
+
+        logManager.d("Found " + route.size() + " routes to " + description.getEnd());
 
         // find vehicle
         Optional<Vehicle>vehicle = vehicleManager.findVehicleById(description.getVehicleId());
