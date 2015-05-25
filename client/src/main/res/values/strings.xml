@@ -78,8 +78,8 @@
 
     <string name="offer_choose_destination">What´s your destination?</string>
     <string name="offer_change_destination">Change destination</string>
-    <string name="offer_max_diversion">Max diversion (in km)</string>
-    <string name="price">Price per km (in cent)</string>
+    <string name="offer_max_diversion">Max diversion (in km):</string>
+    <string name="price">Price per km (in cent):</string>
 
     <string name="offer_trip">Offer Trip</string>
     <string name="offer_trip_no_location">Offer Trip failed: Your location is unknown.</string>
