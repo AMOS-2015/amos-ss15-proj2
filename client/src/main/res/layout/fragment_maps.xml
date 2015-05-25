@@ -50,7 +50,7 @@
             android:id="@+id/location_map"
             android:layout_width="match_parent"
             android:layout_height="471dp"
-            class="com.google.android.gms.maps.MapFragment" />
+            class="com.google.android.gms.maps.SupportMapFragment" />
 
         <TextView
             android:id="@+id/distance_text"

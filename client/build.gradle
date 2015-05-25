@@ -32,7 +32,7 @@ android {
 
     defaultConfig {
         applicationId "org.croudtrip"
-        minSdkVersion 17
+        minSdkVersion 16
         targetSdkVersion 21
         versionCode 1
         versionName "1.0"
@@ -98,6 +98,7 @@ dependencies {
     compile 'pl.charmas.android:android-reactive-location:0.5@aar'
     compile 'com.larswerkman:HoloColorPicker:1.5'
     compile 'com.squareup.picasso:picasso:2.4.0'
+    compile 'com.github.navasmdc:MaterialDesign:1.5@aar'
 }
 
 // create retrofit interfaces from server resources

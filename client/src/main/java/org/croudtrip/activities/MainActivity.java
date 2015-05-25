@@ -2,7 +2,6 @@ package org.croudtrip.activities;
 
 
 import android.app.AlarmManager;
-import android.app.Fragment;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -15,8 +14,10 @@ import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AlertDialog;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.CheckBox;
@@ -152,11 +153,13 @@ public class MainActivity extends AbstractRoboDrawerActivity {
             this.addSection(newSection(getString(R.string.menu_join_trip), R.drawable.hitchhiker, new JoinTripFragment()));
         } */
 
+
         //NEW
         JoinDispatchFragment joinDispatchFragment = new JoinDispatchFragment();
         joinDispatchFragment.setArguments(getIntent().getExtras());
-        this.addSection(newSection("Join Trip New", R.drawable.hitchhiker, joinDispatchFragment));
-
+        //Intent dispatchIntent = new Intent(this, DispatchActivity.class);
+        //dispatchIntent.putExtras(getIntent().getExtras());
+        this.addSection(newSection(getString(R.string.menu_join_trip), R.drawable.hitchhiker, joinDispatchFragment));
 
         // offer trip/ my offered trip
         if( action.equalsIgnoreCase(ACTION_SHOW_JOIN_TRIP_REQUESTS) ) {
@@ -165,6 +168,8 @@ public class MainActivity extends AbstractRoboDrawerActivity {
         else {
             this.addSection(newSection(getString(R.string.menu_offer_trip), R.drawable.ic_directions_car_white, new OfferTripFragment()));
         }
+
+
 
         // profile
         if(AccountManager.isUserLoggedIn(this)) {
@@ -271,6 +276,17 @@ public class MainActivity extends AbstractRoboDrawerActivity {
     }
 
     @Override
+    public void onBackPressed() {
+        if (getCurrentSection().getTargetFragment() instanceof JoinDispatchFragment) {
+            JoinDispatchFragment currentFragment = (JoinDispatchFragment) getCurrentSection().getTargetFragment();
+            if (!currentFragment.allowBackPressed()) {
+                return;
+            }
+        }
+        super.onBackPressed();
+    }
+
+    @Override
     public void onPause() {
         super.onPause();
 
@@ -345,5 +361,7 @@ public class MainActivity extends AbstractRoboDrawerActivity {
             adb.show();
         //}
     }
+
+
 
 }

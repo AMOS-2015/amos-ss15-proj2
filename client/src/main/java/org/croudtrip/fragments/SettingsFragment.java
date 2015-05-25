@@ -18,7 +18,7 @@ import org.croudtrip.utils.DefaultTransformer;
 import javax.inject.Inject;
 
 import it.neokree.materialnavigationdrawer.MaterialNavigationDrawer;
-import roboguice.fragment.provided.RoboFragment;
+import roboguice.fragment.RoboFragment;
 import rx.Subscription;
 import rx.functions.Action1;
 import timber.log.Timber;

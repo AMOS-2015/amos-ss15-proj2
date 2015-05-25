@@ -15,7 +15,7 @@ import android.widget.TextView;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.maps.android.PolyUtil;
@@ -59,7 +59,7 @@ public class NavigationFragment extends SubscriptionFragment {
     @Inject TripsResource tripsResource;
     @Inject DirectionsResource directionsResource;
 
-    private MapFragment mapFragment;
+    private SupportMapFragment mapFragment;
     @InjectView(R.id.duration_text) private TextView durationText;
     @InjectView(R.id.distance_text) private TextView distanceText;
     @InjectView(R.id.progressLayout) private LinearLayout progressLayout;
@@ -97,7 +97,10 @@ public class NavigationFragment extends SubscriptionFragment {
 
         Timber.d("ON VIEW CREATED");
 
-        mapFragment = (MapFragment) getFragmentManager().findFragmentById(R.id.location_map);
+        mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.location_map);
+        Timber.d("MapFragment: " + mapFragment);
+
+        // TODO: Do this asynchronous
         googleMap = mapFragment.getMap();
         durationText.setText("");
         distanceText.setText("");

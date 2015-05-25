@@ -16,7 +16,7 @@
 
         <org.croudtrip.location.MyAutoCompleteTextView
             android:id="@+id/destination"
-            android:layout_width="200dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:hint="@string/join_choose_destination"/>
@@ -46,188 +46,40 @@
             android:id="@+id/attributions"
             android:layout_gravity="center_horizontal"/>
 
-        <com.rengwuxian.materialedittext.MaterialEditText
+        <TextView
             android:id="@+id/diversion"
-            android:inputType="number"
+            android:textColor="@color/text"
             android:layout_marginTop="@dimen/default_margin"
             android:layout_width="200dp"
             android:layout_height="wrap_content"
-            android:hint="@string/offer_max_diversion"
-            fab:met_floatingLabel="normal"
             android:layout_gravity="center_horizontal" />
 
-        <SeekBar
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/seekBar"
-
-
-            android:layout_below="@+id/linearLayout"
-
-            android:layout_alignParentRight="true"
-            android:layout_alignParentLeft="true"
-            android:indeterminate="false"
-            android:max="100"
-            android:progress="25" />
-        <RelativeLayout
+        <com.gc.materialdesign.views.Slider
+            android:id="@+id/slider_diversion"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:orientation="horizontal"
-            android:layout_below="@+id/seekBar"
-            android:layout_centerHorizontal="true"
-            >
-
-            <TextView
-                android:id="@+id/Label0"
-                android:paddingLeft="10dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="0" />
-
-            <TextView
-                android:id="@+id/Label2"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="3"
-                android:layout_alignParentTop="true"
-                android:layout_toRightOf="@+id/Label1"
-                android:layout_toEndOf="@+id/Label1"
-                android:layout_marginLeft="17dp"
-                android:layout_marginStart="48dp" />
-
-            <TextView
-                android:id="@+id/Label3"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="5"
-                android:layout_alignParentTop="true"
-                android:layout_toRightOf="@+id/Label2"
-                android:layout_toEndOf="@+id/Label2"
-                android:layout_marginLeft="26dp"
-                android:layout_marginStart="57dp" />
-
-            <TextView
-                android:id="@+id/Label4"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:paddingRight="10dp"
-                android:text="10"
-                android:layout_alignParentTop="true"
-                android:layout_centerHorizontal="true" />
-
-            <TextView
-                android:id="@+id/Label1"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="1"
-                android:layout_alignParentTop="true"
-                android:layout_toRightOf="@+id/Label0"
-                android:layout_toEndOf="@+id/Label0"
-                android:layout_marginLeft="10dp"
-                android:layout_marginStart="48dp" />
-
-            <TextView
-                android:id="@+id/Label5"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:paddingRight="10dp"
-                android:text="20"
-                android:layout_alignParentTop="true"
-                android:layout_toRightOf="@+id/Label4"
-                android:layout_toEndOf="@+id/Label4"
-                android:layout_marginLeft="50dp"
-                android:layout_marginStart="66dp" />
-
-            <TextView
-                android:id="@+id/Label6"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:paddingRight="10dp"
-                android:text="50"
-                android:layout_alignParentTop="true"
-                android:layout_alignParentRight="true"
-                android:layout_alignParentEnd="true" />
-        </RelativeLayout>
+            android:background="@color/primary"
+            fab:max="200"
+            fab:min="1"
+            fab:showNumberIndicator="true"/>
 
 
-        <com.rengwuxian.materialedittext.MaterialEditText
+        <TextView
             android:id="@+id/price"
-            android:inputType="number"
+            android:textColor="@color/text"
             android:layout_marginTop="@dimen/default_margin"
             android:layout_width="200dp"
             android:layout_height="wrap_content"
-            android:hint="@string/price"
-            android:text="0.26"
-            fab:met_floatingLabel="normal"
             android:layout_gravity="center_horizontal" />
 
-        <SeekBar
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/seekBar2"
-            android:indeterminate="false"
-            android:max="99"
-            android:progress="25"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentEnd="true" />
-
-        <RelativeLayout
+        <com.gc.materialdesign.views.Slider
+            android:id="@+id/slider_price"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:orientation="horizontal"
-            android:layout_above="@+id/my_car"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true">
-
-            <TextView
-                android:id="@+id/Lb1"
-                android:paddingLeft="10dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="0" />
-
-            <TextView
-                android:id="@+id/Lb2"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="25ct"
-                android:layout_alignParentTop="true"
-                android:layout_toLeftOf="@+id/Lb3"
-                android:layout_toStartOf="@+id/Lb3"
-                android:layout_marginRight="46dp"
-                android:layout_marginEnd="57dp" />
-
-            <TextView
-                android:id="@+id/Lb3"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="50ct"
-                android:layout_centerHorizontal="true" />
-
-            <TextView
-                android:id="@+id/Lb4"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="75ct"
-                android:layout_marginRight="50dp"
-                android:layout_marginEnd="40dp"
-                android:layout_alignParentTop="true"
-                android:layout_toLeftOf="@+id/Lb5"
-                android:layout_toStartOf="@+id/Lb5" />
-
-            <TextView
-                android:id="@+id/Lb5"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentRight="true"
-                android:paddingRight="10dp"
-                android:text="99ct" />
-
-        </RelativeLayout>
+            android:background="@color/primary"
+            fab:max="100"
+            fab:min="0"
+            fab:showNumberIndicator="true"/>
 
     </LinearLayout>
 

@@ -22,6 +22,7 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+import com.gc.materialdesign.views.Slider;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
@@ -89,7 +90,14 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
     @InjectView(R.id.attributions) private TextView tv_attributions;
     @InjectView(R.id.address) private TextView tv_address;
     @InjectView(R.id.destination) private MyAutoCompleteTextView tv_destination;
-    @InjectView(R.id.my_car) private Button myCar;
+    @InjectView(R.id.slider_diversion) private Slider slider_diversion;
+    @InjectView(R.id.slider_price) private Slider slider_price;
+    @InjectView(R.id.diversion) private TextView tv_diversion;
+    @InjectView(R.id.price) private TextView tv_price;
+
+
+
+
     @Inject LocationUpdater locationUpdater;
 
     @Inject
@@ -195,23 +203,37 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
 
 
         // define maximum waiting time
-        final MaterialEditText maxDiversion = (MaterialEditText) view.findViewById(R.id.diversion);
         final SharedPreferences prefs = getActivity().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
 
-        int waitingTime = prefs.getInt(Constants.SHARED_PREF_KEY_DIVERSION, 3);
-        maxDiversion.setText("" + waitingTime);
+        int savedMaxDiversion = prefs.getInt(Constants.SHARED_PREF_KEY_DIVERSION, 3);
+        tv_diversion.setText(getString(R.string.offer_max_diversion) + " " + savedMaxDiversion);
+        slider_diversion.setValue(savedMaxDiversion);
 
         // define maximum price per kilometer that offers the driver
-        final MaterialEditText pricePerKm = (MaterialEditText) view.findViewById(R.id.price);
-        int price = prefs.getInt(Constants.SHARED_PREF_KEY_PRICE, 26);
-        pricePerKm.setText("" + price);
+        int savedPrice = prefs.getInt(Constants.SHARED_PREF_KEY_PRICE, 26);
+        tv_price.setText(getString(R.string.price) + " " + savedPrice);
+        slider_price.setValue(savedPrice);
+
+
+
+        slider_diversion.setOnValueChangedListener(new Slider.OnValueChangedListener() {
+            @Override
+            public void onValueChanged(int i) {
+                tv_diversion.setText(getString(R.string.offer_max_diversion) + " " + i);
+            }
+        });
+        slider_price.setOnValueChangedListener(new Slider.OnValueChangedListener() {
+            @Override
+            public void onValueChanged(int i) {
+                tv_price.setText(getString(R.string.price) + " " + i);
+            }
+        });
+
 
         if( locationUpdater == null )
             Timber.d("Location Updater is null");
 
-
-
-
+        Button myCar = (Button) view.findViewById(R.id.my_car);
         myCar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -220,35 +242,14 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
             }
         });
 
-        //Get default car's type from server and set the button text accordingly
-        Subscription Vsubscription = vehicleResource.getVehicle(VehicleManager.getDefaultVehicleId(getActivity()))
-                .compose(new DefaultTransformer<Vehicle>())
-                .subscribe(new Action1<Vehicle>() {
-                    @Override
-                    public void call(Vehicle vehicle) {
-                        if (vehicle != null) {
-                            if (vehicle.getType() != null)
-                                myCar.setText(vehicle.getType());
-                        }
-                        else
-                                myCar.setText("My Cars");
-                    }
-                }, new Action1<Throwable>() {
-                    @Override
-                    public void call(Throwable throwable) {
-                        //Response response = ((RetrofitError) throwable).getResponse();
-                        Timber.e("Failed to fetch with error:\n" + throwable.getMessage());
-                    }
-                });
-        subscriptions.add(Vsubscription);
-
         // By clicking on the offer-trip-button the driver makes his choice public
         Button btn_join = (Button) view.findViewById(R.id.offer);
         btn_join.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 SharedPreferences.Editor editor = prefs.edit();
-                editor.putInt(Constants.SHARED_PREF_KEY_DIVERSION, Integer.valueOf(maxDiversion.getText().toString()));
+                editor.putInt(Constants.SHARED_PREF_KEY_DIVERSION, slider_diversion.getValue());
+                editor.putInt(Constants.SHARED_PREF_KEY_PRICE, slider_price.getValue());
                 editor.apply();
 
                 org.croudtrip.db.Place tempPlace = lastSelected;
@@ -327,8 +328,8 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
 
                 final Bundle b = new Bundle();
                 b.putString(NavigationFragment.ARG_ACTION, NavigationFragment.ACTION_CREATE);
-                b.putInt("maxDiversion", Integer.valueOf(maxDiversion.getText().toString()) );
-                b.putInt("pricePerKilometer", Integer.valueOf(pricePerKm.getText().toString()));
+                b.putInt("maxDiversion", Integer.valueOf(slider_diversion.getValue() + "") );
+                b.putInt("pricePerKilometer", Integer.valueOf(slider_price.getValue() + ""));
                 b.putDouble("fromLat", currentLocation.getLatitude());
                 b.putDouble("fromLng", currentLocation.getLongitude() );
                 b.putDouble("toLat", destination.latitude );
@@ -506,6 +507,7 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
         Button select = (Button) selectDialog.findViewById(R.id.select);
         final Button cancel = (Button) selectDialog.findViewById(R.id.cancel);
         final Button ok = (Button) selectDialog.findViewById(R.id.ok);
+
         // Use a linear layout manager to use the RecyclerView
         layoutManager = new LinearLayoutManager(getActivity());
         recyclerView.setLayoutManager(layoutManager);
@@ -552,10 +554,6 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
                 long vehicleIdLong = ((long) vehicleId);
                 VehicleManager.saveDefaultVehicle(getActivity(), vehicleIdLong);
                 Toast.makeText(getActivity(), "Default car set!", Toast.LENGTH_SHORT).show();
-                //Set MyCars button text to default car type
-                if (DataHolder.getInstance().getVehicle_type() != null)
-                    myCar.setText(DataHolder.getInstance().getVehicle_type());
-
                 selectDialog.hide();
             }
         });
@@ -577,8 +575,6 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
 
 
     }
-
-
 }
 
 
