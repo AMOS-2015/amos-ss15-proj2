@@ -72,7 +72,7 @@ public class JoinDispatchFragment extends SubscriptionFragment {
         setHasOptionsMenu(true);
 
         View view = inflater.inflate(R.layout.fragment_join_dispatch, container, false);
-        replaceChildFragment(null);
+        replaceChildFragment(getArguments());
 
         return view;
     }
