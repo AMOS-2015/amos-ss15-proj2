@@ -150,6 +150,61 @@ public class NavigationFragment extends SubscriptionFragment {
                         driverWp[0] = offer.getDriverRoute().getWayPoints().get(0);
                         driverWp[1] = offer.getDriverRoute().getWayPoints().get(1);
 
+                        tripsResource.getDriverAcceptedJoinRequests()
+                                .compose(new DefaultTransformer<List<JoinTripRequest>>())
+                                .flatMap(new Func1<List<JoinTripRequest>, Observable<List<RouteLocation>>>() {
+                                    @Override
+                                    public Observable<List<RouteLocation>> call(List<JoinTripRequest> joinTripRequests) {
+                                        // TODO: Handle multiple join trip request, but we will stick to one for now
+                                        List<RouteLocation> waypoints = new LinkedList<RouteLocation>();
+                                        if (joinTripRequests == null || joinTripRequests.isEmpty()) {
+                                            return Observable.just(waypoints);
+                                        }
+
+                                        JoinTripRequest firstRequest = joinTripRequests.get(0);
+                                        List<RouteLocation> reqWaypoints = firstRequest.getQuery().getPassengerRoute().getWayPoints();
+
+                                        waypoints.addAll(reqWaypoints);
+
+                                        return Observable.just(waypoints);
+                                    }
+                                })
+                                .flatMap(new Func1<List<RouteLocation>, Observable<List<Route>>>() {
+                                    @Override
+                                    public Observable<List<Route>> call(List<RouteLocation> routeLocations) {
+                                        routeLocations.add(0, driverWp[0]);
+                                        routeLocations.add(driverWp[1]);
+                                        Timber.d("Sending directions request with " + routeLocations.size() + " waypoints");
+                                        DirectionsRequest directionsRequest = new DirectionsRequest(routeLocations);
+                                        return directionsResource.getDirections(directionsRequest);
+                                    }
+                                })
+                                .flatMap( new Func1<List<Route>, Observable<Route>>() {
+                                    @Override
+                                    public Observable<Route> call(List<Route> routes) {
+                                        if( routes == null || routes.isEmpty())
+                                            return Observable.empty();
+
+                                        return Observable.just( routes.get(0) );
+                                    }
+                                })
+                                .compose(new DefaultTransformer<Route>())
+                                .subscribe(new Action1<Route>() {
+                                    @Override
+                                    public void call(Route route) {
+                                        Timber.d("Your offer was successfully loaded from the server");
+                                        progressLayout.setVisibility(View.GONE);
+                                        generateRouteOnMap(route);
+                                    }
+                                }, new Action1<Throwable>() {
+                                    @Override
+                                    public void call(Throwable throwable) {
+                                        // on main thread; something went wrong
+                                        progressLayout.setVisibility(View.GONE);
+                                        Timber.e(throwable.getMessage());
+                                    }
+                                });
+
                     }
                 }, new Action1<Throwable>() {
                     @Override
@@ -160,61 +215,6 @@ public class NavigationFragment extends SubscriptionFragment {
                         errorLayout.setVisibility(View.VISIBLE);
                     }
                 } );
-
-        tripsResource.getDriverAcceptedJoinRequests()
-                .compose(new DefaultTransformer<List<JoinTripRequest>>())
-                .flatMap(new Func1<List<JoinTripRequest>, Observable<List<RouteLocation>>>() {
-                    @Override
-                    public Observable<List<RouteLocation>> call(List<JoinTripRequest> joinTripRequests) {
-                        // TODO: Handle multiple join trip request, but we will stick to one for now
-                        List<RouteLocation> waypoints = new LinkedList<RouteLocation>();
-                        if (joinTripRequests == null || joinTripRequests.isEmpty()) {
-                            return Observable.just(waypoints);
-                        }
-
-                        JoinTripRequest firstRequest = joinTripRequests.get(0);
-                        List<RouteLocation> reqWaypoints = firstRequest.getQuery().getPassengerRoute().getWayPoints();
-
-                        waypoints.addAll(reqWaypoints);
-
-                        return Observable.just(waypoints);
-                    }
-                })
-                .flatMap(new Func1<List<RouteLocation>, Observable<List<Route>>>() {
-                    @Override
-                    public Observable<List<Route>> call(List<RouteLocation> routeLocations) {
-                        routeLocations.add(0, driverWp[0]);
-                        routeLocations.add(driverWp[1]);
-                        Timber.d("Sending directions request with " + routeLocations.size() + " waypoints");
-                        DirectionsRequest directionsRequest = new DirectionsRequest(routeLocations);
-                        return directionsResource.getDirections(directionsRequest);
-                    }
-                })
-                .flatMap( new Func1<List<Route>, Observable<Route>>() {
-                    @Override
-                    public Observable<Route> call(List<Route> routes) {
-                        if( routes == null || routes.isEmpty())
-                            return Observable.empty();
-
-                        return Observable.just( routes.get(0) );
-                    }
-                })
-                .compose(new DefaultTransformer<Route>())
-                .subscribe(new Action1<Route>() {
-                    @Override
-                    public void call(Route route) {
-                        Timber.d("Your offer was successfully loaded from the server");
-                        progressLayout.setVisibility(View.GONE);
-                        generateRouteOnMap(route);
-                    }
-                }, new Action1<Throwable>() {
-                    @Override
-                    public void call(Throwable throwable) {
-                        // on main thread; something went wrong
-                        progressLayout.setVisibility(View.GONE);
-                        Timber.e(throwable.getMessage());
-                    }
-                });
     }
 
     private void generateRouteOnMap(Route route) {
