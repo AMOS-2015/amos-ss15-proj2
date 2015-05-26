@@ -193,8 +193,6 @@ public class JoinResultsFragment extends SubscriptionFragment implements GoogleA
                 new RouteLocation(currentLocationLat, currentLocationLon),
                 new RouteLocation(destinationLat, destinationLon), maxWaitingTime);
 
-
-
         Subscription subscription = tripsResource.queryOffers(tripQueryDescription)
                 .compose(new DefaultTransformer<TripQueryResult>())
                 .subscribe(new Action1<TripQueryResult>() {

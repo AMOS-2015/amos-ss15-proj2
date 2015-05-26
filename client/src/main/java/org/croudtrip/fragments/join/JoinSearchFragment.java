@@ -321,7 +321,7 @@ public class JoinSearchFragment extends SubscriptionFragment implements GoogleAp
                  */
                 Bundle extras = new Bundle();
                 //extras.putString(JoinDispatchFragment.KEY_ACTION_TO_RUN, JoinDispatchFragment.ACTION_START_BACKGROUND_SEARCH);
-                extras.putInt(JoinDispatchFragment.KEY_MAX_WAITING_TIME, slider_waitingTime.getValue());
+                extras.putInt(JoinDispatchFragment.KEY_MAX_WAITING_TIME, slider_waitingTime.getValue() * 60); // max waiting time in seconds
                 extras.putDouble(JoinDispatchFragment.KEY_CURRENT_LOCATION_LATITUDE, currentLocation.getLatitude());
                 extras.putDouble(JoinDispatchFragment.KEY_CURRENT_LOCATION_LONGITUDE,currentLocation.getLongitude());
                 extras.putDouble(JoinDispatchFragment.KEY_DESTINATION_LATITUDE, destination.latitude);

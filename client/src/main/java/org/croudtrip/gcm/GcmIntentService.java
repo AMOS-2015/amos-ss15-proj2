@@ -110,7 +110,7 @@ public class GcmIntentService extends RoboIntentService {
                                 startingIntent.putExtra(JoinTripResultsFragment.KEY_MAX_WAITING_TIME, query.getQuery().getMaxWaitingTimeInSeconds());
 
                                 // set the action for the main activity that helps to decide which fragment has to be started
-                                // TODO-Alexander: If you want to do something based on shared prefs you probably want to change this part.
+                                // If you want to do something based on shared prefs you probably want to change this part.
                                 startingIntent.setAction(MainActivity.ACTION_SHOW_FOUND_MATCHES);
 
                                 // create notification for the user

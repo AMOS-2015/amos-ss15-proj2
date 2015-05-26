@@ -110,6 +110,7 @@ public class TripsManager {
 
             // notify passenger about potential match
             if (isPotentialMatch) {
+                logManager.d("Found a potential match: send gcm message to user " + query.getPassenger().getFirstName() + " " + query.getPassenger().getLastName());
                 gcmManager.sendGcmMessageToUser(
                         query.getPassenger(),
                         GcmConstants.GCM_MSG_FOUND_MATCHES,
