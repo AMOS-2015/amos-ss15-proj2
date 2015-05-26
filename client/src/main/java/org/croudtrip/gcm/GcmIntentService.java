@@ -294,7 +294,8 @@ public class GcmIntentService extends RoboIntentService {
                                     Intent startingIntent = new Intent(getApplicationContext(), MainActivity.class);
                                     startingIntent.putExtras(extras);
                                     PendingIntent contentIntent = PendingIntent.getActivity(getApplicationContext(), 0, startingIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-                                    createNotification(getString(R.string.join_request_accepted_title), getString(R.string.join_request_accepted_msg),
+                                    createNotification(getString(R.string.join_request_accepted_title), getString(R.string.join_request_accepted_msg,
+                                                    joinTripRequest.getOffer().getDriver().getFirstName()),
                                             GcmConstants.GCM_NOTIFICATION_REQUEST_ACCEPTED_ID, contentIntent);
                                 }
 
