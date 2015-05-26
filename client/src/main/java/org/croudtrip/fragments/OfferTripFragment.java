@@ -202,18 +202,17 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
         subscriptions.add(subscription);
 
 
-        // define maximum waiting time
         final SharedPreferences prefs = getActivity().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
 
+        //get max diversion from shared preferences and update textview as well as the slider
         int savedMaxDiversion = prefs.getInt(Constants.SHARED_PREF_KEY_DIVERSION, 3);
         tv_diversion.setText(getString(R.string.offer_max_diversion) + " " + savedMaxDiversion);
         slider_diversion.setValue(savedMaxDiversion);
 
-        // define maximum price per kilometer that offers the driver
+        //get price per km from shared preferences and update textview as well as the slider
         int savedPrice = prefs.getInt(Constants.SHARED_PREF_KEY_PRICE, 26);
         tv_price.setText(getString(R.string.price) + " " + savedPrice);
         slider_price.setValue(savedPrice);
-
 
 
         slider_diversion.setOnValueChangedListener(new Slider.OnValueChangedListener() {

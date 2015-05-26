@@ -29,6 +29,10 @@ import it.neokree.materialnavigationdrawer.MaterialNavigationDrawer;
 
 /**
  * Created by alex on 22.04.15.
+ *
+ The Dispatch Fragment has no "own view", it should only redirect/show the correct fragments.
+ The main reason for this is that we have only one fragment in the menu/navigationDrawer and do
+ not have to switch it out dynamically everytime something on the UI changes.
  */
 public class JoinDispatchFragment extends SubscriptionFragment {
 
@@ -74,12 +78,18 @@ public class JoinDispatchFragment extends SubscriptionFragment {
     }
 
 
+    /*
+    Set default title and clear notification text.
+    Show the correct fragment based on the status saved in the shared preferences
+     */
     private void replaceChildFragment(Bundle args) {
         ((MaterialNavigationDrawer) getActivity()).getCurrentSection().setNotificationsText("");
         ((MaterialNavigationDrawer) getActivity()).getCurrentSection().setTitle(getString(R.string.menu_join_trip));
 
         FragmentTransaction transaction = getChildFragmentManager().beginTransaction();
         SharedPreferences prefs = getActivity().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
+
+        //SEARCHING -> Show the results fragment (waiting screen + results)
         if (prefs.getBoolean(Constants.SHARED_PREF_KEY_SEARCHING, false)) {
             if (args != null) {
                 resultsFragment = new JoinResultsFragment();
@@ -87,6 +97,8 @@ public class JoinDispatchFragment extends SubscriptionFragment {
             }
             allowBackPressed = false;
             transaction.replace(R.id.child_fragment, resultsFragment).commitAllowingStateLoss();
+
+        //ACCEPTED -> Show the driving fragment
         } else if (prefs.getBoolean(Constants.SHARED_PREF_KEY_ACCEPTED, false)) {
             if (args != null) {
                 drivingFragment = new JoinDrivingFragment();
@@ -94,6 +106,8 @@ public class JoinDispatchFragment extends SubscriptionFragment {
             }
             allowBackPressed = false;
             transaction.replace(R.id.child_fragment, drivingFragment).commitAllowingStateLoss();
+
+        //OTHERWISE -> Show the default search fragment
         } else {
             if (args != null) {
                 searchFragment = new JoinSearchFragment();
@@ -140,6 +154,10 @@ public class JoinDispatchFragment extends SubscriptionFragment {
         }
     }
 
+    /*
+    Handle the onBackPressed.
+    Close the app if the user is at the searchFragment, otherwise navigate back to the searchFragment
+     */
     public boolean allowBackPressed() {
         if (!allowBackPressed) {
             SharedPreferences prefs = getActivity().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
@@ -150,6 +168,8 @@ public class JoinDispatchFragment extends SubscriptionFragment {
             editor.apply();
 
             replaceChildFragment(null);
+
+            //TODO: Cancel search and/or cancel trip -> ask po what to do in which situation
             return false;
         }
 

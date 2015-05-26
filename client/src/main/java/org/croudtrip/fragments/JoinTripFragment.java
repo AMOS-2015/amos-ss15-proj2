@@ -195,6 +195,7 @@ public class JoinTripFragment extends SubscriptionFragment implements GoogleApiC
             }
         });
 
+        //get max waiting time from shared preferences and update textview as well as the slider
         final MaterialEditText maxWaitingTime = (MaterialEditText) view.findViewById(R.id.waitingTime);
         final SharedPreferences prefs = getActivity().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
         int waitingTime = prefs.getInt(Constants.SHARED_PREF_KEY_WAITING_TIME, 10);

@@ -213,8 +213,10 @@ public class JoinResultsFragment extends SubscriptionFragment implements GoogleA
                             editor.putBoolean(Constants.SHARED_PREF_KEY_SEARCHING, false);
                             editor.apply();
 
+                            //Set the notificationText in the navigationDrawer
                             ((MaterialNavigationDrawer) getActivity()).getCurrentSection().setNotifications(numMatches);
 
+                            //Switch out the view
                             waitingView.setVisibility(View.GONE);
                             resultView.setVisibility(View.VISIBLE);
 
@@ -300,9 +302,6 @@ public class JoinResultsFragment extends SubscriptionFragment implements GoogleA
         menu.clear();
         //inflater.inflate(R.menu.menu_main, menu);
     }
-
-
-
 
     @Override
     public void onConnected(Bundle bundle) {
