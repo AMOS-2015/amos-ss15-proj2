@@ -2,10 +2,13 @@ package org.croudtrip.fragments;
 
 import android.app.Dialog;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.text.Editable;
+import android.text.Html;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -498,7 +501,7 @@ public class EditProfileFragment extends SubscriptionFragment {
     public void showYearPicker() {
 
         final Dialog yearDialog = new Dialog(getActivity());
-        yearDialog.setTitle("Birth Year");
+        yearDialog.setTitle(Html.fromHtml("<font color='#388e3c'>Birth Year</font>"));
         yearDialog.setContentView(R.layout.year_picker_dialog);
         Button set = (Button) yearDialog.findViewById(R.id.set);
         Button cancel = (Button) yearDialog.findViewById(R.id.cancel);
@@ -511,7 +514,14 @@ public class EditProfileFragment extends SubscriptionFragment {
         else
             yearPicker.setValue(2015);
 
+        setDividerColor(yearPicker, getResources().getColor(R.color.primary));
         yearDialog.show();
+
+        //Change divider line color
+        int titleDividerId = getResources().getIdentifier("titleDivider", "id", "android");
+        View titleDivider = yearDialog.findViewById(titleDividerId);
+        if (titleDivider != null)
+            titleDivider.setBackgroundColor(getResources().getColor(R.color.primary));
 
         set.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -530,6 +540,28 @@ public class EditProfileFragment extends SubscriptionFragment {
             }
         });
 
+    }
+
+    private void setDividerColor(NumberPicker picker, int color) {
+
+        java.lang.reflect.Field[] pickerFields = NumberPicker.class.getDeclaredFields();
+        for (java.lang.reflect.Field pf : pickerFields) {
+            if (pf.getName().equals("mSelectionDivider")) {
+                pf.setAccessible(true);
+                try {
+                    ColorDrawable colorDrawable = new ColorDrawable(color);
+                    pf.set(picker, colorDrawable);
+                } catch (IllegalArgumentException e) {
+                    e.printStackTrace();
+                } catch (Resources.NotFoundException e) {
+                    e.printStackTrace();
+                }
+                catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                }
+                break;
+            }
+        }
     }
 
     public void updateUser (final UserDescription userDescription)

@@ -1,9 +1,12 @@
 package org.croudtrip.fragments;
 
 import android.app.Dialog;
+import android.content.res.Resources;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.text.Editable;
+import android.text.Html;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -188,7 +191,7 @@ public class VehicleInfoFragment extends SubscriptionFragment {
     public void showColorPicker()
     {
         final Dialog colorDialog = new Dialog(getActivity());
-        colorDialog.setTitle("Select car color");
+        colorDialog.setTitle(Html.fromHtml("<font color='#388e3c'>Select car color</font>"));
         colorDialog.setContentView(R.layout.color_picker_dialog);
         Button set = (Button) colorDialog.findViewById(R.id.set);
         Button cancel = (Button) colorDialog.findViewById(R.id.cancel);
@@ -196,6 +199,12 @@ public class VehicleInfoFragment extends SubscriptionFragment {
         SVBar saturationBar = (SVBar) colorDialog.findViewById(R.id.saturation_bar);
         colorPicker.addSVBar(saturationBar);
         colorDialog.show();
+
+        //Change divider line color
+        int titleDividerId = getResources().getIdentifier("titleDivider", "id", "android");
+        View titleDivider = colorDialog.findViewById(titleDividerId);
+        if (titleDivider != null)
+            titleDivider.setBackgroundColor(getResources().getColor(R.color.primary));
 
         set.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -216,7 +225,7 @@ public class VehicleInfoFragment extends SubscriptionFragment {
     public void showCapacityPicker() {
 
         final Dialog capacityDialog = new Dialog(getActivity());
-        capacityDialog.setTitle("Car Capacity");
+        capacityDialog.setTitle(Html.fromHtml("<font color='#388e3c'>Car Capacity</font>"));
         capacityDialog.setContentView(R.layout.capacity_picker_dialog);
         Button set = (Button) capacityDialog.findViewById(R.id.set);
         Button cancel = (Button) capacityDialog.findViewById(R.id.cancel);
@@ -225,8 +234,14 @@ public class VehicleInfoFragment extends SubscriptionFragment {
         capacityPicker.setMinValue(1);
         capacityPicker.setWrapSelectorWheel(false);
         capacityPicker.setValue(Integer.parseInt(capacityPickerButton.getText().toString()));
+        setDividerColor(capacityPicker, getResources().getColor(R.color.primary));
         capacityDialog.show();
 
+        //Change divider line color
+        int titleDividerId = getResources().getIdentifier("titleDivider", "id", "android");
+        View titleDivider = capacityDialog.findViewById(titleDividerId);
+        if (titleDivider != null)
+            titleDivider.setBackgroundColor(getResources().getColor(R.color.primary));
         set.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -243,6 +258,28 @@ public class VehicleInfoFragment extends SubscriptionFragment {
             }
         });
 
+    }
+
+    private void setDividerColor(NumberPicker picker, int color) {
+
+        java.lang.reflect.Field[] pickerFields = NumberPicker.class.getDeclaredFields();
+        for (java.lang.reflect.Field pf : pickerFields) {
+            if (pf.getName().equals("mSelectionDivider")) {
+                pf.setAccessible(true);
+                try {
+                    ColorDrawable colorDrawable = new ColorDrawable(color);
+                    pf.set(picker, colorDrawable);
+                } catch (IllegalArgumentException e) {
+                    e.printStackTrace();
+                } catch (Resources.NotFoundException e) {
+                    e.printStackTrace();
+                }
+                catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                }
+                break;
+            }
+        }
     }
 
     /*

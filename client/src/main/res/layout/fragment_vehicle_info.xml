@@ -27,7 +27,6 @@
         android:text="Type"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textColor="@color/primary_dark"
         />
 
     <EditText
@@ -41,7 +40,6 @@
     <TextView
         android:id="@+id/car_plate_title"
         android:text="License Plate"
-        android:textColor="@color/primary_dark"
         android:layout_marginTop="@dimen/activity_vertical_margin"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -59,7 +57,6 @@
             android:id="@+id/car_capacity_title"
             android:text="Capacity"
             android:layout_marginTop="25dp"
-            android:textColor="@color/primary_dark"
             android:layout_below="@id/car_plate"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
@@ -74,7 +71,6 @@
         android:id="@+id/car_color_title"
         android:text="Color"
         android:layout_marginTop="25dp"
-        android:textColor="@color/primary_dark"
         android:layout_below="@id/capacity_picker_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />

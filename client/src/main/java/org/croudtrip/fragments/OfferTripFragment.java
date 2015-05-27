@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.drawable.ColorDrawable;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
@@ -13,6 +14,7 @@ import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -20,6 +22,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.NumberPicker;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.gc.materialdesign.views.Slider;
@@ -519,7 +522,7 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
 
     public void showCarSelectionDialog() {
         final Dialog selectDialog = new Dialog(getActivity());
-        selectDialog.setTitle("Select your default car");
+        selectDialog.setTitle(Html.fromHtml("<font color='#388e3c'>Select your default car</font>"));
         selectDialog.setContentView(R.layout.fragment_vehicle_select);
         RecyclerView recyclerView = (RecyclerView) selectDialog.findViewById(R.id.vehicles_list_select);
         final Button selectButton = (Button) selectDialog.findViewById(R.id.select);
@@ -568,6 +571,12 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
         subscriptions.add(subscription);
         selectDialog.show();
 
+        //Change divider line color
+        int titleDividerId = getResources().getIdentifier("titleDivider", "id", "android");
+        View titleDivider = selectDialog.findViewById(titleDividerId);
+        if (titleDivider != null)
+            titleDivider.setBackgroundColor(getResources().getColor(R.color.primary));
+
         select.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -599,6 +608,8 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
 
 
     }
+
+
 }
 
 

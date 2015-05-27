@@ -96,7 +96,7 @@
     <string name="yes">Yes</string>
     <string name="navigation">Navigation</string>
     <string name="no_route_found">No route could be found for your request.</string>
-
+    <string name="select_car">Select your default car</string>
     <string name="save_changes">Save Changes</string>
     <string name="discard_changes">Discard Changes</string>
 
@@ -115,7 +115,7 @@
 
     <string name="car_plate_hint">e.g 123456</string>
     <string name="car_type_hint">e.g Porsche 911</string>
-    <string name="ask_register">Unfortunately you cannot join a trip without registration, please sign up here</string>
+    <string name="ask_register">We found a driver for you. But unfortunately you need to register for joining that trip!</string>
     <string name="car_type_side">Car Type: \u0020</string>
     <string name="car_plate_side">Car Plate: \u0020</string>
     <string name="car_capacity_side">Car Capacity: \u0020</string>
@@ -139,7 +139,7 @@
     <string name="found_matches_msg">Found new Matches for your recent query.</string>
     <string name="navigation_error_no_offer">Error: You have currently no running offer.</string>
     <string name="error_position_update_title">No position update possible</string>
-    <string name="error_position_update_message">Sorry, seems like we lost you. Once your connection is restored more passengers will find your trip.</string>
+    <string name="error_position_update_message">Sorry, seems like we lost you. Once your connection is restored more passengers will find your Trip!</string>
     <string name="success_position_update_message">Your position could be successfully uploaded. Your trip will be reenabled.</string>
     <string name="success_position_update_title">Position update was successfull</string>
 </resources>
