@@ -156,4 +156,8 @@
     <string name="error_position_update_message">Sorry, seems like we lost you. Once your connection is restored more passengers will find your Trip!</string>
     <string name="success_position_update_message">Your position could be successfully uploaded. Your trip will be reenabled.</string>
     <string name="success_position_update_title">Position update was successfull</string>
+
+    <string name="my_trip_driver_my_passengers_title">My Passengers</string>
+    <string name="my_trip_driver_my_earnings_title">My Earnings</string>
+    <string name="my_trip_driver_my_earnings">%1$s.%2$s €</string>
 </resources>

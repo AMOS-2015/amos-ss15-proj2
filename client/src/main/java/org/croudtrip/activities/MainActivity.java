@@ -45,11 +45,11 @@ import org.croudtrip.api.account.User;
 import org.croudtrip.fragments.JoinTripRequestsFragment;
 import org.croudtrip.fragments.JoinTripResultsFragment;
 import org.croudtrip.fragments.NavigationFragment;
-import org.croudtrip.fragments.OfferTripFragment;
 import org.croudtrip.fragments.PickUpPassengerFragment;
 import org.croudtrip.fragments.ProfileFragment;
 import org.croudtrip.fragments.SettingsFragment;
 import org.croudtrip.fragments.join.JoinDispatchFragment;
+import org.croudtrip.fragments.offer.DispatchOfferTripFragment;
 import org.croudtrip.gcm.GcmManager;
 import org.croudtrip.location.LocationUpdater;
 import org.croudtrip.location.LocationUploadTimerReceiver;
@@ -77,58 +77,69 @@ import timber.log.Timber;
  * some initialization and stuff
  */
 public class MainActivity extends AbstractRoboDrawerActivity {
+
+    //******************************** Variables ***********************************//
+
+    // If a notification arrives this sometimes has to change the displayed screen.
+    // These constants are used to determine which screen should be shown.
     public final static String ACTION_SHOW_JOIN_TRIP_REQUESTS = "SHOW_JOIN_TRIP_REQUESTS";
     public final static String ACTION_SHOW_REQUEST_ACCEPTED = "SHOW_REQUEST_ACCEPTED";
     public final static String ACTION_SHOW_REQUEST_DECLINED = "SHOW_REQUEST_DECLINED";
-    public static final String ACTION_SHOW_FOUND_MATCHES = "SHOW_FOUND_MATCHES";
+    public final static String ACTION_SHOW_FOUND_MATCHES = "SHOW_FOUND_MATCHES";
 
     @Inject private GcmManager gcmManager;
     @Inject private LocationUpdater locationUpdater;
     @Inject private TripsResource tripsResource;
+
     private CompositeSubscription subscriptions = new CompositeSubscription();
     private Subscription locationUpdateSubscription;
+
+
+    //********************************* Methods ************************************//
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        LocalBroadcastManager.getInstance(this).registerReceiver(driverAcceptedReceiver,new IntentFilter(Constants.EVENT_DRIVER_ACCEPTED));
+
+        LocalBroadcastManager.getInstance(this).registerReceiver(driverAcceptedReceiver,
+                new IntentFilter(Constants.EVENT_DRIVER_ACCEPTED));
     }
 
 
     @Override
     public void init(Bundle savedInstanceState) {
+
+        // Configure Navigation Drawer
         this.disableLearningPattern();
         this.allowArrowAnimation();
         this.setBackPattern(MaterialNavigationDrawer.BACKPATTERN_BACK_TO_FIRST);
         this.setDrawerHeaderImage(R.drawable.background_drawer);
 
-        SharedPreferences prefs = getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
+        // Get all the saved user data to display some info in the navigation drawer
+        showUserInfoInNavigationDrawer();
 
-        //Get all the saved user data
-        User user = AccountManager.getLoggedInUser(getApplicationContext());
-        String firstName = (user == null || user.getFirstName() == null) ? "" : user.getFirstName();
-        String lastName = (user == null || user.getLastName() == null) ? "" : user.getLastName();
-        String email = (user == null || user.getEmail() == null) ? "" : user.getEmail();
-        final String avatarUrl = (user == null || user.getAvatarUrl() == null) ? null : user.getAvatarUrl();
+        SharedPreferences prefs = getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES,
+                Context.MODE_PRIVATE);
 
-        //Show user data in navigation drawer
-        final MaterialAccount account = new MaterialAccount(this.getResources(),firstName+ " " + lastName,email,R.drawable.profile, R.drawable.background_drawer);
-        this.addAccount(account);
 
-        // start timer to update your offers all the time
+        // Start timer to update the user's offers all the time
         if( AccountManager.isUserLoggedIn( this ) ){
             Intent alarmIntent = new Intent(this, LocationUploadTimerReceiver.class);
             PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, alarmIntent, 0);
 
             AlarmManager alarmManager = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
             alarmManager.cancel(pendingIntent);
-            alarmManager.setRepeating( AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), 120 * 1000, pendingIntent );
+            alarmManager.setRepeating( AlarmManager.RTC_WAKEUP, System.currentTimeMillis(),
+                    120 * 1000, pendingIntent );
         }
 
-        // subscribe to location updates
+
+        // Subscribe to location updates
         LocationRequest request = LocationRequest.create() //standard GMS LocationRequest
                 .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
                 .setInterval(10000);
+
         ReactiveLocationProvider locationProvider = new ReactiveLocationProvider(this);
         Subscription locationUpdateSubscription = locationProvider.getUpdatedLocation(request)
                 .subscribe(new Action1<Location>() {
@@ -137,100 +148,17 @@ public class MainActivity extends AbstractRoboDrawerActivity {
                         locationUpdater.setLastLocation( location );
                     }
                 });
+
         subscriptions.add(locationUpdateSubscription);
 
-        /**
-         * CREATE SECTIONS
-         */
 
-
-        Intent intent = getIntent();
-        String action = intent.getAction();
-        action = action == null ? "" : action;
-        /* OLD
-        // join trip/my joined trip
-        if ( action.equalsIgnoreCase(ACTION_SHOW_REQUEST_DECLINED) || action.equalsIgnoreCase(ACTION_SHOW_FOUND_MATCHES) ) {
-            this.addSection(newSection(getString(R.string.menu_my_trip), R.drawable.hitchhiker, new JoinTripResultsFragment()));
-        } else if ( action.equalsIgnoreCase(ACTION_SHOW_REQUEST_ACCEPTED) ) {
-            Bundle args = intent.getExtras();
-
-            Timber.d(args.getString(JoinTripResultsFragment.KEY_ACTION_TO_RUN));
-            Fragment frag = new JoinTripResultsFragment();
-            frag.setArguments(args);
-            this.addSection(newSection(getString(R.string.menu_my_trip), R.drawable.hitchhiker, frag));
-        } else if (prefs.getBoolean(Constants.SHARED_PREF_KEY_SEARCHING, false) || prefs.getBoolean(Constants.SHARED_PREF_KEY_ACCEPTED, false)) {
-            this.addSection(newSection(getString(R.string.menu_my_trip), R.drawable.hitchhiker, new JoinTripResultsFragment()));
-        } else {
-            this.addSection(newSection(getString(R.string.menu_join_trip), R.drawable.hitchhiker, new JoinTripFragment()));
-        } */
-
-
-        //NEW
-        JoinDispatchFragment joinDispatchFragment = new JoinDispatchFragment();
-        joinDispatchFragment.setArguments(getIntent().getExtras());
-        //Intent dispatchIntent = new Intent(this, DispatchActivity.class);
-        //dispatchIntent.putExtras(getIntent().getExtras());
-        this.addSection(newSection(getString(R.string.menu_join_trip), R.drawable.hitchhiker, joinDispatchFragment));
-
-        // offer trip/ my offered trip
-        if( action.equalsIgnoreCase(ACTION_SHOW_JOIN_TRIP_REQUESTS) ) {
-            this.addSection(newSection("My Trip Requests", R.drawable.distance, new JoinTripRequestsFragment()));
-        }
-        else {
-            this.addSection(newSection(getString(R.string.menu_offer_trip), R.drawable.ic_directions_car_white, new OfferTripFragment()));
-        }
-
-
-
-        // profile
-        if(AccountManager.isUserLoggedIn(this)) {
-            // only logged-in users can view their profile
-            this.addSection(newSection(getString(R.string.menu_profile), R.drawable.profile_icon, new ProfileFragment()));
-        }
-
-        // TODO: remove navigation tab from drawer
-
-        this.addSection(newSection(getString(R.string.navigation), R.drawable.distance, new NavigationFragment()) );
-
-        // TODO: remove from navigation drawer and call after push notification with REAL data
-        PickUpPassengerFragment fragment = new PickUpPassengerFragment();
-        Bundle args = new Bundle();
-        args.putString(PickUpPassengerFragment.KEY_PASSENGER_NAME, "Otto");
-        args.putDouble(PickUpPassengerFragment.KEY_PASSENGER_LATITUDE, 1234.5);
-        args.putDouble(PickUpPassengerFragment.KEY_PASSENGER_LONGITUDE, 678.9);
-        args.putInt(PickUpPassengerFragment.KEY_PASSENGER_PRICE, 200);
-        fragment.setArguments(args);
-        this.addSection(newSection("Pick up passenger", R.drawable.distance, fragment));
-
-        //TODO: remove from drawer
-        this.addSection(newSection("Join Trip - Requests", R.drawable.distance, new JoinTripRequestsFragment()));
-
-        // create bottom section
-        this.addBottomSection(newSection(getString(R.string.menu_settings), R.drawable.ic_settings, new SettingsFragment()));
-
-        //this.addSection(newSection("Vehicle", R.drawable.ic_directions_car_white, new VehicleInfoFragment()));
-
+        // GPS availability
         if (!GPSavailable()) {
             checkForGPS();
         }
 
-        // set the section that should be loaded at the start of the application
-        if( action.equalsIgnoreCase(ACTION_SHOW_REQUEST_DECLINED) || action.equals(ACTION_SHOW_FOUND_MATCHES) ) {
-            this.setDefaultSectionLoaded(0);
-            MaterialSection section = this.getSectionByTitle(getString(R.string.menu_my_trip));
 
-            Bundle extras = getIntent().getExtras();
-            Bundle bundle = new Bundle();
-            bundle.putAll(extras);
-
-            Fragment requestFrag = (Fragment) section.getTargetFragment();
-            requestFrag.setArguments(bundle);
-        }
-        else if( action.equalsIgnoreCase(ACTION_SHOW_JOIN_TRIP_REQUESTS) ) {
-            this.setDefaultSectionLoaded(1);
-        }
-
-        // do registration for GCM, if we are not registered
+        // Registration for GCM, if we are not registered yet
         if( !gcmManager.isRegistered() ) {
             Subscription subscription = gcmManager.register()
                     .compose(new DefaultTransformer<Void>())
@@ -249,39 +177,7 @@ public class MainActivity extends AbstractRoboDrawerActivity {
             subscriptions.add(subscription);
         }
 
-        // download avatar
-        if (avatarUrl == null) return;
-        Observable
-                .defer(new Func0<Observable<Bitmap>>() {
-                    @Override
-                    public Observable<Bitmap> call() {
-                        try {
-                            URL url = new URL(avatarUrl);
-                            HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
-                            connection.setDoInput(true);
-                            connection.connect();
-                            InputStream input = connection.getInputStream();
-                            return Observable.just(BitmapFactory.decodeStream(input));
-                        } catch (Exception e) {
-                            return Observable.error(e);
-                        }
-                    }
-                })
-                .compose(new DefaultTransformer<Bitmap>())
-                .subscribe(new Action1<Bitmap>() {
-                    @Override
-                    public void call(Bitmap avatar) {
-                        Timber.d("avatar is null " + (avatar == null));
-                        Timber.d("" + avatar.getWidth());
-                        account.setPhoto(avatar);
-                        notifyAccountDataChanged();
-                    }
-                }, new Action1<Throwable>() {
-                    @Override
-                    public void call(Throwable throwable) {
-                        Timber.e(throwable, "failed to download avatar");
-                    }
-                });
+        fillNavigationDrawer();
     }
 
     @Override
@@ -295,6 +191,7 @@ public class MainActivity extends AbstractRoboDrawerActivity {
         super.onBackPressed();
     }
 
+
     @Override
     public void onPause() {
         super.onPause();
@@ -303,16 +200,19 @@ public class MainActivity extends AbstractRoboDrawerActivity {
         subscriptions.clear();
     }
 
+
     @Override
     public void onStop() {
         super.onStop();
     }
+
 
     @Override
     protected void onDestroy() {
         LocalBroadcastManager.getInstance(this).unregisterReceiver(driverAcceptedReceiver);
         super.onDestroy();
     }
+
 
     private BroadcastReceiver driverAcceptedReceiver = new BroadcastReceiver() {
         @Override
@@ -327,6 +227,7 @@ public class MainActivity extends AbstractRoboDrawerActivity {
             setFragment( frag, getString(R.string.menu_my_trip));
         }
     };
+
 
     private boolean GPSavailable() {
         LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
@@ -372,5 +273,151 @@ public class MainActivity extends AbstractRoboDrawerActivity {
     }
 
 
+    private void showUserInfoInNavigationDrawer(){
 
+        // Get logged-in user and his data
+        User user = AccountManager.getLoggedInUser(getApplicationContext());
+        String firstName = (user == null || user.getFirstName() == null) ? "" : user.getFirstName();
+        String lastName = (user == null || user.getLastName() == null) ? "" : user.getLastName();
+        String email = (user == null || user.getEmail() == null) ? "" : user.getEmail();
+        final String avatarUrl = (user == null || user.getAvatarUrl() == null) ? null : user.getAvatarUrl();
+
+        final MaterialAccount account = new MaterialAccount(this.getResources(),
+                firstName+ " " + lastName, email, R.drawable.profile, R.drawable.background_drawer);
+        this.addAccount(account);
+
+        // Download his avatar
+        if (avatarUrl != null) {
+            Observable.defer(new Func0<Observable<Bitmap>>() {
+                @Override
+                public Observable<Bitmap> call() {
+                    try {
+                        URL url = new URL(avatarUrl);
+                        HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
+                        connection.setDoInput(true);
+                        connection.connect();
+                        InputStream input = connection.getInputStream();
+                        return Observable.just(BitmapFactory.decodeStream(input));
+                    } catch (Exception e) {
+                        return Observable.error(e);
+                    }
+                }
+            }).compose(new DefaultTransformer<Bitmap>())
+                    .subscribe(new Action1<Bitmap>() {
+                        @Override
+                        public void call(Bitmap avatar) {
+                            Timber.d("avatar is null " + (avatar == null));
+                            Timber.d("" + avatar.getWidth());
+                            account.setPhoto(avatar);
+                            notifyAccountDataChanged();
+                        }
+                    }, new Action1<Throwable>() {
+                        @Override
+                        public void call(Throwable throwable) {
+                            Timber.e(throwable, "failed to download avatar");
+                        }
+                    });
+        }
+    }
+
+
+    private void fillNavigationDrawer(){
+
+        // Check the action that was given to the activity to determine the sections that
+        // should be shown
+        Intent intent = getIntent();
+        String action = intent.getAction();
+        action = (action == null) ? "" : action;
+
+        // (0) JOIN TRIP
+        JoinDispatchFragment joinDispatchFragment = new JoinDispatchFragment();
+        joinDispatchFragment.setArguments(getIntent().getExtras());
+        this.addSection(newSection(getString(R.string.menu_join_trip),
+                R.drawable.hitchhiker,
+                joinDispatchFragment));
+
+
+        // (1) OFFER TRIP
+        String offerName = getString(R.string.menu_offer_trip);
+        SharedPreferences prefs = getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, MODE_PRIVATE);
+        if(prefs.getBoolean(Constants.SHARED_PREF_KEY_RUNNING_TRIP_OFFER, false)){
+            offerName = getString(R.string.menu_my_trip);
+        }
+
+        DispatchOfferTripFragment dispatchOfferTripFragment = new DispatchOfferTripFragment();
+        dispatchOfferTripFragment.setArguments(getIntent().getExtras());
+        this.addSection(newSection(offerName,
+                R.drawable.ic_directions_car_white,
+                dispatchOfferTripFragment));
+
+
+        // (2) PENDING JOIN REQUESTS
+        // TODO: code also down below?
+        if( action.equalsIgnoreCase(ACTION_SHOW_JOIN_TRIP_REQUESTS) ) {
+            this.addSection(newSection("My Trip Requests",
+                    R.drawable.distance,
+                    new JoinTripRequestsFragment()));
+        }
+
+
+        // (3) PROFILE
+        if(AccountManager.isUserLoggedIn(this)) {
+            // Only logged-in users can view their profile
+            this.addSection(newSection(getString(R.string.menu_profile),
+                    R.drawable.profile_icon,
+                    new ProfileFragment()));
+        }
+
+
+        // (4) NAVIGATION
+        // TODO: remove navigation tab from drawer
+        this.addSection(newSection(getString(R.string.navigation),
+                R.drawable.distance,
+                new NavigationFragment()));
+
+
+        // (5) PICK UP PASSENGER
+        // TODO: remove from navigation drawer and call after push notification with REAL data
+        PickUpPassengerFragment fragment = new PickUpPassengerFragment();
+        Bundle args = new Bundle();
+        args.putString(PickUpPassengerFragment.KEY_PASSENGER_NAME, "Otto");
+        args.putDouble(PickUpPassengerFragment.KEY_PASSENGER_LATITUDE, 1234.5);
+        args.putDouble(PickUpPassengerFragment.KEY_PASSENGER_LONGITUDE, 678.9);
+        args.putInt(PickUpPassengerFragment.KEY_PASSENGER_PRICE, 200);
+        fragment.setArguments(args);
+
+        this.addSection(newSection("Pick up passenger",
+                R.drawable.distance,
+                fragment));
+
+
+        // (6) PENDING JOIN REQUESTS
+        //TODO: remove from drawer
+        this.addSection(newSection("Join Trip - Requests",
+                R.drawable.distance,
+                new JoinTripRequestsFragment()));
+
+
+        // (7) SETTINGS
+        this.addBottomSection(newSection(getString(R.string.menu_settings),
+                R.drawable.ic_settings,
+                new SettingsFragment()));
+
+
+        // Set the section that should be loaded at the start of the application
+        if( action.equalsIgnoreCase(ACTION_SHOW_REQUEST_DECLINED) || action.equals(ACTION_SHOW_FOUND_MATCHES) ) {
+            this.setDefaultSectionLoaded(0);
+            MaterialSection section = this.getSectionByTitle(getString(R.string.menu_my_trip));
+
+            Bundle extras = getIntent().getExtras();
+            Bundle bundle = new Bundle();
+            bundle.putAll(extras);
+
+            Fragment requestFrag = (Fragment) section.getTargetFragment();
+            requestFrag.setArguments(bundle);
+
+        }else if( action.equalsIgnoreCase(ACTION_SHOW_JOIN_TRIP_REQUESTS) ) {
+            this.setDefaultSectionLoaded(2);    // PENDING JOIN REQUESTS
+        }
+    }
 }
