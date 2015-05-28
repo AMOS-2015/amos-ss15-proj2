@@ -176,7 +176,7 @@ public class TripsManager {
 
 
     public TripQueryResult queryOffers(User passenger, TripQueryDescription queryDescription) throws RouteNotFoundException {
-        logManager.d("User " + passenger.getId() + " (" + passenger.getFirstName() + " " + passenger.getLastName() + ") sent query from " + queryDescription.getStart() + " " + queryDescription.getEnd() + ".");
+        logManager.d("QUERY OFFER: User " + passenger.getId() + " (" + passenger.getFirstName() + " " + passenger.getLastName() + ") from " + queryDescription.getStart() + " " + queryDescription.getEnd() + ".");
 
         // compute passenger route
         List<Route> possiblePassengerRoutes = directionsManager.getDirections(queryDescription.getStart(), queryDescription.getEnd());
@@ -200,6 +200,8 @@ public class TripsManager {
                     RunningTripQueryStatus.RUNNING);
             runningTripQueryDAO.save(runningQuery);
         }
+
+        logManager.d("QUERY OFFER END");
 
         return new TripQueryResult(reservations, runningQuery);
     }
@@ -370,8 +372,8 @@ public class TripsManager {
                                    query.getStartLocation().distanceFrom( query.getDestinationLocation() ) +
                                    query.getDestinationLocation().distanceFrom( waypoints.get( waypoints.size() - 1 ) );
 
-        logManager.d("airlines compared:\n driverRoute: " + airlineDriverRoute + "\n totalRoute: " + airlineTotalRoute + "\n distance: " + (airlineTotalRoute - airlineDriverRoute) );
-        if( (airlineTotalRoute - airlineDriverRoute) > offer.getMaxDiversionInMeters() * 30 )
+        logManager.d("airlines compared: driverRoute: " + airlineDriverRoute + " totalRoute: " + airlineTotalRoute + " distance: " + (airlineTotalRoute - airlineDriverRoute) );
+        if( (airlineTotalRoute - airlineDriverRoute) > offer.getMaxDiversionInMeters() * 10 )
         {
             logManager.w("REQUEST REJECTED BY AIRLINE DISTANCES");
             return false;
@@ -417,14 +419,15 @@ public class TripsManager {
 
         // check if passenger route is within max diversion
         if (possibleRoutes.get(0).getDistanceInMeters() - driverRoute.getDistanceInMeters() > offer.getMaxDiversionInMeters()) {
+            logManager.d("Declined Query due to max diversion: " + (possibleRoutes.get(0).getDistanceInMeters() - driverRoute.getDistanceInMeters()) + " > " + offer.getMaxDiversionInMeters() );
             return false;
         }
 
         // check passenger max waiting time
         // TODO: It is not that simple for multiple passengers
-        Route routeToPassenger = directionsManager.getDirections(driverWayPoints.get(0), passengerWayPoints.get(0)).get(0);
         double durationToPassenger = possibleRoutes.get(0).getLegDurationsInSeconds().get(0);
-        logManager.d("Duration to passenger is: " + durationToPassenger + ". Additional directions call computes(should not differ much): " + routeToPassenger.getDurationInSeconds());
+        //Route routeToPassenger = directionsManager.getDirections(driverWayPoints.get(0), passengerWayPoints.get(0)).get(0);
+        //logManager.d("Duration to passenger is: " + durationToPassenger + ". Additional directions call computes(should not differ much): " + routeToPassenger.getDurationInSeconds());
         if ( durationToPassenger > query.getMaxWaitingTimeInSeconds()) {
             return false;
         }

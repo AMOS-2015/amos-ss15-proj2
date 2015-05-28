@@ -64,7 +64,7 @@ public class RouteLocation {
      */
     public double distanceFrom( RouteLocation other )
     {
-        final double EARTH_RADIUS = 6731.0 * 100;
+        final double EARTH_RADIUS = 6731.0 * 1000;
 
         double dLat = Math.toRadians(this.lat - other.lat);
         double dLng = Math.toRadians(this.lng - other.lng);

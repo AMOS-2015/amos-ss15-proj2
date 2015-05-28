@@ -53,6 +53,8 @@ public class DirectionsManager {
         LatLng origin = new LatLng(startLocation.getLat(), startLocation.getLng());
         LatLng destination = new LatLng(endLocation.getLat(), endLocation.getLng());
 
+        logManager.d("Directions Request with " + waypoints.size() + " wps.");
+
         List<LatLng> llWaypoints = new ArrayList<LatLng>();
 
         if( waypoints.size() > 0 ) {
@@ -74,7 +76,6 @@ public class DirectionsManager {
         }
 
         String[] stringWaypoints = new String[llWaypoints.size()];
-        logManager.d("RouteRequest with Waypoint: " + origin.toString() );
         for (int i = 0; i < stringWaypoints.length; ++i) {
             /*GeocodingResult[] result = GeocodingApi.newRequest(geoApiContext).latlng(new LatLng(loc.getLat(), loc.getLng())).await();
 
@@ -85,10 +86,7 @@ public class DirectionsManager {
 
             LatLng waypoint = llWaypoints.get(i);
             stringWaypoints[i] = waypoint.toUrlValue();
-            logManager.d("RouteRequest with Waypoint: " + stringWaypoints[i]);
         }
-
-        logManager.d("RouteRequest with Waypoint: " + destination.toString() );
 
 		List<Route> result = new ArrayList<>();
         DirectionsRoute[] googleRoutes = new DirectionsRoute[0];
@@ -118,7 +116,7 @@ public class DirectionsManager {
 
 		List<LatLng> points = new ArrayList<>();
 		for (DirectionsLeg leg : googleRoute.legs) {
-            logManager.d("Leg: " + leg.distance.inMeters);
+            //logManager.d("Leg: " + leg.distance.inMeters);
 			distanceInMeters += leg.distance.inMeters;
 			durationInSeconds += leg.duration.inSeconds;
             legDurationsInSeconds.add( leg.duration.inSeconds );
@@ -127,7 +125,7 @@ public class DirectionsManager {
 			}
 		}
 
-        logManager.d("Total Distance: " + distanceInMeters);
+        //logManager.d("Total Distance: " + distanceInMeters);
 
 		EncodedPolyline polyline = new EncodedPolyline(points);
 		String warnings;
