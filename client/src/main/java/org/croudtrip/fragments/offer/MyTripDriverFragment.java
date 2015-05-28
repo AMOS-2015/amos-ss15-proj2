@@ -126,6 +126,9 @@ public class MyTripDriverFragment extends SubscriptionFragment {
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setAdapter(adapter);
 
+        adapter.setTotalEarnings(0);    // temporary so no-one sees the ugly formatting signs
+
+
         // Ask the server for all accepted passengers
         subscriptions.add(tripsResource
                 .getDriverAcceptedJoinRequests()
