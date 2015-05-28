@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.Column;
+import javax.persistence.ElementCollection;
 import javax.persistence.Embeddable;
 
 /**
@@ -53,6 +54,10 @@ public class Route {
     @Column(name="last_update_time_in_seconds", nullable = false)
     private long lastUpdateTimeInSeconds;
 
+    @ElementCollection
+    @Column(name="leg_durations")
+    private List<Long> legDurationsInSeconds;
+
 
     public Route() { }
 
@@ -62,6 +67,7 @@ public class Route {
             @JsonProperty("polyline") String polyline,
             @JsonProperty("distanceInMeters") long distanceInMeters,
             @JsonProperty("durationInSeconds") long durationInSeconds,
+            @JsonProperty("legDurationsInSeconds") List<Long> legDurationsInSeconds,
             @JsonProperty("copyrights") String googleCopyrights,
             @JsonProperty("warnings") String googleWarnings,
             @JsonProperty("lastUpdateTime") long lastUpdateTimeInSeconds) {
@@ -82,6 +88,7 @@ public class Route {
         this.googleCopyrights = googleCopyrights;
         this.googleWarnings = googleWarnings;
         this.lastUpdateTimeInSeconds = lastUpdateTimeInSeconds;
+        this.legDurationsInSeconds = legDurationsInSeconds;
     }
 
     @JsonProperty("wayPoints")
@@ -113,6 +120,8 @@ public class Route {
     }
 
     public long getLastUpdateTimeInSeconds() { return lastUpdateTimeInSeconds; }
+
+    public List<Long> getLegDurationsInSeconds() { return legDurationsInSeconds; }
 
     @Override
     public boolean equals(Object other) {

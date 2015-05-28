@@ -421,8 +421,11 @@ public class TripsManager {
         }
 
         // check passenger max waiting time
+        // TODO: It is not that simple for multiple passengers
         Route routeToPassenger = directionsManager.getDirections(driverWayPoints.get(0), passengerWayPoints.get(0)).get(0);
-        if (routeToPassenger.getDurationInSeconds() > query.getMaxWaitingTimeInSeconds()) {
+        double durationToPassenger = possibleRoutes.get(0).getLegDurationsInSeconds().get(0);
+        logManager.d("Duration to passenger is: " + durationToPassenger + ". Additional directions call computes(should not differ much): " + routeToPassenger.getDurationInSeconds());
+        if ( durationToPassenger > query.getMaxWaitingTimeInSeconds()) {
             return false;
         }
 

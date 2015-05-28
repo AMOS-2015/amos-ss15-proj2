@@ -114,11 +114,14 @@ public class DirectionsManager {
 		long distanceInMeters = 0;
 		long durationInSeconds = 0;
 
+        List<Long> legDurationsInSeconds = new ArrayList<>();
+
 		List<LatLng> points = new ArrayList<>();
 		for (DirectionsLeg leg : googleRoute.legs) {
             logManager.d("Leg: " + leg.distance.inMeters);
 			distanceInMeters += leg.distance.inMeters;
 			durationInSeconds += leg.duration.inSeconds;
+            legDurationsInSeconds.add( leg.duration.inSeconds );
 			for (DirectionsStep step : leg.steps) {
 				points.addAll(step.polyline.decodePath());
 			}
@@ -145,7 +148,7 @@ public class DirectionsManager {
 		List<RouteLocation> wayPoints = new ArrayList<>();
 		wayPoints.add(startLocation);
 		wayPoints.add(endLocation);
-		return new Route(wayPoints, polyline.getEncodedPath(), distanceInMeters, durationInSeconds, googleRoute.copyrights, warnings, System.currentTimeMillis()/1000);
+		return new Route(wayPoints, polyline.getEncodedPath(), distanceInMeters, durationInSeconds, legDurationsInSeconds, googleRoute.copyrights, warnings, System.currentTimeMillis()/1000);
 	}
 
 }
