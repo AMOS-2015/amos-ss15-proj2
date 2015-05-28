@@ -77,9 +77,6 @@ public class DispatchOfferTripFragment extends SubscriptionFragment {
 
         // TODO clean saved fragment-navigation from SharedPref if logout
 
-        // Default navigation drawer title
-        ((MaterialNavigationDrawer) getActivity()).getCurrentSection().setTitle(getString(R.string.menu_offer_trip));
-
         FragmentTransaction transaction = getChildFragmentManager().beginTransaction();
         SharedPreferences prefs = getActivity().getSharedPreferences(
                 Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
@@ -93,6 +90,9 @@ public class DispatchOfferTripFragment extends SubscriptionFragment {
                 myTripDriverFragment.setArguments(args);
             }
 
+            // "My trip" title
+            ((MaterialNavigationDrawer) getActivity()).getCurrentSection().setTitle(getString(R.string.menu_my_trip));
+
             transaction.replace(R.id.fl_offer_dispatch_child_fragment, myTripDriverFragment)
                     .commitAllowingStateLoss();
 
@@ -103,6 +103,9 @@ public class DispatchOfferTripFragment extends SubscriptionFragment {
                 offerTripFragment = new MyTripDriverFragment();
                 offerTripFragment.setArguments(args);
             }
+
+            // "Offer trip" title
+            ((MaterialNavigationDrawer) getActivity()).getCurrentSection().setTitle(getString(R.string.menu_offer_trip));
 
             transaction.replace(R.id.fl_offer_dispatch_child_fragment, offerTripFragment)
                     .commitAllowingStateLoss();

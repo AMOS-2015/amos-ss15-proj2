@@ -338,9 +338,15 @@ public class MainActivity extends AbstractRoboDrawerActivity {
 
 
         // (1) OFFER TRIP
+        String offerName = getString(R.string.menu_offer_trip);
+        SharedPreferences prefs = getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, MODE_PRIVATE);
+        if(prefs.getBoolean(Constants.SHARED_PREF_KEY_RUNNING_TRIP_OFFER, false)){
+            offerName = getString(R.string.menu_my_trip);
+        }
+
         DispatchOfferTripFragment dispatchOfferTripFragment = new DispatchOfferTripFragment();
         dispatchOfferTripFragment.setArguments(getIntent().getExtras());
-        this.addSection(newSection(getString(R.string.menu_offer_trip),
+        this.addSection(newSection(offerName,
                 R.drawable.ic_directions_car_white,
                 dispatchOfferTripFragment));
 
