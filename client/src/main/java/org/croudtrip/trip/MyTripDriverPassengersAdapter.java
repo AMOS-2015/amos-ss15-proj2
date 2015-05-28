@@ -108,7 +108,7 @@ public class MyTripDriverPassengersAdapter extends RecyclerView.Adapter<Recycler
             showPassengerLocation(holder, query.getPassengerRoute().getWayPoints().get(0));
 
             // Earnings for driver
-            showEarning(holder, joinRequest.getTotalPriceInCents());
+            showEarning(holder.tvEarnings, joinRequest.getTotalPriceInCents());
 
         } else if (h instanceof MyTripDriverPassengersAdapter.HeaderViewHolder) {
             MyTripDriverPassengersAdapter.HeaderViewHolder holder = (MyTripDriverPassengersAdapter.HeaderViewHolder) h;
@@ -154,7 +154,7 @@ public class MyTripDriverPassengersAdapter extends RecyclerView.Adapter<Recycler
     }
 
 
-    private void showEarning(ItemViewHolder holder, int earningsInCents) {
+    private void showEarning(TextView textView, int earningsInCents) {
 
         String pEuros = (earningsInCents / 100) + "";
         String pCents;
@@ -170,7 +170,7 @@ public class MyTripDriverPassengersAdapter extends RecyclerView.Adapter<Recycler
             pCents = cents + "";
         }
 
-        holder.tvEarnings.setText(fragment.getActivity().getString(R.string.my_trip_driver_my_earnings,
+        textView.setText(fragment.getActivity().getString(R.string.my_trip_driver_my_earnings,
                 pEuros, pCents));
     }
 
@@ -211,6 +211,17 @@ public class MyTripDriverPassengersAdapter extends RecyclerView.Adapter<Recycler
 
         passengers.addAll(additionalRequests);
         this.notifyDataSetChanged();
+    }
+
+
+    /**
+     * Shows the total earnings to the driver
+     * @param totalEarningsInCent
+     */
+    public void setTotalEarnings(int totalEarningsInCent){
+        TextView earnings = (TextView) header.findViewById(R.id.tv_my_trip_driver_earnings);
+        showEarning(earnings, totalEarningsInCent);
+        notifyDataSetChanged();
     }
 
 

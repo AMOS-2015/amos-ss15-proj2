@@ -336,6 +336,13 @@ public class MyTripDriverFragment extends SubscriptionFragment {
             // SUCCESS
             Timber.d("Received " + requests.size() + " accepted passengers");
             adapter.addRequests(requests);
+
+            // Calculate how much the driver will earn
+            int totalEarningsInCent = 0;
+            for(JoinTripRequest request : requests){
+                totalEarningsInCent += request.getTotalPriceInCents();
+            }
+            adapter.setTotalEarnings(totalEarningsInCent);
         }
 
         @Override
