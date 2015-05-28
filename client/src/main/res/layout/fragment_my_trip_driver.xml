@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ The CroudTrip! application aims at revolutionizing the car-ride-sharing market with its easy,
+  ~ user-friendly and highly automated way of organizing shared Trips. Copyright (C) 2015  Nazeeh Ammari,
+  ~  Philipp Eichhorn, Ricarda Hohn, Vanessa Lange, Alexander Popp, Frederik Simon, Michael Weber
+  ~ This program is free software: you can redistribute it and/or modify  it under the terms of the GNU
+  ~  Affero General Public License as published by the Free Software Foundation, either version 3 of the
+  ~   License, or (at your option) any later version.
+  ~  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+  ~  even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~   GNU Affero General Public License for more details.
+  ~  You should have received a copy of the GNU Affero General Public License along with this program.
+  ~    If not, see http://www.gnu.org/licenses/.
+  -->
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_marginTop="@dimen/activity_vertical_margin"
+    android:layout_marginRight="@dimen/activity_horizontal_margin"
+    android:layout_marginLeft="@dimen/activity_horizontal_margin">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:id="@+id/ll_my_trip_progressBar"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:background="@color/semitransparent">
+
+            <ProgressBar
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                style="?android:attr/progressBarStyleLarge"/>
+        </LinearLayout>
+
+        <!--
+        <RelativeLayout
+            android:id="@+id/errorLayout"
+            android:layout_width="fill_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:visibility="gone"
+            android:background="@color/transparent" >
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:text="Large Text"
+                android:id="@+id/errorText"
+                android:textColor="@color/error"
+                android:layout_gravity="center_horizontal"
+                android:layout_centerVertical="true"
+                android:layout_centerHorizontal="true" />
+        </RelativeLayout>
+        -->
+
+        <fragment
+            android:id="@+id/f_my_trip_driver_map"
+            android:layout_width="match_parent"
+            android:layout_height="230dp"
+            class="com.google.android.gms.maps.SupportMapFragment" />
+
+        <TextView
+            android:id="@+id/tv_my_trip_driver_earnings_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/my_trip_driver_my_earnings_title"
+            style="?android:attr/listSeparatorTextViewStyle"/>
+
+        <TextView
+            android:id="@+id/tv_my_trip_driver_earnings"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/my_trip_driver_my_earnings"
+            android:layout_gravity="center"
+            android:layout_margin="10dp"
+            android:textAppearance="?android:attr/textAppearanceLarge"/>
+
+        <TextView
+            android:id="@+id/tv_my_trip_driver_passengers_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/my_trip_driver_my_passengers_title"
+            style="?android:attr/listSeparatorTextViewStyle"/>
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/rv_my_trip_driver_passengers"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+    </LinearLayout>
+
+</RelativeLayout>

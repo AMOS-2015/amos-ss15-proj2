@@ -20,7 +20,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.drawable.ColorDrawable;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
@@ -36,11 +35,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
-import android.widget.NumberPicker;
 import android.widget.TextView;
 import android.widget.Toast;
-import com.gc.materialdesign.views.Slider;
 
+import com.gc.materialdesign.views.Slider;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
@@ -53,12 +51,11 @@ import com.google.android.gms.location.places.Places;
 import com.google.android.gms.location.places.ui.PlacePicker;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
-import com.rengwuxian.materialedittext.MaterialEditText;
 
-import org.croudtrip.account.VehicleManager;
 import org.croudtrip.Constants;
 import org.croudtrip.MainApplication;
 import org.croudtrip.R;
+import org.croudtrip.account.VehicleManager;
 import org.croudtrip.api.TripsResource;
 import org.croudtrip.api.VehicleResource;
 import org.croudtrip.api.account.Vehicle;
@@ -281,8 +278,8 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
         });
 
         // By clicking on the offer-trip-button the driver makes his choice public
-        Button btn_join = (Button) view.findViewById(R.id.offer);
-        btn_join.setOnClickListener(new View.OnClickListener() {
+        Button btn_offer = (Button) view.findViewById(R.id.offer);
+        btn_offer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 SharedPreferences.Editor editor = prefs.edit();
@@ -331,20 +328,20 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
                 LatLng destination = null;
                 try {
                     List<Address> addresses = null;
-                    if( tv_address.getText() == null || tv_address.getText().equals("")) {
+                    if (tv_address.getText() == null || tv_address.getText().equals("")) {
                         addresses = geocoder.getFromLocationName(tv_destination.getText().toString(), 1);
                     } else {
                         addresses = geocoder.getFromLocationName(tv_address.getText().toString(), 1);
                     }
-                    if( addresses == null || addresses.size() > 0 )
-                        destination = new LatLng( addresses.get(0).getLatitude(), addresses.get(0).getLongitude() );
+                    if (addresses == null || addresses.size() > 0)
+                        destination = new LatLng(addresses.get(0).getLatitude(), addresses.get(0).getLongitude());
                 } catch (IOException e) {
                     Toast.makeText(getActivity().getApplicationContext(), R.string.offer_trip_no_destination, Toast.LENGTH_SHORT).show();
                     return;
                 }
 
                 // no destination received
-                if( destination == null ) {
+                if (destination == null) {
                     Toast.makeText(getActivity().getApplicationContext(), R.string.offer_trip_no_destination, Toast.LENGTH_SHORT).show();
                     return;
                 }
@@ -364,60 +361,32 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
                     e.printStackTrace();
                 }
 
+
+                // Remember that a trip was offered to show "My Trip" instead of "Offer Trip"
+                // in the Navigation drawer
+                getActivity().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE)
+                        .edit().putBoolean(Constants.SHARED_PREF_KEY_RUNNING_TRIP_OFFER, true).apply();
+
+
                 final Bundle b = new Bundle();
                 b.putString(NavigationFragment.ARG_ACTION, NavigationFragment.ACTION_CREATE);
-                b.putInt("maxDiversion", Integer.valueOf(slider_diversion.getValue() + "") );
+                b.putInt("maxDiversion", Integer.valueOf(slider_diversion.getValue() + ""));
                 b.putInt("pricePerKilometer", Integer.valueOf(slider_price.getValue() + ""));
                 b.putDouble("fromLat", currentLocation.getLatitude());
-                b.putDouble("fromLng", currentLocation.getLongitude() );
-                b.putDouble("toLat", destination.latitude );
-                b.putDouble("toLng", destination.longitude );
+                b.putDouble("fromLng", currentLocation.getLongitude());
+                b.putDouble("toLat", destination.latitude);
+                b.putDouble("toLng", destination.longitude);
                 final NavigationFragment navigationFragment = new NavigationFragment();
 
                 if (VehicleManager.getDefaultVehicleId(getActivity()) == -3)
                     showCarPlateDialog();
-                else
-                {
-                    b.putLong( "vehicle_id", VehicleManager.getDefaultVehicleId(getActivity()));
+                else {
+                    b.putLong("vehicle_id", VehicleManager.getDefaultVehicleId(getActivity()));
                     navigationFragment.setArguments(b);
-                    ((MaterialNavigationDrawer) getActivity()).setSection( ((MaterialNavigationDrawer) getActivity()).getSectionByTitle(getString(R.string.navigation)) );
+                    ((MaterialNavigationDrawer) getActivity()).setSection(((MaterialNavigationDrawer) getActivity()).getSectionByTitle(getString(R.string.navigation)));
                     ((MaterialNavigationDrawer) getActivity()).setFragment(navigationFragment, getString(R.string.navigation));
                     Toast.makeText(getActivity().getApplicationContext(), R.string.offer_trip, Toast.LENGTH_SHORT).show();
                 }
-/*
-                Subscription subscription = vehicleResource.getVehicles()
-                        .compose(new DefaultTransformer<List<Vehicle>>())
-                        .subscribe(new Action1<List<Vehicle>>() {
-                            @Override
-                            public void call(List<Vehicle> vehicles) {
-                                if (vehicles.size() > 0)
-                                {
-                                    // TODO: SELECT YOUR VEHICLE
-                                    b.putLong( "vehicle_id", vehicles.get(0).getId());
-                                    navigationFragment.setArguments(b);
-                                    ((MaterialNavigationDrawer) getActivity()).setSection( ((MaterialNavigationDrawer) getActivity()).getSectionByTitle(getString(R.string.navigation)) );
-                                    ((MaterialNavigationDrawer) getActivity()).setFragment(navigationFragment, getString(R.string.navigation));
-                                    Toast.makeText(getActivity().getApplicationContext(), R.string.offer_trip, Toast.LENGTH_SHORT).show();
-                                }
-                                else
-                                    showCarPlateDialog();
-                            }
-                        }, new Action1<Throwable>() {
-                            @Override
-                            public void call(Throwable throwable) {
-                                Response response = ((RetrofitError) throwable).getResponse();
-                                if (response != null && response.getStatus() == 401) {  // Not Authorized
-                                } else {
-                                    Timber.e("error" + throwable.getMessage());
-                                }
-                                Timber.e("Couldn't get data" + throwable.getMessage());
-                            }
-                        });
-
-                subscriptions.add(subscription);
-*/
-
-
 
             }
         });
@@ -440,7 +409,6 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         menu.clear();
-        //inflater.inflate(R.menu.menu_main, menu);
     }
 
     private AdapterView.OnItemClickListener mAutocompleteClickListener = new AdapterView.OnItemClickListener() {
