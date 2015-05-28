@@ -13,61 +13,43 @@
   ~    If not, see http://www.gnu.org/licenses/.
   -->
 
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     android:layout_marginTop="@dimen/activity_vertical_margin"
     android:layout_marginRight="@dimen/activity_horizontal_margin"
     android:layout_marginLeft="@dimen/activity_horizontal_margin">
 
     <LinearLayout
+        android:id="@+id/ll_my_trip_driver_info"
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <LinearLayout
-            android:id="@+id/ll_my_trip_progressBar"
+        <!-- MAP -->
+        <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:gravity="center"
-            android:orientation="vertical"
             android:background="@color/semitransparent">
 
+            <fragment
+                android:id="@+id/f_my_trip_driver_map"
+                android:layout_width="match_parent"
+                android:layout_height="230dp"
+                class="com.google.android.gms.maps.SupportMapFragment" />
+
             <ProgressBar
+                android:id="@+id/pb_my_trip_progressBar"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_gravity = "center_vertical|center_horizontal"
                 style="?android:attr/progressBarStyleLarge"/>
-        </LinearLayout>
+        </FrameLayout>
 
-        <!--
-        <RelativeLayout
-            android:id="@+id/errorLayout"
-            android:layout_width="fill_parent"
-            android:layout_height="match_parent"
-            android:gravity="center"
-            android:orientation="vertical"
-            android:visibility="gone"
-            android:background="@color/transparent" >
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceLarge"
-                android:text="Large Text"
-                android:id="@+id/errorText"
-                android:textColor="@color/error"
-                android:layout_gravity="center_horizontal"
-                android:layout_centerVertical="true"
-                android:layout_centerHorizontal="true" />
-        </RelativeLayout>
-        -->
-
-        <fragment
-            android:id="@+id/f_my_trip_driver_map"
-            android:layout_width="match_parent"
-            android:layout_height="230dp"
-            class="com.google.android.gms.maps.SupportMapFragment" />
-
+        <!-- EARNINGS -->
         <TextView
             android:id="@+id/tv_my_trip_driver_earnings_title"
             android:layout_width="match_parent"
@@ -84,6 +66,8 @@
             android:layout_margin="10dp"
             android:textAppearance="?android:attr/textAppearanceLarge"/>
 
+
+        <!-- PASSENGERS -->
         <TextView
             android:id="@+id/tv_my_trip_driver_passengers_title"
             android:layout_width="match_parent"
@@ -91,11 +75,13 @@
             android:text="@string/my_trip_driver_my_passengers_title"
             style="?android:attr/listSeparatorTextViewStyle"/>
 
-        <android.support.v7.widget.RecyclerView
-            android:id="@+id/rv_my_trip_driver_passengers"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-
     </LinearLayout>
 
-</RelativeLayout>
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/rv_my_trip_driver_passengers"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+
+</LinearLayout>

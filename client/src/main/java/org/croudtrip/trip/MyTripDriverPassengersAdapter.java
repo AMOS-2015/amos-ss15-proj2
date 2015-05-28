@@ -42,61 +42,83 @@ import java.util.Locale;
  * through them in his "My Trip" view.
  * @author Vanessa Lange
  */
-public class MyTripDriverPassengersAdapter extends RecyclerView.Adapter<MyTripDriverPassengersAdapter.ViewHolder>{
+public class MyTripDriverPassengersAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>{
 
-    //************************** Variables ***************************//
+        //************************** Variables ***************************//
+
+    private static final int TYPE_HEADER = 0;
+    private static final int TYPE_ITEM = 1;
+    private View header;    // map and earnings are in the header view
 
     private Fragment fragment;
     private List<JoinTripRequest> passengers;
 
 
+
     //************************** Constructors ***************************//
 
-    public MyTripDriverPassengersAdapter(Fragment fragment) {
+    public MyTripDriverPassengersAdapter(Fragment fragment, View header) {
         this.fragment = fragment;
         this.passengers = new ArrayList<JoinTripRequest>();
+        this.header = header;
     }
 
 
     //**************************** Methods *****************************//
 
     @Override
-    public MyTripDriverPassengersAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
 
-        // Create new views (invoked by the layout manager)
-        View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.cardview_my_trip_driver_passengers, parent, false);
+        if (viewType == TYPE_ITEM) {
+            // Inflate item layout and pass it to view holder
+            return new ItemViewHolder(LayoutInflater.from(parent.getContext())
+                    .inflate(R.layout.cardview_my_trip_driver_passengers, parent, false));
 
-        return new ViewHolder(view);
+        } else if (viewType == TYPE_HEADER) {
+            //inflate your layout and pass it to view holder
+            return new HeaderViewHolder(header);
+        }
+
+        throw new RuntimeException("There is no type that matches the type " + viewType);
     }
 
 
     @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
+    public void onBindViewHolder(RecyclerView.ViewHolder h, int position) {
 
-        JoinTripRequest joinRequest = passengers.get(position);
-        TripQuery query = joinRequest.getQuery();
+        if (h instanceof ItemViewHolder) {
+            ItemViewHolder holder = (ItemViewHolder) h;
 
-        // Passenger name
-        User passenger = query.getPassenger();
-        holder.tvPassengerName.setText(passenger.getFirstName() + " " + passenger.getLastName());
+            JoinTripRequest joinRequest = getRequest(position);
+            TripQuery query = joinRequest.getQuery();
 
-        // Passenger image/avatar
-        String avatarURL = passenger.getAvatarUrl();
-        if (avatarURL != null) {
-            Picasso.with(fragment.getActivity()).load(avatarURL).into(holder.ivAvatar);
-        } else {
-            holder.ivAvatar.setImageResource(R.drawable.profile);
+            // Passenger name
+            User passenger = query.getPassenger();
+            holder.tvPassengerName.setText(passenger.getFirstName() + " " + passenger.getLastName());
+
+            // Passenger image/avatar
+            String avatarURL = passenger.getAvatarUrl();
+            if (avatarURL != null) {
+                Picasso.with(fragment.getActivity()).load(avatarURL).into(holder.ivAvatar);
+            } else {
+                holder.ivAvatar.setImageResource(R.drawable.profile);
+            }
+
+            // Passenger location
+            showPassengerLocation(holder, query.getPassengerRoute().getWayPoints().get(0));
+
+            // Earnings for driver
+            showEarning(holder, joinRequest.getTotalPriceInCents());
+
+        } else if (h instanceof MyTripDriverPassengersAdapter.HeaderViewHolder) {
+            MyTripDriverPassengersAdapter.HeaderViewHolder holder = (MyTripDriverPassengersAdapter.HeaderViewHolder) h;
+            holder.view = header;
         }
 
-        // Passenger location
-        showPassengerLocation(holder, query.getPassengerRoute().getWayPoints().get(0));
 
-        // Earnings for driver
-        showEarning(holder, joinRequest.getTotalPriceInCents());
     }
 
-    private void showPassengerLocation(ViewHolder holder, RouteLocation location) {
+    private void showPassengerLocation(ItemViewHolder holder, RouteLocation location) {
 
         holder.tvPassengerLocation.setVisibility(View.VISIBLE);
 
@@ -132,7 +154,7 @@ public class MyTripDriverPassengersAdapter extends RecyclerView.Adapter<MyTripDr
     }
 
 
-    private void showEarning(ViewHolder holder, int earningsInCents) {
+    private void showEarning(ItemViewHolder holder, int earningsInCents) {
 
         String pEuros = (earningsInCents / 100) + "";
         String pCents;
@@ -160,7 +182,19 @@ public class MyTripDriverPassengersAdapter extends RecyclerView.Adapter<MyTripDr
             return 0;
         }
 
-        return passengers.size();
+        return passengers.size() + 1;   // don't forget the header
+    }
+
+
+    private JoinTripRequest getRequest(int position) {
+
+        int realPosition = position - 1;
+
+        if(realPosition < 0 || realPosition >= passengers.size()){
+            return null;
+        }
+
+        return passengers.get(realPosition);
     }
 
 
@@ -180,20 +214,18 @@ public class MyTripDriverPassengersAdapter extends RecyclerView.Adapter<MyTripDr
     }
 
 
+    private boolean isPositionHeader(int position) {
+        return position == 0;
+    }
 
-    /**
-     * Returns the JoinTripRequest at the specific position
-     *
-     * @param position the position in the adapter of the JoinTripRequest to return
-     * @return the JoinTripRequest at the specific position
-     */
-    public JoinTripRequest getRequest(int position) {
 
-        if (position < 0 || position >= passengers.size()) {
-            return null;
-        }
+    @Override
+    public int getItemViewType(int position) {
 
-        return passengers.get(position);
+        if (isPositionHeader(position))
+            return TYPE_HEADER;
+
+        return TYPE_ITEM;
     }
 
 
@@ -203,7 +235,7 @@ public class MyTripDriverPassengersAdapter extends RecyclerView.Adapter<MyTripDr
     /**
      * Provides a reference to the views for each data item.
      */
-    class ViewHolder extends RecyclerView.ViewHolder{
+    class ItemViewHolder extends RecyclerView.ViewHolder{
 
         protected TextView tvPassengerName;
         protected TextView tvPassengerLocation;
@@ -211,7 +243,7 @@ public class MyTripDriverPassengersAdapter extends RecyclerView.Adapter<MyTripDr
         protected ImageView ivAvatar;
 
 
-        public ViewHolder(View view) {
+        public ItemViewHolder(View view) {
             super(view);
             this.tvPassengerName = (TextView)
                     view.findViewById(R.id.tv_my_trip_driver_passengers_passenger_name);
@@ -221,6 +253,19 @@ public class MyTripDriverPassengersAdapter extends RecyclerView.Adapter<MyTripDr
                     view.findViewById(R.id.tv_my_trip_driver_passengers_passenger_earnings);
             this.ivAvatar = (ImageView)
                     view.findViewById(R.id.iv_my_trip_driver_passengers_user_image);
+        }
+    }
+
+    /**
+     * Provides a reference to the header view
+     */
+    class HeaderViewHolder extends RecyclerView.ViewHolder{
+
+        protected View view;
+
+        public HeaderViewHolder(View view) {
+            super(view);
+            this.view = view;
         }
     }
 }

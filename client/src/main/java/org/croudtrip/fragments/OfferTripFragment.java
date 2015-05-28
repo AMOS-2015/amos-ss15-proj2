@@ -60,6 +60,7 @@ import org.croudtrip.api.TripsResource;
 import org.croudtrip.api.VehicleResource;
 import org.croudtrip.api.account.Vehicle;
 import org.croudtrip.db.DatabaseHelper;
+import org.croudtrip.fragments.offer.MyTripDriverFragment;
 import org.croudtrip.location.LocationUpdater;
 import org.croudtrip.location.MyAutoCompleteTextView;
 import org.croudtrip.location.PlaceAutocompleteAdapter;
@@ -362,29 +363,25 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
                 }
 
 
-                // Remember that a trip was offered to show "My Trip" instead of "Offer Trip"
-                // in the Navigation drawer
-                getActivity().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE)
-                        .edit().putBoolean(Constants.SHARED_PREF_KEY_RUNNING_TRIP_OFFER, true).apply();
-
-
-                final Bundle b = new Bundle();
-                b.putString(NavigationFragment.ARG_ACTION, NavigationFragment.ACTION_CREATE);
-                b.putInt("maxDiversion", Integer.valueOf(slider_diversion.getValue() + ""));
-                b.putInt("pricePerKilometer", Integer.valueOf(slider_price.getValue() + ""));
-                b.putDouble("fromLat", currentLocation.getLatitude());
-                b.putDouble("fromLng", currentLocation.getLongitude());
-                b.putDouble("toLat", destination.latitude);
-                b.putDouble("toLng", destination.longitude);
-                final NavigationFragment navigationFragment = new NavigationFragment();
-
-                if (VehicleManager.getDefaultVehicleId(getActivity()) == -3)
+                if (VehicleManager.getDefaultVehicleId(getActivity()) == -3) {
+                    // User needs to add car info before he can offer a trip
                     showCarPlateDialog();
-                else {
+
+                }else {
+                    // Start the My Trip view for the driver
+                    final Bundle b = new Bundle();
+                    b.putString(MyTripDriverFragment.ARG_ACTION, MyTripDriverFragment.ACTION_CREATE);
+                    b.putInt("maxDiversion", Integer.valueOf(slider_diversion.getValue() + ""));
+                    b.putInt("pricePerKilometer", Integer.valueOf(slider_price.getValue() + ""));
+                    b.putDouble("fromLat", currentLocation.getLatitude());
+                    b.putDouble("fromLng", currentLocation.getLongitude());
+                    b.putDouble("toLat", destination.latitude);
+                    b.putDouble("toLng", destination.longitude);
+                    final MyTripDriverFragment myTripDriverFragment = new MyTripDriverFragment();
+
                     b.putLong("vehicle_id", VehicleManager.getDefaultVehicleId(getActivity()));
-                    navigationFragment.setArguments(b);
-                    ((MaterialNavigationDrawer) getActivity()).setSection(((MaterialNavigationDrawer) getActivity()).getSectionByTitle(getString(R.string.navigation)));
-                    ((MaterialNavigationDrawer) getActivity()).setFragment(navigationFragment, getString(R.string.navigation));
+                    myTripDriverFragment.setArguments(b);
+                    ((MaterialNavigationDrawer) getActivity()).setFragment(myTripDriverFragment, getString(R.string.menu_my_trip));
                     Toast.makeText(getActivity().getApplicationContext(), R.string.offer_trip, Toast.LENGTH_SHORT).show();
                 }
 
