@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+  ~ The CroudTrip! application aims at revolutionizing the car-ride-sharing market with its easy,
+  ~ user-friendly and highly automated way of organizing shared Trips. Copyright (C) 2015  Nazeeh Ammari,
+  ~  Philipp Eichhorn, Ricarda Hohn, Vanessa Lange, Alexander Popp, Frederik Simon, Michael Weber
+  ~ This program is free software: you can redistribute it and/or modify  it under the terms of the GNU
+  ~  Affero General Public License as published by the Free Software Foundation, either version 3 of the
+  ~   License, or (at your option) any later version.
+  ~  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+  ~  even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~   GNU Affero General Public License for more details.
+  ~  You should have received a copy of the GNU Affero General Public License along with this program.
+  ~    If not, see http://www.gnu.org/licenses/.
+  -->
+
+<android.support.v7.widget.CardView
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/cv_my_trip_driver_passengers"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    card_view:cardCornerRadius="4dp">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="2dp">
+
+        <ImageView
+            android:id="@+id/iv_my_trip_driver_passengers_user_image"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:src="@drawable/profile"
+            android:scaleType="fitCenter"
+            android:adjustViewBounds="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            android:layout_margin="2dp"/>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_toRightOf="@id/iv_my_trip_driver_passengers_user_image"
+            android:layout_toEndOf="@id/iv_my_trip_driver_passengers_user_image"
+            android:gravity="center_vertical"
+            android:layout_margin="2dp">
+
+            <TextView
+                android:id="@+id/tv_my_trip_driver_passengers_passenger_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAppearance="@android:style/TextAppearance.Medium"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="8dp"/>
+
+            <TextView
+                android:id="@+id/tv_my_trip_driver_passengers_passenger_location"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/tv_my_trip_driver_passengers_passenger_name"
+                android:gravity="center_vertical"/>
+
+            <TextView
+                android:id="@+id/tv_my_trip_driver_passengers_passenger_earnings"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:layout_below="@id/tv_my_trip_driver_passengers_passenger_location"/>
+        </RelativeLayout>
+    </RelativeLayout>
+
+</android.support.v7.widget.CardView>

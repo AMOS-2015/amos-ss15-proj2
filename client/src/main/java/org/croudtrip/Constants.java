@@ -20,6 +20,9 @@ package org.croudtrip;
 public class Constants {
     public final static String SHARED_PREF_FILE_PREFERENCES = "org.croudtrip.preferences";
 
+    // OfferDispatchFragment
+    public final static String SHARED_PREF_KEY_RUNNING_TRIP_OFFER = "running_trip_offer";
+
     public final static String SHARED_PREF_KEY_WAITING_TIME = "waitingTime";
     public final static String SHARED_PREF_KEY_SEARCHING = "searching";
     public final static String SHARED_PREF_KEY_ACCEPTED = "accepted";
@@ -31,6 +34,7 @@ public class Constants {
 
     public final static String EVENT_DRIVER_ACCEPTED = "driver_accepted";
     public final static String EVENT_CHANGE_JOIN_UI = "change_join_ui";
+
 
 
 
