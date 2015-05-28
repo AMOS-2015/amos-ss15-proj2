@@ -56,6 +56,29 @@ public class RouteLocation {
         return  lng;
     }
 
+
+    /**
+     * Returns the distance from the other RouteLocation in meters
+     * @param other the RouteLocation you want compute the distance to
+     * @return the distance from this location to the other location in meters
+     */
+    public double distanceFrom( RouteLocation other )
+    {
+        final double EARTH_RADIUS = 6731.0 * 100;
+
+        double dLat = Math.toRadians(this.lat - other.lat);
+        double dLng = Math.toRadians(this.lng - other.lng);
+
+        double sindLat = Math.sin(dLat / 2);
+        double sindLng = Math.sin(dLng / 2);
+        double a = Math.pow(sindLat, 2) + Math.pow(sindLng, 2)
+                * Math.cos(Math.toRadians(this.lat)) * Math.cos(Math.toRadians(other.lng));
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        double dist = EARTH_RADIUS * c;
+
+        return dist;
+    }
+
     @Override
     public boolean equals(Object other) {
         if (other == null || !(other instanceof RouteLocation)) return false;

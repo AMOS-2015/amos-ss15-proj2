@@ -16,6 +16,7 @@ package org.croudtrip.trips;
 
 
 import com.google.common.base.Optional;
+import com.google.maps.model.LatLng;
 
 import org.croudtrip.account.VehicleManager;
 import org.croudtrip.api.account.User;
@@ -57,18 +58,18 @@ import javax.inject.Singleton;
 @Singleton
 public class TripsManager {
 
-	private final TripOfferDAO tripOfferDAO;
+    private final TripOfferDAO tripOfferDAO;
     private final RunningTripQueryDAO runningTripQueryDAO;
     private final TripReservationDAO tripReservationDAO;
     private final JoinTripRequestDAO joinTripRequestDAO;
-	private final DirectionsManager directionsManager;
+    private final DirectionsManager directionsManager;
     private final VehicleManager vehicleManager;
     private final GcmManager gcmManager;
     private final LogManager logManager;
 
 
-	@Inject
-	TripsManager(
+    @Inject
+    TripsManager(
             TripOfferDAO tripOfferDAO,
             RunningTripQueryDAO runningTripQueryDAO,
             TripReservationDAO tripReservationDAO,
@@ -78,23 +79,23 @@ public class TripsManager {
             GcmManager gcmManager,
             LogManager logManager) {
 
-		this.tripOfferDAO = tripOfferDAO;
+        this.tripOfferDAO = tripOfferDAO;
         this.runningTripQueryDAO = runningTripQueryDAO;
         this.tripReservationDAO = tripReservationDAO;
         this.joinTripRequestDAO = joinTripRequestDAO;
-		this.directionsManager = directionsManager;
+        this.directionsManager = directionsManager;
         this.vehicleManager = vehicleManager;
         this.gcmManager = gcmManager;
         this.logManager = logManager;
-	}
+    }
 
 
-	public TripOffer addOffer(User owner, TripOfferDescription description) throws RouteNotFoundException {
+    public TripOffer addOffer(User owner, TripOfferDescription description) throws RouteNotFoundException {
         logManager.d("Searching for routes");
 
         // check if there is a route
-		List<Route> route = directionsManager.getDirections(description.getStart(), description.getEnd());
-		if (route.size() == 0) throw new RouteNotFoundException();
+        List<Route> route = directionsManager.getDirections(description.getStart(), description.getEnd());
+        if (route.size() == 0) throw new RouteNotFoundException();
 
         logManager.d("Found " + route.size() + " routes to " + description.getEnd());
 
@@ -103,7 +104,7 @@ public class TripsManager {
         Assert.assertTrue(vehicle.isPresent() && vehicle.get().getOwner().getId() == owner.getId(), "no vehilce for id " + description.getVehicleId());
 
         // create and store offer
-		TripOffer offer = new TripOffer(
+        TripOffer offer = new TripOffer(
                 0,
                 route.get(0),
                 description.getStart(),
@@ -113,7 +114,7 @@ public class TripsManager {
                 vehicle.get(),
                 TripOfferStatus.ACTIVE_NOT_FULL,
                 System.currentTimeMillis()/1000);
-		tripOfferDAO.save(offer);
+        tripOfferDAO.save(offer);
 
         // compare offer with running queries
         for (RunningTripQuery runningQuery : runningTripQueryDAO.findByStatusRunning()) {
@@ -130,31 +131,31 @@ public class TripsManager {
                         query.getPassenger(),
                         GcmConstants.GCM_MSG_FOUND_MATCHES,
                         new Pair<>(GcmConstants.GCM_MSG_FOUND_MATCHES_QUERY_ID, "" + runningQuery.getId()));
-                        RunningTripQuery updatedRunningQuery = new RunningTripQuery(
-                                runningQuery.getId(),
-                                runningQuery.getQuery(),
-                                runningQuery.getCreationTimestamp(),
-                                RunningTripQueryStatus.FOUND);
+                RunningTripQuery updatedRunningQuery = new RunningTripQuery(
+                        runningQuery.getId(),
+                        runningQuery.getQuery(),
+                        runningQuery.getCreationTimestamp(),
+                        RunningTripQueryStatus.FOUND);
                 runningTripQueryDAO.update(updatedRunningQuery);
             }
         }
-		return offer;
-	}
+        return offer;
+    }
 
 
-	public List<TripOffer> findOffersByDriver(User driver) {
+    public List<TripOffer> findOffersByDriver(User driver) {
         return tripOfferDAO.findByDriverId(driver.getId());
-	}
+    }
 
 
-	public Optional<TripOffer> findOffer(long offerId) {
-		return tripOfferDAO.findById(offerId);
-	}
+    public Optional<TripOffer> findOffer(long offerId) {
+        return tripOfferDAO.findById(offerId);
+    }
 
 
-	public void deleteOffer(TripOffer offer) {
-		tripOfferDAO.delete(offer);
-	}
+    public void deleteOffer(TripOffer offer) {
+        tripOfferDAO.delete(offer);
+    }
 
 
     public TripOffer updateOffer(TripOffer offer, TripOfferUpdate offerUpdate) throws RouteNotFoundException {
@@ -174,7 +175,7 @@ public class TripsManager {
     }
 
 
-	public TripQueryResult queryOffers(User passenger, TripQueryDescription queryDescription) throws RouteNotFoundException {
+    public TripQueryResult queryOffers(User passenger, TripQueryDescription queryDescription) throws RouteNotFoundException {
         logManager.d("User " + passenger.getId() + " (" + passenger.getFirstName() + " " + passenger.getLastName() + ") sent query from " + queryDescription.getStart() + " " + queryDescription.getEnd() + ".");
 
         // compute passenger route
@@ -201,7 +202,7 @@ public class TripsManager {
         }
 
         return new TripQueryResult(reservations, runningQuery);
-	}
+    }
 
 
     public List<RunningTripQuery> getRunningQueries(User passenger, boolean showOnlyRunning) {
@@ -350,29 +351,43 @@ public class TripsManager {
 
         // find declined trips for this user and skip already declined offers
         List<JoinTripRequest> declinedRequests = joinTripRequestDAO.findDeclinedRequests(query.getPassenger().getId());
-		for( JoinTripRequest request : declinedRequests ) {
-			if( offer.getId() == request.getOffer().getId()) {
+        for( JoinTripRequest request : declinedRequests ) {
+            if( offer.getId() == request.getOffer().getId()) {
                 return false;
-			}
-		}
+            }
+        }
 
         // check current passenger count
         int passengerCount = getActiveJoinRequestsForOffer(offer);
         if (passengerCount >= offer.getVehicle().getCapacity()) return false;
 
-        // TODO: Early reject based on airline
+        // Early reject based on airline;
+        // TODO: Handle multiple waypoints
+        List<RouteLocation> waypoints = offer.getDriverRoute().getWayPoints();
+        double airlineDriverRoute = waypoints.get(0).distanceFrom( waypoints.get( waypoints.size() - 1 ) );
+
+        double airlineTotalRoute = waypoints.get(0).distanceFrom( query.getStartLocation() ) +
+                                   query.getStartLocation().distanceFrom( query.getDestinationLocation() ) +
+                                   query.getDestinationLocation().distanceFrom( waypoints.get( waypoints.size() - 1 ) );
+
+        logManager.d("airlines compared:\n driverRoute: " + airlineDriverRoute + "\n totalRoute: " + airlineTotalRoute + "\n distance: " + (airlineTotalRoute - airlineDriverRoute) );
+        if( (airlineTotalRoute - airlineDriverRoute) > offer.getMaxDiversionInMeters() * 30 )
+        {
+            logManager.w("REQUEST REJECTED BY AIRLINE DISTANCES");
+            return false;
+        }
 
         // TODO: Solve TSP for multiple passengers
 
-		// compute total driver route
-		List<RouteLocation> passengerWayPoints = query.getPassengerRoute().getWayPoints();
-		List<RouteLocation> driverWayPoints = offer.getDriverRoute().getWayPoints();
-		List<Route> possibleRoutes = directionsManager.getDirections(
-				driverWayPoints.get(0),
-				driverWayPoints.get(1),
-				passengerWayPoints);
+        // compute total driver route
+        List<RouteLocation> passengerWayPoints = query.getPassengerRoute().getWayPoints();
+        List<RouteLocation> driverWayPoints = offer.getDriverRoute().getWayPoints();
+        List<Route> possibleRoutes = directionsManager.getDirections(
+                driverWayPoints.get(0),
+                driverWayPoints.get(1),
+                passengerWayPoints);
 
-		if (possibleRoutes == null || possibleRoutes.isEmpty()) return false;
+        if (possibleRoutes == null || possibleRoutes.isEmpty()) return false;
 
         // update driver route (if necessary, since there was a position update since last route calculation
         Route driverRoute = offer.getDriverRoute();
@@ -380,7 +395,7 @@ public class TripsManager {
             logManager.d( offer.getId() + ": driver route is out of date. Updating route...");
             List<Route> updatedDriverRoutes = directionsManager.getDirections(offer.getCurrentLocation(), driverRoute.getWayPoints().get(driverRoute.getWayPoints().size() - 1));
             if( updatedDriverRoutes == null || updatedDriverRoutes.isEmpty() ) {
-                // TODO: That's not good and should hopefully never happen#
+                // TODO: That's not good and should hopefully never happen
                 logManager.e("Could not compute a route for the driver after route update.");
             }
             else {
@@ -400,16 +415,16 @@ public class TripsManager {
             }
         }
 
-		// check if passenger route is within max diversion
-		if (possibleRoutes.get(0).getDistanceInMeters() - driverRoute.getDistanceInMeters() > offer.getMaxDiversionInMeters()) {
+        // check if passenger route is within max diversion
+        if (possibleRoutes.get(0).getDistanceInMeters() - driverRoute.getDistanceInMeters() > offer.getMaxDiversionInMeters()) {
             return false;
-		}
+        }
 
-		// check passenger max waiting time
-		Route routeToPassenger = directionsManager.getDirections(driverWayPoints.get(0), passengerWayPoints.get(0)).get(0);
-		if (routeToPassenger.getDurationInSeconds() > query.getMaxWaitingTimeInSeconds()) {
+        // check passenger max waiting time
+        Route routeToPassenger = directionsManager.getDirections(driverWayPoints.get(0), passengerWayPoints.get(0)).get(0);
+        if (routeToPassenger.getDurationInSeconds() > query.getMaxWaitingTimeInSeconds()) {
             return false;
-		}
+        }
 
         return true;
     }
