@@ -51,7 +51,7 @@ public class TripOfferChecker extends AbstractScheduledTaskExecutor {
             if( offer.getStatus() == TripOfferStatus.FINISHED )
                 continue;
 
-            long lastUpdateSeconds = (System.currentTimeMillis() / 1000 - offer.getLastPositonUpdate());
+            long lastUpdateSeconds = (System.currentTimeMillis() / 1000 - offer.getLastPositonUpdateInSeconds());
 
             if( offer.getStatus() != TripOfferStatus.DISABLED ) {
 
@@ -61,12 +61,13 @@ public class TripOfferChecker extends AbstractScheduledTaskExecutor {
                     TripOffer updatedOffer = new TripOffer(
                             offer.getId(),
                             offer.getDriverRoute(),
+                            offer.getCurrentLocation(),
                             offer.getMaxDiversionInMeters(),
                             offer.getPricePerKmInCents(),
                             offer.getDriver(),
                             offer.getVehicle(),
                             TripOfferStatus.DISABLED,
-                            offer.getLastPositonUpdate()
+                            offer.getLastPositonUpdateInSeconds()
                     );
                     tripOfferDAO.update(updatedOffer);
 
@@ -82,12 +83,13 @@ public class TripOfferChecker extends AbstractScheduledTaskExecutor {
                     TripOffer updatedOffer = new TripOffer(
                             offer.getId(),
                             offer.getDriverRoute(),
+                            offer.getCurrentLocation(),
                             offer.getMaxDiversionInMeters(),
                             offer.getPricePerKmInCents(),
                             offer.getDriver(),
                             offer.getVehicle(),
                             passengers >= offer.getVehicle().getCapacity() ? TripOfferStatus.ACTIVE_FULL : TripOfferStatus.ACTIVE_NOT_FULL,
-                            offer.getLastPositonUpdate()
+                            offer.getLastPositonUpdateInSeconds()
                     );
                     tripOfferDAO.update(updatedOffer);
 

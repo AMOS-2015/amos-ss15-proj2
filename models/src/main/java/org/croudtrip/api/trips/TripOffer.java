@@ -21,7 +21,10 @@ import com.google.common.base.Objects;
 import org.croudtrip.api.account.User;
 import org.croudtrip.api.account.Vehicle;
 import org.croudtrip.api.directions.Route;
+import org.croudtrip.api.directions.RouteLocation;
 
+import javax.persistence.AttributeOverride;
+import javax.persistence.AttributeOverrides;
 import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
@@ -73,6 +76,30 @@ public class TripOffer {
 	@Embedded
 	private Route driverRoute;
 
+	/*
+	TODO: Maybe could be useful to have start and end of the drivers rout well defined, but currently there is no urgent need for it.
+	@Embedded
+	@AttributeOverrides({
+			@AttributeOverride(name= RouteLocation.COLUMN_LAT, column = @Column(name = "startLat")),
+			@AttributeOverride(name= RouteLocation.COLUMN_LNG, column = @Column(name = "startLng"))
+	})
+	private RouteLocation startLocation;
+
+	@Embedded
+	@AttributeOverrides({
+			@AttributeOverride(name= RouteLocation.COLUMN_LAT, column = @Column(name = "destLat")),
+			@AttributeOverride(name= RouteLocation.COLUMN_LNG, column = @Column(name = "destLng"))
+	})
+	private RouteLocation destinationLocation;*/
+
+	@Embedded
+	@AttributeOverrides({
+			@AttributeOverride(name= RouteLocation.COLUMN_LAT, column = @Column(name = "currLat")),
+			@AttributeOverride(name= RouteLocation.COLUMN_LNG, column = @Column(name = "currLng"))
+	})
+	private RouteLocation currentLocation;
+
+
 	@Column(name = "maxDiversionInMeters", nullable = false)
 	private long maxDiversionInMeters;
 
@@ -88,7 +115,7 @@ public class TripOffer {
 	private Vehicle vehicle;
 
     @Column(name="lastPositionUpdate", nullable = false)
-    private long lastPositonUpdate;
+    private long lastPositonUpdateInSeconds;
 
 	@Column(name = "status", nullable = false)
 	@Enumerated(EnumType.STRING)
@@ -100,21 +127,23 @@ public class TripOffer {
 	public TripOffer(
 			@JsonProperty("id") long id,
 			@JsonProperty("driverRoute") Route driverRoute,
+			@JsonProperty("currentLocation") RouteLocation currentLocation,
 			@JsonProperty("maxDiversionsInMeters") long maxDiversionInMeters,
 			@JsonProperty("pricePerKmInCents") int pricePerKmInCents,
 			@JsonProperty("driver") User driver,
 			@JsonProperty("vehicle") Vehicle vehicle,
 			@JsonProperty("status") TripOfferStatus status,
-            @JsonProperty("lastPositionUpdate") long lastPositonUpdate) {
+            @JsonProperty("lastPositionUpdate") long lastPositonUpdateInSeconds) {
 
 		this.id = id;
 		this.driverRoute = driverRoute;
+		this.currentLocation = currentLocation;
 		this.maxDiversionInMeters = maxDiversionInMeters;
 		this.pricePerKmInCents = pricePerKmInCents;
 		this.driver = driver;
 		this.vehicle = vehicle;
 		this.status = status;
-        this.lastPositonUpdate = lastPositonUpdate;
+        this.lastPositonUpdateInSeconds = lastPositonUpdateInSeconds;
 	}
 
 
@@ -153,10 +182,12 @@ public class TripOffer {
 	}
 
 
-    public long getLastPositonUpdate() { return lastPositonUpdate; }
+    public long getLastPositonUpdateInSeconds() { return lastPositonUpdateInSeconds; }
 
     @JsonProperty("lastPositionUpdate")
-    public void setLastPositonUpdate( long lastPositonUpdate ) { this.lastPositonUpdate = lastPositonUpdate; }
+    public void setLastPositonUpdateInSeconds(long lastPositonUpdateInSeconds) { this.lastPositonUpdateInSeconds = lastPositonUpdateInSeconds; }
+
+	public RouteLocation getCurrentLocation() { return currentLocation; }
 
 	@Override
 	public boolean equals(Object other) {

@@ -50,6 +50,9 @@ public class Route {
     @Column(name = "google_warnings", nullable = true)
     private String googleWarnings;
 
+    @Column(name="last_update_time_in_seconds", nullable = false)
+    private long lastUpdateTimeInSeconds;
+
 
     public Route() { }
 
@@ -60,7 +63,8 @@ public class Route {
             @JsonProperty("distanceInMeters") long distanceInMeters,
             @JsonProperty("durationInSeconds") long durationInSeconds,
             @JsonProperty("copyrights") String googleCopyrights,
-            @JsonProperty("warnings") String googleWarnings) {
+            @JsonProperty("warnings") String googleWarnings,
+            @JsonProperty("lastUpdateTime") long lastUpdateTimeInSeconds) {
 
         // convert JSON fields to string for persistence
         StringBuilder wayPointsBuilder = new StringBuilder();
@@ -77,6 +81,7 @@ public class Route {
         this.durationInSeconds = durationInSeconds;
         this.googleCopyrights = googleCopyrights;
         this.googleWarnings = googleWarnings;
+        this.lastUpdateTimeInSeconds = lastUpdateTimeInSeconds;
     }
 
     @JsonProperty("wayPoints")
@@ -106,6 +111,8 @@ public class Route {
     public String getGoogleCopyrights() {
         return googleCopyrights;
     }
+
+    public long getLastUpdateTimeInSeconds() { return lastUpdateTimeInSeconds; }
 
     @Override
     public boolean equals(Object other) {

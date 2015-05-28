@@ -106,6 +106,7 @@ public class TripsManager {
 		TripOffer offer = new TripOffer(
                 0,
                 route.get(0),
+                description.getStart(),
                 description.getMaxDiversionInMeters(),
                 description.getPricePerKmInCents(),
                 owner,
@@ -157,14 +158,11 @@ public class TripsManager {
 
 
     public TripOffer updateOffer(TripOffer offer, TripOfferUpdate offerUpdate) throws RouteNotFoundException {
-        // check if there is a route
-        List<Route> routes = directionsManager.getDirections(offerUpdate.getUpdatedStart(), offer.getDriverRoute().getWayPoints().get(1));
-        if (routes.size() == 0) throw new RouteNotFoundException();
-
         // update and store offer
         TripOffer updatedOffer = new TripOffer(
                 offer.getId(),
-                routes.get(0),
+                offer.getDriverRoute(),
+                offerUpdate.getUpdatedStart(),
                 offer.getMaxDiversionInMeters(),
                 offer.getPricePerKmInCents(),
                 offer.getDriver(),
@@ -302,12 +300,13 @@ public class TripsManager {
             TripOffer updatedOffer = new TripOffer(
                     offer.getId(),
                     offer.getDriverRoute(),
+                    offer.getCurrentLocation(),
                     offer.getMaxDiversionInMeters(),
                     offer.getPricePerKmInCents(),
                     offer.getDriver(),
                     offer.getVehicle(),
                     TripOfferStatus.ACTIVE_FULL,
-                    offer.getLastPositonUpdate() );
+                    offer.getLastPositonUpdateInSeconds() );
             tripOfferDAO.update(updatedOffer);
         }
 
@@ -346,13 +345,11 @@ public class TripsManager {
 
 
     private boolean isPotentialMatch(TripOffer offer, TripQuery query) {
-        // find declined trips for this user
-        List<JoinTripRequest> declinedRequests = joinTripRequestDAO.findDeclinedRequests(query.getPassenger().getId());
-
         // check trip status
         if (!offer.getStatus().equals(TripOfferStatus.ACTIVE_NOT_FULL)) return false;
 
-		// skip already declined offers
+        // find declined trips for this user and skip already declined offers
+        List<JoinTripRequest> declinedRequests = joinTripRequestDAO.findDeclinedRequests(query.getPassenger().getId());
 		for( JoinTripRequest request : declinedRequests ) {
 			if( offer.getId() == request.getOffer().getId()) {
                 return false;
@@ -363,25 +360,48 @@ public class TripsManager {
         int passengerCount = getActiveJoinRequestsForOffer(offer);
         if (passengerCount >= offer.getVehicle().getCapacity()) return false;
 
+        // TODO: Early reject based on airline
+
+        // TODO: Solve TSP for multiple passengers
+
 		// compute total driver route
 		List<RouteLocation> passengerWayPoints = query.getPassengerRoute().getWayPoints();
 		List<RouteLocation> driverWayPoints = offer.getDriverRoute().getWayPoints();
-
-        logManager.d("passenger Waypoints: " + driverWayPoints.get(0) + " " + driverWayPoints.get(1) + " : Passenger: " + passengerWayPoints.get(0) + " " + passengerWayPoints.get(1));
-
-		List<Route> possibleDriverRoutes = directionsManager.getDirections(
+		List<Route> possibleRoutes = directionsManager.getDirections(
 				driverWayPoints.get(0),
 				driverWayPoints.get(1),
 				passengerWayPoints);
 
-		if (possibleDriverRoutes == null || possibleDriverRoutes.isEmpty()) return false;
+		if (possibleRoutes == null || possibleRoutes.isEmpty()) return false;
 
-		// check is passenger route is within max diversion
-		Route driverRoute = offer.getDriverRoute();
-        logManager.d("Driver Route Distance: " + driverRoute.getDistanceInMeters() );
-        logManager.d("Passenger Route: " + possibleDriverRoutes.get(0).getDistanceInMeters());
-		logManager.d("Diversion: " + (possibleDriverRoutes.get(0).getDistanceInMeters() - driverRoute.getDistanceInMeters()));
-		if (possibleDriverRoutes.get(0).getDistanceInMeters() - driverRoute.getDistanceInMeters() > offer.getMaxDiversionInMeters()) {
+        // update driver route (if necessary, since there was a position update since last route calculation
+        Route driverRoute = offer.getDriverRoute();
+        if( driverRoute.getLastUpdateTimeInSeconds() < offer.getLastPositonUpdateInSeconds() ) {
+            logManager.d( offer.getId() + ": driver route is out of date. Updating route...");
+            List<Route> updatedDriverRoutes = directionsManager.getDirections(offer.getCurrentLocation(), driverRoute.getWayPoints().get(driverRoute.getWayPoints().size() - 1));
+            if( updatedDriverRoutes == null || updatedDriverRoutes.isEmpty() ) {
+                // TODO: That's not good and should hopefully never happen#
+                logManager.e("Could not compute a route for the driver after route update.");
+            }
+            else {
+                driverRoute = updatedDriverRoutes.get(0);
+                offer = new TripOffer(
+                        offer.getId(),
+                        driverRoute,
+                        offer.getCurrentLocation(),
+                        offer.getMaxDiversionInMeters(),
+                        offer.getPricePerKmInCents(),
+                        offer.getDriver(),
+                        offer.getVehicle(),
+                        offer.getStatus(),
+                        offer.getLastPositonUpdateInSeconds()
+                );
+                tripOfferDAO.update(offer);
+            }
+        }
+
+		// check if passenger route is within max diversion
+		if (possibleRoutes.get(0).getDistanceInMeters() - driverRoute.getDistanceInMeters() > offer.getMaxDiversionInMeters()) {
             return false;
 		}
 

@@ -145,7 +145,7 @@ public class DirectionsManager {
 		List<RouteLocation> wayPoints = new ArrayList<>();
 		wayPoints.add(startLocation);
 		wayPoints.add(endLocation);
-		return new Route(wayPoints, polyline.getEncodedPath(), distanceInMeters, durationInSeconds, googleRoute.copyrights, warnings);
+		return new Route(wayPoints, polyline.getEncodedPath(), distanceInMeters, durationInSeconds, googleRoute.copyrights, warnings, System.currentTimeMillis()/1000);
 	}
 
 }
