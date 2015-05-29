@@ -60,19 +60,8 @@ public class DirectionsManager {
         if( waypoints.size() > 0 ) {
             for (RouteLocation loc : waypoints) {
                 LatLng waypoint = new LatLng(loc.getLat(), loc.getLng());
-
-                // don't add same start as waypoint
-                if (llWaypoints.isEmpty()) {
-                    if (waypoint.toString().equals(origin.toString()))
-                        continue;
-                }
-
                 llWaypoints.add(waypoint);
             }
-
-            // remove same destination
-            if (llWaypoints.get(llWaypoints.size() - 1).toString().equals(destination.toString()))
-                llWaypoints.remove(llWaypoints.size() - 1);
         }
 
         String[] stringWaypoints = new String[llWaypoints.size()];

@@ -176,7 +176,7 @@ public class TripsManager {
 
 
     public TripQueryResult queryOffers(User passenger, TripQueryDescription queryDescription) throws RouteNotFoundException {
-        logManager.d("QUERY OFFER: User " + passenger.getId() + " (" + passenger.getFirstName() + " " + passenger.getLastName() + ") from " + queryDescription.getStart() + " " + queryDescription.getEnd() + ".");
+        logManager.d("QUERY OFFER: User " + passenger.getId() + " (" + passenger.getFirstName() + " " + passenger.getLastName() + ") from " + queryDescription.getStart() + " to " + queryDescription.getEnd() + " with " + " max waiting time: " + queryDescription.getMaxWaitingTimeInSeconds());
 
         // compute passenger route
         List<Route> possiblePassengerRoutes = directionsManager.getDirections(queryDescription.getStart(), queryDescription.getEnd());
