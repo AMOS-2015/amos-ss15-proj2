@@ -14,7 +14,6 @@
 
 package org.croudtrip.fragments.offer;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.location.Location;
@@ -47,6 +46,7 @@ import org.croudtrip.api.directions.RouteLocation;
 import org.croudtrip.api.trips.JoinTripRequest;
 import org.croudtrip.api.trips.TripOffer;
 import org.croudtrip.api.trips.TripOfferDescription;
+import org.croudtrip.fragments.OfferTripFragment;
 import org.croudtrip.fragments.SubscriptionFragment;
 import org.croudtrip.location.LocationUpdater;
 import org.croudtrip.trip.MyTripDriverPassengersAdapter;
@@ -58,6 +58,7 @@ import java.util.NoSuchElementException;
 
 import javax.inject.Inject;
 
+import it.neokree.materialnavigationdrawer.MaterialNavigationDrawer;
 import roboguice.inject.InjectView;
 import rx.Observable;
 import rx.Subscriber;
@@ -138,11 +139,10 @@ public class MyTripDriverFragment extends SubscriptionFragment {
                     @Override
                     public void onClick(View v) {
                         // TODO: contact server
-                        Activity activity = MyTripDriverFragment.this.getActivity();
-                        Toast.makeText(activity, "Cancel Trip!", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getActivity(), "Cancel Trip!", Toast.LENGTH_SHORT).show();
 
                         // After the server has been contacted successfully, clean up the SharedPref
-                        removeRunningTripOfferState(activity);
+                        removeRunningTripOfferState();
                     }
                 });
 
@@ -152,11 +152,11 @@ public class MyTripDriverFragment extends SubscriptionFragment {
                     @Override
                     public void onClick(View v) {
                         // TODO: contact server
-                        Activity activity = MyTripDriverFragment.this.getActivity();
-                        Toast.makeText(activity, "Finish Trip!", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getActivity(), "Finish Trip!", Toast.LENGTH_SHORT).show();
 
                         // After the server has been contacted successfully, clean up the SharedPref
-                        removeRunningTripOfferState(activity);
+                        // and show "Offer Trip" screen again
+                        removeRunningTripOfferState();
                     }
                 });
 
@@ -285,10 +285,15 @@ public class MyTripDriverFragment extends SubscriptionFragment {
     }
 
 
-    private void removeRunningTripOfferState(Context context){
-        SharedPreferences prefs = context.getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES,
+    private void removeRunningTripOfferState(){
+        SharedPreferences prefs = getActivity().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES,
                 Context.MODE_PRIVATE);
         prefs.edit().remove(Constants.SHARED_PREF_KEY_RUNNING_TRIP_OFFER).apply();
+
+        // Show "Offer trip screen again"
+        OfferTripFragment offerTripFragment = new OfferTripFragment();
+        ((MaterialNavigationDrawer) getActivity()).setFragment(new OfferTripFragment(),
+                getString(R.string.menu_offer_trip));
     }
 
     private void generateRouteOnMap(Route route) {
