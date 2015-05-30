@@ -21,6 +21,7 @@ import org.croudtrip.api.account.User;
 import org.croudtrip.api.account.Vehicle;
 import org.croudtrip.api.trips.JoinTripRequest;
 import org.croudtrip.api.trips.JoinTripRequestUpdate;
+import org.croudtrip.api.trips.JoinTripRequestUpdateType;
 import org.croudtrip.api.trips.JoinTripStatus;
 import org.croudtrip.api.trips.RunningTripQuery;
 import org.croudtrip.api.trips.TripOffer;
@@ -238,15 +239,31 @@ public class TripsResource {
             @PathParam("joinRequestId") long joinRequestId,
             JoinTripRequestUpdate update) {
 
-        System.out.println("Update join request start");
-
         Optional<JoinTripRequest> joinRequest = tripsManager.findJoinRequest(joinRequestId);
         if (!joinRequest.isPresent()) throw RestUtils.createNotFoundException();
-        if (!joinRequest.get().getStatus().equals(JoinTripStatus.PASSENGER_ACCEPTED)) {
-            throw RestUtils.createJsonFormattedException("driver action already taken", 409);
+
+        JoinTripStatus status = joinRequest.get().getStatus();
+        switch(update.getType()) {
+            case ACCEPT_PASSENGER:
+            case DECLINE_PASSENGER:
+                if (!status.equals(JoinTripStatus.PASSENGER_ACCEPTED))
+                    throw RestUtils.createJsonFormattedException("status must be " + JoinTripStatus.PASSENGER_ACCEPTED, 409);
+                return tripsManager.updateJoinRequestAcceptance(joinRequest.get(), update.getType().equals(JoinTripRequestUpdateType.ACCEPT_PASSENGER));
+
+            case ENTER_CAR:
+                if (!status.equals(JoinTripStatus.DRIVER_ACCEPTED))
+                    throw RestUtils.createJsonFormattedException("status must be " + JoinTripStatus.DRIVER_ACCEPTED, 409);
+                return tripsManager.updateJoinRequestPassengerEnterCar(joinRequest.get());
+
+            case LEAVE_CAR:
+                if (!status.equals(JoinTripStatus.PASSENGER_IN_CAR))
+                    throw RestUtils.createJsonFormattedException("status must be " + JoinTripStatus.PASSENGER_IN_CAR, 409);
+
+                throw new UnsupportedOperationException("work in progress");
         }
 
-        return tripsManager.updateJoinRequest(joinRequest.get(), update.getAcceptPassenger());
+        throw RestUtils.createJsonFormattedException("unknown update type " + update.getType(), 400);
+
     }
 
 

@@ -31,6 +31,7 @@ import org.croudtrip.api.directions.Route;
 import org.croudtrip.api.directions.RouteLocation;
 import org.croudtrip.api.trips.JoinTripRequest;
 import org.croudtrip.api.trips.JoinTripRequestUpdate;
+import org.croudtrip.api.trips.JoinTripRequestUpdateType;
 import org.croudtrip.trip.JoinTripRequestsAdapter;
 import org.croudtrip.trip.OnDiversionUpdateListener;
 import org.croudtrip.utils.DefaultTransformer;
@@ -194,7 +195,9 @@ public class JoinTripRequestsFragment extends SubscriptionFragment {
             recyclerView.setOnTouchListener(null);
 
             // Inform server
-            JoinTripRequestUpdate requestUpdate = new JoinTripRequestUpdate(accept);
+            JoinTripRequestUpdate requestUpdate;
+            if (accept) requestUpdate = new JoinTripRequestUpdate(JoinTripRequestUpdateType.ACCEPT_PASSENGER);
+            else requestUpdate = new JoinTripRequestUpdate(JoinTripRequestUpdateType.DECLINE_PASSENGER);
             Subscription subscription = tripsResource.updateJoinRequest(request.getId(), requestUpdate)
                     .compose(new DefaultTransformer<JoinTripRequest>())
                     .subscribe(new AcceptDeclineRequestSubscriber(accept, position));

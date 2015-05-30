@@ -14,13 +14,15 @@
 
 package org.croudtrip.api.trips;
 
+/**
+ * Describes what kind of update to a {@link JoinTripRequest} should
+ * be performed.
+ */
+public enum JoinTripRequestUpdateType {
 
-public enum JoinTripStatus {
-
-	PASSENGER_ACCEPTED, 		// passenger accepted, driver pending
-	DRIVER_ACCEPTED, 			// passenger accepted, driver accepted
-	DRIVER_DECLINED,			// passenger accepted, driver declined (end state)
-	PASSENGER_IN_CAR,			// both accepted, physical trip is happening
-	PASSENGER_AT_DESTINATION	// passenger dropped of (end state)
+	ACCEPT_PASSENGER,
+	DECLINE_PASSENGER,
+	ENTER_CAR,
+	LEAVE_CAR
 
 }

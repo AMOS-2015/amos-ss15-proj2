@@ -16,7 +16,6 @@ package org.croudtrip.trips;
 
 
 import com.google.common.base.Optional;
-import com.google.maps.model.LatLng;
 
 import org.croudtrip.account.VehicleManager;
 import org.croudtrip.api.account.User;
@@ -280,7 +279,7 @@ public class TripsManager {
     }
 
 
-    public JoinTripRequest updateJoinRequest(JoinTripRequest joinRequest, boolean passengerAccepted) {
+    public JoinTripRequest updateJoinRequestAcceptance(JoinTripRequest joinRequest, boolean passengerAccepted) {
         Assert.assertTrue(joinRequest.getStatus().equals(JoinTripStatus.PASSENGER_ACCEPTED), "cannot modify join request");
 
         // update join request status
@@ -331,6 +330,19 @@ public class TripsManager {
         }
 
         return joinTripRequestDAO.findById(joinRequest.getId()).get();
+    }
+
+
+    public JoinTripRequest updateJoinRequestPassengerEnterCar(JoinTripRequest joinRequest) {
+        JoinTripRequest updatedRequest = new JoinTripRequest(
+                joinRequest.getId(),
+                joinRequest.getQuery(),
+                joinRequest.getTotalPriceInCents(),
+                joinRequest.getPricePerKmInCents(),
+                joinRequest.getOffer(),
+                JoinTripStatus.PASSENGER_IN_CAR);
+        joinTripRequestDAO.update(updatedRequest);
+        return updatedRequest;
     }
 
 

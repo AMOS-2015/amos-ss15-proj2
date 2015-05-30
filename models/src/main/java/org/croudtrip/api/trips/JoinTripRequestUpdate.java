@@ -23,28 +23,31 @@ import com.google.common.base.Objects;
  */
 public class JoinTripRequestUpdate {
 
-	private final boolean acceptPassenger;
+	private final JoinTripRequestUpdateType type;
 
 	@JsonCreator
-	public JoinTripRequestUpdate(@JsonProperty("acceptPassenger") boolean acceptPassenger) {
-		this.acceptPassenger = acceptPassenger;
+	public JoinTripRequestUpdate(@JsonProperty("type") JoinTripRequestUpdateType type) {
+		this.type = type;
 	}
 
-	public boolean getAcceptPassenger() {
-		return acceptPassenger;
+
+	public JoinTripRequestUpdateType getType() {
+		return type;
 	}
+
 
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
 		JoinTripRequestUpdate that = (JoinTripRequestUpdate) o;
-		return Objects.equal(acceptPassenger, that.acceptPassenger);
+		return Objects.equal(type, that.type);
 	}
+
 
 	@Override
 	public int hashCode() {
-		return Objects.hashCode(acceptPassenger);
+		return Objects.hashCode(type);
 	}
 
 }
