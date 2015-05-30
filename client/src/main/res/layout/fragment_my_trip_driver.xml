@@ -48,6 +48,30 @@
                 style="?android:attr/progressBarStyleLarge"/>
         </FrameLayout>
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:weightSum="2">
+
+            <Button
+                android:id="@+id/btn_my_trip_driver_cancel_trip"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_weight="1"
+                android:text="@string/my_trip_driver_cancel_trip"/>
+
+            <Button
+                android:id="@+id/btn_my_trip_driver_finish_trip"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_weight="1"
+                android:text="@string/my_trip_driver_finish_trip"/>
+        </LinearLayout>
+        
+
+
 
         <!-- EARNINGS -->
         <TextView

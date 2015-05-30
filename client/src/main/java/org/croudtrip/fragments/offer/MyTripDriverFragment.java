@@ -14,7 +14,9 @@
 
 package org.croudtrip.fragments.offer;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -23,7 +25,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewManager;
+import android.widget.Button;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -128,6 +132,33 @@ public class MyTripDriverFragment extends SubscriptionFragment {
 
         adapter.setTotalEarnings(0);    // temporary so no-one sees the ugly formatting signs
 
+        // Cancel Trip Button
+        ((Button)(header.findViewById(R.id.btn_my_trip_driver_cancel_trip)))
+                .setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        // TODO: contact server
+                        Activity activity = MyTripDriverFragment.this.getActivity();
+                        Toast.makeText(activity, "Cancel Trip!", Toast.LENGTH_SHORT).show();
+
+                        // After the server has been contacted successfully, clean up the SharedPref
+                        removeRunningTripOfferState(activity);
+                    }
+                });
+
+        // Finish Trip Button
+        ((Button)(header.findViewById(R.id.btn_my_trip_driver_finish_trip)))
+                .setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        // TODO: contact server
+                        Activity activity = MyTripDriverFragment.this.getActivity();
+                        Toast.makeText(activity, "Finish Trip!", Toast.LENGTH_SHORT).show();
+
+                        // After the server has been contacted successfully, clean up the SharedPref
+                        removeRunningTripOfferState(activity);
+                    }
+                });
 
         // Ask the server for all accepted passengers
         subscriptions.add(tripsResource
@@ -251,6 +282,13 @@ public class MyTripDriverFragment extends SubscriptionFragment {
                         //errorLayout.setVisibility(View.VISIBLE);
                     }
                 });
+    }
+
+
+    private void removeRunningTripOfferState(Context context){
+        SharedPreferences prefs = context.getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES,
+                Context.MODE_PRIVATE);
+        prefs.edit().remove(Constants.SHARED_PREF_KEY_RUNNING_TRIP_OFFER).apply();
     }
 
     private void generateRouteOnMap(Route route) {

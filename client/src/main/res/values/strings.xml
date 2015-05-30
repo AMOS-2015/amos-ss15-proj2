@@ -157,6 +157,8 @@
     <string name="success_position_update_message">Your position could be successfully uploaded. Your trip will be reenabled.</string>
     <string name="success_position_update_title">Position update was successfull</string>
 
+    <string name="my_trip_driver_cancel_trip">Cancel Trip!</string>
+    <string name="my_trip_driver_finish_trip">Finish Trip!</string>
     <string name="my_trip_driver_my_passengers_title">My Passengers</string>
     <string name="my_trip_driver_my_earnings_title">My Earnings</string>
     <string name="my_trip_driver_my_earnings">%1$s.%2$s €</string>
