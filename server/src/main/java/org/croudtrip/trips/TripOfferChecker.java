@@ -78,7 +78,7 @@ public class TripOfferChecker extends AbstractScheduledTaskExecutor {
                 // enable offer if there was a position update again
                 if (lastUpdateSeconds < MAX_TIME_UNTIL_LOST) {
 
-                    int passengers = tripsManager.getActiveJoinRequestsForOffer(offer);
+                    int passengerCount = tripsManager.getActivePassengerCountForOffer(offer);
 
                     TripOffer updatedOffer = new TripOffer(
                             offer.getId(),
@@ -88,7 +88,7 @@ public class TripOfferChecker extends AbstractScheduledTaskExecutor {
                             offer.getPricePerKmInCents(),
                             offer.getDriver(),
                             offer.getVehicle(),
-                            passengers >= offer.getVehicle().getCapacity() ? TripOfferStatus.ACTIVE_FULL : TripOfferStatus.ACTIVE_NOT_FULL,
+                            passengerCount >= offer.getVehicle().getCapacity() ? TripOfferStatus.ACTIVE_FULL : TripOfferStatus.ACTIVE_NOT_FULL,
                             offer.getLastPositonUpdateInSeconds()
                     );
                     tripOfferDAO.update(updatedOffer);

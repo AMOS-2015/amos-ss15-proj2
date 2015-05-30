@@ -311,7 +311,7 @@ public class TripsManager {
 
         // update offer if vehicle is full
         TripOffer offer = joinRequest.getOffer();
-        int passengerCount = getActiveJoinRequestsForOffer(offer);
+        int passengerCount = getActivePassengerCountForOffer(offer);
         if (passengerCount >= offer.getVehicle().getCapacity()) {
             TripOffer updatedOffer = new TripOffer(
                     offer.getId(),
@@ -387,7 +387,7 @@ public class TripsManager {
         }
 
         // check current passenger count
-        int passengerCount = getActiveJoinRequestsForOffer(offer);
+        int passengerCount = getActivePassengerCountForOffer(offer);
         if (passengerCount >= offer.getVehicle().getCapacity()) return false;
 
         // Early reject based on airline;
@@ -512,12 +512,17 @@ public class TripsManager {
     }
 
 
-    public int getActiveJoinRequestsForOffer(TripOffer offer) {
-        int requestsCount = 0;
-        for (JoinTripRequest request : joinTripRequestDAO.findByOfferId(offer.getId())) {
-            if (!request.getStatus().equals(JoinTripStatus.DRIVER_DECLINED)) ++requestsCount;
+    public int getActivePassengerCountForOffer(TripOffer offer) {
+        int passengerCount = 0;
+        List<JoinTripRequest> joinRequests = findAllJoinRequests(offer.getId());
+        for (JoinTripRequest request : joinRequests) {
+            JoinTripStatus status = request.getStatus();
+            if (!status.equals(JoinTripStatus.DRIVER_DECLINED)
+                    && !status.equals(JoinTripStatus.PASSENGER_AT_DESTINATION)) {
+                ++passengerCount;
+            }
         }
-        return requestsCount;
+        return passengerCount;
     }
 
 }
