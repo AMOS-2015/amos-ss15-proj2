@@ -286,13 +286,7 @@ public class TripsManager {
         JoinTripStatus newStatus;
         if (passengerAccepted) newStatus = JoinTripStatus.DRIVER_ACCEPTED;
         else newStatus = JoinTripStatus.DRIVER_DECLINED;
-        JoinTripRequest updatedRequest = new JoinTripRequest(
-                joinRequest.getId(),
-                joinRequest.getQuery(),
-                joinRequest.getTotalPriceInCents(),
-                joinRequest.getPricePerKmInCents(),
-                joinRequest.getOffer(),
-                newStatus);
+        JoinTripRequest updatedRequest = new JoinTripRequest(joinRequest, newStatus);
         joinTripRequestDAO.update(updatedRequest);
 
         // update offer if vehicle is full
@@ -334,13 +328,14 @@ public class TripsManager {
 
 
     public JoinTripRequest updateJoinRequestPassengerEnterCar(JoinTripRequest joinRequest) {
-        JoinTripRequest updatedRequest = new JoinTripRequest(
-                joinRequest.getId(),
-                joinRequest.getQuery(),
-                joinRequest.getTotalPriceInCents(),
-                joinRequest.getPricePerKmInCents(),
-                joinRequest.getOffer(),
-                JoinTripStatus.PASSENGER_IN_CAR);
+        JoinTripRequest updatedRequest = new JoinTripRequest(joinRequest, JoinTripStatus.PASSENGER_IN_CAR);
+        joinTripRequestDAO.update(updatedRequest);
+        return updatedRequest;
+    }
+
+
+    public JoinTripRequest updateJoinRequestPassengerExitCar(JoinTripRequest joinRequest) {
+        JoinTripRequest updatedRequest = new JoinTripRequest(joinRequest, JoinTripStatus.PASSENGER_AT_DESTINATION);
         joinTripRequestDAO.update(updatedRequest);
         return updatedRequest;
     }

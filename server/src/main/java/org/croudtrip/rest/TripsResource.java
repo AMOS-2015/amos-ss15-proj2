@@ -258,8 +258,7 @@ public class TripsResource {
             case LEAVE_CAR:
                 if (!status.equals(JoinTripStatus.PASSENGER_IN_CAR))
                     throw RestUtils.createJsonFormattedException("status must be " + JoinTripStatus.PASSENGER_IN_CAR, 409);
-
-                throw new UnsupportedOperationException("work in progress");
+                return tripsManager.updateJoinRequestPassengerExitCar(joinRequest.get());
         }
 
         throw RestUtils.createJsonFormattedException("unknown update type " + update.getType(), 400);

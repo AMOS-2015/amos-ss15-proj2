@@ -126,6 +126,19 @@ public class JoinTripRequest {
 		this.status = status;
 	}
 
+
+	public JoinTripRequest(
+			JoinTripRequest oldRequest,
+			JoinTripStatus newStatus) {
+		this(
+				oldRequest.getId(),
+				oldRequest.getQuery(),
+				oldRequest.getTotalPriceInCents(),
+				oldRequest.getPricePerKmInCents(),
+				oldRequest.getOffer(),
+				newStatus);
+	}
+
 	public long getId() {
 		return id;
 	}
