@@ -46,6 +46,7 @@ import org.croudtrip.api.directions.RouteLocation;
 import org.croudtrip.api.trips.JoinTripRequest;
 import org.croudtrip.api.trips.TripOffer;
 import org.croudtrip.api.trips.TripOfferDescription;
+import org.croudtrip.api.trips.TripOfferUpdate;
 import org.croudtrip.fragments.OfferTripFragment;
 import org.croudtrip.fragments.SubscriptionFragment;
 import org.croudtrip.location.LocationUpdater;
@@ -59,6 +60,7 @@ import java.util.NoSuchElementException;
 import javax.inject.Inject;
 
 import it.neokree.materialnavigationdrawer.MaterialNavigationDrawer;
+import it.neokree.materialnavigationdrawer.elements.MaterialSection;
 import roboguice.inject.InjectView;
 import rx.Observable;
 import rx.Subscriber;
@@ -71,7 +73,8 @@ import timber.log.Timber;
 /**
  * This class shows a screen for the driver after he has offered a trip and hence is currently
  * already on his way. He is shown a map, his earnings and the passengers that he has accepted.
- * @author Vanessa Lange
+ *
+ * @author Frederik Simon, Vanessa Lange
  */
 public class MyTripDriverFragment extends SubscriptionFragment {
 
@@ -100,6 +103,7 @@ public class MyTripDriverFragment extends SubscriptionFragment {
     private DirectionsResource directionsResource;
     @Inject
     private LocationUpdater locationUpdater;
+
 
 
     //************************* Methods ****************************//
@@ -134,7 +138,7 @@ public class MyTripDriverFragment extends SubscriptionFragment {
         adapter.setTotalEarnings(0);    // temporary so no-one sees the ugly formatting signs
 
         // Cancel Trip Button
-        ((Button)(header.findViewById(R.id.btn_my_trip_driver_cancel_trip)))
+        ((Button) (header.findViewById(R.id.btn_my_trip_driver_cancel_trip)))
                 .setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -147,18 +151,28 @@ public class MyTripDriverFragment extends SubscriptionFragment {
                 });
 
         // Finish Trip Button
-        ((Button)(header.findViewById(R.id.btn_my_trip_driver_finish_trip)))
+        ((Button) (header.findViewById(R.id.btn_my_trip_driver_finish_trip)))
                 .setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        // TODO: contact server
-                        Toast.makeText(getActivity(), "Finish Trip!", Toast.LENGTH_SHORT).show();
 
-                        // After the server has been contacted successfully, clean up the SharedPref
-                        // and show "Offer Trip" screen again
-                        removeRunningTripOfferState();
+                        // Get the current offer-ID to tell the server to finish the offer
+                        tripsResource.getOffers(true)
+                                .compose(new DefaultTransformer<List<TripOffer>>())
+                                .flatMap(new Func1<List<TripOffer>, Observable<TripOffer>>() {
+                                    @Override
+                                    public Observable<TripOffer> call(List<TripOffer> tripOffers) {
+                                        if (tripOffers.isEmpty()) {
+                                            throw new NoSuchElementException("There's currently no offer");
+                                        }
+
+                                        // TODO: get really the current one!
+                                        return Observable.just(tripOffers.get(0));
+                                    }
+                                }).subscribe(new FinishTripSubscription());
                     }
                 });
+
 
         // Ask the server for all accepted passengers
         subscriptions.add(tripsResource
@@ -173,127 +187,140 @@ public class MyTripDriverFragment extends SubscriptionFragment {
         // TODO: Make it asynchronously
         googleMap = mapFragment.getMap();
         Bundle bundle = getArguments();
-        if( bundle == null ) {
+        if (bundle == null) {
             bundle = new Bundle();
         }
 
         String action = bundle.getString(ARG_ACTION, ACTION_LOAD);
-        if( action.equals( ACTION_CREATE ) ) {
+        if (action.equals(ACTION_CREATE)) {
             Timber.d("Create Offer");
-            createOffer( bundle );
-        }else{
+            createOffer(bundle);
+        } else {
             Timber.d("Load Offer");
             loadOffer(bundle);
         }
 
 
         // Remove the header from the layout. Otherwise it exists twice
-        ((ViewManager)view).removeView(header);
+        ((ViewManager) view).removeView(header);
     }
 
 
     private void loadOffer(Bundle arguments) {
 
-        final RouteLocation[] driverWp = new RouteLocation[2] ;
+        final RouteLocation[] driverWp = new RouteLocation[2];
 
-        tripsResource.getOffers(true)
-                .compose(new DefaultTransformer<List<TripOffer>>())
-                .flatMap(new Func1<List<TripOffer>, Observable<TripOffer>>() {
-                    @Override
-                    public Observable<TripOffer> call(List<TripOffer> tripOffers) {
-                        if( tripOffers.isEmpty() )
-                            throw new NoSuchElementException("There's currently no offer of you");
+        subscriptions.add(tripsResource.getOffers(true)
+                        .compose(new DefaultTransformer<List<TripOffer>>())
+                        .flatMap(new Func1<List<TripOffer>, Observable<TripOffer>>() {
+                            @Override
+                            public Observable<TripOffer> call(List<TripOffer> tripOffers) {
+                                if (tripOffers.isEmpty())
+                                    throw new NoSuchElementException("There's currently no offer of you");
 
-                        return Observable.just(tripOffers.get(0));
-                    }
-                })
-                .subscribe(new Action1<TripOffer>() {
-                    @Override
-                    public void call(TripOffer offer) {
-                        if (offer == null)
-                            throw new NoSuchElementException("There's currently no offer of you");
+                                return Observable.just(tripOffers.get(0));
+                            }
+                        })
+                        .subscribe(new Action1<TripOffer>() {
+                            @Override
+                            public void call(TripOffer offer) {
+                                if (offer == null)
+                                    throw new NoSuchElementException("There's currently no offer of you");
 
-                        Timber.d("Got Offer: " + offer.getDriver().getFirstName() + " " + offer.getDriver().getLastName());
-                        driverWp[0] = offer.getDriverRoute().getWayPoints().get(0);
-                        driverWp[1] = offer.getDriverRoute().getWayPoints().get(1);
+                                Timber.d("Got Offer: " + offer.getDriver().getFirstName() + " " + offer.getDriver().getLastName());
+                                driverWp[0] = offer.getDriverRoute().getWayPoints().get(0);
+                                driverWp[1] = offer.getDriverRoute().getWayPoints().get(1);
 
-                        tripsResource.getDriverAcceptedJoinRequests()
-                                .compose(new DefaultTransformer<List<JoinTripRequest>>())
-                                .flatMap(new Func1<List<JoinTripRequest>, Observable<List<RouteLocation>>>() {
-                                    @Override
-                                    public Observable<List<RouteLocation>> call(List<JoinTripRequest> joinTripRequests) {
-                                        // TODO: Handle multiple join trip request, but we will stick to one for now
-                                        List<RouteLocation> waypoints = new LinkedList<RouteLocation>();
-                                        if (joinTripRequests == null || joinTripRequests.isEmpty()) {
-                                            return Observable.just(waypoints);
-                                        }
+                                tripsResource.getDriverAcceptedJoinRequests()
+                                        .compose(new DefaultTransformer<List<JoinTripRequest>>())
+                                        .flatMap(new Func1<List<JoinTripRequest>, Observable<List<RouteLocation>>>() {
+                                            @Override
+                                            public Observable<List<RouteLocation>> call(List<JoinTripRequest> joinTripRequests) {
+                                                // TODO: Handle multiple join trip request, but we will stick to one for now
+                                                List<RouteLocation> waypoints = new LinkedList<RouteLocation>();
+                                                if (joinTripRequests == null || joinTripRequests.isEmpty()) {
+                                                    return Observable.just(waypoints);
+                                                }
 
-                                        JoinTripRequest firstRequest = joinTripRequests.get(0);
-                                        List<RouteLocation> reqWaypoints = firstRequest.getQuery().getPassengerRoute().getWayPoints();
+                                                JoinTripRequest firstRequest = joinTripRequests.get(0);
+                                                List<RouteLocation> reqWaypoints = firstRequest.getQuery().getPassengerRoute().getWayPoints();
 
-                                        waypoints.addAll(reqWaypoints);
+                                                waypoints.addAll(reqWaypoints);
 
-                                        return Observable.just(waypoints);
-                                    }
-                                })
-                                .flatMap(new Func1<List<RouteLocation>, Observable<List<Route>>>() {
-                                    @Override
-                                    public Observable<List<Route>> call(List<RouteLocation> routeLocations) {
-                                        routeLocations.add(0, driverWp[0]);
-                                        routeLocations.add(driverWp[1]);
-                                        Timber.d("Sending directions request with " + routeLocations.size() + " waypoints");
-                                        DirectionsRequest directionsRequest = new DirectionsRequest(routeLocations);
-                                        return directionsResource.getDirections(directionsRequest);
-                                    }
-                                })
-                                .flatMap(new Func1<List<Route>, Observable<Route>>() {
-                                    @Override
-                                    public Observable<Route> call(List<Route> routes) {
-                                        if (routes == null || routes.isEmpty())
-                                            return Observable.empty();
+                                                return Observable.just(waypoints);
+                                            }
+                                        })
+                                        .flatMap(new Func1<List<RouteLocation>, Observable<List<Route>>>() {
+                                            @Override
+                                            public Observable<List<Route>> call(List<RouteLocation> routeLocations) {
+                                                routeLocations.add(0, driverWp[0]);
+                                                routeLocations.add(driverWp[1]);
+                                                Timber.d("Sending directions request with " + routeLocations.size() + " waypoints");
+                                                DirectionsRequest directionsRequest = new DirectionsRequest(routeLocations);
+                                                return directionsResource.getDirections(directionsRequest);
+                                            }
+                                        })
+                                        .flatMap(new Func1<List<Route>, Observable<Route>>() {
+                                            @Override
+                                            public Observable<Route> call(List<Route> routes) {
+                                                if (routes == null || routes.isEmpty())
+                                                    return Observable.empty();
 
-                                        return Observable.just(routes.get(0));
-                                    }
-                                })
-                                .compose(new DefaultTransformer<Route>())
-                                .subscribe(new Action1<Route>() {
-                                    @Override
-                                    public void call(Route route) {
-                                        Timber.d("Your offer was successfully loaded from the server");
-                                        progressBar.setVisibility(View.GONE);
-                                        generateRouteOnMap(route);
-                                    }
-                                }, new Action1<Throwable>() {
-                                    @Override
-                                    public void call(Throwable throwable) {
-                                        // on main thread; something went wrong
-                                        progressBar.setVisibility(View.GONE);
-                                        Timber.e(throwable.getMessage());
-                                    }
-                                });
+                                                return Observable.just(routes.get(0));
+                                            }
+                                        })
+                                        .compose(new DefaultTransformer<Route>())
+                                        .subscribe(new Action1<Route>() {
+                                            @Override
+                                            public void call(Route route) {
+                                                Timber.d("Your offer was successfully loaded from the server");
+                                                progressBar.setVisibility(View.GONE);
+                                                generateRouteOnMap(route);
+                                            }
+                                        }, new Action1<Throwable>() {
+                                            @Override
+                                            public void call(Throwable throwable) {
+                                                // on main thread; something went wrong
+                                                progressBar.setVisibility(View.GONE);
+                                                Timber.e(throwable.getMessage());
+                                            }
+                                        });
 
-                    }
-                }, new Action1<Throwable>() {
-                    @Override
-                    public void call(Throwable throwable) {
-                        Timber.e(throwable.getMessage());
+                            }
+                        }, new Action1<Throwable>() {
+                            @Override
+                            public void call(Throwable throwable) {
+                                Timber.e(throwable.getMessage());
 
-                        //errorText.setText(R.string.navigation_error_no_offer);
-                        //errorLayout.setVisibility(View.VISIBLE);
-                    }
-                });
+                                //errorText.setText(R.string.navigation_error_no_offer);
+                                //errorLayout.setVisibility(View.VISIBLE);
+                            }
+                        })
+        );
     }
 
 
-    private void removeRunningTripOfferState(){
+    private void removeRunningTripOfferState() {
         SharedPreferences prefs = getActivity().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES,
                 Context.MODE_PRIVATE);
         prefs.edit().remove(Constants.SHARED_PREF_KEY_RUNNING_TRIP_OFFER).apply();
 
-        // Show "Offer trip screen again"
-        OfferTripFragment offerTripFragment = new OfferTripFragment();
-        ((MaterialNavigationDrawer) getActivity()).setFragment(new OfferTripFragment(),
-                getString(R.string.menu_offer_trip));
+
+        // Change "My Trip" (driver) to "Offer Trip" in navigation drawer
+        MaterialNavigationDrawer drawer = ((MaterialNavigationDrawer) getActivity());
+
+        // find "last" "My Trip", so we don't accidently rename the join-trip-my trip
+        List<MaterialSection> sections = drawer.getSectionList();
+        MaterialSection section = null;
+        for(MaterialSection s : sections){
+            if(s.getTitle().equals(getString(R.string.menu_my_trip))){
+                section = s;
+            }
+        }
+        section.setTitle(getString(R.string.menu_offer_trip));
+
+        // The next fragment shows the "Offer trip" screen
+        drawer.setFragment(new OfferTripFragment(), getString(R.string.menu_offer_trip));
     }
 
     private void generateRouteOnMap(Route route) {
@@ -304,7 +331,7 @@ public class MyTripDriverFragment extends SubscriptionFragment {
 
         // Move camera to current position
         Location location = locationUpdater.getLastLocation();
-        if( location == null )
+        if (location == null)
             return;
 
         LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
@@ -315,7 +342,7 @@ public class MyTripDriverFragment extends SubscriptionFragment {
 
     private void createOffer(Bundle arguments) {
 
-        int maxDiversion = arguments.getInt( "maxDiversion" );
+        int maxDiversion = arguments.getInt("maxDiversion");
         int pricePerKilometer = arguments.getInt("pricePerKilometer");
 
         double fromLat = arguments.getDouble("fromLat");
@@ -327,13 +354,13 @@ public class MyTripDriverFragment extends SubscriptionFragment {
         long vehicleId = arguments.getLong("vehicle_id");
 
         TripOfferDescription tripOffer = new TripOfferDescription(
-                new RouteLocation( fromLat, fromLng ),
-                new RouteLocation( toLat, toLng ),
+                new RouteLocation(fromLat, fromLng),
+                new RouteLocation(toLat, toLng),
                 maxDiversion * 1000L,
                 pricePerKilometer,
                 vehicleId);
 
-        tripsResource.addOffer( tripOffer )
+        tripsResource.addOffer(tripOffer)
                 .compose(new DefaultTransformer<TripOffer>())
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -369,7 +396,6 @@ public class MyTripDriverFragment extends SubscriptionFragment {
     }
 
 
-
     //*************************** Inner classes ********************************//
 
     /**
@@ -385,7 +411,7 @@ public class MyTripDriverFragment extends SubscriptionFragment {
 
             // Calculate how much the driver will earn
             int totalEarningsInCent = 0;
-            for(JoinTripRequest request : requests){
+            for (JoinTripRequest request : requests) {
                 totalEarningsInCent += request.getTotalPriceInCents();
             }
             adapter.setTotalEarnings(totalEarningsInCent);
@@ -394,8 +420,6 @@ public class MyTripDriverFragment extends SubscriptionFragment {
         @Override
         public void onError(Throwable e) {
             // ERROR
-            // TODO error.setVisibility(View.VISIBLE);
-
             Timber.e("Receiving accepted Passengers (JoinTripRequest) failed:\n" + e.getMessage());
             onDone();
         }
@@ -405,9 +429,45 @@ public class MyTripDriverFragment extends SubscriptionFragment {
             onDone();
         }
 
-        private void onDone(){
-            // UI
-            // TODO: progress bar
+        private void onDone() {}
+    }
+
+
+    private class FinishTripSubscription extends Subscriber<TripOffer> {
+
+        @Override
+        public void onNext(final TripOffer tripOffer) {
+
+            tripsResource.updateOffer(tripOffer.getId(), TripOfferUpdate.createFinishUpdate())
+                    .compose(new DefaultTransformer<TripOffer>())
+                    .subscribe(new Action1<TripOffer>() {
+                        @Override
+                        public void call(TripOffer offer) {
+                            // After the server has been contacted successfully, clean up the SharedPref
+                            // and show "Offer Trip" screen again
+                            removeRunningTripOfferState();
+                        }
+
+                    }, new Action1<Throwable>() {
+                        @Override
+                        public void call(Throwable throwable) {
+                            Timber.i("Error when finishing trip with ID " + tripOffer.getId() + ": " + throwable.getMessage());
+                            Toast.makeText(getActivity(), "Error: " + throwable.getMessage(), Toast.LENGTH_LONG).show();
+                        }
+                    });
+
+
+        }
+
+
+        @Override
+        public void onError(Throwable e) {
+            e.printStackTrace();
+        }
+
+        @Override
+        public void onCompleted() {
+
         }
     }
 
