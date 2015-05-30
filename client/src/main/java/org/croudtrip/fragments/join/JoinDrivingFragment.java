@@ -55,6 +55,7 @@ import timber.log.Timber;
  */
 public class JoinDrivingFragment extends SubscriptionFragment implements GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks {
 
+    @InjectView(R.id.btn_joint_trip_reached)        private Button btnReachedDestination; //also handles the "My driver is here" stuff
     @InjectView(R.id.btn_joint_trip_cancel)         private Button btnCancelTrip;
     @InjectView(R.id.tv_joint_description)          private TextView jointDescription;
 
@@ -86,9 +87,43 @@ public class JoinDrivingFragment extends SubscriptionFragment implements GoogleA
 
         jointDescription.setText("");
 
+        final SharedPreferences prefs = getActivity().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
+        if (prefs.getBoolean(Constants.SHARED_PREF_KEY_DRIVING, false)) {
+            //passenger is currently on a trip already in the car
+            btnReachedDestination.setText(getResources().getString(R.string.join_trip_results_reached));
+            btnReachedDestination.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    //TODO (US 132): Handle here all the stuff that happens when the trip is successfully completed (user hits "I have reached my destination")
+                    sendUserBackToSearch();
+                }
+            });
+        } else {
+            //passenger is currently waiting for his driver but already accepted
+            btnReachedDestination.setText(getResources().getString(R.string.join_trip_results_driverArrival));
+            btnReachedDestination.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    //TODO (US 131): Handle here all the stuff that happens when the user enters the car (user hits "My driver is here")
+                    SharedPreferences.Editor editor = prefs.edit();
+                    editor.putBoolean(Constants.SHARED_PREF_KEY_DRIVING, true);
+                    editor.apply();
+                    btnReachedDestination.setText(getResources().getString(R.string.join_trip_results_reached));
+                    btnCancelTrip.setClickable(false);
+                    btnCancelTrip.setBackgroundColor(getResources().getColor(R.color.inactive));
+                }
+            });
+        }
+
+
+
         /*
         Cancel trip
          */
+        if (prefs.getBoolean(Constants.SHARED_PREF_KEY_DRIVING, false)) {
+            btnCancelTrip.setClickable(false);
+            btnCancelTrip.setBackgroundColor(getResources().getColor(R.color.inactive));
+        }
         btnCancelTrip.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -157,6 +192,7 @@ public class JoinDrivingFragment extends SubscriptionFragment implements GoogleA
         SharedPreferences prefs = getActivity().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
         editor.putBoolean(Constants.SHARED_PREF_KEY_ACCEPTED, false);
+        editor.putBoolean(Constants.SHARED_PREF_KEY_DRIVING, false);
         editor.apply();
 
         Intent startingIntent = new Intent(Constants.EVENT_CHANGE_JOIN_UI);
