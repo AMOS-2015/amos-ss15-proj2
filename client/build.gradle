@@ -17,12 +17,19 @@ import de.bitdroid.jaxrs2retrofit.converter.IgnoreConverter
 import io.dropwizard.auth.Auth;
 
 apply plugin: 'com.android.application'
+apply plugin: 'io.fabric'
+
+repositories {
+    maven { url 'https://maven.fabric.io/public' }
+}
+
 apply plugin: 'de.bitdroid.jaxrs2retrofit'
 
 
 buildscript {
     repositories {
         jcenter()
+        maven { url 'https://maven.fabric.io/public' }
     }
     dependencies {
         classpath 'de.bitdroid.jaxrs2retrofit:plugin:0.3.0'
@@ -30,6 +37,7 @@ buildscript {
             exclude group: 'com.google.guava'
         }
         classpath 'com.android.tools.build:gradle:1.2.3'
+        classpath 'io.fabric.tools:gradle:1.+'
     }
 }
 
@@ -113,6 +121,9 @@ dependencies {
     compile 'com.larswerkman:HoloColorPicker:1.5'
     compile 'com.squareup.picasso:picasso:2.4.0'
     compile 'com.github.navasmdc:MaterialDesign:1.5@aar'
+    compile('com.crashlytics.sdk.android:crashlytics:2.3.2@aar') {
+        transitive = true;
+    }
 }
 
 // create retrofit interfaces from server resources

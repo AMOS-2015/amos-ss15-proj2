@@ -121,6 +121,7 @@ public class JoinSearchFragment extends SubscriptionFragment implements GoogleAp
         super.onCreateView(inflater, container, savedInstanceState);
         setHasOptionsMenu(true);
 
+
         if (googleApiClient == null) {
             googleApiClient = new GoogleApiClient.Builder(getActivity().getApplicationContext())
                     .addConnectionCallbacks(this)

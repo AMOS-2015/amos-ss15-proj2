@@ -78,6 +78,9 @@
             </intent-filter>
         </receiver>
         <service android:name=".gcm.GcmIntentService" ></service>
+        <meta-data
+            android:name="io.fabric.ApiKey"
+            android:value="e3135abaefa1730696cc4b29431cfc5a3f0a3dcd" />
     </application>
 
 </manifest>

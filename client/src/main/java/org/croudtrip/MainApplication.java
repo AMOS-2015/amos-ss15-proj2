@@ -17,9 +17,12 @@ package org.croudtrip;
 import android.app.Application;
 import android.content.Context;
 import android.support.multidex.MultiDex;
+import android.util.Log;
 
+import com.crashlytics.android.Crashlytics;
 import com.j256.ormlite.android.apptools.OpenHelperManager;
 
+import io.fabric.sdk.android.Fabric;
 import org.croudtrip.db.DatabaseHelper;
 import org.croudtrip.api.ServerModule;
 import org.croudtrip.utils.LifecycleHandler;
@@ -39,10 +42,19 @@ public class MainApplication extends Application {
     public void onCreate() {
         super.onCreate();
 
+        Fabric.with(this, new Crashlytics());
+
+        if (BuildConfig.DEBUG) {
+            Timber.plant(new Timber.DebugTree());
+        } else {
+            Timber.plant(new CrashlyticsTree());
+        }
+
         registerActivityLifecycleCallbacks( new LifecycleHandler() );
 
         OpenHelperManager.setOpenHelperClass(DatabaseHelper.class);
-        Timber.plant(new Timber.DebugTree());
+
+
         RoboGuice.getOrCreateBaseApplicationInjector(
                 this,
                 RoboGuice.DEFAULT_STAGE,
@@ -72,5 +84,21 @@ public class MainApplication extends Application {
             dbHelper = (DatabaseHelper) OpenHelperManager.getHelper(this, DatabaseHelper.class);
         }
         return dbHelper;
+    }
+
+    private static class CrashlyticsTree extends Timber.Tree {
+        @Override
+        protected void log(int priority, String tag, String message, Throwable t) {
+
+            if (priority == Log.VERBOSE || priority == Log.DEBUG) {
+                return;
+            }
+
+            if (t != null) {
+                Crashlytics.getInstance().core.logException(t);
+            } else {
+                Crashlytics.getInstance().core.logException(new Throwable(message));
+            }
+        }
     }
 }
