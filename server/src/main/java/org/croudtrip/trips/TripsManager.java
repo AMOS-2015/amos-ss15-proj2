@@ -356,6 +356,14 @@ public class TripsManager {
     }
 
 
+    public JoinTripRequest updateJoinRequestPassengerCancel(JoinTripRequest joinRequest) {
+        JoinTripRequest updatedRequest = new JoinTripRequest(joinRequest, JoinTripStatus.PASSENGER_CANCELED);
+        joinTripRequestDAO.update(updatedRequest);
+        gcmManager.sendPassengerCancelledTripMsg(joinRequest);
+        return joinRequest;
+    }
+
+
     private List<TripOffer> findPotentialMatches(List<TripOffer> offers, TripQuery query) {
         // analyse offers
         List<TripOffer> potentialMatches = new ArrayList<>();

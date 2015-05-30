@@ -186,4 +186,13 @@ public class GcmManager {
 				new Pair<>(GcmConstants.GCM_MSG_JOIN_REQUEST_OFFER_ID, "" + request.getOffer().getId()));
 	}
 
+
+	public void sendPassengerCancelledTripMsg(JoinTripRequest request) {
+		sendGcmMessageToUser(request.getOffer().getDriver(), GcmConstants.GCM_MSG_TRIP_CANCELLED,
+				new Pair<>(GcmConstants.GCM_MSG_USER_MAIL, "" + request.getOffer().getDriver().getEmail()),
+				new Pair<>(GcmConstants.GCM_MSG_TRIP_CANCELLED, "Passenger cancelled the trip"),
+				new Pair<>(GcmConstants.GCM_MSG_JOIN_REQUEST_ID, "" + request.getId()),
+				new Pair<>(GcmConstants.GCM_MSG_JOIN_REQUEST_OFFER_ID, "" + request.getOffer().getId()));
+	}
+
 }

@@ -272,6 +272,11 @@ public class TripsResource {
                 if (!status.equals(JoinTripStatus.PASSENGER_IN_CAR))
                     throw RestUtils.createJsonFormattedException("status must be " + JoinTripStatus.PASSENGER_IN_CAR, 409);
                 return tripsManager.updateJoinRequestPassengerExitCar(joinRequest.get());
+
+            case CANCEL:
+                if (status.equals(JoinTripStatus.PASSENGER_IN_CAR) || status.equals(JoinTripStatus.PASSENGER_AT_DESTINATION))
+                    throw RestUtils.createJsonFormattedException("cannot cancel when in car or at destination", 409);
+                return tripsManager.updateJoinRequestPassengerCancel(joinRequest.get());
         }
 
         throw RestUtils.createJsonFormattedException("unknown update type " + update.getType(), 400);

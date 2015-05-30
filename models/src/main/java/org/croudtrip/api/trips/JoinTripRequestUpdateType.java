@@ -20,9 +20,10 @@ package org.croudtrip.api.trips;
  */
 public enum JoinTripRequestUpdateType {
 
-	ACCEPT_PASSENGER,
-	DECLINE_PASSENGER,
-	ENTER_CAR,
-	LEAVE_CAR
+	ACCEPT_PASSENGER,		// driver accepts passenger
+	DECLINE_PASSENGER,		// driver declines passenger
+	ENTER_CAR,				// passenger enters car
+	LEAVE_CAR,				// passenger leaves car
+	CANCEL 					// passenger cancels trip
 
 }
