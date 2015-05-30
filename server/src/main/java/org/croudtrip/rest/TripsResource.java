@@ -127,8 +127,21 @@ public class TripsResource {
     @Path(PATH_OFFERS + "/{offerId}")
     @UnitOfWork
     public TripOffer updateOffer(@Auth User driver, @PathParam("offerId") long offerId, @Valid TripOfferUpdate offerUpdate) throws RouteNotFoundException {
+        // find offer
         TripOffer offer = assertIsValidOfferId(offerId);
         if (offer.getDriver().getId() != driver.getId()) throw RestUtils.createUnauthorizedException();
+
+        // if offer should be finished, check for passengers
+        if (offerUpdate.getFinishOffer()) {
+            for (JoinTripRequest request : tripsManager.findAllJoinRequests(offerId)) {
+                JoinTripStatus status = request.getStatus();
+                if (!status.equals(JoinTripStatus.PASSENGER_ACCEPTED)
+                    && !status.equals(JoinTripStatus.DRIVER_DECLINED)
+                    && !status.equals(JoinTripStatus.PASSENGER_AT_DESTINATION))
+                    throw RestUtils.createJsonFormattedException("there are still passengers that need to be taken care of first!", 400);
+            }
+        }
+
         return tripsManager.updateOffer(offer, offerUpdate);
     }
 
