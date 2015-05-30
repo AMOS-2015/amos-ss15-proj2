@@ -166,6 +166,13 @@ public class TripsManager {
             newStart = offer.getCurrentLocation();
             newStatus = TripOfferStatus.FINISHED;
 
+            // decline pending passengers
+            for (JoinTripRequest request : findAllJoinRequests(offer.getId())) {
+                if (request.getStatus().equals(JoinTripStatus.PASSENGER_ACCEPTED)) {
+                    updateJoinRequestAcceptance(request, false);
+                }
+            }
+
         } else {
             // update start location
             newStart = offerUpdate.getUpdatedStart();
@@ -328,20 +335,8 @@ public class TripsManager {
 
         // notify the passenger about status
         logManager.d("User " + joinRequest.getQuery().getPassenger().getId() + " (" + joinRequest.getQuery().getPassenger().getFirstName() + " " + joinRequest.getQuery().getPassenger().getLastName() + ") got status update for joinTripRequest.");
-        if( passengerAccepted ) {
-            gcmManager.sendGcmMessageToUser(joinRequest.getQuery().getPassenger(), GcmConstants.GCM_MSG_REQUEST_ACCEPTED,
-                    new Pair<String, String>(GcmConstants.GCM_MSG_USER_MAIL, "" + joinRequest.getQuery().getPassenger().getEmail()),
-                    new Pair<String, String>(GcmConstants.GCM_MSG_REQUEST_ACCEPTED, "Your request was accepted"),
-                    new Pair<String, String>(GcmConstants.GCM_MSG_JOIN_REQUEST_ID, "" + joinRequest.getId()),
-                    new Pair<String, String>(GcmConstants.GCM_MSG_JOIN_REQUEST_OFFER_ID, "" + joinRequest.getOffer().getId()));
-        }
-        else {
-            gcmManager.sendGcmMessageToUser(joinRequest.getQuery().getPassenger(), GcmConstants.GCM_MSG_REQUEST_DECLINED,
-                    new Pair<String, String>(GcmConstants.GCM_MSG_REQUEST_DECLINED, "Your request was declined"),
-                    new Pair<String, String>(GcmConstants.GCM_MSG_USER_MAIL, "" + joinRequest.getQuery().getPassenger().getEmail()),
-                    new Pair<String, String>(GcmConstants.GCM_MSG_JOIN_REQUEST_ID, "" + joinRequest.getId()),
-                    new Pair<String, String>(GcmConstants.GCM_MSG_JOIN_REQUEST_OFFER_ID, "" + joinRequest.getOffer().getId()));
-        }
+        if(passengerAccepted) gcmManager.sendAcceptPassengerMsg(joinRequest);
+        else gcmManager.sendDeclinePassengerMsg(joinRequest);
 
         return joinTripRequestDAO.findById(joinRequest.getId()).get();
     }

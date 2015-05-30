@@ -26,6 +26,7 @@ import org.croudtrip.api.account.User;
 import org.croudtrip.api.gcm.GcmConstants;
 import org.croudtrip.api.gcm.GcmRegistration;
 import org.croudtrip.api.gcm.GcmRegistrationDescription;
+import org.croudtrip.api.trips.JoinTripRequest;
 import org.croudtrip.db.GcmRegistrationDAO;
 import org.croudtrip.logs.LogManager;
 import org.croudtrip.utils.Pair;
@@ -166,5 +167,23 @@ public class GcmManager {
 			throw new RuntimeException(ioe);
 		}
     }
+
+
+	public void sendDeclinePassengerMsg(JoinTripRequest request) {
+		sendGcmMessageToUser(request.getQuery().getPassenger(), GcmConstants.GCM_MSG_REQUEST_DECLINED,
+				new Pair<>(GcmConstants.GCM_MSG_REQUEST_DECLINED, "Your request was declined"),
+				new Pair<>(GcmConstants.GCM_MSG_USER_MAIL, "" + request.getQuery().getPassenger().getEmail()),
+				new Pair<>(GcmConstants.GCM_MSG_JOIN_REQUEST_ID, "" + request.getId()),
+				new Pair<>(GcmConstants.GCM_MSG_JOIN_REQUEST_OFFER_ID, "" + request.getOffer().getId()));
+	}
+
+
+	public void sendAcceptPassengerMsg(JoinTripRequest request) {
+		sendGcmMessageToUser(request.getQuery().getPassenger(), GcmConstants.GCM_MSG_REQUEST_ACCEPTED,
+				new Pair<>(GcmConstants.GCM_MSG_USER_MAIL, "" + request.getQuery().getPassenger().getEmail()),
+				new Pair<>(GcmConstants.GCM_MSG_REQUEST_ACCEPTED, "Your request was accepted"),
+				new Pair<>(GcmConstants.GCM_MSG_JOIN_REQUEST_ID, "" + request.getId()),
+				new Pair<>(GcmConstants.GCM_MSG_JOIN_REQUEST_OFFER_ID, "" + request.getOffer().getId()));
+	}
 
 }
