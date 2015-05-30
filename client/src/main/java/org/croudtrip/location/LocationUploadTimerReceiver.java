@@ -16,30 +16,24 @@ package org.croudtrip.location;
 
 import android.app.Notification;
 import android.app.NotificationManager;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.location.Location;
 import android.support.v4.app.NotificationCompat;
-import android.widget.Toast;
 
 import org.croudtrip.R;
 import org.croudtrip.api.TripsResource;
 import org.croudtrip.api.directions.RouteLocation;
 import org.croudtrip.api.trips.TripOffer;
 import org.croudtrip.api.trips.TripOfferUpdate;
-import org.croudtrip.utils.LifecycleHandler;
 
 import java.util.List;
-import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.inject.Inject;
 
 import roboguice.receiver.RoboBroadcastReceiver;
-import rx.Observable;
 import rx.functions.Action1;
-import rx.functions.Func1;
 import timber.log.Timber;
 
 /**
@@ -87,7 +81,7 @@ public class LocationUploadTimerReceiver extends RoboBroadcastReceiver {
                                    for (final TripOffer offer : tripOffers) {
 
                                        // TODO: There should only be one offer
-                                       TripOfferUpdate offerUpdate = new TripOfferUpdate( routeLocation );
+                                       TripOfferUpdate offerUpdate = TripOfferUpdate.createNewStartUpdate(routeLocation);
                                        tripsResource.updateOffer(offer.getId(), offerUpdate)
                                                .subscribe( new Action1<TripOffer>() {
                                                    @Override

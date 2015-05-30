@@ -20,24 +20,39 @@ import com.google.common.base.Objects;
 
 import org.croudtrip.api.directions.RouteLocation;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-
 /**
  * Updates to a {@link TripOffer}.
  */
 public class TripOfferUpdate {
 
-	@Valid @NotNull
-	private final RouteLocation updatedStart;
+	public static TripOfferUpdate createNewStartUpdate(RouteLocation updatedStart) {
+		return new TripOfferUpdate(updatedStart, false);
+	}
 
+	public static TripOfferUpdate createFinishUpdate() {
+		return new TripOfferUpdate(null, true);
+	}
+
+
+	private final RouteLocation updatedStart;
+	private final boolean finishOffer;
+
+	/**
+	 * @param updatedStart the new start location of this offer
+	 * @param finishOffer whether the offer should be finished
+	 */
 	@JsonCreator
-	public TripOfferUpdate(@JsonProperty("updatedStart") RouteLocation updatedStart) {
+	public TripOfferUpdate(@JsonProperty("updatedStart") RouteLocation updatedStart, @JsonProperty("finishOffer") boolean finishOffer) {
 		this.updatedStart = updatedStart;
+		this.finishOffer = finishOffer;
 	}
 
 	public RouteLocation getUpdatedStart() {
 		return updatedStart;
+	}
+
+	public boolean getFinishOffer() {
+		return finishOffer;
 	}
 
 	@Override
@@ -45,12 +60,12 @@ public class TripOfferUpdate {
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
 		TripOfferUpdate that = (TripOfferUpdate) o;
-		return Objects.equal(updatedStart, that.updatedStart);
+		return Objects.equal(finishOffer, that.finishOffer) &&
+				Objects.equal(updatedStart, that.updatedStart);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hashCode(updatedStart);
+		return Objects.hashCode(updatedStart, finishOffer);
 	}
-
 }

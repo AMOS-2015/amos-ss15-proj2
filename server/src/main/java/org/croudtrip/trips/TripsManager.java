@@ -158,16 +158,30 @@ public class TripsManager {
 
 
     public TripOffer updateOffer(TripOffer offer, TripOfferUpdate offerUpdate) throws RouteNotFoundException {
+        RouteLocation newStart;
+        TripOfferStatus newStatus;
+
+        if (offerUpdate.getFinishOffer()) {
+            // finish offer
+            newStart = offer.getCurrentLocation();
+            newStatus = TripOfferStatus.FINISHED;
+
+        } else {
+            // update start location
+            newStart = offerUpdate.getUpdatedStart();
+            newStatus = offer.getStatus();
+        }
+
         // update and store offer
         TripOffer updatedOffer = new TripOffer(
                 offer.getId(),
                 offer.getDriverRoute(),
-                offerUpdate.getUpdatedStart(),
+                newStart,
                 offer.getMaxDiversionInMeters(),
                 offer.getPricePerKmInCents(),
                 offer.getDriver(),
                 offer.getVehicle(),
-                offer.getStatus(),
+                newStatus,
                 System.currentTimeMillis() / 1000);
         tripOfferDAO.update(updatedOffer);
         return updatedOffer;
