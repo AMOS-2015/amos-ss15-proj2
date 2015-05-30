@@ -27,6 +27,7 @@ import org.croudtrip.api.gcm.GcmConstants;
 import org.croudtrip.api.gcm.GcmRegistration;
 import org.croudtrip.api.gcm.GcmRegistrationDescription;
 import org.croudtrip.api.trips.JoinTripRequest;
+import org.croudtrip.api.trips.TripOffer;
 import org.croudtrip.db.GcmRegistrationDAO;
 import org.croudtrip.logs.LogManager;
 import org.croudtrip.utils.Pair;
@@ -188,11 +189,19 @@ public class GcmManager {
 
 
 	public void sendPassengerCancelledTripMsg(JoinTripRequest request) {
-		sendGcmMessageToUser(request.getOffer().getDriver(), GcmConstants.GCM_MSG_TRIP_CANCELLED,
+		sendGcmMessageToUser(request.getOffer().getDriver(), GcmConstants.GCM_MESSAGE_TRIP_CANCELLED_BY_PASSENGER,
 				new Pair<>(GcmConstants.GCM_MSG_USER_MAIL, "" + request.getOffer().getDriver().getEmail()),
-				new Pair<>(GcmConstants.GCM_MSG_TRIP_CANCELLED, "Passenger cancelled the trip"),
+				new Pair<>(GcmConstants.GCM_MESSAGE_TRIP_CANCELLED_BY_PASSENGER, "Passenger cancelled the trip"),
 				new Pair<>(GcmConstants.GCM_MSG_JOIN_REQUEST_ID, "" + request.getId()),
 				new Pair<>(GcmConstants.GCM_MSG_JOIN_REQUEST_OFFER_ID, "" + request.getOffer().getId()));
+	}
+
+
+	public void sendDriverCancelledTripMsg(TripOffer offer, User passenger) {
+		sendGcmMessageToUser(passenger, GcmConstants.GCM_MESSAGE_TRIP_CANCELLED_BY_DRIVER,
+				new Pair<>(GcmConstants.GCM_MSG_USER_MAIL, "" + passenger.getEmail()),
+				new Pair<>(GcmConstants.GCM_MESSAGE_TRIP_CANCELLED_BY_DRIVER, "Driver cancelled the trip"),
+				new Pair<>(GcmConstants.GCM_MSG_JOIN_REQUEST_OFFER_ID, "" + offer.getId()));
 	}
 
 }

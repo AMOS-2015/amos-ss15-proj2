@@ -131,7 +131,7 @@ public class TripsResource {
         TripOffer offer = assertIsValidOfferId(offerId);
         if (offer.getDriver().getId() != driver.getId()) throw RestUtils.createUnauthorizedException();
 
-        // if offer should be finished, check for passengers
+        // check passenger status
         if (offerUpdate.getFinishOffer()) {
             for (JoinTripRequest request : tripsManager.findAllJoinRequests(offerId)) {
                 JoinTripStatus status = request.getStatus();
@@ -140,7 +140,16 @@ public class TripsResource {
                     && !status.equals(JoinTripStatus.PASSENGER_AT_DESTINATION))
                     throw RestUtils.createJsonFormattedException("there are still passengers that need to be taken care of first!", 400);
             }
+
+        } else if (offerUpdate.getCancelOffer()) {
+            for (JoinTripRequest request : tripsManager.findAllJoinRequests(offerId)) {
+                JoinTripStatus status = request.getStatus();
+                if (status.equals(JoinTripStatus.PASSENGER_IN_CAR)) {
+                    throw RestUtils.createJsonFormattedException("are you looking to the eject passenger button?", 400);
+                }
+            }
         }
+
 
         return tripsManager.updateOffer(offer, offerUpdate);
     }

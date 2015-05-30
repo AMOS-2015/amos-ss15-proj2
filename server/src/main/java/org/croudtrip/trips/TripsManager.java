@@ -173,6 +173,25 @@ public class TripsManager {
                 }
             }
 
+        } else if (offerUpdate.getCancelOffer()) {
+            // cancel trip
+            newStart = offer.getCurrentLocation();
+            newStatus = TripOfferStatus.CANCELLED;
+
+            for (JoinTripRequest request : findAllJoinRequests(offer.getId())) {
+                if (request.getStatus().equals(JoinTripStatus.PASSENGER_ACCEPTED)) {
+                    // decline pending passengers
+                    updateJoinRequestAcceptance(request, false);
+
+                } else if (request.getStatus().equals(JoinTripStatus.DRIVER_ACCEPTED)) {
+                    // alert accepted passengers
+                    JoinTripRequest updatedRequest = new JoinTripRequest(request, JoinTripStatus.DRIVER_CANCELLED);
+                    joinTripRequestDAO.update(updatedRequest);
+                    gcmManager.sendDriverCancelledTripMsg(offer, request.getQuery().getPassenger());
+                }
+            }
+
+
         } else {
             // update start location
             newStart = offerUpdate.getUpdatedStart();
@@ -357,7 +376,7 @@ public class TripsManager {
 
 
     public JoinTripRequest updateJoinRequestPassengerCancel(JoinTripRequest joinRequest) {
-        JoinTripRequest updatedRequest = new JoinTripRequest(joinRequest, JoinTripStatus.PASSENGER_CANCELED);
+        JoinTripRequest updatedRequest = new JoinTripRequest(joinRequest, JoinTripStatus.PASSENGER_CANCELLED);
         joinTripRequestDAO.update(updatedRequest);
         gcmManager.sendPassengerCancelledTripMsg(joinRequest);
         return joinRequest;

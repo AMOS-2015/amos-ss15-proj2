@@ -26,25 +26,31 @@ import org.croudtrip.api.directions.RouteLocation;
 public class TripOfferUpdate {
 
 	public static TripOfferUpdate createNewStartUpdate(RouteLocation updatedStart) {
-		return new TripOfferUpdate(updatedStart, false);
+		return new TripOfferUpdate(updatedStart, false, false);
 	}
 
 	public static TripOfferUpdate createFinishUpdate() {
-		return new TripOfferUpdate(null, true);
+		return new TripOfferUpdate(null, true, false);
+	}
+
+	public static TripOfferUpdate createCancelUpdate() {
+		return new TripOfferUpdate(null, false, true);
 	}
 
 
 	private final RouteLocation updatedStart;
 	private final boolean finishOffer;
+	private final boolean cancelOffer;
 
-	/**
-	 * @param updatedStart the new start location of this offer
-	 * @param finishOffer whether the offer should be finished
-	 */
+
 	@JsonCreator
-	public TripOfferUpdate(@JsonProperty("updatedStart") RouteLocation updatedStart, @JsonProperty("finishOffer") boolean finishOffer) {
+	public TripOfferUpdate(
+			@JsonProperty("updatedStart") RouteLocation updatedStart,
+			@JsonProperty("finishOffer") boolean finishOffer,
+			@JsonProperty("cancelOffer") boolean cancelOffer) {
 		this.updatedStart = updatedStart;
 		this.finishOffer = finishOffer;
+		this.cancelOffer = cancelOffer;
 	}
 
 	public RouteLocation getUpdatedStart() {
@@ -55,17 +61,22 @@ public class TripOfferUpdate {
 		return finishOffer;
 	}
 
+	public boolean getCancelOffer() {
+		return cancelOffer;
+	}
+
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
 		TripOfferUpdate that = (TripOfferUpdate) o;
 		return Objects.equal(finishOffer, that.finishOffer) &&
+				Objects.equal(cancelOffer, that.cancelOffer) &&
 				Objects.equal(updatedStart, that.updatedStart);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hashCode(updatedStart, finishOffer);
+		return Objects.hashCode(updatedStart, finishOffer, cancelOffer);
 	}
 }

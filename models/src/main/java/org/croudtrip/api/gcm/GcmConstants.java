@@ -67,10 +67,11 @@ public class GcmConstants {
      ** It could be handled in the same way as GCM_MSG_REQUEST_DECLINED, or there is a different error message. */
     public static final String GCM_MSG_REQUEST_ERROR = "REQUEST_ERROR";
 
-    /** Messages with this tag are sent to the passenger or driver, if the runing trip has been cancelled by the other party.
-     * * <br>
-     * Contains just a simple string that tells you that your trip has been cancelled */
-    public static final String GCM_MSG_TRIP_CANCELLED = "TRIP_CANCELLED";
+    /** Sent to passengers, if the trip has been cancelled by the driver. */
+    public static final String GCM_MESSAGE_TRIP_CANCELLED_BY_PASSENGER = "TRIP_CANCELLED_BY_PASSENGER";
+
+     /** Sent to drivers, if the trip has been cancelled by a passenger. */
+     public static final String GCM_MESSAGE_TRIP_CANCELLED_BY_DRIVER = "TRIP_CANCELLED_BY_DRIVER";
 
     /** Messages with this tag are sent to the passenger, if there are new results for the matching process that were found by the server in background
      * <br>

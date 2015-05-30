@@ -22,6 +22,7 @@ public enum JoinTripStatus {
 	DRIVER_DECLINED,			// passenger accepted, driver declined (end state)
 	PASSENGER_IN_CAR,			// both accepted, physical trip is happening
 	PASSENGER_AT_DESTINATION,	// passenger dropped of (end state)
-	PASSENGER_CANCELED 			// passenger cancelled trip (end state)
+	PASSENGER_CANCELLED,		// passenger cancelled trip (end state)
+	DRIVER_CANCELLED			// driver cancelled trip (end state)
 
 }
