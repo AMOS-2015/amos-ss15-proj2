@@ -77,6 +77,7 @@ import java.util.List;
 import javax.inject.Inject;
 
 import it.neokree.materialnavigationdrawer.MaterialNavigationDrawer;
+import it.neokree.materialnavigationdrawer.elements.MaterialSection;
 import pl.charmas.android.reactivelocation.ReactiveLocationProvider;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
@@ -382,7 +383,16 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
 
                     b.putLong("vehicle_id", VehicleManager.getDefaultVehicleId(getActivity()));
                     myTripDriverFragment.setArguments(b);
-                    ((MaterialNavigationDrawer) getActivity()).setFragment(myTripDriverFragment, getString(R.string.menu_my_trip));
+
+                    // Change "Offer Trip" to "My Trip" in navigation drawer
+                    MaterialNavigationDrawer drawer = ((MaterialNavigationDrawer) getActivity());
+                    MaterialSection section = drawer.getSectionByTitle(getString(R.string.menu_offer_trip));
+                    section.setTitle(getString(R.string.menu_my_trip));
+
+                    // The next fragment shows the "My Trip screen"
+                    drawer.setFragment(myTripDriverFragment, getString(R.string.menu_my_trip));
+
+
                     Toast.makeText(getActivity().getApplicationContext(), R.string.offer_trip, Toast.LENGTH_SHORT).show();
                 }
 

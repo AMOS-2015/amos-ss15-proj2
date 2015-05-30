@@ -44,7 +44,6 @@ import org.croudtrip.api.TripsResource;
 import org.croudtrip.api.account.User;
 import org.croudtrip.fragments.JoinTripRequestsFragment;
 import org.croudtrip.fragments.JoinTripResultsFragment;
-import org.croudtrip.fragments.NavigationFragment;
 import org.croudtrip.fragments.PickUpPassengerFragment;
 import org.croudtrip.fragments.ProfileFragment;
 import org.croudtrip.fragments.SettingsFragment;
@@ -353,7 +352,8 @@ public class MainActivity extends AbstractRoboDrawerActivity {
 
         // (2) PENDING JOIN REQUESTS
         // TODO: code also down below?
-        if( action.equalsIgnoreCase(ACTION_SHOW_JOIN_TRIP_REQUESTS) ) {
+        if( action.equalsIgnoreCase(ACTION_SHOW_JOIN_TRIP_REQUESTS)
+                || prefs.getBoolean(Constants.SHARED_PREF_KEY_RUNNING_TRIP_OFFER, false)) {
             this.addSection(newSection("My Trip Requests",
                     R.drawable.distance,
                     new JoinTripRequestsFragment()));
@@ -369,14 +369,7 @@ public class MainActivity extends AbstractRoboDrawerActivity {
         }
 
 
-        // (4) NAVIGATION
-        // TODO: remove navigation tab from drawer
-        this.addSection(newSection(getString(R.string.navigation),
-                R.drawable.distance,
-                new NavigationFragment()));
-
-
-        // (5) PICK UP PASSENGER
+        // (4) PICK UP PASSENGER
         // TODO: remove from navigation drawer and call after push notification with REAL data
         PickUpPassengerFragment fragment = new PickUpPassengerFragment();
         Bundle args = new Bundle();
@@ -391,14 +384,7 @@ public class MainActivity extends AbstractRoboDrawerActivity {
                 fragment));
 
 
-        // (6) PENDING JOIN REQUESTS
-        //TODO: remove from drawer
-        this.addSection(newSection("Join Trip - Requests",
-                R.drawable.distance,
-                new JoinTripRequestsFragment()));
-
-
-        // (7) SETTINGS
+        // (5) SETTINGS
         this.addBottomSection(newSection(getString(R.string.menu_settings),
                 R.drawable.ic_settings,
                 new SettingsFragment()));
