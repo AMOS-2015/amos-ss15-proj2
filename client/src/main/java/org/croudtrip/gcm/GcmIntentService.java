@@ -384,6 +384,7 @@ public class GcmIntentService extends RoboIntentService {
         SharedPreferences.Editor editor = prefs.edit();
         editor.putBoolean(Constants.SHARED_PREF_KEY_SEARCHING, false);
         editor.putBoolean(Constants.SHARED_PREF_KEY_ACCEPTED, true);
+        editor.putLong(Constants.SHARED_PREF_KEY_TRIP_ID, request.getId());
         editor.apply();
 
         if( LifecycleHandler.isApplicationInForeground() ) {

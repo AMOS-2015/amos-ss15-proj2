@@ -36,6 +36,8 @@ import org.croudtrip.Constants;
 import org.croudtrip.R;
 import org.croudtrip.api.TripsResource;
 import org.croudtrip.api.trips.JoinTripRequest;
+import org.croudtrip.api.trips.JoinTripRequestUpdate;
+import org.croudtrip.api.trips.JoinTripRequestUpdateType;
 import org.croudtrip.fragments.JoinTripFragment;
 import org.croudtrip.fragments.SubscriptionFragment;
 import org.croudtrip.utils.DefaultTransformer;
@@ -47,6 +49,8 @@ import javax.inject.Inject;
 
 import it.neokree.materialnavigationdrawer.MaterialNavigationDrawer;
 import roboguice.inject.InjectView;
+import rx.Subscriber;
+import rx.Subscription;
 import rx.functions.Action1;
 import timber.log.Timber;
 
@@ -96,6 +100,8 @@ public class JoinDrivingFragment extends SubscriptionFragment implements GoogleA
                 public void onClick(View v) {
                     //TODO (US 132): Handle here all the stuff that happens when the trip is successfully completed (user hits "I have reached my destination")
                     sendUserBackToSearch();
+
+                    updateTrip(JoinTripRequestUpdateType.LEAVE_CAR);
                 }
             });
         } else {
@@ -111,6 +117,8 @@ public class JoinDrivingFragment extends SubscriptionFragment implements GoogleA
                     btnReachedDestination.setText(getResources().getString(R.string.join_trip_results_reached));
                     btnCancelTrip.setClickable(false);
                     btnCancelTrip.setBackgroundColor(getResources().getColor(R.color.inactive));
+
+                    updateTrip(JoinTripRequestUpdateType.ENTER_CAR);
                 }
             });
         }
@@ -127,7 +135,10 @@ public class JoinDrivingFragment extends SubscriptionFragment implements GoogleA
         btnCancelTrip.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                //TODO (US 120): Handle here all the stuff that happens when the user cancels the trip
                 sendUserBackToSearch();
+
+                //updateTrip(JoinTripRequestUpdateType.CANCEL????);
             }
         });
 
@@ -197,6 +208,32 @@ public class JoinDrivingFragment extends SubscriptionFragment implements GoogleA
 
         Intent startingIntent = new Intent(Constants.EVENT_CHANGE_JOIN_UI);
         LocalBroadcastManager.getInstance(getActivity()).sendBroadcast(startingIntent);
+    }
+
+    private void updateTrip(JoinTripRequestUpdateType updateType) {
+        SharedPreferences prefs = getActivity().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
+        JoinTripRequestUpdate requestUpdate= new JoinTripRequestUpdate(updateType);
+        Subscription subscription = tripsResource.updateJoinRequest(prefs.getLong(Constants.SHARED_PREF_KEY_TRIP_ID, -1), requestUpdate)
+                .compose(new DefaultTransformer<JoinTripRequest>())
+                .subscribe(new Subscriber<JoinTripRequest>() {
+
+                    @Override
+                    public void onCompleted() {
+
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+
+                    }
+
+                    @Override
+                    public void onNext(JoinTripRequest joinTripRequest) {
+
+                    }
+                });
+
+        subscriptions.add(subscription);
     }
 
 
