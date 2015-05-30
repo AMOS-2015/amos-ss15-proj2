@@ -248,7 +248,7 @@ public class TripsResource {
     @UnitOfWork
     @Path(PATH_JOINS + "/{joinRequestId}")
     public JoinTripRequest updateJoinRequest(
-            @Auth User driver,
+            @Auth User driverOrPassenger,
             @PathParam("joinRequestId") long joinRequestId,
             JoinTripRequestUpdate update) {
 
@@ -261,26 +261,41 @@ public class TripsResource {
             case DECLINE_PASSENGER:
                 if (!status.equals(JoinTripStatus.PASSENGER_ACCEPTED))
                     throw RestUtils.createJsonFormattedException("status must be " + JoinTripStatus.PASSENGER_ACCEPTED, 409);
+                if (driverOrPassenger.getId() != joinRequest.get().getOffer().getDriver().getId()) {
+                    throw RestUtils.createJsonFormattedException("only driver can take this action", 400);
+                }
                 return tripsManager.updateJoinRequestAcceptance(joinRequest.get(), update.getType().equals(JoinTripRequestUpdateType.ACCEPT_PASSENGER));
 
             case ENTER_CAR:
                 if (!status.equals(JoinTripStatus.DRIVER_ACCEPTED))
                     throw RestUtils.createJsonFormattedException("status must be " + JoinTripStatus.DRIVER_ACCEPTED, 409);
+                assertUserIsPassenger(joinRequest.get(), driverOrPassenger);
+
                 return tripsManager.updateJoinRequestPassengerEnterCar(joinRequest.get());
 
             case LEAVE_CAR:
                 if (!status.equals(JoinTripStatus.PASSENGER_IN_CAR))
                     throw RestUtils.createJsonFormattedException("status must be " + JoinTripStatus.PASSENGER_IN_CAR, 409);
+                assertUserIsPassenger(joinRequest.get(), driverOrPassenger);
+
                 return tripsManager.updateJoinRequestPassengerExitCar(joinRequest.get());
 
             case CANCEL:
                 if (status.equals(JoinTripStatus.PASSENGER_IN_CAR) || status.equals(JoinTripStatus.PASSENGER_AT_DESTINATION))
                     throw RestUtils.createJsonFormattedException("cannot cancel when in car or at destination", 409);
+                assertUserIsPassenger(joinRequest.get(), driverOrPassenger);
+
                 return tripsManager.updateJoinRequestPassengerCancel(joinRequest.get());
         }
 
         throw RestUtils.createJsonFormattedException("unknown update type " + update.getType(), 400);
+    }
 
+
+    private void assertUserIsPassenger(JoinTripRequest request, User user) {
+        if (user.getId() != request.getQuery().getPassenger().getId()) {
+            throw RestUtils.createJsonFormattedException("only passenger can take this action", 400);
+        }
     }
 
 
