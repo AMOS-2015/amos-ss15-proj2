@@ -35,18 +35,24 @@ import com.larswerkman.holocolorpicker.SVBar;
 
 import org.croudtrip.account.VehicleManager;
 import org.croudtrip.R;
+import org.croudtrip.api.TripsResource;
 import org.croudtrip.api.VehicleResource;
 import org.croudtrip.api.account.Vehicle;
 import org.croudtrip.api.account.VehicleDescription;
+import org.croudtrip.api.trips.TripOffer;
 import org.croudtrip.utils.DataHolder;
 import org.croudtrip.utils.DefaultTransformer;
 
 
+import java.util.List;
+
 import javax.inject.Inject;
 
 import retrofit.client.Response;
+import rx.Observable;
 import rx.Subscription;
 import rx.functions.Action1;
+import rx.functions.Func1;
 import timber.log.Timber;
 
 /**
@@ -55,6 +61,8 @@ import timber.log.Timber;
  */
 public class VehicleInfoFragment extends SubscriptionFragment {
 
+    @Inject
+    private TripsResource tripsResource;
     @Inject VehicleResource vehicleResource;
     private String newCarType, newCarPlate, newColor;
     private Integer newCarCapacity;
@@ -110,10 +118,56 @@ public class VehicleInfoFragment extends SubscriptionFragment {
             @Override
             public void onClick (View v) {
                 vehicleId = DataHolder.getInstance().getVehicle_id();
-                removeVehicle(vehicleId);
-                deleteVehicle.setVisibility(View.INVISIBLE);
-                vehicleId = -1;
-                updateInfo.setText(getString(R.string.add_vehicle));
+                //Get a list of offers and iterate over them to check if the vehicle is being used before attempting to remove it
+                subscriptions.add(tripsResource.getOffers(false)
+                                .compose(new DefaultTransformer<List<TripOffer>>())
+                                .flatMap(new Func1<List<TripOffer>, Observable<TripOffer>>() {
+                                    @Override
+                                    public Observable<TripOffer> call(List<TripOffer> tripOffers) {
+                                        //Remove the vehicle if there are no offers
+                                        if (tripOffers.isEmpty())
+                                        {
+                                            removeVehicle(vehicleId);
+                                            deleteVehicle.setVisibility(View.INVISIBLE);
+                                            vehicleId = -1;
+                                            updateInfo.setText(getString(R.string.add_vehicle));
+                                        }
+                                        //Iterate over the offers to check if the vehicle is being used
+                                        else
+                                        {
+                                            for (int i=0;i<tripOffers.size();i++)
+                                            {
+                                                //Notify the user if the vehicle is being used in any trip offers
+                                                if (tripOffers.get(i).getVehicle().getId()==vehicleId)
+                                                {
+                                                    Toast.makeText(getActivity(), getResources().getString(R.string.vehicle_in_use), Toast.LENGTH_SHORT).show();
+                                                    Timber.d("The targeted vehicle is in use with id: " + tripOffers.get(i).getVehicle().getId());
+                                                }
+                                                //Remove the vehicle if it's not being used in any of the trip offers
+                                                else
+                                                {
+                                                    removeVehicle(vehicleId);
+                                                    deleteVehicle.setVisibility(View.INVISIBLE);
+                                                    vehicleId = -1;
+                                                    updateInfo.setText(getString(R.string.add_vehicle));
+                                                }
+                                            }
+                                        }
+                                        return Observable.just(tripOffers.get(0));
+                                    }
+                                })
+                                .subscribe(new Action1<TripOffer>() {
+                                    @Override
+                                    public void call(TripOffer offer) {
+                                    }
+                                }, new Action1<Throwable>() {
+                                    @Override
+                                    public void call(Throwable throwable) {
+                                        Timber.e(throwable.getMessage());
+                                    }
+                                })
+                );
+
 
             }
         });

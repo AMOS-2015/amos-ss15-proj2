@@ -135,6 +135,7 @@
     <string name="car_plate_side">Car Plate: \u0020</string>
     <string name="car_capacity_side">Car Capacity: \u0020</string>
     <string name="delete_vehicle_button">Delete This Vehicle</string>
+    <string name="vehicle_in_use">You cannot delete a car that you are currently having in your trip offer!</string>
     <string name="add_vehicle">Add a car!</string>
     <string name="add_new_vehicle">Add to cars</string>
     <string name="vehicles_title">My Vehicles</string>
