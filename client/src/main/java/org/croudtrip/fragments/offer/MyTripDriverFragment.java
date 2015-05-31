@@ -21,10 +21,12 @@ import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewManager;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
@@ -97,6 +99,9 @@ public class MyTripDriverFragment extends SubscriptionFragment {
     @InjectView(R.id.pb_my_trip_progressBar)
     private ProgressBar progressBar;
 
+    @InjectView(R.id.iv_transparent_image)
+    private ImageView transparentImageView;
+
     @Inject
     private TripsResource tripsResource;
     @Inject
@@ -134,6 +139,7 @@ public class MyTripDriverFragment extends SubscriptionFragment {
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getActivity());
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setAdapter(adapter);
+
 
         adapter.setTotalEarnings(0);    // temporary so no-one sees the ugly formatting signs
 
@@ -200,6 +206,28 @@ public class MyTripDriverFragment extends SubscriptionFragment {
             loadOffer(bundle);
         }
 
+        transparentImageView.setOnTouchListener( new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                int action = event.getAction();
+                switch (action) {
+                    case MotionEvent.ACTION_DOWN:
+                        recyclerView.requestDisallowInterceptTouchEvent(true);
+                        return false;
+
+                    case MotionEvent.ACTION_UP:
+                        recyclerView.requestDisallowInterceptTouchEvent(false);
+                        return true;
+
+                    case MotionEvent.ACTION_MOVE:
+                        recyclerView.requestDisallowInterceptTouchEvent(true);
+                        return false;
+
+                    default:
+                        return true;
+                }
+            }
+        });
 
         // Remove the header from the layout. Otherwise it exists twice
         ((ViewManager) view).removeView(header);

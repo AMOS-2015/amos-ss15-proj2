@@ -34,11 +34,22 @@
             android:gravity="center"
             android:background="@color/semitransparent">
 
-            <fragment
-                android:id="@+id/f_my_trip_driver_map"
+            <RelativeLayout
+                android:id="@+id/map_layout"
                 android:layout_width="match_parent"
-                android:layout_height="230dp"
-                class="com.google.android.gms.maps.SupportMapFragment" />
+                android:layout_height="230dp">
+                <fragment
+                    android:id="@+id/f_my_trip_driver_map"
+                    android:layout_width="match_parent"
+                    android:layout_height="230dp"
+                    class="com.google.android.gms.maps.SupportMapFragment" />
+
+                <ImageView
+                    android:id="@+id/iv_transparent_image"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@color/transparent" />
+            </RelativeLayout>
 
             <ProgressBar
                 android:id="@+id/pb_my_trip_progressBar"
