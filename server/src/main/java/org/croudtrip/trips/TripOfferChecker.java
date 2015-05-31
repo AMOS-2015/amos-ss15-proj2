@@ -61,6 +61,7 @@ public class TripOfferChecker extends AbstractScheduledTaskExecutor {
                     TripOffer updatedOffer = new TripOffer(
                             offer.getId(),
                             offer.getDriverRoute(),
+                            offer.getEstimatedArrivalTimeInSeconds(),
                             offer.getCurrentLocation(),
                             offer.getMaxDiversionInMeters(),
                             offer.getPricePerKmInCents(),
@@ -83,6 +84,7 @@ public class TripOfferChecker extends AbstractScheduledTaskExecutor {
                     TripOffer updatedOffer = new TripOffer(
                             offer.getId(),
                             offer.getDriverRoute(),
+                            offer.getEstimatedArrivalTimeInSeconds(),
                             offer.getCurrentLocation(),
                             offer.getMaxDiversionInMeters(),
                             offer.getPricePerKmInCents(),

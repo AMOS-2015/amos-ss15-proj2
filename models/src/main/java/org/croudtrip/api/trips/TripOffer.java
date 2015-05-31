@@ -99,6 +99,9 @@ public class TripOffer {
 	})
 	private RouteLocation currentLocation;
 
+    @Column(name = "estimatedArrivalTimeInSeconds", nullable = false)
+    private long estimatedArrivalTimeInSeconds;
+
 
 	@Column(name = "maxDiversionInMeters", nullable = false)
 	private long maxDiversionInMeters;
@@ -127,6 +130,7 @@ public class TripOffer {
 	public TripOffer(
 			@JsonProperty("id") long id,
 			@JsonProperty("driverRoute") Route driverRoute,
+            @JsonProperty("estimatedArrivalTimeInSeconds") long estimatedArrivalTimeInSeconds,
 			@JsonProperty("currentLocation") RouteLocation currentLocation,
 			@JsonProperty("maxDiversionsInMeters") long maxDiversionInMeters,
 			@JsonProperty("pricePerKmInCents") int pricePerKmInCents,
@@ -137,6 +141,7 @@ public class TripOffer {
 
 		this.id = id;
 		this.driverRoute = driverRoute;
+        this.estimatedArrivalTimeInSeconds = estimatedArrivalTimeInSeconds;
 		this.currentLocation = currentLocation;
 		this.maxDiversionInMeters = maxDiversionInMeters;
 		this.pricePerKmInCents = pricePerKmInCents;
@@ -181,6 +186,7 @@ public class TripOffer {
 		return status;
 	}
 
+    public long getEstimatedArrivalTimeInSeconds() { return estimatedArrivalTimeInSeconds; }
 
     public long getLastPositonUpdateInSeconds() { return lastPositonUpdateInSeconds; }
 

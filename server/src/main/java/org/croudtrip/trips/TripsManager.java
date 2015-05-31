@@ -106,6 +106,7 @@ public class TripsManager {
         TripOffer offer = new TripOffer(
                 0,
                 route.get(0),
+                System.currentTimeMillis()+route.get(0).getDurationInSeconds(),
                 description.getStart(),
                 description.getMaxDiversionInMeters(),
                 description.getPricePerKmInCents(),
@@ -202,6 +203,7 @@ public class TripsManager {
         TripOffer updatedOffer = new TripOffer(
                 offer.getId(),
                 offer.getDriverRoute(),
+                offer.getEstimatedArrivalTimeInSeconds(),
                 newStart,
                 offer.getMaxDiversionInMeters(),
                 offer.getPricePerKmInCents(),
@@ -342,6 +344,7 @@ public class TripsManager {
             TripOffer updatedOffer = new TripOffer(
                     offer.getId(),
                     offer.getDriverRoute(),
+                    offer.getEstimatedArrivalTimeInSeconds(),
                     offer.getCurrentLocation(),
                     offer.getMaxDiversionInMeters(),
                     offer.getPricePerKmInCents(),
@@ -446,7 +449,7 @@ public class TripsManager {
             logManager.d( offer.getId() + ": driver route is out of date. Updating route...");
             List<Route> updatedDriverRoutes = directionsManager.getDirections(offer.getCurrentLocation(), driverRoute.getWayPoints().get(driverRoute.getWayPoints().size() - 1));
             if( updatedDriverRoutes == null || updatedDriverRoutes.isEmpty() ) {
-                // TODO: That's not good and should hopefully never happen
+                // that's quite bad; we will use the old route for matching for now.
                 logManager.e("Could not compute a route for the driver after route update.");
             }
             else {
@@ -454,6 +457,7 @@ public class TripsManager {
                 offer = new TripOffer(
                         offer.getId(),
                         driverRoute,
+                        System.currentTimeMillis()+driverRoute.getDurationInSeconds(),
                         offer.getCurrentLocation(),
                         offer.getMaxDiversionInMeters(),
                         offer.getPricePerKmInCents(),
