@@ -336,9 +336,10 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
                     } else {
                         addresses = geocoder.getFromLocationName(tv_address.getText().toString(), 1);
                     }
-                    if (addresses == null || addresses.size() > 0)
+                    if (addresses != null && addresses.size() > 0)
                         destination = new LatLng(addresses.get(0).getLatitude(), addresses.get(0).getLongitude());
                 } catch (IOException e) {
+                    Timber.d("Destination Extraction: " + e.getMessage());
                     Toast.makeText(getActivity().getApplicationContext(), R.string.offer_trip_no_destination, Toast.LENGTH_SHORT).show();
                     return;
                 }
