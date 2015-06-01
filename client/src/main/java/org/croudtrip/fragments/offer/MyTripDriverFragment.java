@@ -66,6 +66,7 @@ import it.neokree.materialnavigationdrawer.elements.MaterialSection;
 import roboguice.inject.InjectView;
 import rx.Observable;
 import rx.Subscriber;
+import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
 import rx.functions.Func1;
@@ -148,11 +149,28 @@ public class MyTripDriverFragment extends SubscriptionFragment {
                 .setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        // TODO: contact server
-                        Toast.makeText(getActivity(), "Cancel Trip!", Toast.LENGTH_SHORT).show();
-
-                        // After the server has been contacted successfully, clean up the SharedPref
-                        removeRunningTripOfferState();
+                        subscriptions.add(tripsResource.getOffers(false)
+                                        .compose(new DefaultTransformer<List<TripOffer>>())
+                                        .flatMap(new Func1<List<TripOffer>, Observable<TripOffer>>() {
+                                            @Override
+                                            public Observable<TripOffer> call(List<TripOffer> tripOffers) {
+                                                //Cancel the offer (assuming there is only one offer, this has to be changed to get the specific offer when there is more than one)
+                                                if (!tripOffers.isEmpty())
+                                                    cancelTripOffer(tripOffers.get(0).getId());
+                                                return Observable.just(tripOffers.get(0));
+                                            }
+                                        })
+                                        .subscribe(new Action1<TripOffer>() {
+                                            @Override
+                                            public void call(TripOffer offer) {
+                                            }
+                                        }, new Action1<Throwable>() {
+                                            @Override
+                                            public void call(Throwable throwable) {
+                                                Timber.e(throwable.getMessage());
+                                            }
+                                        })
+                        );
                     }
                 });
 
@@ -497,6 +515,28 @@ public class MyTripDriverFragment extends SubscriptionFragment {
         public void onCompleted() {
 
         }
+    }
+
+    private void cancelTripOffer(final long id) {
+        Subscription subscription = tripsResource.updateOffer(id, TripOfferUpdate.createCancelUpdate())
+                .compose(new DefaultTransformer<TripOffer>())
+                .subscribe(new Action1<TripOffer>() {
+                    @Override
+                    public void call(TripOffer offer) {
+                        // After the server has been contacted successfully, clean up the SharedPref
+                        // and show "Offer Trip" screen again
+                        removeRunningTripOfferState();
+                        Toast.makeText(getActivity(), "Trip with id: "+ id + "was canceled!", Toast.LENGTH_SHORT).show();
+                    }
+
+                }, new Action1<Throwable>() {
+                    @Override
+                    public void call(Throwable throwable) {
+                        Timber.i("Error when cancelling trip with ID "+ id + " : " + throwable.getMessage());
+                        Toast.makeText(getActivity(), "Error: " + throwable.getMessage(), Toast.LENGTH_LONG).show();
+                    }
+                });
+        subscriptions.add(subscription);
     }
 
 }
