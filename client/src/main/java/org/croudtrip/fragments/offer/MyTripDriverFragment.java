@@ -154,9 +154,11 @@ public class MyTripDriverFragment extends SubscriptionFragment {
                                         .flatMap(new Func1<List<TripOffer>, Observable<TripOffer>>() {
                                             @Override
                                             public Observable<TripOffer> call(List<TripOffer> tripOffers) {
-                                                //Cancel the offer (assuming there is only one offer, this has to be changed to get the specific offer when there is more than one)
+                                                //Cancel all the offers for the time being
+                                                //this has to be changed to get the specific offer at a later stage
                                                 if (!tripOffers.isEmpty())
-                                                    cancelTripOffer(tripOffers.get(0).getId());
+                                                    for (int i=0;i<tripOffers.size();i++)
+                                                        cancelTripOffer(tripOffers.get(i).getId());
                                                 return Observable.just(tripOffers.get(0));
                                             }
                                         })
@@ -526,7 +528,7 @@ public class MyTripDriverFragment extends SubscriptionFragment {
                         // After the server has been contacted successfully, clean up the SharedPref
                         // and show "Offer Trip" screen again
                         removeRunningTripOfferState();
-                        Toast.makeText(getActivity(), "Trip with id: "+ id + "was canceled!", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getActivity(), "Trip with id: "+ id + " was canceled!", Toast.LENGTH_SHORT).show();
                     }
 
                 }, new Action1<Throwable>() {

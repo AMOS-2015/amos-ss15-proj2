@@ -90,6 +90,9 @@ public class GcmIntentService extends RoboIntentService {
             case GcmConstants.GCM_MSG_FOUND_MATCHES:
                 handleFoundMatches(intent);
                 break;
+            case GcmConstants.GCM_MESSAGE_TRIP_CANCELLED_BY_DRIVER:
+                handleTripCanceledByDriver();
+                break;
             default:
                 break;
         }
@@ -354,6 +357,20 @@ public class GcmIntentService extends RoboIntentService {
                             }
                         });
     }
+
+    private void handleTripCanceledByDriver() {
+        Timber.d("Trip Canceled by Driver");
+
+        //Create a notification for the passengers who already joined the trip
+        Intent startingIntent = new Intent(getApplicationContext(), MainActivity.class);
+        startingIntent.setAction(MainActivity.ACTION_SHOW_JOIN_TRIP_REQUESTS);
+
+        PendingIntent contentIntent = PendingIntent.getActivity(getApplicationContext(), 0, startingIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        createNotification(getString(R.string.new_msg), getString(R.string.trip_canceled_msg),
+                GcmConstants.GCM_NOTIFICATION_TRIP_CANCELLED_ID, contentIntent);
+
+    }
+
 
     private void createNotification( String title, String message, int notificationId ) {
         createNotification(title, message, notificationId, null);
