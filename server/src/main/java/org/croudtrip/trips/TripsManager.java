@@ -106,7 +106,7 @@ public class TripsManager {
         TripOffer offer = new TripOffer(
                 0,
                 route.get(0),
-                System.currentTimeMillis()+route.get(0).getDurationInSeconds(),
+                System.currentTimeMillis()/1000+route.get(0).getDurationInSeconds(),
                 description.getStart(),
                 description.getMaxDiversionInMeters(),
                 description.getPricePerKmInCents(),
@@ -457,7 +457,7 @@ public class TripsManager {
                 offer = new TripOffer(
                         offer.getId(),
                         driverRoute,
-                        System.currentTimeMillis()+driverRoute.getDurationInSeconds(),
+                        System.currentTimeMillis()/1000+driverRoute.getDurationInSeconds(),
                         offer.getCurrentLocation(),
                         offer.getMaxDiversionInMeters(),
                         offer.getPricePerKmInCents(),
