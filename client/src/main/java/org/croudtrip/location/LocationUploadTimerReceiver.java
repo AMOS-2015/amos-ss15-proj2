@@ -32,8 +32,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.inject.Inject;
 
+import pl.charmas.android.reactivelocation.ReactiveLocationProvider;
 import roboguice.receiver.RoboBroadcastReceiver;
+import rx.Observable;
 import rx.functions.Action1;
+import rx.functions.Func1;
 import timber.log.Timber;
 
 /**
@@ -55,58 +58,69 @@ public class LocationUploadTimerReceiver extends RoboBroadcastReceiver {
 
     @Override
     protected void handleReceive( final Context context, Intent intent ) {
-        tripsResource.getOffers(false)
-                .subscribe(new Action1<List<TripOffer>>() {
-                               @Override
-                               public void call(List<TripOffer> tripOffers) {
 
-                                   Location location = locationUpdater.getLastLocation();
-
-                                   if( location == null ) {
-                                       // null is not good, but happens on startup, so that's okay.
-                                       Timber.e("No Update of location was possible, since location was null");
-                                       return;
-                                   }
-
-                                   Timber.d("Your location accuracy is " + location.getAccuracy());
-
-                                   if( location.getAccuracy() > MIN_ACCURACY ) {
-                                       Timber.e("Your location is not accurate enough: " + location.getAccuracy());
-                                       handleError(context);
-                                       return;
-                                   }
-
-                                   RouteLocation routeLocation = new RouteLocation( location.getLatitude(), location.getLongitude() );
-
-                                   for (final TripOffer offer : tripOffers) {
-
-                                       // TODO: There should only be one offer
-                                       TripOfferUpdate offerUpdate = TripOfferUpdate.createNewStartUpdate(routeLocation);
-                                       tripsResource.updateOffer(offer.getId(), offerUpdate)
-                                               .subscribe( new Action1<TripOffer>() {
-                                                   @Override
-                                                   public void call(TripOffer tripOffer) {
-                                                       Timber.d("Updated your location on the server for offer " + tripOffer.getId());
-                                                       handleSuccess(context);
+        ReactiveLocationProvider reactiveLocationProvider = new ReactiveLocationProvider(context);
+        reactiveLocationProvider.getLastKnownLocation()
+                .subscribe( new Action1<Location>() {
+                    @Override
+                    public void call(final Location location) {
+                        tripsResource.getOffers(false)
+                                .subscribe(new Action1<List<TripOffer>>() {
+                                               @Override
+                                               public void call(List<TripOffer> tripOffers) {
+                                                   if( location == null ) {
+                                                       // null is not good, but happens on startup, so that's okay.
+                                                       Timber.e("No Update of location was possible, since location was null");
+                                                       return;
                                                    }
-                                               }, new Action1<Throwable>() {
-                                                   @Override
-                                                   public void call(Throwable throwable) {
-                                                       Timber.e("Was not able to update your location on the server " + offer.getId() + " : " + throwable.getMessage());
+
+                                                   Timber.d("Your location accuracy is " + location.getAccuracy());
+
+                                                   if( location.getAccuracy() > MIN_ACCURACY ) {
+                                                       Timber.e("Your location is not accurate enough: " + location.getAccuracy());
                                                        handleError(context);
+                                                       return;
                                                    }
-                                               });
-                                   }
-                               }
-                           },
-                        new Action1<Throwable>(){
 
-                            @Override
-                            public void call(Throwable throwable) {
-                                Timber.e("Was not able to update your location on the server. Could not download your offers: " + throwable.getMessage());
-                                handleError(context);
+                                                   RouteLocation routeLocation = new RouteLocation( location.getLatitude(), location.getLongitude() );
+
+                                                   for (final TripOffer offer : tripOffers) {
+
+                                                       // TODO: There should only be one offer
+                                                       TripOfferUpdate offerUpdate = TripOfferUpdate.createNewStartUpdate(routeLocation);
+                                                       tripsResource.updateOffer(offer.getId(), offerUpdate)
+                                                               .subscribe( new Action1<TripOffer>() {
+                                                                   @Override
+                                                                   public void call(TripOffer tripOffer) {
+                                                                       Timber.d("Updated your location on the server for offer " + tripOffer.getId());
+                                                                       handleSuccess(context);
+                                                                   }
+                                                               }, new Action1<Throwable>() {
+                                                                   @Override
+                                                                   public void call(Throwable throwable) {
+                                                                       Timber.e("Was not able to update your location on the server " + offer.getId() + " : " + throwable.getMessage());
+                                                                       handleError(context);
+                                                                   }
+                                                               });
+                                                   }
+                                               }
+                                           },
+                                        new Action1<Throwable>(){
+
+                                            @Override
+                                            public void call(Throwable throwable) {
+                                                Timber.e("Was not able to update your location on the server. Could not download your offers: " + throwable.getMessage());
+                                                handleError(context);
+                                            }
+                                        });
+                    }
+                }, new Action1<Throwable>() {
+                                @Override
+                                public void call(Throwable throwable) {
+                                    Timber.e("There was an error retrieving the last Location: " + throwable.getMessage());
+                                }
                             }
-                        });
+                );
     }
 
 
