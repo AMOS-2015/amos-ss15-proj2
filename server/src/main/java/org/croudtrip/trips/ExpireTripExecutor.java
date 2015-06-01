@@ -37,6 +37,16 @@ public class ExpireTripExecutor extends AbstractScheduledTaskExecutor {
                 logManager.d("Offer " + offer.getId() + " expired and will be deleted");
                 tripsManager.updateOffer(offer, TripOfferUpdate.createCancelUpdate());
             }
+            else
+            {
+                long deltaTime = offer.getEstimatedArrivalTimeInSeconds() + MAX_ARRIVAL_DELAY - System.currentTimeMillis()/1000;
+                long hours = deltaTime / 3600;
+                deltaTime %= 3600;
+                long minutes = deltaTime / 60;
+                deltaTime %= 60;
+                long seconds = deltaTime;
+                logManager.d("Offer " + offer.getId() + " will expire in " + hours + "h " + minutes + "min " + seconds + "s.");
+            }
         }
     }
 }
