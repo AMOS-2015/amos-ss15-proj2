@@ -20,6 +20,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -98,10 +99,9 @@ public class JoinDrivingFragment extends SubscriptionFragment implements GoogleA
             btnReachedDestination.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    //TODO (US 132): Handle here all the stuff that happens when the trip is successfully completed (user hits "I have reached my destination")
-                    sendUserBackToSearch();
-
+                    //Handle here all the stuff that happens when the trip is successfully completed (user hits "I have reached my destination")
                     updateTrip(JoinTripRequestUpdateType.LEAVE_CAR);
+                    sendUserBackToSearch();
                 }
             });
         } else {
@@ -110,15 +110,22 @@ public class JoinDrivingFragment extends SubscriptionFragment implements GoogleA
             btnReachedDestination.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    //TODO (US 131): Handle here all the stuff that happens when the user enters the car (user hits "My driver is here")
-                    SharedPreferences.Editor editor = prefs.edit();
-                    editor.putBoolean(Constants.SHARED_PREF_KEY_DRIVING, true);
-                    editor.apply();
-                    btnReachedDestination.setText(getResources().getString(R.string.join_trip_results_reached));
-                    btnCancelTrip.setClickable(false);
-                    btnCancelTrip.setBackgroundColor(getResources().getColor(R.color.inactive));
+                    //Handle here all the stuff that happens when the user enters the car (user hits "My driver is here")
 
-                    updateTrip(JoinTripRequestUpdateType.ENTER_CAR);
+                    if (prefs.getBoolean(Constants.SHARED_PREF_KEY_DRIVING, false)) {
+                        updateTrip(JoinTripRequestUpdateType.LEAVE_CAR);
+                        sendUserBackToSearch();
+                    } else {
+                        SharedPreferences.Editor editor = prefs.edit();
+                        editor.putBoolean(Constants.SHARED_PREF_KEY_DRIVING, true);
+                        editor.apply();
+                        btnReachedDestination.setText(getResources().getString(R.string.join_trip_results_reached));
+                        btnCancelTrip.setClickable(false);
+                        btnCancelTrip.setBackgroundColor(getResources().getColor(R.color.inactive));
+
+                        updateTrip(JoinTripRequestUpdateType.ENTER_CAR);
+                    }
+
                 }
             });
         }
@@ -135,10 +142,9 @@ public class JoinDrivingFragment extends SubscriptionFragment implements GoogleA
         btnCancelTrip.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //TODO (US 120): Handle here all the stuff that happens when the user cancels the trip
-                sendUserBackToSearch();
-
+                //Handle here all the stuff that happens when the user cancels the trip
                 updateTrip(JoinTripRequestUpdateType.CANCEL);
+                sendUserBackToSearch();
             }
         });
 
@@ -161,7 +167,7 @@ public class JoinDrivingFragment extends SubscriptionFragment implements GoogleA
                             if( jtr == null || jtr.isEmpty() ) {
                                 Timber.d("Currently there are no trips running.");
                                 // The user is here though he should not - send him back to join trip
-                                sendUserBackToSearch();
+                                //sendUserBackToSearch();
                                 return;
                             }
 
@@ -173,7 +179,7 @@ public class JoinDrivingFragment extends SubscriptionFragment implements GoogleA
                         @Override
                         public void call(Throwable throwable) {
                             // The user is here though he should not - send him back to join trip
-                            sendUserBackToSearch();
+                            //sendUserBackToSearch();
                         }
                     });
         }

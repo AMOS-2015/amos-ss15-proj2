@@ -23,6 +23,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
+import android.util.Log;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -82,7 +83,7 @@ public class GcmIntentService extends RoboIntentService {
                 handleJoinRequest(intent);
                 break;
             case GcmConstants.GCM_MSG_REQUEST_ACCEPTED:
-                handleRequestAccepted( intent );
+                handleRequestAccepted(intent);
                 break;
             case GcmConstants.GCM_MSG_REQUEST_DECLINED:
                 handleRequestDeclined(intent);
@@ -231,7 +232,7 @@ public class GcmIntentService extends RoboIntentService {
         Timber.d("REQUEST_ACCEPTED");
 
         // extract join request and offer from message
-        long joinTripRequestId = Long.parseLong(intent.getExtras().getString(GcmConstants.GCM_MSG_JOIN_REQUEST_ID));
+        final long joinTripRequestId = Long.parseLong(intent.getExtras().getString(GcmConstants.GCM_MSG_JOIN_REQUEST_ID));
         long offerId = Long.parseLong(intent.getExtras().getString(GcmConstants.GCM_MSG_JOIN_REQUEST_OFFER_ID));
 
         // download the join trip request

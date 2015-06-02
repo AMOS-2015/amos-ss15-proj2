@@ -105,6 +105,7 @@ public class JoinDispatchFragment extends SubscriptionFragment {
 
         //SEARCHING -> Show the results fragment (waiting screen + results)
         if (prefs.getBoolean(Constants.SHARED_PREF_KEY_SEARCHING, false)) {
+
             if (args != null) {
                 resultsFragment = new JoinResultsFragment();
                 resultsFragment.setArguments(args);
@@ -114,6 +115,7 @@ public class JoinDispatchFragment extends SubscriptionFragment {
 
         //ACCEPTED -> Show the driving fragment
         } else if (prefs.getBoolean(Constants.SHARED_PREF_KEY_ACCEPTED, false)) {
+
             if (args != null) {
                 drivingFragment = new JoinDrivingFragment();
                 drivingFragment.setArguments(args);
@@ -123,6 +125,7 @@ public class JoinDispatchFragment extends SubscriptionFragment {
 
         //OTHERWISE -> Show the default search fragment
         } else {
+
             if (args != null) {
                 searchFragment = new JoinSearchFragment();
                 searchFragment.setArguments(args);
