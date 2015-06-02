@@ -115,32 +115,11 @@ public class GcmIntentService extends RoboIntentService {
                             @Override
                             public void call(RunningTripQuery query) {
 
-                                /*OLD
-                                Intent startingIntent = new Intent(getApplicationContext(), MainActivity.class);
-
-                                // fill the arguments for the started fragment (main activity will dispatch to correct fragment) with information about the requested search
-                                startingIntent.putExtra(JoinTripResultsFragment.KEY_ACTION_TO_RUN, JoinTripResultsFragment.ACTION_START_BACKGROUND_SEARCH);
-                                startingIntent.putExtra(JoinTripResultsFragment.KEY_CURRENT_LOCATION_LATITUDE, query.getQuery().getStartLocation().getLat());
-                                startingIntent.putExtra(JoinTripResultsFragment.KEY_CURRENT_LOCATION_LONGITUDE, query.getQuery().getStartLocation().getLng());
-                                startingIntent.putExtra(JoinTripResultsFragment.KEY_DESTINATION_LATITUDE, query.getQuery().getDestinationLocation().getLat());
-                                startingIntent.putExtra(JoinTripResultsFragment.KEY_DESTINATION_LONGITUDE, query.getQuery().getDestinationLocation().getLng());
-                                startingIntent.putExtra(JoinTripResultsFragment.KEY_MAX_WAITING_TIME, query.getQuery().getMaxWaitingTimeInSeconds());
-
-                                // set the action for the main activity that helps to decide which fragment has to be started
-                                // If you want to do something based on shared prefs you probably want to change this part.
-                                startingIntent.setAction(MainActivity.ACTION_SHOW_FOUND_MATCHES);
-
-                                // create notification for the user
-                                PendingIntent contentIntent = PendingIntent.getActivity(getApplicationContext(), 0, startingIntent, 0);
-                                createNotification(getString(R.string.found_matches_title), getString(R.string.found_matches_msg),
-                                        GcmConstants.GCM_NOTIFICATION_FOUND_MATCHES_ID, contentIntent);
-
-                                handleDriversFound(query);*/
-
-                                //NEW
                                 final SharedPreferences prefs = getApplicationContext().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
                                 SharedPreferences.Editor editor = prefs.edit();
-                                editor.putBoolean(Constants.SHARED_PREF_KEY_SEARCHING, true);
+                                editor.putBoolean(Constants.SHARED_PREF_KEY_SEARCHING, false);
+                                editor.putBoolean(Constants.SHARED_PREF_KEY_ACCEPTED, false);
+                                editor.putLong(Constants.SHARED_PREF_KEY_QUERY_ID, -1);
                                 editor.apply();
 
                                 Bundle extras = new Bundle();
@@ -264,33 +243,11 @@ public class GcmIntentService extends RoboIntentService {
                             @Override
                             public void call(JoinTripRequest joinTripRequest) {
 
-                                /* OLD
-                                // create notification for the user
-                                Intent startingIntent = new Intent(getApplicationContext(), MainActivity.class);
-                                startingIntent.setAction(MainActivity.ACTION_SHOW_REQUEST_ACCEPTED);
-                                ObjectMapper mapper = new ObjectMapper();
-                                startingIntent.putExtra(JoinTripResultsFragment.KEY_ACTION_TO_RUN, JoinTripResultsFragment.ACTION_SHOW_RESULT);
-
-                                // We put the downloaded joinTripRequest as an argument, so that we do not have to download it again
-                                try {
-                                    startingIntent.putExtra( JoinTripResultsFragment.KEY_JOIN_TRIP_REQUEST_RESULT, mapper.writeValueAsString(joinTripRequest) );
-                                } catch (JsonProcessingException e) {
-                                    Timber.e("Could not map join trip result");
-                                    e.printStackTrace();
-                                }
-
-                                PendingIntent contentIntent = PendingIntent.getActivity(getApplicationContext(), 0, startingIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-                                createNotification(getString(R.string.join_request_accepted_title), getString(R.string.join_request_accepted_msg,
-                                                joinTripRequest.getOffer().getDriver().getFirstName()),
-                                        GcmConstants.GCM_NOTIFICATION_REQUEST_ACCEPTED_ID, contentIntent);
-
-                                handleDriverAccepted(joinTripRequest);*/
-
-
-                                //NEW
                                 final SharedPreferences prefs = getApplicationContext().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
                                 SharedPreferences.Editor editor = prefs.edit();
                                 editor.putBoolean(Constants.SHARED_PREF_KEY_ACCEPTED, true);
+                                editor.putBoolean(Constants.SHARED_PREF_KEY_SEARCHING, false);
+                                editor.putLong(Constants.SHARED_PREF_KEY_TRIP_ID, joinTripRequest.getId());
                                 editor.apply();
 
                                 Bundle extras = new Bundle();

@@ -138,7 +138,7 @@ public class JoinDrivingFragment extends SubscriptionFragment implements GoogleA
                 //TODO (US 120): Handle here all the stuff that happens when the user cancels the trip
                 sendUserBackToSearch();
 
-                //updateTrip(JoinTripRequestUpdateType.CANCEL????);
+                updateTrip(JoinTripRequestUpdateType.CANCEL);
             }
         });
 
