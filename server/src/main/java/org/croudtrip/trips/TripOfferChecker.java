@@ -48,7 +48,7 @@ public class TripOfferChecker extends AbstractScheduledTaskExecutor {
 
         for( TripOffer offer : tripOfferDAO.findAll() ) {
 
-            if( offer.getStatus() == TripOfferStatus.FINISHED )
+            if( offer.getStatus() == TripOfferStatus.FINISHED || offer.getStatus() == TripOfferStatus.CANCELLED )
                 continue;
 
             long lastUpdateSeconds = (System.currentTimeMillis() / 1000 - offer.getLastPositonUpdateInSeconds());

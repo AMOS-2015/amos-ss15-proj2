@@ -56,6 +56,7 @@ import org.croudtrip.location.LocationUpdater;
 import org.croudtrip.trip.MyTripDriverPassengersAdapter;
 import org.croudtrip.utils.DefaultTransformer;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -203,13 +204,6 @@ public class MyTripDriverFragment extends SubscriptionFragment {
                         }).subscribe(new FinishTripSubscription());
             }
         });
-
-
-        // Ask the server for all accepted passengers
-        subscriptions.add(tripsResource
-                .getDriverAcceptedJoinRequests()
-                .compose(new DefaultTransformer<List<JoinTripRequest>>())
-                .subscribe(new ReceiveAcceptedPassengersReceiver()));
 
 
         // Get the route to display it on the map
@@ -482,41 +476,6 @@ public class MyTripDriverFragment extends SubscriptionFragment {
 
     //*************************** Inner classes ********************************//
 
-    /**
-     * Subscriber to receive accepted passengers which can then be shown in the RecyclerView-list
-     */
-    private class ReceiveAcceptedPassengersReceiver extends Subscriber<List<JoinTripRequest>> {
-
-        @Override
-        public void onNext(List<JoinTripRequest> requests) {
-            // SUCCESS
-            Timber.d("Received " + requests.size() + " accepted passengers");
-            adapter.addRequests(requests);
-
-            // Calculate how much the driver will earn
-            int totalEarningsInCent = 0;
-            for (JoinTripRequest request : requests) {
-                totalEarningsInCent += request.getTotalPriceInCents();
-            }
-            adapter.setTotalEarnings(totalEarningsInCent);
-        }
-
-        @Override
-        public void onError(Throwable e) {
-            // ERROR
-            Timber.e("Receiving accepted Passengers (JoinTripRequest) failed:\n" + e.getMessage());
-            onDone();
-        }
-
-        @Override
-        public void onCompleted() {
-            onDone();
-        }
-
-        private void onDone() {
-        }
-    }
-
 
     private class FinishTripSubscription extends Subscriber<TripOffer> {
 
@@ -558,31 +517,56 @@ public class MyTripDriverFragment extends SubscriptionFragment {
     /**
      * This Subscriber checks if there are still "important" passengers to take care of. That is,
      * e.g. there are still passengers sitting in the car or there are still passengers accepted.
-     * If there are none, the driver may click the finishButton.
+     * If there are none, the driver may click the finishButton. Furthermore, all
+     * relevant passengers (all that were not declined or canceled), will be shown in the RecyclerView-list.
      */
     private class ImportantPassengersSubscriber extends Subscriber<List<JoinTripRequest>>{
 
         @Override
         public void onNext(List<JoinTripRequest> joinTripRequests) {
+            Timber.d("Received " + joinTripRequests.size() + " passenger requests");
 
-            // Check if there are currently passengers in the car or any accepted
+            // Remember all relevant (all that somehow joined or will join the trip) passengers
+            List<JoinTripRequest> allRelevantPassengers = new ArrayList<JoinTripRequest>();
+
+            // Calculate how much the driver will earn
+            int totalEarningsInCent = 0;
+
+            // Only allow finish if there are no passengers in the car or accepted
+            boolean allowFinish = true;
+
+
             for (JoinTripRequest joinTripRequest : joinTripRequests) {
                 JoinTripStatus status = joinTripRequest.getStatus();
 
                 if (status == JoinTripStatus.DRIVER_ACCEPTED || status == JoinTripStatus.PASSENGER_IN_CAR) {
-                    Timber.d("There is still at least one important passenger: " + status);
-                    return;
+                    Timber.d("There is still an important passenger: " + status);
+                    allowFinish = false;
+                }
+
+                if(status != JoinTripStatus.DRIVER_DECLINED && status != JoinTripStatus.PASSENGER_CANCELLED){
+                    allRelevantPassengers.add(joinTripRequest);
+                    totalEarningsInCent += joinTripRequest.getTotalPriceInCents();
                 }
             }
 
-            // Allow the driver to finish the trip
-            finishButton.setEnabled(true);
+            if(allowFinish) {
+                // Allow the driver to finish the trip
+                finishButton.setEnabled(true);
+            }
+
+            Timber.d(joinTripRequests.size() + " passengers are relevant to this trip offer");
+            adapter.setTotalEarnings(totalEarningsInCent);
+            adapter.addRequests(allRelevantPassengers);
         }
 
         @Override
         public void onCompleted() {}
 
         @Override
-        public void onError(Throwable e) {}
+        public void onError(Throwable e) {
+            Timber.e("Receiving Passengers (JoinTripRequest) failed:\n" + e.getMessage());
+
+        }
     }
 }

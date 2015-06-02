@@ -101,7 +101,7 @@ public class UserManager {
 			credentialsDAO.update(updatedCredentials);
 		}
 
-		return user;
+		return updatedUser;
 	}
 
 
