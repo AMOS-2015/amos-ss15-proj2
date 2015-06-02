@@ -33,7 +33,7 @@ public class ExpireTripExecutor extends AbstractScheduledTaskExecutor {
     protected void doRun() throws Exception {
 
         for (TripOffer offer : tripOfferDAO.findAll()) {
-            if (offer.getEstimatedArrivalTimeInSeconds() + MAX_ARRIVAL_DELAY > System.currentTimeMillis()/1000) {
+            if (offer.getEstimatedArrivalTimeInSeconds() + MAX_ARRIVAL_DELAY < System.currentTimeMillis()/1000) {
                 logManager.d("Offer " + offer.getId() + " expired and will be deleted");
                 tripsManager.updateOffer(offer, TripOfferUpdate.createCancelUpdate());
             }
