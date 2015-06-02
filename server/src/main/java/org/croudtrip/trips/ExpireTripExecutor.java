@@ -1,6 +1,7 @@
 package org.croudtrip.trips;
 
 import org.croudtrip.api.trips.TripOffer;
+import org.croudtrip.api.trips.TripOfferStatus;
 import org.croudtrip.api.trips.TripOfferUpdate;
 import org.croudtrip.db.TripOfferDAO;
 import org.croudtrip.logs.LogManager;
@@ -33,6 +34,9 @@ public class ExpireTripExecutor extends AbstractScheduledTaskExecutor {
     protected void doRun() throws Exception {
 
         for (TripOffer offer : tripOfferDAO.findAll()) {
+            if( offer.getStatus() == TripOfferStatus.FINISHED || offer.getStatus() == TripOfferStatus.CANCELLED)
+                continue;
+
             if (offer.getEstimatedArrivalTimeInSeconds() + MAX_ARRIVAL_DELAY < System.currentTimeMillis()/1000) {
                 logManager.d("Offer " + offer.getId() + " expired and will be deleted");
                 tripsManager.updateOffer(offer, TripOfferUpdate.createCancelUpdate());
