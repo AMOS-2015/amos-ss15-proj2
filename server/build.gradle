@@ -39,4 +39,5 @@ dependencies {
 	compile fileTree(dir: 'libs', include: '*.jar')
 
     testCompile 'junit:junit:4.11'
+    testCompile 'org.jmockit:jmockit:1.13'
 }

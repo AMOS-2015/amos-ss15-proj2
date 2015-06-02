@@ -22,8 +22,6 @@ import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.support.ConnectionSource;
 import com.j256.ormlite.table.TableUtils;
 
-import org.croudtrip.DB_Dummy;
-
 import java.sql.SQLException;
 
 import timber.log.Timber;
@@ -43,8 +41,6 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
     // Any time changes are made to the database objects, you may have to increase the database version
     private static final int DATABASE_VERSION = 1;
 
-    // The DAO object we use to access the DB_Dummy table
-    private Dao<DB_Dummy, Long> dummyDAO = null;
     private Dao<Place, String> placeDAO = null;
 
 
@@ -64,7 +60,6 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 
         try {
             Timber.i("onCreate");
-            TableUtils.createTable(connectionSource, DB_Dummy.class);
             TableUtils.createTable(connectionSource, Place.class);
         } catch (SQLException e) {
             Timber.e("Can't create tables", e);
@@ -81,7 +76,6 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 
         try {
             Timber.i("onUpgrade");
-            TableUtils.dropTable(connectionSource, DB_Dummy.class, true);
             TableUtils.dropTable(connectionSource, Place.class, true);
 
             // After the old tables have been dropped, simply create the new ones
@@ -93,18 +87,6 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
         }
     }
 
-
-    /**
-     * Returns the Dao (Database Access Object) for the DB_Dummy class. It will create it or just
-     * give the cached value.
-     */
-    public Dao<DB_Dummy, Long> getDB_DummyDao() throws SQLException{
-        if (dummyDAO == null) {
-            dummyDAO = getDao(DB_Dummy.class);
-        }
-        return dummyDAO;
-    }
-
     public Dao<Place, String> getPlaceDao() throws SQLException{
         if (placeDAO == null) {
             placeDAO = getDao(Place.class);
@@ -112,13 +94,4 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
         return placeDAO;
     }
 
-
-    /**
-     * Close the database connections and clear any cached DAOs.
-     */
-    @Override
-    public void close() {
-        super.close();
-        dummyDAO = null;
-    }
 }
