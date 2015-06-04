@@ -482,21 +482,28 @@ public class VehicleInfoFragment extends SubscriptionFragment {
 
     public void saveCarChanges(int vehicleId) {
         VehicleDescription vehicleDescription = new VehicleDescription(newCarPlate, newColor, newCarType, newCarCapacity);
-        if (carPlateEdit.getText() != null && carPlateEdit.length() > 0) {
+        //check if car type and plate were entered before updating vehicle info (mandatory fields)
+        if ((carPlateEdit.getText() != null && carPlateEdit.length() > 0)
+                && carTypeEdit.getText() != null && carTypeEdit.length() > 0) {
             if (vehicleId == -1 || vehicleId == -2)
                 addVehicle(vehicleDescription);
             else if (vehicleId != 0)
                 updateVehicle(vehicleId, vehicleDescription);
         }
         else
-            Toast.makeText(getActivity(), "Car Plate field is mandatory", Toast.LENGTH_SHORT).show();
+        //detect which edit text is empty
+        {
+            if (carTypeEdit.getText() == null || carTypeEdit.length() == 0)
+                Toast.makeText(getActivity(), "Car Type field is mandatory", Toast.LENGTH_SHORT).show();
+            else if (carPlateEdit.getText() == null || carPlateEdit.length() == 0)
+                Toast.makeText(getActivity(), "Car Plate field is mandatory", Toast.LENGTH_SHORT).show();
+        }
     }
     public void setFields() {
         if (newCarPlate!=null)
             carPlateEdit.setText(newCarPlate);
         else
         {
-            newCarPlate = ("e.g 123456");
             carPlateEdit.setHint(R.string.car_plate_hint);
         }
 
@@ -505,7 +512,6 @@ public class VehicleInfoFragment extends SubscriptionFragment {
         else
         {
             carTypeEdit.setHint(R.string.car_type_hint);
-            newCarType="Porsche 911";
         }
 
         if (newColor != null)
