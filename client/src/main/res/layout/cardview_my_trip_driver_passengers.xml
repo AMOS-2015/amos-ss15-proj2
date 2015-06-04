@@ -28,17 +28,33 @@
         android:layout_height="wrap_content"
         android:layout_margin="2dp">
 
-        <ImageView
-            android:id="@+id/iv_my_trip_driver_passengers_user_image"
+        <FrameLayout
+            android:id="@+id/fl_my_trip_driver_passengers_user_image"
             android:layout_width="70dp"
             android:layout_height="70dp"
-            android:src="@drawable/profile"
-            android:scaleType="fitCenter"
-            android:adjustViewBounds="true"
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"
             android:layout_centerVertical="true"
-            android:layout_margin="2dp"/>
+            android:layout_margin="2dp">
+
+            <ImageView
+                android:id="@+id/iv_my_trip_driver_passengers_user_image"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@drawable/profile"
+                android:scaleType="fitCenter"
+                android:adjustViewBounds="true"/>
+
+            <ImageView
+                android:id="@+id/iv_my_trip_driver_passengers_reached_destination"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@drawable/green_checkmark"
+                android:alpha="0.75"
+                android:scaleType="fitCenter"
+                android:adjustViewBounds="true"
+                android:visibility="gone"/>
+        </FrameLayout>
 
         <TextView
             android:id="@+id/tv_my_trip_driver_passengers_passenger_earnings"
@@ -52,8 +68,8 @@
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_toRightOf="@id/iv_my_trip_driver_passengers_user_image"
-            android:layout_toEndOf="@id/iv_my_trip_driver_passengers_user_image"
+            android:layout_toRightOf="@id/fl_my_trip_driver_passengers_user_image"
+            android:layout_toEndOf="@id/fl_my_trip_driver_passengers_user_image"
             android:layout_toLeftOf="@id/tv_my_trip_driver_passengers_passenger_earnings"
             android:layout_toStartOf="@id/tv_my_trip_driver_passengers_passenger_earnings"
             android:gravity="center_vertical"

@@ -345,6 +345,10 @@ public class MyTripDriverFragment extends SubscriptionFragment {
                             public void call(Throwable throwable) {
                                 Timber.e(throwable.getMessage());
 
+                                // Inform user
+                                Toast.makeText(getActivity(), getString(R.string.navigation_error_no_offer), Toast.LENGTH_LONG).show();
+                                removeRunningTripOfferState();
+
                                 //errorText.setText(R.string.navigation_error_no_offer);
                                 //errorLayout.setVisibility(View.VISIBLE);
                             }

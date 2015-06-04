@@ -115,12 +115,14 @@ public class MyTripDriverPassengersAdapter extends RecyclerView.Adapter<Recycler
             // Earnings for driver
             showEarning(holder.tvEarnings, joinRequest.getTotalPriceInCents());
 
-            // Change background color according to passenger state
+            // Change background color and show green check mark if destination reached
             int color = 0;
             if(joinRequest.getStatus() == JoinTripStatus.PASSENGER_AT_DESTINATION){
                 color = R.color.my_trip_driver_passenger_destination_reached;
+                holder.checkmark.setVisibility(View.VISIBLE);
             }else{
                 color = R.color.my_trip_driver_passenger;
+                holder.checkmark.setVisibility(View.GONE);
             }
 
             color = fragment.getResources().getColor(color);
@@ -350,6 +352,7 @@ public class MyTripDriverPassengersAdapter extends RecyclerView.Adapter<Recycler
         protected ImageView ivAvatar;
 
         protected CardView card;
+        protected ImageView checkmark;
 
 
         public ItemViewHolder(View view) {
@@ -365,6 +368,8 @@ public class MyTripDriverPassengersAdapter extends RecyclerView.Adapter<Recycler
 
             this.card = (CardView)
                     view.findViewById(R.id.cv_my_trip_driver_passengers);
+            this.checkmark = (ImageView)
+                    view.findViewById(R.id.iv_my_trip_driver_passengers_reached_destination);
         }
     }
 
