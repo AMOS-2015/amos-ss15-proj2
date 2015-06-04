@@ -200,7 +200,6 @@ public class JoinDrivingFragment extends SubscriptionFragment implements GoogleA
         });
 
         if (getArguments() != null) {
-            Log.d("alex", "arguments not null");
             JoinTripRequest request = null;
             ObjectMapper mapper = new ObjectMapper();
             try {
@@ -212,7 +211,7 @@ public class JoinDrivingFragment extends SubscriptionFragment implements GoogleA
             showJoinedTrip(request);
             cachedRequest = request;
         } else {
-            tripsResource.getDriverAcceptedJoinRequests()
+            tripsResource.getJoinRequests(false)
                     .compose(new DefaultTransformer<List<JoinTripRequest>>())
                     .subscribe( new Action1<List<JoinTripRequest>>() {
                         @Override
