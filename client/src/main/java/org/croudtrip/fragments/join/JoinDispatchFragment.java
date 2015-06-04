@@ -114,7 +114,7 @@ public class JoinDispatchFragment extends SubscriptionFragment {
             transaction.replace(R.id.child_fragment, resultsFragment).commitAllowingStateLoss();
 
         //ACCEPTED -> Show the driving fragment
-        } else if (prefs.getBoolean(Constants.SHARED_PREF_KEY_ACCEPTED, false)) {
+        } else if (prefs.getBoolean(Constants.SHARED_PREF_KEY_ACCEPTED, false) || prefs.getBoolean(Constants.SHARED_PREF_KEY_WAITING, false)) {
 
             if (args != null) {
                 drivingFragment = new JoinDrivingFragment();

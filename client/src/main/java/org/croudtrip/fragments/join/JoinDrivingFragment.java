@@ -17,6 +17,7 @@ package org.croudtrip.fragments.join;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
@@ -62,6 +63,7 @@ public class JoinDrivingFragment extends SubscriptionFragment implements GoogleA
 
     @InjectView(R.id.btn_joint_trip_reached)        private Button btnReachedDestination; //also handles the "My driver is here" stuff
     @InjectView(R.id.btn_joint_trip_cancel)         private Button btnCancelTrip;
+    @InjectView(R.id.btn_joint_trip_report)         private Button btnReportDriver;
     @InjectView(R.id.tv_joint_description)          private TextView jointDescription;
 
     @Inject TripsResource tripsResource;
@@ -93,8 +95,27 @@ public class JoinDrivingFragment extends SubscriptionFragment implements GoogleA
         jointDescription.setText("");
 
         final SharedPreferences prefs = getActivity().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
-        if (prefs.getBoolean(Constants.SHARED_PREF_KEY_DRIVING, false)) {
+
+        if (prefs.getBoolean(Constants.SHARED_PREF_KEY_WAITING, false)) {
+            //passenger is currently waiting for the drivers approval
+
+            jointDescription.setText(getResources().getString(R.string.join_trip_results_sending));
+
+            setButtonInactive(btnReportDriver);
+            setButtonInactive(btnReachedDestination);
+            setButtonActive(btnCancelTrip);
+
+            btnReachedDestination.setText(getResources().getString(R.string.join_trip_results_driverArrival));
+
+
+        } else if (prefs.getBoolean(Constants.SHARED_PREF_KEY_DRIVING, false)) {
             //passenger is currently on a trip already in the car
+
+            setButtonInactive(btnCancelTrip);
+            setButtonActive(btnReachedDestination);
+            setButtonActive(btnReportDriver);
+
+
             btnReachedDestination.setText(getResources().getString(R.string.join_trip_results_reached));
             btnReachedDestination.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -106,6 +127,12 @@ public class JoinDrivingFragment extends SubscriptionFragment implements GoogleA
             });
         } else {
             //passenger is currently waiting for his driver but already accepted
+
+            setButtonActive(btnCancelTrip);
+            setButtonActive(btnReachedDestination);
+            setButtonActive(btnReportDriver);
+
+
             btnReachedDestination.setText(getResources().getString(R.string.join_trip_results_driverArrival));
             btnReachedDestination.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -120,8 +147,7 @@ public class JoinDrivingFragment extends SubscriptionFragment implements GoogleA
                         editor.putBoolean(Constants.SHARED_PREF_KEY_DRIVING, true);
                         editor.apply();
                         btnReachedDestination.setText(getResources().getString(R.string.join_trip_results_reached));
-                        btnCancelTrip.setClickable(false);
-                        btnCancelTrip.setBackgroundColor(getResources().getColor(R.color.inactive));
+                        setButtonInactive(btnCancelTrip);
 
                         updateTrip(JoinTripRequestUpdateType.ENTER_CAR);
                     }
@@ -132,13 +158,10 @@ public class JoinDrivingFragment extends SubscriptionFragment implements GoogleA
 
 
 
+
         /*
         Cancel trip
          */
-        if (prefs.getBoolean(Constants.SHARED_PREF_KEY_DRIVING, false)) {
-            btnCancelTrip.setClickable(false);
-            btnCancelTrip.setBackgroundColor(getResources().getColor(R.color.inactive));
-        }
         btnCancelTrip.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -210,6 +233,7 @@ public class JoinDrivingFragment extends SubscriptionFragment implements GoogleA
         SharedPreferences.Editor editor = prefs.edit();
         editor.putBoolean(Constants.SHARED_PREF_KEY_ACCEPTED, false);
         editor.putBoolean(Constants.SHARED_PREF_KEY_DRIVING, false);
+        editor.putBoolean(Constants.SHARED_PREF_KEY_WAITING, false);
         editor.apply();
 
         Intent startingIntent = new Intent(Constants.EVENT_CHANGE_JOIN_UI);
@@ -242,6 +266,15 @@ public class JoinDrivingFragment extends SubscriptionFragment implements GoogleA
         subscriptions.add(subscription);
     }
 
+    private void setButtonActive(Button button) {
+        button.setClickable(true);
+        button.setBackgroundColor(getResources().getColor(R.color.primary));
+    }
+
+    private void setButtonInactive(Button button) {
+        button.setClickable(false);
+        button.setBackgroundColor(getResources().getColor(R.color.inactive));
+    }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {

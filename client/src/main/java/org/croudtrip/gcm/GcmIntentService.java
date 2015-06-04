@@ -24,6 +24,7 @@ import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -171,33 +172,10 @@ public class GcmIntentService extends RoboIntentService {
                             @Override
                             public void call(JoinTripRequest joinTripRequest) {
 
-                                /*
-                                OLD
-
-                                Intent startingIntent = new Intent(getApplicationContext(), MainActivity.class);
-
-                                // fill the arguments for the started fragment (main activity will dispatch to correct fragment) with information about the requested search
-                                startingIntent.putExtra(JoinTripResultsFragment.KEY_ACTION_TO_RUN, JoinTripResultsFragment.ACTION_START_BACKGROUND_SEARCH);
-                                startingIntent.putExtra(JoinTripResultsFragment.KEY_CURRENT_LOCATION_LATITUDE, joinTripRequest.getQuery().getStartLocation().getLat());
-                                startingIntent.putExtra(JoinTripResultsFragment.KEY_CURRENT_LOCATION_LONGITUDE, joinTripRequest.getQuery().getStartLocation().getLng());
-                                startingIntent.putExtra(JoinTripResultsFragment.KEY_DESTINATION_LATITUDE, joinTripRequest.getQuery().getDestinationLocation().getLat());
-                                startingIntent.putExtra(JoinTripResultsFragment.KEY_DESTINATION_LONGITUDE, joinTripRequest.getQuery().getDestinationLocation().getLng());
-                                startingIntent.putExtra(JoinTripResultsFragment.KEY_MAX_WAITING_TIME, joinTripRequest.getQuery().getMaxWaitingTimeInSeconds());
-
-                                // set the action for the main activity that helps to decide which fragment has to be started
-                                // TODO-Alexander: If you want to do something based on shared prefs you probably want to change this part.
-                                startingIntent.setAction(MainActivity.ACTION_SHOW_REQUEST_DECLINED);
-
-                                // create notification for the user
-                                PendingIntent contentIntent = PendingIntent.getActivity(getApplicationContext(), 0, startingIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-                                createNotification(getString(R.string.join_request_declined_title), getString(R.string.join_request_declined_msg),
-                                        GcmConstants.GCM_NOTIFICATION_REQUEST_DECLINED_ID, contentIntent);*/
-
-
-                                //NEW
                                 final SharedPreferences prefs = getApplicationContext().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
                                 SharedPreferences.Editor editor = prefs.edit();
                                 editor.putBoolean(Constants.SHARED_PREF_KEY_SEARCHING, true);
+                                editor.putBoolean(Constants.SHARED_PREF_KEY_WAITING, false);
                                 editor.apply();
 
                                 Bundle extras = new Bundle();
@@ -208,6 +186,7 @@ public class GcmIntentService extends RoboIntentService {
                                 extras.putInt(JoinDispatchFragment.KEY_MAX_WAITING_TIME, (int) joinTripRequest.getQuery().getMaxWaitingTimeInSeconds());
 
                                 if(LifecycleHandler.isApplicationInForeground()) {
+                                    Toast.makeText(getApplicationContext(), getString(R.string.join_request_declined_msg), Toast.LENGTH_SHORT).show();
                                     Intent startingIntent = new Intent(Constants.EVENT_CHANGE_JOIN_UI);
                                     startingIntent.putExtras(extras);
                                     LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(startingIntent);
@@ -250,6 +229,7 @@ public class GcmIntentService extends RoboIntentService {
                                 final SharedPreferences prefs = getApplicationContext().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
                                 SharedPreferences.Editor editor = prefs.edit();
                                 editor.putBoolean(Constants.SHARED_PREF_KEY_ACCEPTED, true);
+                                editor.putBoolean(Constants.SHARED_PREF_KEY_WAITING, false);
                                 editor.putBoolean(Constants.SHARED_PREF_KEY_SEARCHING, false);
                                 editor.putLong(Constants.SHARED_PREF_KEY_TRIP_ID, joinTripRequest.getId());
                                 editor.apply();

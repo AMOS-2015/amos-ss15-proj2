@@ -25,6 +25,7 @@ public class Constants {
 
     public final static String SHARED_PREF_KEY_WAITING_TIME = "waitingTime";
     public final static String SHARED_PREF_KEY_SEARCHING = "searching";
+    public final static String SHARED_PREF_KEY_WAITING= "waiting";
     public final static String SHARED_PREF_KEY_DRIVING = "driving";
     public final static String SHARED_PREF_KEY_TRIP_ID = "trip_id";
     public final static String SHARED_PREF_KEY_ACCEPTED = "accepted";

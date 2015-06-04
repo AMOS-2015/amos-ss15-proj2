@@ -127,6 +127,7 @@ public class JoinResultsFragment extends SubscriptionFragment implements GoogleA
                 SharedPreferences prefs = getActivity().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
                 SharedPreferences.Editor editor = prefs.edit();
                 editor.putBoolean(Constants.SHARED_PREF_KEY_SEARCHING, false);
+                editor.putBoolean(Constants.SHARED_PREF_KEY_WAITING, false);
 
 
                 Toast.makeText(getActivity().getApplicationContext(), R.string.join_trip_results_canceled, Toast.LENGTH_LONG);
@@ -172,7 +173,14 @@ public class JoinResultsFragment extends SubscriptionFragment implements GoogleA
                                 Toast.makeText(getActivity(), R.string.join_request_sent,
                                         Toast.LENGTH_SHORT).show();
 
-                                // TODO: Start a new view? Not clear in which state the passenger should wait.
+                                SharedPreferences prefs = getActivity().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
+                                SharedPreferences.Editor editor = prefs.edit();
+                                editor.putBoolean(Constants.SHARED_PREF_KEY_SEARCHING, false);
+                                editor.putBoolean(Constants.SHARED_PREF_KEY_WAITING, true);
+                                editor.commit();
+
+                                Intent startingIntent = new Intent(Constants.EVENT_CHANGE_JOIN_UI);
+                                LocalBroadcastManager.getInstance(getActivity()).sendBroadcast(startingIntent);
                             }
 
                         }, new Action1<Throwable>() {
