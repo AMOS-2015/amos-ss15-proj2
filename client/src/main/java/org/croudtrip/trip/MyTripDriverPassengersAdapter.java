@@ -276,7 +276,8 @@ public class MyTripDriverPassengersAdapter extends RecyclerView.Adapter<Recycler
 
     /**
      * Searches for a JoinTripRequest with the same ID as the given request
-     * and replaces the request with the given one.
+     * and replaces the request with the given one. If the request isn't in the list yet, it is
+     * simply added.
      * @param request the request to update
      */
     public void updateRequest(JoinTripRequest request){
@@ -285,15 +286,25 @@ public class MyTripDriverPassengersAdapter extends RecyclerView.Adapter<Recycler
             return;
         }
 
+        boolean requestFound = false;
         for(int i = 0; i < passengers.size(); i++){
             JoinTripRequest r = passengers.get(i);
 
             if(r.getId() == request.getId()){
                 passengers.set(i, request);
+                requestFound = true;
+                break;
             }
         }
 
-        this.notifyDataSetChanged();
+        if(!requestFound){
+            passengers.add(request);
+            requestFound = true;
+        }
+
+        if(requestFound) {
+            this.notifyDataSetChanged();
+        }
     }
 
 

@@ -36,8 +36,6 @@ public class Constants {
 
     public final static String EVENT_DRIVER_ACCEPTED = "driver_accepted";
     public final static String EVENT_CHANGE_JOIN_UI = "change_join_ui";
-
-
-
-
+    public final static String EVENT_PASSENGER_CANCELLED_TRIP = "passenger_cancelled_trip";
+    public final static String EVENT_PASSENGER_REACHED_DESTINATION = "passenger_reached_destination";
 }
