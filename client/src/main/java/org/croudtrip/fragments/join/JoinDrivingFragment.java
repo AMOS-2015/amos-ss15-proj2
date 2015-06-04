@@ -28,6 +28,7 @@ import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -43,6 +44,7 @@ import org.croudtrip.api.trips.JoinTripRequestUpdateType;
 import org.croudtrip.fragments.JoinTripFragment;
 import org.croudtrip.fragments.SubscriptionFragment;
 import org.croudtrip.utils.DefaultTransformer;
+import org.w3c.dom.Text;
 
 import java.io.IOException;
 import java.util.List;
@@ -64,9 +66,23 @@ public class JoinDrivingFragment extends SubscriptionFragment implements GoogleA
     @InjectView(R.id.btn_joint_trip_reached)        private Button btnReachedDestination; //also handles the "My driver is here" stuff
     @InjectView(R.id.btn_joint_trip_cancel)         private Button btnCancelTrip;
     @InjectView(R.id.btn_joint_trip_report)         private Button btnReportDriver;
-    @InjectView(R.id.tv_joint_description)          private TextView jointDescription;
+
+    @InjectView(R.id.join_trip_sending)         private LinearLayout llSending;
+    @InjectView(R.id.join_trip_waiting)         private LinearLayout llWaiting;
+    @InjectView(R.id.join_trip_driving)         private LinearLayout llDriving;
+
+    @InjectView(R.id.my_driver)                 private View cvDriver;
+
+    @InjectView(R.id.pickup_time)               private TextView tvPickupTime;
+    @InjectView(R.id.card_name)                 private TextView tvCardName;
+    @InjectView(R.id.card_car)                  private TextView tvCardCar;
+    @InjectView(R.id.card_price)                private TextView tvCardPrice;
+
+
 
     @Inject TripsResource tripsResource;
+
+    private JoinTripRequest cachedRequest;
 
 
     @Override
@@ -92,18 +108,22 @@ public class JoinDrivingFragment extends SubscriptionFragment implements GoogleA
     public void onViewCreated( View view, Bundle savedInstanceState ) {
         super.onViewCreated(view, savedInstanceState);
 
-        jointDescription.setText("");
+        llSending.setVisibility(View.GONE);
+        llWaiting.setVisibility(View.GONE);
+        llDriving.setVisibility(View.GONE);
+        cvDriver.setVisibility(View.GONE);
 
         final SharedPreferences prefs = getActivity().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
 
         if (prefs.getBoolean(Constants.SHARED_PREF_KEY_WAITING, false)) {
             //passenger is currently waiting for the drivers approval
 
-            jointDescription.setText(getResources().getString(R.string.join_trip_results_sending));
 
             setButtonInactive(btnReportDriver);
             setButtonInactive(btnReachedDestination);
             setButtonActive(btnCancelTrip);
+
+            llSending.setVisibility(View.VISIBLE);
 
             btnReachedDestination.setText(getResources().getString(R.string.join_trip_results_driverArrival));
 
@@ -115,6 +135,8 @@ public class JoinDrivingFragment extends SubscriptionFragment implements GoogleA
             setButtonActive(btnReachedDestination);
             setButtonActive(btnReportDriver);
 
+            cvDriver.setVisibility(View.VISIBLE);
+            llDriving.setVisibility(View.VISIBLE);
 
             btnReachedDestination.setText(getResources().getString(R.string.join_trip_results_reached));
             btnReachedDestination.setOnClickListener(new View.OnClickListener() {
@@ -132,6 +154,8 @@ public class JoinDrivingFragment extends SubscriptionFragment implements GoogleA
             setButtonActive(btnReachedDestination);
             setButtonActive(btnReportDriver);
 
+            cvDriver.setVisibility(View.VISIBLE);
+            llWaiting.setVisibility(View.VISIBLE);
 
             btnReachedDestination.setText(getResources().getString(R.string.join_trip_results_driverArrival));
             btnReachedDestination.setOnClickListener(new View.OnClickListener() {
@@ -149,7 +173,11 @@ public class JoinDrivingFragment extends SubscriptionFragment implements GoogleA
                         btnReachedDestination.setText(getResources().getString(R.string.join_trip_results_reached));
                         setButtonInactive(btnCancelTrip);
 
+                        llWaiting.setVisibility(View.GONE);
+                        llDriving.setVisibility(View.VISIBLE);
+
                         updateTrip(JoinTripRequestUpdateType.ENTER_CAR);
+                        showJoinedTrip(cachedRequest);
                     }
 
                 }
@@ -172,6 +200,7 @@ public class JoinDrivingFragment extends SubscriptionFragment implements GoogleA
         });
 
         if (getArguments() != null) {
+            Log.d("alex", "arguments not null");
             JoinTripRequest request = null;
             ObjectMapper mapper = new ObjectMapper();
             try {
@@ -181,6 +210,7 @@ public class JoinDrivingFragment extends SubscriptionFragment implements GoogleA
                 e.printStackTrace();
             }
             showJoinedTrip(request);
+            cachedRequest = request;
         } else {
             tripsResource.getDriverAcceptedJoinRequests()
                     .compose(new DefaultTransformer<List<JoinTripRequest>>())
@@ -224,7 +254,12 @@ public class JoinDrivingFragment extends SubscriptionFragment implements GoogleA
             } else {
                 pCents = cents + "";
             }
-            jointDescription.setText( getString(R.string.join_trip_results_pickup, request.getOffer().getDriver().getFirstName(), pEuros, pCents));
+
+            tvPickupTime.setText(request.getOffer().getEstimatedArrivalTimeInSeconds() + "");
+            tvCardName.setText(request.getOffer().getDriver().getFirstName() + " " + request.getOffer().getDriver().getLastName());
+            tvCardCar.setText(request.getOffer().getVehicle().getType());
+            tvCardPrice.setText(getString(R.string.join_trip_results_price, pEuros, pCents));
+            //jointDescription.setText( getString(R.string.join_trip_results_pickup, request.getOffer().getDriver().getFirstName(), pEuros, pCents));
         }
     }
 

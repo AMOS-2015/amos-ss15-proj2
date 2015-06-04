@@ -13,40 +13,120 @@
   ~    If not, see http://www.gnu.org/licenses/.
   -->
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    android:orientation="vertical" >
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_margin="@dimen/default_margin">
 
-    <TextView
-        android:id="@+id/tv_joint_description"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:id="@+id/join_trip_sending"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textAppearance="@android:style/TextAppearance.Large"
-        android:layout_gravity="center_horizontal"
-        android:text="@string/join_trip_results_pickup"
-        android:gravity="center_horizontal" />
+        android:visibility="gone"
+        android:layout_centerHorizontal="true"
+        android:gravity="center_horizontal">
 
-    <Button
-        android:id="@+id/btn_joint_trip_reached"
-        android:layout_width="wrap_content"
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="@android:style/TextAppearance.Large"
+            android:layout_gravity="center_horizontal"
+            android:text="@string/join_trip_results_sending"
+            android:gravity="center_horizontal" />
+
+        </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/join_trip_waiting"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="@android:style/TextAppearance.Large"
+            android:layout_gravity="center_horizontal"
+            android:text="@string/join_trip_results_pickup"
+            android:gravity="center_horizontal" />
+
+        <TextView
+            android:id="@+id/pickup_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="@android:style/TextAppearance.Large"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="@dimen/default_margin"
+            android:gravity="center_horizontal" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/join_trip_driving"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="@android:style/TextAppearance.Large"
+            android:layout_gravity="center_horizontal"
+            android:text="@string/join_trip_results_happy"
+            android:gravity="center_horizontal" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="@android:style/TextAppearance.Large"
+            android:layout_gravity="center_horizontal"
+            android:gravity="center_horizontal"
+            android:text=" "/>
+
+    </LinearLayout>
+
+    <include
+        android:layout_above="@+id/trip_buttons"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="@dimen/default_margin"
-        android:layout_gravity="center_horizontal"/>
+        android:id="@+id/my_driver"
+        layout="@layout/cardview_my_trip_passenger_driver"></include>
 
-    <Button
-        android:id="@+id/btn_joint_trip_report"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginBottom="@dimen/default_margin"
-        android:text="@string/join_trip_results_report"/>
 
-    <Button
-        android:id="@+id/btn_joint_trip_cancel"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:id="@+id/trip_buttons"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginBottom="@dimen/default_margin"
-        android:text="@string/join_trip_results_cancel"/>
-</LinearLayout>
+        android:orientation="vertical"
+        android:layout_alignParentBottom="true">
+
+
+        <Button
+            android:id="@+id/btn_joint_trip_reached"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/default_margin"
+            android:layout_gravity="center_horizontal"/>
+
+        <Button
+            android:id="@+id/btn_joint_trip_report"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="@dimen/default_margin"
+            android:text="@string/join_trip_results_report"/>
+
+        <Button
+            android:id="@+id/btn_joint_trip_cancel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="@dimen/default_margin"
+            android:text="@string/join_trip_results_cancel"/>
+        </LinearLayout>
+
+
+</RelativeLayout>

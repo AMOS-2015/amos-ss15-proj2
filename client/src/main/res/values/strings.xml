@@ -80,7 +80,9 @@
     <string name="join_trip_results_stop">Stop searching</string>
     <string name="join_trip_results_canceled">Searching for trips stopped</string>
     <string name="join_trip_results_sending">You are sending a request</string>
-    <string name="join_trip_results_pickup">%1$s is picking you up. The trip will be %2$s.%3$s€.</string>
+    <string name="join_trip_results_pickup">Driver picks you up at approximately</string>
+    <string name="join_trip_results_price">Price: %1$s,%2$s€</string>
+    <string name="join_trip_results_happy">Have a nice trip</string>
     <string name="join_trip_results_driverArrival">My driver is here</string>
     <string name="join_trip_results_reached">I´ve reached my destination</string>
     <string name="join_trip_results_report">Report driver - I wasn´t picked up</string>
