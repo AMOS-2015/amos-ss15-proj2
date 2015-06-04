@@ -176,19 +176,22 @@ public class JoinDispatchFragment extends SubscriptionFragment {
     Close the app if the user is at the searchFragment, otherwise navigate back to the searchFragment
      */
     public boolean allowBackPressed() {
+        /*
+        This doesn´t make any sense any more
+
         if (!allowBackPressed) {
             SharedPreferences prefs = getActivity().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
             SharedPreferences.Editor editor = prefs.edit();
             editor.putBoolean(Constants.SHARED_PREF_KEY_SEARCHING, false);
             editor.putBoolean(Constants.SHARED_PREF_KEY_ACCEPTED, false);
+            editor.putBoolean(Constants.SHARED_PREF_KEY_WAITING, false);
             editor.putLong(Constants.SHARED_PREF_KEY_QUERY_ID, -1);
             editor.apply();
 
             replaceChildFragment(null);
 
-            //TODO: Cancel search and/or cancel trip -> ask po what to do in which situation
             return false;
-        }
+        }*/
 
         return true;
     }

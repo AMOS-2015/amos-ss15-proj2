@@ -18,9 +18,11 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.location.Location;
 import android.support.v4.app.NotificationCompat;
 
+import org.croudtrip.Constants;
 import org.croudtrip.R;
 import org.croudtrip.api.TripsResource;
 import org.croudtrip.api.directions.RouteLocation;
@@ -93,13 +95,19 @@ public class LocationUploadTimerReceiver extends RoboBroadcastReceiver {
                                                                    @Override
                                                                    public void call(TripOffer tripOffer) {
                                                                        Timber.d("Updated your location on the server for offer " + tripOffer.getId());
-                                                                       handleSuccess(context);
+                                                                       SharedPreferences prefs = context.getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
+                                                                        if (prefs.getBoolean(Constants.SHARED_PREF_KEY_RUNNING_TRIP_OFFER, false)) {
+                                                                            handleSuccess(context);
+                                                                        }
                                                                    }
                                                                }, new Action1<Throwable>() {
                                                                    @Override
                                                                    public void call(Throwable throwable) {
                                                                        Timber.e("Was not able to update your location on the server " + offer.getId() + " : " + throwable.getMessage());
-                                                                       handleError(context);
+                                                                       SharedPreferences prefs = context.getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
+                                                                       if (prefs.getBoolean(Constants.SHARED_PREF_KEY_RUNNING_TRIP_OFFER, false)) {
+                                                                           handleError(context);
+                                                                       }
                                                                    }
                                                                });
                                                    }
