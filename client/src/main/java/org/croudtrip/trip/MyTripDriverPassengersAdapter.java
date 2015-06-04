@@ -17,6 +17,7 @@ package org.croudtrip.trip;
 import android.location.Address;
 import android.location.Geocoder;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -30,6 +31,7 @@ import org.croudtrip.R;
 import org.croudtrip.api.account.User;
 import org.croudtrip.api.directions.RouteLocation;
 import org.croudtrip.api.trips.JoinTripRequest;
+import org.croudtrip.api.trips.JoinTripStatus;
 import org.croudtrip.api.trips.TripQuery;
 
 import java.io.IOException;
@@ -40,19 +42,20 @@ import java.util.Locale;
 /**
  * This adapter manages all accepted passengers in a list such that the driver can scroll
  * through them in his "My Trip" view.
+ *
  * @author Vanessa Lange
  */
-public class MyTripDriverPassengersAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>{
+public class MyTripDriverPassengersAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
-        //************************** Variables ***************************//
+    //************************** Variables ***************************//
 
-    private static final int TYPE_HEADER = 0;
-    private static final int TYPE_ITEM = 1;
     private View header;    // map and earnings are in the header view
+
+    private static final int TYPE_HEADER = 0;           // header element
+    private static final int TYPE_ITEM = 1;             // normal passenger element
 
     private Fragment fragment;
     private List<JoinTripRequest> passengers;
-
 
 
     //************************** Constructors ***************************//
@@ -61,6 +64,8 @@ public class MyTripDriverPassengersAdapter extends RecyclerView.Adapter<Recycler
         this.fragment = fragment;
         this.passengers = new ArrayList<JoinTripRequest>();
         this.header = header;
+
+        updateEarnings();
     }
 
 
@@ -109,6 +114,17 @@ public class MyTripDriverPassengersAdapter extends RecyclerView.Adapter<Recycler
 
             // Earnings for driver
             showEarning(holder.tvEarnings, joinRequest.getTotalPriceInCents());
+
+            // Change background color according to passenger state
+            int color = 0;
+            if(joinRequest.getStatus() == JoinTripStatus.PASSENGER_AT_DESTINATION){
+                color = R.color.my_trip_driver_passenger_destination_reached;
+            }else{
+                color = R.color.my_trip_driver_passenger;
+            }
+
+            color = fragment.getResources().getColor(color);
+            holder.card.setCardBackgroundColor(color);
 
         } else if (h instanceof MyTripDriverPassengersAdapter.HeaderViewHolder) {
             MyTripDriverPassengersAdapter.HeaderViewHolder holder = (MyTripDriverPassengersAdapter.HeaderViewHolder) h;
@@ -190,7 +206,7 @@ public class MyTripDriverPassengersAdapter extends RecyclerView.Adapter<Recycler
 
         int realPosition = position - 1;
 
-        if(realPosition < 0 || realPosition >= passengers.size()){
+        if (realPosition < 0 || realPosition >= passengers.size()) {
             return null;
         }
 
@@ -215,13 +231,93 @@ public class MyTripDriverPassengersAdapter extends RecyclerView.Adapter<Recycler
 
 
     /**
+     * Adds the given JoinTripRequest to the adapter.
+     *
+     * @param additionalRequest new element to add to the adapter.
+     */
+    public void addRequest(JoinTripRequest additionalRequest) {
+
+        if (additionalRequest == null) {
+            return;
+        }
+
+        passengers.add(additionalRequest);
+        this.notifyDataSetChanged();
+    }
+
+
+    /**
+     * Removes the given JoinTripRequest from the adapter.
+     *
+     * @param request the JoinTripRequest to remove
+     */
+    public void removeRequest(JoinTripRequest request) {
+        if (request == null) {
+            return;
+        }
+
+        passengers.remove(request);
+        this.notifyDataSetChanged();
+    }
+
+
+    /**
+     * Checks whether the given JoinTripRequest is in the adapter
+     *
+     * @param joinTripRequest the JoinTripRequest to search for
+     * @return true if the request is in the adapter, otherwise false
+     */
+    public boolean contains(JoinTripRequest joinTripRequest) {
+        return passengers.contains(joinTripRequest);
+    }
+
+
+    /**
+     * Searches for a JoinTripRequest with the same ID as the given request
+     * and replaces the request with the given one.
+     * @param request the request to update
+     */
+    public void updateRequest(JoinTripRequest request){
+
+        if(request == null){
+            return;
+        }
+
+        for(int i = 0; i < passengers.size(); i++){
+            JoinTripRequest r = passengers.get(i);
+
+            if(r.getId() == request.getId()){
+                passengers.set(i, request);
+            }
+        }
+
+        this.notifyDataSetChanged();
+    }
+
+
+    /**
      * Shows the total earnings to the driver
+     *
      * @param totalEarningsInCent
      */
-    public void setTotalEarnings(int totalEarningsInCent){
+    private void setTotalEarnings(int totalEarningsInCent) {
         TextView earnings = (TextView) header.findViewById(R.id.tv_my_trip_driver_earnings);
         showEarning(earnings, totalEarningsInCent);
         notifyDataSetChanged();
+    }
+
+
+    public void updateEarnings() {
+
+        int totalEarnings = 0;
+
+        if (passengers != null) {
+            for (JoinTripRequest request : passengers) {
+                totalEarnings += request.getTotalPriceInCents();
+            }
+        }
+
+        setTotalEarnings(totalEarnings);
     }
 
 
@@ -246,12 +342,14 @@ public class MyTripDriverPassengersAdapter extends RecyclerView.Adapter<Recycler
     /**
      * Provides a reference to the views for each data item.
      */
-    class ItemViewHolder extends RecyclerView.ViewHolder{
+    class ItemViewHolder extends RecyclerView.ViewHolder {
 
         protected TextView tvPassengerName;
         protected TextView tvPassengerLocation;
         protected TextView tvEarnings;
         protected ImageView ivAvatar;
+
+        protected CardView card;
 
 
         public ItemViewHolder(View view) {
@@ -264,13 +362,16 @@ public class MyTripDriverPassengersAdapter extends RecyclerView.Adapter<Recycler
                     view.findViewById(R.id.tv_my_trip_driver_passengers_passenger_earnings);
             this.ivAvatar = (ImageView)
                     view.findViewById(R.id.iv_my_trip_driver_passengers_user_image);
+
+            this.card = (CardView)
+                    view.findViewById(R.id.cv_my_trip_driver_passengers);
         }
     }
 
     /**
      * Provides a reference to the header view
      */
-    class HeaderViewHolder extends RecyclerView.ViewHolder{
+    class HeaderViewHolder extends RecyclerView.ViewHolder {
 
         protected View view;
 

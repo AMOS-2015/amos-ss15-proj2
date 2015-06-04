@@ -33,4 +33,7 @@
 
     <color name="error">#FF434E</color>
 
+    <color name="my_trip_driver_passenger">#ffffff</color>
+    <color name="my_trip_driver_passenger_destination_reached">#c8e6c9</color>
+
 </resources>

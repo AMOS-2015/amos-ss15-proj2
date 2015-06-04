@@ -143,8 +143,6 @@ public class MyTripDriverFragment extends SubscriptionFragment {
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setAdapter(adapter);
 
-        adapter.setTotalEarnings(0);    // temporary so no-one sees the ugly formatting signs
-
         // Cancel Trip Button
         ((Button) (header.findViewById(R.id.btn_my_trip_driver_cancel_trip)))
                 .setOnClickListener(new View.OnClickListener() {
@@ -446,6 +444,10 @@ public class MyTripDriverFragment extends SubscriptionFragment {
 
                         // UI
                         progressBar.setVisibility(View.GONE);
+
+                        // Inform user
+                        Toast.makeText(getActivity(), getString(R.string.offer_trip_failed), Toast.LENGTH_LONG).show();
+                        removeRunningTripOfferState();
                     }
                 });
     }
@@ -471,6 +473,56 @@ public class MyTripDriverFragment extends SubscriptionFragment {
                     }
                 });
         subscriptions.add(subscription);
+    }
+
+
+    /**
+     * Updates the displayed passenger list by adding a given JoinTripRequest.
+     * JoinTripRequests cannot be added twice.
+     * This also updates the displayed earnings for the driver.
+     * @param request the JoinTripRequest to be added/removed
+     */
+    public void addPassengerToList(JoinTripRequest request){
+
+        if(request == null || adapter.contains(request)){
+            return;
+        }
+
+        adapter.addRequest(request);
+        adapter.updateEarnings();
+    }
+
+
+    /**
+     * Removes a passenger (identified through the JoinTripRequest) from the displayed list.
+     * This also updates the displayed earnings for the driver.
+     * @param request the JoinTripRequest from the passenger to ber removed
+     */
+    public void removePassengerFromList(JoinTripRequest request){
+
+        if(request == null){
+            return;
+        }
+
+        adapter.removeRequest(request);
+        adapter.updateEarnings();
+    }
+
+
+    /**
+     * If a passenger has reached his destination, this method should be called to mark him
+     * as such in the passenger list.
+     * @param request the passenger (identified though the JoinTripRequest) that has reached
+     *                his destination
+     */
+    public void markPassengerAsDestinationReached(JoinTripRequest request){
+
+        if(request == null || request.getStatus() != JoinTripStatus.PASSENGER_AT_DESTINATION) {
+            Timber.e("Passenger to mark as 'destination reached' is null or hasn't reached " +
+                    "his destination yet ");
+        }
+
+        adapter.updateRequest(request);
     }
 
 
@@ -529,9 +581,6 @@ public class MyTripDriverFragment extends SubscriptionFragment {
             // Remember all relevant (all that somehow joined or will join the trip) passengers
             List<JoinTripRequest> allRelevantPassengers = new ArrayList<JoinTripRequest>();
 
-            // Calculate how much the driver will earn
-            int totalEarningsInCent = 0;
-
             // Only allow finish if there are no passengers in the car or accepted
             boolean allowFinish = true;
 
@@ -546,7 +595,6 @@ public class MyTripDriverFragment extends SubscriptionFragment {
 
                 if(status != JoinTripStatus.DRIVER_DECLINED && status != JoinTripStatus.PASSENGER_CANCELLED){
                     allRelevantPassengers.add(joinTripRequest);
-                    totalEarningsInCent += joinTripRequest.getTotalPriceInCents();
                 }
             }
 
@@ -556,8 +604,8 @@ public class MyTripDriverFragment extends SubscriptionFragment {
             }
 
             Timber.d(joinTripRequests.size() + " passengers are relevant to this trip offer");
-            adapter.setTotalEarnings(totalEarningsInCent);
             adapter.addRequests(allRelevantPassengers);
+            adapter.updateEarnings();
         }
 
         @Override
