@@ -33,10 +33,12 @@ import android.widget.Toast;
 import com.larswerkman.holocolorpicker.ColorPicker;
 import com.larswerkman.holocolorpicker.SVBar;
 
+import org.croudtrip.account.AccountManager;
 import org.croudtrip.account.VehicleManager;
 import org.croudtrip.R;
 import org.croudtrip.api.TripsResource;
 import org.croudtrip.api.VehicleResource;
+import org.croudtrip.api.account.User;
 import org.croudtrip.api.account.Vehicle;
 import org.croudtrip.api.account.VehicleDescription;
 import org.croudtrip.api.trips.TripOffer;
@@ -70,7 +72,8 @@ public class VehicleInfoFragment extends SubscriptionFragment {
     private EditText carTypeEdit, carPlateEdit;
     private Button colorPickerButton, capacityPickerButton, updateInfo, deleteVehicle;
     private int vehicleId = DataHolder.getInstance().getVehicle_id();
-
+    private User user;
+    private long userId=-1;
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -106,6 +109,9 @@ public class VehicleInfoFragment extends SubscriptionFragment {
         if (vehicleId !=-1 && vehicleId != -2)
             deleteVehicle.setVisibility(View.VISIBLE);
 
+        this.user = AccountManager.getLoggedInUser(this.getActivity().getApplicationContext());
+        if(user != null)
+            userId=user.getId();
 
         setFields();
         updateInfo.setOnClickListener(new View.OnClickListener() {
@@ -117,6 +123,7 @@ public class VehicleInfoFragment extends SubscriptionFragment {
         deleteVehicle.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick (View v) {
+
                 vehicleId = DataHolder.getInstance().getVehicle_id();
                 //Get a list of offers and iterate over them to check if the vehicle is being used before attempting to remove it
                 subscriptions.add(tripsResource.getOffers(false)
@@ -127,6 +134,7 @@ public class VehicleInfoFragment extends SubscriptionFragment {
                                         //Remove the vehicle if there are no offers
                                         if (tripOffers.isEmpty())
                                         {
+                                            Timber.d("tripOffers is empty");
                                             removeVehicle(vehicleId);
                                             deleteVehicle.setVisibility(View.INVISIBLE);
                                             vehicleId = -1;
@@ -137,8 +145,9 @@ public class VehicleInfoFragment extends SubscriptionFragment {
                                         {
                                             for (int i=0;i<tripOffers.size();i++)
                                             {
+                                                Timber.d("tripOffers has size: "+tripOffers.size());
                                                 //Notify the user if the vehicle is being used in any trip offers
-                                                if (tripOffers.get(i).getVehicle().getId()==vehicleId)
+                                                if (tripOffers.get(i).getVehicle().getId()==vehicleId && userId == tripOffers.get(i).getDriver().getId())
                                                 {
                                                     Toast.makeText(getActivity(), getResources().getString(R.string.vehicle_in_use), Toast.LENGTH_SHORT).show();
                                                     Timber.d("The targeted vehicle is in use with id: " + tripOffers.get(i).getVehicle().getId());
@@ -146,6 +155,7 @@ public class VehicleInfoFragment extends SubscriptionFragment {
                                                 //Remove the vehicle if it's not being used in any of the trip offers
                                                 else
                                                 {
+                                                    Timber.d("Vehicle is not being used");
                                                     removeVehicle(vehicleId);
                                                     deleteVehicle.setVisibility(View.INVISIBLE);
                                                     vehicleId = -1;
