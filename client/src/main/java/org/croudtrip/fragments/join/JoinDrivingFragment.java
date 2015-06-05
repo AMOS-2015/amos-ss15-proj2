@@ -28,12 +28,14 @@ import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.squareup.picasso.Picasso;
 
 import org.croudtrip.Constants;
 import org.croudtrip.R;
@@ -47,6 +49,8 @@ import org.croudtrip.utils.DefaultTransformer;
 import org.w3c.dom.Text;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Calendar;
 import java.util.List;
 import java.util.TimeZone;
@@ -79,6 +83,8 @@ public class JoinDrivingFragment extends SubscriptionFragment implements GoogleA
     @InjectView(R.id.card_name)                 private TextView tvCardName;
     @InjectView(R.id.card_car)                  private TextView tvCardCar;
     @InjectView(R.id.card_price)                private TextView tvCardPrice;
+    @InjectView(R.id.card_icon)                 private ImageView ivCardIcon;
+
 
 
 
@@ -218,7 +224,7 @@ public class JoinDrivingFragment extends SubscriptionFragment implements GoogleA
                     .subscribe( new Action1<List<JoinTripRequest>>() {
                         @Override
                         public void call(List<JoinTripRequest> jtr) {
-                            if( jtr == null || jtr.isEmpty() ) {
+                            if(jtr == null || jtr.isEmpty()) {
                                 Timber.d("Currently there are no trips running.");
                                 // The user is here though he should not - send him back to join trip
                                 //sendUserBackToSearch();
@@ -226,7 +232,7 @@ public class JoinDrivingFragment extends SubscriptionFragment implements GoogleA
                             }
 
                             if (isAdded()) {
-                                showJoinedTrip( jtr.get(0) );
+                                showJoinedTrip(jtr.get(0));
                             }
                         }
                     }, new Action1<Throwable>() {
@@ -254,6 +260,16 @@ public class JoinDrivingFragment extends SubscriptionFragment implements GoogleA
                 pCents = "0" + cents;
             } else {
                 pCents = cents + "";
+            }
+
+            String avatarURL = request.getOffer().getDriver().getAvatarUrl();
+            if (avatarURL != null) {
+                try {
+                    new URL(avatarURL);
+                    Picasso.with(getActivity()).load(avatarURL).into(ivCardIcon);
+                } catch (MalformedURLException e) {
+                    ivCardIcon.setImageResource(R.drawable.profile);
+                }
             }
 
             String dateAsString = "";
