@@ -77,7 +77,7 @@ public class TripOffer {
 	private Route driverRoute;
 
 	/*
-	TODO: Maybe could be useful to have start and end of the drivers rout well defined, but currently there is no urgent need for it.
+	TODO: Maybe could be useful to have start and end of the drivers route well defined, but currently there is no urgent need for it.
 	@Embedded
 	@AttributeOverrides({
 			@AttributeOverride(name= RouteLocation.COLUMN_LAT, column = @Column(name = "startLat")),

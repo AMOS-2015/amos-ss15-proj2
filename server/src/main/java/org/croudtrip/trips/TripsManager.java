@@ -16,6 +16,7 @@ package org.croudtrip.trips;
 
 
 import com.google.common.base.Optional;
+import com.google.common.collect.Collections2;
 
 import org.croudtrip.account.VehicleManager;
 import org.croudtrip.api.account.User;
@@ -47,6 +48,7 @@ import org.croudtrip.utils.Assert;
 import org.croudtrip.utils.Pair;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -88,7 +90,14 @@ public class TripsManager {
         this.logManager = logManager;
     }
 
-
+    /**
+     * Adds an offer to the database.
+     * @param owner The driver that offers the trip
+     * @param description the description of the offer.
+     * @return the newly cerated {@link org.croudtrip.api.trips.TripOffer}
+     * @throws RouteNotFoundException is thrown, if there was no route from the requested start to
+     * the requested destination.
+     */
     public TripOffer addOffer(User owner, TripOfferDescription description) throws RouteNotFoundException {
         logManager.d("Searching for routes");
 
@@ -143,21 +152,42 @@ public class TripsManager {
     }
 
 
+    /**
+     * Lists all the offers that belong to a specific driver.
+     * @param driver The driver that you want to know the offers from.
+     * @return A list of {@link org.croudtrip.api.trips.TripOffer} with all the offers of the driver.
+     */
     public List<TripOffer> findOffersByDriver(User driver) {
         return tripOfferDAO.findByDriverId(driver.getId());
     }
 
 
+    /**
+     * Finds an offer by its id.
+     * @param offerId the id of the offer.
+     * @return An {@link com.google.common.base.Optional} that contains the offer if it exists.
+     */
     public Optional<TripOffer> findOffer(long offerId) {
         return tripOfferDAO.findById(offerId);
     }
 
 
+    /**
+     * Deletes an offer from the database
+     * @param offer the offer that should be deleted.
+     */
     public void deleteOffer(TripOffer offer) {
         tripOfferDAO.delete(offer);
     }
 
 
+    /**
+     * Update the status of an offer.
+     * @param offer the offer that should be updated.
+     * @param offerUpdate the update status that should be applied to the offer.
+     * @return The updated offer.
+     * @throws RouteNotFoundException is thrown, if there is no route from the starting point to the destination of the trip.
+     */
     public TripOffer updateOffer(TripOffer offer, TripOfferUpdate offerUpdate) throws RouteNotFoundException {
         RouteLocation newStart;
         TripOfferStatus newStatus;
@@ -216,6 +246,13 @@ public class TripsManager {
     }
 
 
+    /**
+     * Requests a query for offers that match for this passenger.
+     * @param passenger The passenger that wants to join a trip.
+     * @param queryDescription The description of his query
+     * @return A {@link org.croudtrip.api.trips.TripQueryResult} for this request-
+     * @throws RouteNotFoundException is thrown, if there is no route from the passenger's starting position to his final destination.
+     */
     public TripQueryResult queryOffers(User passenger, TripQueryDescription queryDescription) throws RouteNotFoundException {
         logManager.d("QUERY OFFER: User " + passenger.getId() + " (" + passenger.getFirstName() + " " + passenger.getLastName() + ") from " + queryDescription.getStart() + " to " + queryDescription.getEnd() + " with " + " max waiting time: " + queryDescription.getMaxWaitingTimeInSeconds());
 
@@ -248,32 +285,62 @@ public class TripsManager {
     }
 
 
+    /**
+     * Find all the queries by a certain passenger.
+     * @param passenger The passenger you want to get the queries for
+     * @param showOnlyRunning true, if you want to get only the running queries, false otherwise
+     * @return A list of {@link org.croudtrip.api.trips.RunningTripQuery} by this passenger.
+     */
     public List<RunningTripQuery> getRunningQueries(User passenger, boolean showOnlyRunning) {
         if (showOnlyRunning) return runningTripQueryDAO.findByPassengerIdAndSatusRunning(passenger.getId());
         else return runningTripQueryDAO.findByPassengerId(passenger.getId());
     }
 
-
+    /**
+     * Find a running query by its id.
+     * @param queryId the id of the query you want to get.
+     * @return An {@link com.google.common.base.Optional} that contains the {@link org.croudtrip.api.trips.RunningTripQuery}
+     * if it exists in the database.
+     */
     public Optional<RunningTripQuery> getRunningQuery(long queryId) {
         return runningTripQueryDAO.findById(queryId);
     }
 
-
+    /**
+     * Delete a running query from the database
+     * @param runningTripQuery the query that should be deleted.
+     */
     public void deleteRunningQuery(RunningTripQuery runningTripQuery) {
         runningTripQueryDAO.delete(runningTripQuery);
     }
 
-
+    /**
+     * Get a list of all the reservations that exists.
+     * @return returns all trip reservations from the database.
+     */
     public List<TripReservation> findAllReservations() {
         return tripReservationDAO.findAll();
     }
 
-
+    /**
+     * Find a specific reservation by its id.
+     * @param reservationId the id of the {@link org.croudtrip.api.trips.TripReservation} that you want to get.
+     * @return An {@link com.google.common.base.Optional} that contains the TripReservation if it exists.
+     */
     public Optional<TripReservation> findReservation(long reservationId) {
         return tripReservationDAO.findById(reservationId);
     }
 
 
+    /**
+     * Join a specific offer by a {@link org.croudtrip.api.trips.TripReservation}.
+     * A {@link org.croudtrip.api.trips.JoinTripRequest} for this query will be created and a
+     * notification is sent to the driver, that he has either to decline or to accept this new
+     * passenger.
+     * @param tripReservation The reservation for that the user want to join the trip
+     * @return An {@link com.google.common.base.Optional} that contains a JoinTripRequest if the
+     * reservation was still valid.
+     */
     public Optional<JoinTripRequest> joinTrip(TripReservation tripReservation) {
         // remove reservation (either it has now been accepted or is can be discarded)
         tripReservationDAO.delete(tripReservation);
@@ -306,27 +373,56 @@ public class TripsManager {
     }
 
 
+    /**
+     * Returns all JoinRequests that are related to a specific user and possibly have as status
+     * {@link org.croudtrip.api.trips.JoinTripStatus#PASSENGER_ACCEPTED}.
+     * @param passengerOrDriver the user to which all JoinTripRequests should belong.
+     * @param showOnlyPassengerAccepted true if you want only get all the requests that are accepted by passenger side.
+     * @return a list of JoinTripRequests.
+     */
     public List<JoinTripRequest> findAllJoinRequests(User passengerOrDriver, boolean showOnlyPassengerAccepted) {
         if (showOnlyPassengerAccepted) return joinTripRequestDAO.findByUserIdAndStatusPassengerAccepted(passengerOrDriver.getId());
         else return joinTripRequestDAO.findByUserId(passengerOrDriver.getId());
     }
 
 
+    /**
+     * Finds all {@link org.croudtrip.api.trips.JoinTripRequest} that are related to a certain offer.
+     * @param offerId the offer id for that all JoinTripRequests should be found.
+     * @return A List of JoinTripRequests for this specific offer.
+     */
     public List<JoinTripRequest> findAllJoinRequests(long offerId) {
         return joinTripRequestDAO.findByOfferId(offerId);
     }
 
 
+    /**
+     * Find all the {@link org.croudtrip.api.trips.JoinTripRequest} that were accepted by the driver (but are not in the car).
+     * @param passengerOrDriver Either the driver or the passenger that are related to the JoinTripRequest
+     * @return A list of JoinTripRequests that have as status {@link org.croudtrip.api.trips.JoinTripStatus#DRIVER_ACCEPTED}
+     * and are related to the passed user.
+     */
     public List<JoinTripRequest> findDriverAcceptedJoinRequests(User passengerOrDriver) {
         return joinTripRequestDAO.findByUserIdAndStatusDriverAccepted(passengerOrDriver.getId());
     }
 
 
+    /**
+     * Finds a {@link org.croudtrip.api.trips.JoinTripRequest} by its id.
+     * @param joinRequestId the id of the JoinTripRequest
+     * @return An {@link com.google.common.base.Optional} that contains the respective JoinTripRequest
+     * if it exists.
+     */
     public Optional<JoinTripRequest> findJoinRequest(long joinRequestId) {
         return joinTripRequestDAO.findById(joinRequestId);
     }
 
-
+    /**
+     * Updates a running join request if the driver either accepts or decline the passenger
+     * @param joinRequest The join request that needs to be updated.
+     * @param passengerAccepted true if the passenger should be accepted, false if not.
+     * @return the updated join request.
+     */
     public JoinTripRequest updateJoinRequestAcceptance(JoinTripRequest joinRequest, boolean passengerAccepted) {
         Assert.assertTrue(joinRequest.getStatus().equals(JoinTripStatus.PASSENGER_ACCEPTED), "cannot modify join request");
 
@@ -364,6 +460,11 @@ public class TripsManager {
     }
 
 
+    /**
+     * Updates a running join request if the passenger has just entered the car.
+     * @param joinRequest The join request that needs to be updated.
+     * @return the updated join request.
+     */
     public JoinTripRequest updateJoinRequestPassengerEnterCar(JoinTripRequest joinRequest) {
         JoinTripRequest updatedRequest = new JoinTripRequest(joinRequest, JoinTripStatus.PASSENGER_IN_CAR);
         joinTripRequestDAO.update(updatedRequest);
@@ -371,6 +472,11 @@ public class TripsManager {
     }
 
 
+    /**
+     * Updates a running join request if the passenger is at his destination and has left the car.
+     * @param joinRequest The join request that needs to be updated.
+     * @return the updated join request.
+     */
     public JoinTripRequest updateJoinRequestPassengerExitCar(JoinTripRequest joinRequest) {
         JoinTripRequest updatedRequest = new JoinTripRequest(joinRequest, JoinTripStatus.PASSENGER_AT_DESTINATION);
         joinTripRequestDAO.update(updatedRequest);
@@ -378,6 +484,11 @@ public class TripsManager {
     }
 
 
+    /**
+     * Updates a running join request if the passenger cancels the trip from his device.
+     * @param joinRequest The join request that needs to be updated.
+     * @return the updated join request.
+     */
     public JoinTripRequest updateJoinRequestPassengerCancel(JoinTripRequest joinRequest) {
         JoinTripRequest updatedRequest = new JoinTripRequest(joinRequest, JoinTripStatus.PASSENGER_CANCELLED);
         joinTripRequestDAO.update(updatedRequest);
@@ -386,6 +497,14 @@ public class TripsManager {
     }
 
 
+    /**
+     * Finds a list of {@link org.croudtrip.api.trips.TripOffer} that fulfill
+     * the {@link #isPotentialMatch(org.croudtrip.api.trips.TripOffer, org.croudtrip.api.trips.TripQuery)}
+     * method for a certain query.
+     * @param offers a list of offers that you want to check, if they are a potential match
+     * @param query the query you search a potential match for
+     * @return a (possibly empty) list of TripOffers that contains all the matching trip offers.
+     */
     private List<TripOffer> findPotentialMatches(List<TripOffer> offers, TripQuery query) {
         // analyse offers
         List<TripOffer> potentialMatches = new ArrayList<>();
@@ -399,6 +518,14 @@ public class TripsManager {
     }
 
 
+    /**
+     * Checks if a specific {@link org.croudtrip.api.trips.TripOffer} matches to a specific
+     * {@link org.croudtrip.api.trips.TripQuery}. That means that the additional route the driver
+     * has to take into account for this query will not exceed his maximum diversion
+     * @param offer The offer you want to check
+     * @param query the query you search a potential match for
+     * @return true, if the offer is a potential match for this query; false, if it is not.
+     */
     private boolean isPotentialMatch(TripOffer offer, TripQuery query) {
         // check trip status
         if (!offer.getStatus().equals(TripOfferStatus.ACTIVE_NOT_FULL)) return false;
@@ -434,7 +561,7 @@ public class TripsManager {
         // TODO: Solve TSP for multiple passengers
 
         // compute total driver route
-        List<RouteLocation> passengerWayPoints = query.getPassengerRoute().getWayPoints();
+        List<RouteLocation> passengerWayPoints = getBestWaypointOrder(offer, query);
         List<RouteLocation> driverWayPoints = offer.getDriverRoute().getWayPoints();
         List<Route> possibleRoutes = directionsManager.getDirections(
                 driverWayPoints.get(0),
@@ -488,7 +615,12 @@ public class TripsManager {
         return true;
     }
 
-
+    /**
+     * Will compute a list of cheapest @link{TripReservation} for a specific query out of a list of potential matches
+     * @param query the query you want to get a match for
+     * @param potentialMatches the list of potential matches for this query
+     * @return a list of TripReservations for this query with the cheapest price
+     */
     private List<TripReservation> findCheapestMatch(TripQuery query, List<TripOffer> potentialMatches) {
         if (potentialMatches.isEmpty()) return new ArrayList<>();
 
@@ -538,11 +670,17 @@ public class TripsManager {
     }
 
 
+    /**
+     * Computes how many passengers actually will be picked up or sit in the car
+     * @param offer the offer for which you want to compute the passenger count
+     * @return the count of passengers that are still actively related to this offer
+     */
     public int getActivePassengerCountForOffer(TripOffer offer) {
         int passengerCount = 0;
         List<JoinTripRequest> joinRequests = findAllJoinRequests(offer.getId());
         for (JoinTripRequest request : joinRequests) {
             JoinTripStatus status = request.getStatus();
+            // TODO: There are now a few more states - probably update this if clause to get
             if (!status.equals(JoinTripStatus.DRIVER_DECLINED)
                     && !status.equals(JoinTripStatus.PASSENGER_AT_DESTINATION)) {
                 ++passengerCount;
@@ -550,6 +688,94 @@ public class TripsManager {
         }
         return passengerCount;
     }
+
+    public List<RouteLocation> getBestWaypointOrder( TripOffer offer, TripQuery query )
+    {
+        // convert JoinTripRequests to a CurrentRequest so that we can handle queries the same way as actual joined JoinTripRequests
+        class CurrentRequest {
+            public RouteLocation startLocation;
+            public RouteLocation destinationLocation;
+            public JoinTripStatus status;
+
+            CurrentRequest( RouteLocation startLocation, RouteLocation destinationLocation, JoinTripStatus status ) {
+                this.startLocation = startLocation;
+                this.destinationLocation = destinationLocation;
+                this.status = status;
+            }
+        }
+
+        // find all the active passengers
+        List<JoinTripRequest> joinTripRequests = findAllJoinRequests(offer.getId());
+        List<CurrentRequest> activeRequests = new ArrayList<>();
+        for( JoinTripRequest request : joinTripRequests )
+        {
+            if( request.getStatus().equals(JoinTripStatus.DRIVER_ACCEPTED ) ||
+                    request.getStatus().equals(JoinTripStatus.PASSENGER_IN_CAR ))
+                activeRequests.add( new CurrentRequest( request.getQuery().getStartLocation(),
+                                                        request.getQuery().getDestinationLocation(),
+                                                        request.getStatus() ) );
+        }
+
+        // add query positions if it exists (parameter may be null, if the client just want to get his current total route)
+        if( query != null ) {
+            activeRequests.add( new CurrentRequest( query.getStartLocation(),
+                                                    query.getDestinationLocation(),
+                                                    JoinTripStatus.DRIVER_ACCEPTED));
+        }
+
+        Collection<List<CurrentRequest>> permutations = Collections2.permutations( activeRequests );
+
+        List<List<RouteLocation>> possibleOrders = new ArrayList<>();
+        for( List<CurrentRequest> requests : permutations ){
+            List<RouteLocation> possibleOrder = new ArrayList<>();
+
+            // TODO: permute results with constraints (without getting a knot in the brain ;))
+            for( CurrentRequest request : requests ){
+                if( request.status.equals(JoinTripStatus.DRIVER_ACCEPTED) )
+                    possibleOrder.add(request.startLocation);
+
+                possibleOrder.add(request.destinationLocation);
+            }
+
+            possibleOrders.add(possibleOrder);
+        }
+
+        // get waypoints of the driver route to add it to each route computations
+        List<RouteLocation> driverWaypoints = offer.getDriverRoute().getWayPoints();
+
+        // all permutations are now in possibleOrders and we can compute the shortest waypoint combination
+        int minimalOrderId = 0;
+        long minimalTotalDistance = Long.MAX_VALUE;
+        // TODO: Compute maximum diversion from original drivers Route?
+        for( int i = 0; i < possibleOrders.size(); ++i ){
+            long totalDistance = 0;
+            List<RouteLocation> waypointOrder = possibleOrders.get(i);
+            totalDistance += driverWaypoints.get(0).distanceFrom( waypointOrder.get(0) );
+            for( int j = 0; j < waypointOrder.size() - 1; ++j ){
+                totalDistance += waypointOrder.get(j).distanceFrom( waypointOrder.get(j+1) );
+            }
+            totalDistance += waypointOrder.get(waypointOrder.size()-1).distanceFrom(driverWaypoints.get(driverWaypoints.size() - 1));
+
+            if( totalDistance < minimalTotalDistance ) {
+                minimalTotalDistance = totalDistance;
+                minimalOrderId = i;
+            }
+        }
+
+        // Debug Output
+        StringBuilder sb = new StringBuilder();
+        for( RouteLocation loc : possibleOrders.get(minimalOrderId)) {
+            sb.append( loc.toString() );
+            sb.append( " --> ");
+        }
+
+        logManager.d("Shortest Route found with distance " + minimalTotalDistance);
+        logManager.d(sb.substring(0, sb.length() - 3));
+
+        // return the minimum distance waypoint order
+        return possibleOrders.get( minimalOrderId );
+    }
+
 
 }
 
