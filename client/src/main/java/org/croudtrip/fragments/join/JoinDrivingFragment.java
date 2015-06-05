@@ -47,7 +47,9 @@ import org.croudtrip.utils.DefaultTransformer;
 import org.w3c.dom.Text;
 
 import java.io.IOException;
+import java.util.Calendar;
 import java.util.List;
+import java.util.TimeZone;
 
 import javax.inject.Inject;
 
@@ -254,11 +256,17 @@ public class JoinDrivingFragment extends SubscriptionFragment implements GoogleA
                 pCents = cents + "";
             }
 
-            tvPickupTime.setText(request.getOffer().getEstimatedArrivalTimeInSeconds() + "");
+            String dateAsString = "";
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTimeZone(TimeZone.getDefault());
+            calendar.setTimeInMillis(1000*request.getOffer().getEstimatedArrivalTimeInSeconds());
+            dateAsString = calendar.get(Calendar.HOUR_OF_DAY) + ":" + calendar.get(Calendar.MINUTE);
+
+
+            tvPickupTime.setText(dateAsString);
             tvCardName.setText(request.getOffer().getDriver().getFirstName() + " " + request.getOffer().getDriver().getLastName());
             tvCardCar.setText(request.getOffer().getVehicle().getType());
             tvCardPrice.setText(getString(R.string.join_trip_results_price, pEuros, pCents));
-            //jointDescription.setText( getString(R.string.join_trip_results_pickup, request.getOffer().getDriver().getFirstName(), pEuros, pCents));
         }
     }
 
