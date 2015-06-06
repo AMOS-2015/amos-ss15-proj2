@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-	<string name="server_address">https://osr-amos.cs.fau.de/ss15/proj2-test/application</string>
-    <string name="maps_api_key">YOUR_API_KEY</string>
-	<string name="gcm_sender_id">YOUR_GOOGLE_PROJECT_NUMBER</string>
-</resources>
