@@ -1,0 +1,14 @@
+org.croudtrip.account
+org.croudtrip.api.account
+org.croudtrip.api.directions
+org.croudtrip.api.gcm
+org.croudtrip.api.trips
+org.croudtrip.app
+org.croudtrip.auth
+org.croudtrip.db
+org.croudtrip.directions
+org.croudtrip.gcm
+org.croudtrip.logs
+org.croudtrip.rest
+org.croudtrip.trips
+org.croudtrip.utils
