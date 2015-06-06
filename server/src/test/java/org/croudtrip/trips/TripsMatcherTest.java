@@ -190,6 +190,25 @@ public class TripsMatcherTest {
 	}
 
 
+	@Test
+	@SuppressWarnings("unchecked")
+	public void testPotentialMatchSuccess() {
+		new TspExpectations(wayPoints);
+		new Expectations() {{
+			directionsManager.getDirections(
+					driverRoute.getWayPoints().get(0),
+					driverRoute.getWayPoints().get(1),
+					(List<RouteLocation>) any);
+			result = Lists.newArrayList(new Route.Builder()
+					.wayPoints(driverRoute.getWayPoints())
+					.legDurationInSeconds(Lists.newArrayList(query.getMaxWaitingTimeInSeconds(), 1l, 1l))
+					.build());
+		}};
+
+		Assert.assertTrue(tripsMatcher.isPotentialMatch(offer, query));
+	}
+
+
 	@SuppressWarnings("unchecked")
 	private final class TspExpectations extends Expectations {
 
