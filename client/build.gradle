@@ -59,6 +59,7 @@ android {
         versionCode 1
         versionName "1.0"
 		multiDexEnabled true
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
@@ -71,6 +72,7 @@ android {
     packagingOptions {
         exclude 'META-INF/LICENSE'
         exclude 'META-INF/NOTICE'
+        exclude 'LICENSE.txt'
     }
 
 	lintOptions {
@@ -123,6 +125,15 @@ dependencies {
     compile 'com.github.navasmdc:MaterialDesign:1.5@aar'
     compile('com.crashlytics.sdk.android:crashlytics:2.3.2@aar') {
         transitive = true;
+    }
+    androidTestCompile ('com.android.support.test:runner:0.3') {
+        exclude group: 'com.android.support'
+    }
+    androidTestCompile ('com.android.support.test:rules:0.3') {
+        exclude group: 'com.android.support'
+    }
+    androidTestCompile( 'com.android.support.test.espresso:espresso-core:2.2') {
+        exclude group: 'com.android.support'
     }
 }
 
