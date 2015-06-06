@@ -12,6 +12,7 @@ import org.croudtrip.db.TripOfferDAO;
 import org.croudtrip.directions.DirectionsManager;
 import org.croudtrip.logs.LogManager;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -62,22 +63,24 @@ class TripsMatcher {
 		if (!assertWithinAirDistance(offer, query)) return false;
 
 		// get shortest route by air distance
-		List<RouteLocation> totalRouteWayPoints = tspSolver.getBestOrder(
+		List<TspSolver.WayPoint> totalRouteWayPoints = tspSolver.getBestOrder(
 				joinTripRequestDAO.findByOfferId(offer.getId()),
 				offer,
 				query)
 				.get(0);
 
-		// trim driver way points
-		totalRouteWayPoints.remove(0);
-		totalRouteWayPoints.remove(totalRouteWayPoints.size() - 1);
+		// get passenger way points
+		List<RouteLocation> passengerWayPoints = new ArrayList<>();
+		for (int i = 1; i < totalRouteWayPoints.size() - 1; ++i) {
+			passengerWayPoints.add(totalRouteWayPoints.get(i).getLocation());
+		}
 
 		// check for route including passengers
 		List<RouteLocation> driverWayPoints = offer.getDriverRoute().getWayPoints();
 		List<Route> possibleRoutes = directionsManager.getDirections(
 				driverWayPoints.get(0),
 				driverWayPoints.get(1),
-				totalRouteWayPoints);
+				passengerWayPoints);
 
 		if (possibleRoutes == null || possibleRoutes.isEmpty()) return false;
 

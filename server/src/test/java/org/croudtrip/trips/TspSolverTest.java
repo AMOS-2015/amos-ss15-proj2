@@ -45,30 +45,38 @@ public class TspSolverTest {
 				new TspSolver.TripRequest(p3, p3Start, p3End));
 		TspSolver.TripRequest driverTripRequest = new TspSolver.TripRequest(driver, dStart, dEnd);
 
-		List<List<RouteLocation>> sortedRoutes = solver.getBestOrder(passengerTripRequests, driverTripRequest);
+		List<List<TspSolver.WayPoint>> sortedRoutes = solver.getBestOrder(passengerTripRequests, driverTripRequest);
 
 		// for 3 passengers there should be 90 routes
 		Assert.assertEquals(90, sortedRoutes.size());
 
 		// assert list is sorted
 		long lastDistance = Long.MIN_VALUE;
-		for (List<RouteLocation> route : sortedRoutes) {
+		for (List<TspSolver.WayPoint> route : sortedRoutes) {
 			long distance = getDistance(route);
 			Assert.assertTrue(distance > lastDistance);
 			lastDistance = distance;
 		}
 
 		// check order of shortest route
-		List<RouteLocation> shortestRoute = sortedRoutes.get(0);
-		List<RouteLocation> routeSolution = Lists.newArrayList(dStart, p1Start, p2Start, p1End, p2End, p3Start, p3End, dEnd);
+		List<TspSolver.WayPoint> shortestRoute = sortedRoutes.get(0);
+		List<TspSolver.WayPoint> routeSolution = Lists.newArrayList(
+				new TspSolver.WayPoint(driver, dStart, true),
+				new TspSolver.WayPoint(p1, p1Start, true),
+				new TspSolver.WayPoint(p2, p2Start, true),
+				new TspSolver.WayPoint(p1, p1End, false),
+				new TspSolver.WayPoint(p2, p2End, false),
+				new TspSolver.WayPoint(p3, p3Start, true),
+				new TspSolver.WayPoint(p3, p3End, false),
+				new TspSolver.WayPoint(driver, dEnd, false));
 		Assert.assertEquals(routeSolution, shortestRoute);
 	}
 
 
-	private long getDistance(List<RouteLocation> route) {
+	private long getDistance(List<TspSolver.WayPoint> route) {
 		long distance = 0;
 		for (int i = 0; i < route.size() - 1; ++i) {
-			distance += route.get(i).distanceFrom(route.get(i+1));
+			distance += route.get(i).getLocation().distanceFrom(route.get(i + 1).getLocation());
 		}
 		return distance;
 	}
