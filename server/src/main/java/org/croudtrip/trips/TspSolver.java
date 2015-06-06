@@ -32,7 +32,7 @@ public class TspSolver {
 	 * @param tripQuery additional way points that should be considered
 	 * @return all possible routes sorted by their air distance (shortes first)
 	 */
-	public List<List<WayPoint>> getBestOrder(
+	public List<List<TspWayPoint>> getBestOrder(
 			List<JoinTripRequest> joinTripRequests,
 			TripOffer tripOffer,
 			TripQuery tripQuery) {
@@ -51,7 +51,7 @@ public class TspSolver {
 	}
 
 
-	public List<List<WayPoint>> getBestOrder(
+	public List<List<TspWayPoint>> getBestOrder(
 			List<JoinTripRequest> joinTripRequests,
 			TripOffer tripOffer) {
 
@@ -65,23 +65,23 @@ public class TspSolver {
 	}
 
 
-	public List<List<WayPoint>> getBestOrder(
+	public List<List<TspWayPoint>> getBestOrder(
 			List<TripRequest> passengerTripRequests,
 			TripRequest driverTripRequest) {
 
 		// get possible passenger routes (not including driver start / end)
-		List<List<WayPoint>> passengerPermutations = new ArrayList<>();
+		List<List<TspWayPoint>> passengerPermutations = new ArrayList<>();
 		findAllPassengerPermutations(
 				passengerTripRequests,
-				new LinkedList<WayPoint>(),
+				new LinkedList<TspWayPoint>(),
 				passengerPermutations);
 
 		// compute distances of routes (including driver start / end)
-		Map<Long, List<WayPoint>> sortedRoutes = new TreeMap<>(); // distance <--> route
-		for (List<WayPoint> passengerPermutation : passengerPermutations) {
+		Map<Long, List<TspWayPoint>> sortedRoutes = new TreeMap<>(); // distance <--> route
+		for (List<TspWayPoint> passengerPermutation : passengerPermutations) {
 			long totalDistance = 0;
-			passengerPermutation.add(0, new WayPoint(driverTripRequest.getUser(), driverTripRequest.getStart(), true));
-			passengerPermutation.add(new WayPoint(driverTripRequest.getUser(), driverTripRequest.getEnd(), false));
+			passengerPermutation.add(0, new TspWayPoint(driverTripRequest.getUser(), driverTripRequest.getStart(), true));
+			passengerPermutation.add(new TspWayPoint(driverTripRequest.getUser(), driverTripRequest.getEnd(), false));
 			for (int i = 0; i < passengerPermutation.size() - 1; ++i) {
 				totalDistance += passengerPermutation.get(i).getLocation().distanceFrom(passengerPermutation.get(i+1).getLocation());
 			}
@@ -94,8 +94,8 @@ public class TspSolver {
 
 	private void findAllPassengerPermutations(
 			List<TripRequest> passengerTripRequests,
-			LinkedList<WayPoint> routeBuilder,
-			List<List<WayPoint>> resultRoutes) {
+			LinkedList<TspWayPoint> routeBuilder,
+			List<List<TspWayPoint>> resultRoutes) {
 
 		boolean isRouteComplete = true;
 		for (int passenger = 0; passenger < passengerTripRequests.size(); ++passenger) {
@@ -106,7 +106,7 @@ public class TspSolver {
 				isRouteComplete = false;
 				RouteLocation nextLocation = tripRequest.start;
 
-				routeBuilder.addLast(new WayPoint(tripRequest.getUser(), nextLocation, true));
+				routeBuilder.addLast(new TspWayPoint(tripRequest.getUser(), nextLocation, true));
 				tripRequest.start = null;
 				findAllPassengerPermutations(passengerTripRequests, routeBuilder, resultRoutes);
 				routeBuilder.removeLast();
@@ -117,7 +117,7 @@ public class TspSolver {
 				isRouteComplete = false;
 				RouteLocation nextLocation = tripRequest.end;
 
-				routeBuilder.addLast(new WayPoint(tripRequest.getUser(), nextLocation, false));
+				routeBuilder.addLast(new TspWayPoint(tripRequest.getUser(), nextLocation, false));
 				tripRequest.end = null;
 				findAllPassengerPermutations(passengerTripRequests, routeBuilder, resultRoutes);
 				routeBuilder.removeLast();
@@ -198,13 +198,13 @@ public class TspSolver {
 	}
 
 
-	public static class WayPoint {
+	public static class TspWayPoint {
 
 		private final User user;
 		private final RouteLocation location;
 		private final boolean isStart;
 
-		public WayPoint(User user, RouteLocation location, boolean isStart) {
+		public TspWayPoint(User user, RouteLocation location, boolean isStart) {
 			this.user = user;
 			this.location = location;
 			this.isStart = isStart;
@@ -226,10 +226,10 @@ public class TspSolver {
 		public boolean equals(Object o) {
 			if (this == o) return true;
 			if (o == null || getClass() != o.getClass()) return false;
-			WayPoint wayPoint = (WayPoint) o;
-			return Objects.equal(isStart, wayPoint.isStart) &&
-					Objects.equal(user, wayPoint.user) &&
-					Objects.equal(location, wayPoint.location);
+			TspWayPoint tspWayPoint = (TspWayPoint) o;
+			return Objects.equal(isStart, tspWayPoint.isStart) &&
+					Objects.equal(user, tspWayPoint.user) &&
+					Objects.equal(location, tspWayPoint.location);
 		}
 
 		@Override

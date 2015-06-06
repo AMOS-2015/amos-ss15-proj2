@@ -83,7 +83,7 @@ class TripsMatcher {
 		if (!assertWithinAirDistance(offer, query)) return false;
 
 		// get shortest route by air distance
-		List<TspSolver.WayPoint> totalRouteWayPoints = tspSolver.getBestOrder(
+		List<TspSolver.TspWayPoint> totalRouteWayPoints = tspSolver.getBestOrder(
 				joinTripRequestDAO.findByOfferId(offer.getId()),
 				offer,
 				query)
@@ -180,14 +180,14 @@ class TripsMatcher {
 	private boolean assertRouteWithinPassengerMaxWaitingTime(
 			TripOffer offer,
 			TripQuery query,
-			List<TspSolver.WayPoint> tspRoute,
+			List<TspSolver.TspWayPoint> tspRoute,
 			Route directionsRoute) {
 
 		// check max waiting time for each passenger
 		long durationToPassenger = 0;
 		for (int wayPointIdx = 1; wayPointIdx < tspRoute.size() - 1; ++wayPointIdx) {
 			durationToPassenger += directionsRoute.getLegDurationsInSeconds().get(wayPointIdx - 1);
-			TspSolver.WayPoint passengerWayPoint = tspRoute.get(wayPointIdx);
+			TspSolver.TspWayPoint passengerWayPoint = tspRoute.get(wayPointIdx);
 			if (!passengerWayPoint.isStart()) continue;
 
 			// find max waiting time (already joined? ...)

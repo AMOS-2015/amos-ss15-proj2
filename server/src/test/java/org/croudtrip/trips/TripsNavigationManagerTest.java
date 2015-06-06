@@ -75,12 +75,12 @@ public class TripsNavigationManagerTest extends TestCase {
 					.build());
 
 			tspSolver.getBestOrder((List<JoinTripRequest>) any, offer);
-			List<List<TspSolver.WayPoint>> routesList = new ArrayList<>();
+			List<List<TspSolver.TspWayPoint>> routesList = new ArrayList<>();
 			routesList.add(Lists.newArrayList(
-					new TspSolver.WayPoint(driver, driverRoute.getWayPoints().get(0), true),
-					new TspSolver.WayPoint(passenger, query.getStartLocation(), true),
-					new TspSolver.WayPoint(passenger, query.getDestinationLocation(), false),
-					new TspSolver.WayPoint(driver, driverRoute.getWayPoints().get(1), false)));
+					new TspSolver.TspWayPoint(driver, driverRoute.getWayPoints().get(0), true),
+					new TspSolver.TspWayPoint(passenger, query.getStartLocation(), true),
+					new TspSolver.TspWayPoint(passenger, query.getDestinationLocation(), false),
+					new TspSolver.TspWayPoint(driver, driverRoute.getWayPoints().get(1), false)));
 			result = routesList;
 		}};
 

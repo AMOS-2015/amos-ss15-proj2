@@ -42,7 +42,7 @@ public class TripsNavigationManager {
 	 * arrival time.
 	 */
 	public List<UserWayPoint> getRouteForOffer(TripOffer offer) {
-		List<TspSolver.WayPoint> tspWayPoints = tspSolver.getBestOrder(
+		List<TspSolver.TspWayPoint> tspWayPoints = tspSolver.getBestOrder(
 				joinTripRequestDAO.findByOfferId(offer.getId()),
 				offer)
 				.get(0);
@@ -66,7 +66,7 @@ public class TripsNavigationManager {
 				arrivalTimestamp += routes.get(0).getLegDurationsInSeconds().get(i - 1);
 			}
 
-			TspSolver.WayPoint tspWayPoint = tspWayPoints.get(i);
+			TspSolver.TspWayPoint tspWayPoint = tspWayPoints.get(i);
 			userWayPoints.add(new UserWayPoint(
 					tspWayPoint.getUser(),
 					tspWayPoint.getLocation(),
