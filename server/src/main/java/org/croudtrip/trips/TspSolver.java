@@ -1,5 +1,7 @@
 package org.croudtrip.trips;
 
+import com.google.common.base.Objects;
+
 import org.croudtrip.api.account.User;
 import org.croudtrip.api.directions.RouteLocation;
 import org.croudtrip.api.trips.JoinTripRequest;
@@ -30,7 +32,7 @@ public class TspSolver {
 	 * @param tripQuery additional way points that should be considered
 	 * @return all possible routes sorted by their air distance (shortes first)
 	 */
-	public List<List<RouteLocation>> getBestOrder(
+	public List<List<WayPoint>> getBestOrder(
 			List<JoinTripRequest> joinTripRequests,
 			TripOffer tripOffer,
 			TripQuery tripQuery) {
@@ -49,7 +51,7 @@ public class TspSolver {
 	}
 
 
-	public List<List<RouteLocation>> getBestOrder(
+	public List<List<WayPoint>> getBestOrder(
 			List<JoinTripRequest> joinTripRequests,
 			TripOffer tripOffer) {
 
@@ -63,25 +65,25 @@ public class TspSolver {
 	}
 
 
-	public List<List<RouteLocation>> getBestOrder(
+	public List<List<WayPoint>> getBestOrder(
 			List<TripRequest> passengerTripRequests,
 			TripRequest driverTripRequest) {
 
 		// get possible passenger routes (not including driver start / end)
-		List<List<RouteLocation>> passengerPermutations = new ArrayList<>();
+		List<List<WayPoint>> passengerPermutations = new ArrayList<>();
 		findAllPassengerPermutations(
 				passengerTripRequests,
-				new LinkedList<RouteLocation>(),
+				new LinkedList<WayPoint>(),
 				passengerPermutations);
 
 		// compute distances of routes (including driver start / end)
-		Map<Long, List<RouteLocation>> sortedRoutes = new TreeMap<>(); // distance <--> route
-		for (List<RouteLocation> passengerPermutation : passengerPermutations) {
+		Map<Long, List<WayPoint>> sortedRoutes = new TreeMap<>(); // distance <--> route
+		for (List<WayPoint> passengerPermutation : passengerPermutations) {
 			long totalDistance = 0;
-			passengerPermutation.add(0, driverTripRequest.start);
-			passengerPermutation.add(driverTripRequest.end);
+			passengerPermutation.add(0, new WayPoint(driverTripRequest.getUser(), driverTripRequest.getStart(), true));
+			passengerPermutation.add(new WayPoint(driverTripRequest.getUser(), driverTripRequest.getEnd(), false));
 			for (int i = 0; i < passengerPermutation.size() - 1; ++i) {
-				totalDistance += passengerPermutation.get(i).distanceFrom(passengerPermutation.get(i+1));
+				totalDistance += passengerPermutation.get(i).getLocation().distanceFrom(passengerPermutation.get(i+1).getLocation());
 			}
 			sortedRoutes.put(totalDistance, passengerPermutation);
 		}
@@ -92,8 +94,8 @@ public class TspSolver {
 
 	private void findAllPassengerPermutations(
 			List<TripRequest> passengerTripRequests,
-			LinkedList<RouteLocation> routeBuilder,
-			List<List<RouteLocation>> resultRoutes) {
+			LinkedList<WayPoint> routeBuilder,
+			List<List<WayPoint>> resultRoutes) {
 
 		boolean isRouteComplete = true;
 		for (int passenger = 0; passenger < passengerTripRequests.size(); ++passenger) {
@@ -104,7 +106,7 @@ public class TspSolver {
 				isRouteComplete = false;
 				RouteLocation nextLocation = tripRequest.start;
 
-				routeBuilder.addLast(nextLocation);
+				routeBuilder.addLast(new WayPoint(tripRequest.getUser(), nextLocation, true));
 				tripRequest.start = null;
 				findAllPassengerPermutations(passengerTripRequests, routeBuilder, resultRoutes);
 				routeBuilder.removeLast();
@@ -115,7 +117,7 @@ public class TspSolver {
 				isRouteComplete = false;
 				RouteLocation nextLocation = tripRequest.end;
 
-				routeBuilder.addLast(nextLocation);
+				routeBuilder.addLast(new WayPoint(tripRequest.getUser(), nextLocation, false));
 				tripRequest.end = null;
 				findAllPassengerPermutations(passengerTripRequests, routeBuilder, resultRoutes);
 				routeBuilder.removeLast();
@@ -177,6 +179,62 @@ public class TspSolver {
 
 		public void setEnd(RouteLocation end) {
 			this.end = end;
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) return true;
+			if (o == null || getClass() != o.getClass()) return false;
+			TripRequest that = (TripRequest) o;
+			return Objects.equal(user, that.user) &&
+					Objects.equal(start, that.start) &&
+					Objects.equal(end, that.end);
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hashCode(user, start, end);
+		}
+	}
+
+
+	public static class WayPoint {
+
+		private final User user;
+		private final RouteLocation location;
+		private final boolean isStart;
+
+		public WayPoint(User user, RouteLocation location, boolean isStart) {
+			this.user = user;
+			this.location = location;
+			this.isStart = isStart;
+		}
+
+		public User getUser() {
+			return user;
+		}
+
+		public RouteLocation getLocation() {
+			return location;
+		}
+
+		public boolean isStart() {
+			return isStart;
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) return true;
+			if (o == null || getClass() != o.getClass()) return false;
+			WayPoint wayPoint = (WayPoint) o;
+			return Objects.equal(isStart, wayPoint.isStart) &&
+					Objects.equal(user, wayPoint.user) &&
+					Objects.equal(location, wayPoint.location);
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hashCode(user, location, isStart);
 		}
 	}
 

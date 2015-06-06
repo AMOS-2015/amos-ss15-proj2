@@ -30,17 +30,22 @@ import javax.inject.Inject;
  */
 public class TripOfferChecker extends AbstractScheduledTaskExecutor {
 
-    private final long MAX_TIME_UNTIL_LOST = 360;
+    private static final long MAX_TIME_UNTIL_LOST = 360;
 
     private TripOfferDAO tripOfferDAO;
-    private TripsManager tripsManager;
+    private TripsUtils tripsUtils;
 
     @Inject
-    TripOfferChecker( TripOfferDAO tripOfferDAO, TripsManager tripsManager, SessionFactory sessionFactory, LogManager logManager) {
+    TripOfferChecker(
+            TripOfferDAO tripOfferDAO,
+            TripsUtils tripsUtils,
+            SessionFactory sessionFactory,
+            LogManager logManager) {
+
         super( sessionFactory, logManager, 180, TimeUnit.SECONDS );
 
         this.tripOfferDAO = tripOfferDAO;
-        this.tripsManager = tripsManager;
+        this.tripsUtils = tripsUtils;
     }
 
     @Override
@@ -79,7 +84,7 @@ public class TripOfferChecker extends AbstractScheduledTaskExecutor {
                 // enable offer if there was a position update again
                 if (lastUpdateSeconds < MAX_TIME_UNTIL_LOST) {
 
-                    int passengerCount = tripsManager.getActivePassengerCountForOffer(offer);
+                    int passengerCount = tripsUtils.getActivePassengerCountForOffer(offer);
 
                     TripOffer updatedOffer = new TripOffer(
                             offer.getId(),
