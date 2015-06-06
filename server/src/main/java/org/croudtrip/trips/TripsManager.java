@@ -16,7 +16,6 @@ package org.croudtrip.trips;
 
 
 import com.google.common.base.Optional;
-import com.google.common.collect.Collections2;
 
 import org.croudtrip.account.VehicleManager;
 import org.croudtrip.api.account.User;
@@ -48,7 +47,6 @@ import org.croudtrip.utils.Assert;
 import org.croudtrip.utils.Pair;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -66,6 +64,7 @@ public class TripsManager {
     private final DirectionsManager directionsManager;
     private final VehicleManager vehicleManager;
     private final GcmManager gcmManager;
+    private final TspSolver tspSolver;
     private final LogManager logManager;
 
 
@@ -78,6 +77,7 @@ public class TripsManager {
             DirectionsManager directionsManager,
             VehicleManager vehicleManager,
             GcmManager gcmManager,
+            TspSolver tspSolver,
             LogManager logManager) {
 
         this.tripOfferDAO = tripOfferDAO;
@@ -87,6 +87,7 @@ public class TripsManager {
         this.directionsManager = directionsManager;
         this.vehicleManager = vehicleManager;
         this.gcmManager = gcmManager;
+        this.tspSolver = tspSolver;
         this.logManager = logManager;
     }
 
@@ -527,6 +528,8 @@ public class TripsManager {
      * @return true, if the offer is a potential match for this query; false, if it is not.
      */
     private boolean isPotentialMatch(TripOffer offer, TripQuery query) {
+        List<RouteLocation> driverWayPoints = offer.getDriverRoute().getWayPoints();
+
         // check trip status
         if (!offer.getStatus().equals(TripOfferStatus.ACTIVE_NOT_FULL)) return false;
 
@@ -544,12 +547,11 @@ public class TripsManager {
 
         // Early reject based on airline;
         // TODO: Handle multiple waypoints
-        List<RouteLocation> waypoints = offer.getDriverRoute().getWayPoints();
-        double airlineDriverRoute = waypoints.get(0).distanceFrom( waypoints.get( waypoints.size() - 1 ) );
+        double airlineDriverRoute = driverWayPoints.get(0).distanceFrom( driverWayPoints.get( driverWayPoints.size() - 1 ) );
 
-        double airlineTotalRoute = waypoints.get(0).distanceFrom( query.getStartLocation() ) +
+        double airlineTotalRoute = driverWayPoints.get(0).distanceFrom( query.getStartLocation() ) +
                                    query.getStartLocation().distanceFrom( query.getDestinationLocation() ) +
-                                   query.getDestinationLocation().distanceFrom( waypoints.get( waypoints.size() - 1 ) );
+                                   query.getDestinationLocation().distanceFrom( driverWayPoints.get( driverWayPoints.size() - 1 ) );
 
         logManager.d("airlines compared: driverRoute: " + airlineDriverRoute + " totalRoute: " + airlineTotalRoute + " distance: " + (airlineTotalRoute - airlineDriverRoute) );
         if( (airlineTotalRoute - airlineDriverRoute) > offer.getMaxDiversionInMeters() * 10 )
@@ -558,15 +560,21 @@ public class TripsManager {
             return false;
         }
 
-        // TODO: Solve TSP for multiple passengers
-
         // compute total driver route
-        List<RouteLocation> passengerWayPoints = getBestWaypointOrder(offer, query);
-        List<RouteLocation> driverWayPoints = offer.getDriverRoute().getWayPoints();
+        List<RouteLocation> totalRouteWayPoints = tspSolver.getBestOrder(
+                findAllJoinRequests(offer.getId()),
+                offer,
+                query)
+                .get(0);
+
+        // trim driver waypoints
+        totalRouteWayPoints.remove(0);
+        totalRouteWayPoints.remove(totalRouteWayPoints.size() - 1);
+
         List<Route> possibleRoutes = directionsManager.getDirections(
                 driverWayPoints.get(0),
                 driverWayPoints.get(1),
-                passengerWayPoints);
+                totalRouteWayPoints);
 
         if (possibleRoutes == null || possibleRoutes.isEmpty()) return false;
 
@@ -687,93 +695,6 @@ public class TripsManager {
             }
         }
         return passengerCount;
-    }
-
-    public List<RouteLocation> getBestWaypointOrder( TripOffer offer, TripQuery query )
-    {
-        // convert JoinTripRequests to a CurrentRequest so that we can handle queries the same way as actual joined JoinTripRequests
-        class CurrentRequest {
-            public RouteLocation startLocation;
-            public RouteLocation destinationLocation;
-            public JoinTripStatus status;
-
-            CurrentRequest( RouteLocation startLocation, RouteLocation destinationLocation, JoinTripStatus status ) {
-                this.startLocation = startLocation;
-                this.destinationLocation = destinationLocation;
-                this.status = status;
-            }
-        }
-
-        // find all the active passengers
-        List<JoinTripRequest> joinTripRequests = findAllJoinRequests(offer.getId());
-        List<CurrentRequest> activeRequests = new ArrayList<>();
-        for( JoinTripRequest request : joinTripRequests )
-        {
-            if( request.getStatus().equals(JoinTripStatus.DRIVER_ACCEPTED ) ||
-                    request.getStatus().equals(JoinTripStatus.PASSENGER_IN_CAR ))
-                activeRequests.add( new CurrentRequest( request.getQuery().getStartLocation(),
-                                                        request.getQuery().getDestinationLocation(),
-                                                        request.getStatus() ) );
-        }
-
-        // add query positions if it exists (parameter may be null, if the client just want to get his current total route)
-        if( query != null ) {
-            activeRequests.add( new CurrentRequest( query.getStartLocation(),
-                                                    query.getDestinationLocation(),
-                                                    JoinTripStatus.DRIVER_ACCEPTED));
-        }
-
-        Collection<List<CurrentRequest>> permutations = Collections2.permutations( activeRequests );
-
-        List<List<RouteLocation>> possibleOrders = new ArrayList<>();
-        for( List<CurrentRequest> requests : permutations ){
-            List<RouteLocation> possibleOrder = new ArrayList<>();
-
-            // TODO: permute results with constraints (without getting a knot in the brain ;))
-            for( CurrentRequest request : requests ){
-                if( request.status.equals(JoinTripStatus.DRIVER_ACCEPTED) )
-                    possibleOrder.add(request.startLocation);
-
-                possibleOrder.add(request.destinationLocation);
-            }
-
-            possibleOrders.add(possibleOrder);
-        }
-
-        // get waypoints of the driver route to add it to each route computations
-        List<RouteLocation> driverWaypoints = offer.getDriverRoute().getWayPoints();
-
-        // all permutations are now in possibleOrders and we can compute the shortest waypoint combination
-        int minimalOrderId = 0;
-        long minimalTotalDistance = Long.MAX_VALUE;
-        // TODO: Compute maximum diversion from original drivers Route?
-        for( int i = 0; i < possibleOrders.size(); ++i ){
-            long totalDistance = 0;
-            List<RouteLocation> waypointOrder = possibleOrders.get(i);
-            totalDistance += driverWaypoints.get(0).distanceFrom( waypointOrder.get(0) );
-            for( int j = 0; j < waypointOrder.size() - 1; ++j ){
-                totalDistance += waypointOrder.get(j).distanceFrom( waypointOrder.get(j+1) );
-            }
-            totalDistance += waypointOrder.get(waypointOrder.size()-1).distanceFrom(driverWaypoints.get(driverWaypoints.size() - 1));
-
-            if( totalDistance < minimalTotalDistance ) {
-                minimalTotalDistance = totalDistance;
-                minimalOrderId = i;
-            }
-        }
-
-        // Debug Output
-        StringBuilder sb = new StringBuilder();
-        for( RouteLocation loc : possibleOrders.get(minimalOrderId)) {
-            sb.append( loc.toString() );
-            sb.append( " --> ");
-        }
-
-        logManager.d("Shortest Route found with distance " + minimalTotalDistance);
-        logManager.d(sb.substring(0, sb.length() - 3));
-
-        // return the minimum distance waypoint order
-        return possibleOrders.get( minimalOrderId );
     }
 
 
