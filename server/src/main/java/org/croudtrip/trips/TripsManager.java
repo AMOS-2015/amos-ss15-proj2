@@ -64,7 +64,7 @@ public class TripsManager {
     private final DirectionsManager directionsManager;
     private final VehicleManager vehicleManager;
     private final GcmManager gcmManager;
-    private final TspSolver tspSolver;
+    private final TripsMatcher tripsMatcher;
     private final TripsUtils tripsUtils;
     private final LogManager logManager;
 
@@ -78,7 +78,7 @@ public class TripsManager {
             DirectionsManager directionsManager,
             VehicleManager vehicleManager,
             GcmManager gcmManager,
-            TspSolver tspSolver,
+            TripsMatcher tripsMatcher,
             TripsUtils tripsUtils,
             LogManager logManager) {
 
@@ -89,7 +89,7 @@ public class TripsManager {
         this.directionsManager = directionsManager;
         this.vehicleManager = vehicleManager;
         this.gcmManager = gcmManager;
-        this.tspSolver = tspSolver;
+        this.tripsMatcher = tripsMatcher;
         this.tripsUtils = tripsUtils;
         this.logManager = logManager;
     }
@@ -135,7 +135,7 @@ public class TripsManager {
             if (runningQuery.getCreationTimestamp() + runningQuery.getQuery().getMaxWaitingTimeInSeconds() < System.currentTimeMillis() / 1000) continue;
 
             TripQuery query = runningQuery.getQuery();
-            boolean isPotentialMatch = isPotentialMatch(offer, query);
+            boolean isPotentialMatch = tripsMatcher.isPotentialMatch(offer, query);
 
             // notify passenger about potential match
             if (isPotentialMatch) {
@@ -353,7 +353,7 @@ public class TripsManager {
         Optional<TripOffer> offerOptional = tripOfferDAO.findById(tripReservation.getOfferId());
         if (!offerOptional.isPresent()) return Optional.absent();
         TripOffer offer = offerOptional.get();
-        if (!isPotentialMatch(offer, tripReservation.getQuery())) return Optional.absent();
+        if (!tripsMatcher.isPotentialMatch(offer, tripReservation.getQuery())) return Optional.absent();
 
         // update join request
         JoinTripRequest joinTripRequest = new JoinTripRequest(
@@ -501,117 +501,11 @@ public class TripsManager {
     }
 
 
-
-    private boolean isPotentialMatch(TripOffer offer, TripQuery query) {
-        List<RouteLocation> driverWayPoints = offer.getDriverRoute().getWayPoints();
-
-        // check trip status
-        if (!offer.getStatus().equals(TripOfferStatus.ACTIVE_NOT_FULL)) return false;
-
-        // find declined trips for this user and skip already declined offers
-        List<JoinTripRequest> declinedRequests = joinTripRequestDAO.findDeclinedRequests(query.getPassenger().getId());
-        for( JoinTripRequest request : declinedRequests ) {
-            if( offer.getId() == request.getOffer().getId()) {
-                return false;
-            }
-        }
-
-        // check current passenger count
-        int passengerCount = tripsUtils.getActivePassengerCountForOffer(offer);
-        if (passengerCount >= offer.getVehicle().getCapacity()) return false;
-
-        // Early reject based on airline;
-        // TODO: Handle multiple waypoints
-        double airlineDriverRoute = driverWayPoints.get(0).distanceFrom( driverWayPoints.get( driverWayPoints.size() - 1 ) );
-
-        double airlineTotalRoute = driverWayPoints.get(0).distanceFrom( query.getStartLocation() ) +
-                query.getStartLocation().distanceFrom( query.getDestinationLocation() ) +
-                query.getDestinationLocation().distanceFrom( driverWayPoints.get( driverWayPoints.size() - 1 ) );
-
-        logManager.d("airlines compared: driverRoute: " + airlineDriverRoute + " totalRoute: " + airlineTotalRoute + " distance: " + (airlineTotalRoute - airlineDriverRoute) );
-        if( (airlineTotalRoute - airlineDriverRoute) > offer.getMaxDiversionInMeters() * 10 )
-        {
-            logManager.w("REQUEST REJECTED BY AIRLINE DISTANCES");
-            return false;
-        }
-
-        // compute total driver route
-        List<RouteLocation> totalRouteWayPoints = tspSolver.getBestOrder(
-                findAllJoinRequests(offer.getId()),
-                offer,
-                query)
-                .get(0);
-
-        // trim driver waypoints
-        totalRouteWayPoints.remove(0);
-        totalRouteWayPoints.remove(totalRouteWayPoints.size() - 1);
-
-        List<Route> possibleRoutes = directionsManager.getDirections(
-                driverWayPoints.get(0),
-                driverWayPoints.get(1),
-                totalRouteWayPoints);
-
-        if (possibleRoutes == null || possibleRoutes.isEmpty()) return false;
-
-        // update driver route (if necessary, since there was a position update since last route calculation
-        Route driverRoute = offer.getDriverRoute();
-        if( driverRoute.getLastUpdateTimeInSeconds() < offer.getLastPositonUpdateInSeconds() ) {
-            logManager.d( offer.getId() + ": driver route is out of date. Updating route...");
-            List<Route> updatedDriverRoutes = directionsManager.getDirections(offer.getCurrentLocation(), driverRoute.getWayPoints().get(driverRoute.getWayPoints().size() - 1));
-            if( updatedDriverRoutes == null || updatedDriverRoutes.isEmpty() ) {
-                // that's quite bad; we will use the old route for matching for now.
-                logManager.e("Could not compute a route for the driver after route update.");
-            }
-            else {
-                driverRoute = updatedDriverRoutes.get(0);
-                offer = new TripOffer(
-                        offer.getId(),
-                        driverRoute,
-                        System.currentTimeMillis()/1000+driverRoute.getDurationInSeconds(),
-                        offer.getCurrentLocation(),
-                        offer.getMaxDiversionInMeters(),
-                        offer.getPricePerKmInCents(),
-                        offer.getDriver(),
-                        offer.getVehicle(),
-                        offer.getStatus(),
-                        offer.getLastPositonUpdateInSeconds()
-                );
-                tripOfferDAO.update(offer);
-            }
-        }
-
-        // check if passenger route is within max diversion
-        if (possibleRoutes.get(0).getDistanceInMeters() - driverRoute.getDistanceInMeters() > offer.getMaxDiversionInMeters()) {
-            logManager.d("Declined Query due to max diversion: " + (possibleRoutes.get(0).getDistanceInMeters() - driverRoute.getDistanceInMeters()) + " > " + offer.getMaxDiversionInMeters() );
-            return false;
-        }
-
-        // check passenger max waiting time
-        // TODO: It is not that simple for multiple passengers
-        double durationToPassenger = possibleRoutes.get(0).getLegDurationsInSeconds().get(0);
-        //Route routeToPassenger = directionsManager.getDirections(driverWayPoints.get(0), passengerWayPoints.get(0)).get(0);
-        //logManager.d("Duration to passenger is: " + durationToPassenger + ". Additional directions call computes(should not differ much): " + routeToPassenger.getDurationInSeconds());
-        if ( durationToPassenger > query.getMaxWaitingTimeInSeconds()) {
-            return false;
-        }
-
-        return true;
-    }
-
-
-    /**
-     * Finds a list of {@link org.croudtrip.api.trips.TripOffer} that fulfill
-     * the {@link #isPotentialMatch(org.croudtrip.api.trips.TripOffer, org.croudtrip.api.trips.TripQuery)}
-     * method for a certain query.
-     * @param offers a list of offers that you want to check, if they are a potential match
-     * @param query the query you search a potential match for
-     * @return a (possibly empty) list of TripOffers that contains all the matching trip offers.
-     */
     private List<TripOffer> findPotentialMatches(List<TripOffer> offers, TripQuery query) {
         // analyse offers
         List<TripOffer> potentialMatches = new ArrayList<>();
         for (TripOffer offer : offers) {
-            if (isPotentialMatch(offer, query)) {
+            if (tripsMatcher.isPotentialMatch(offer, query)) {
                 potentialMatches.add(offer);
             }
         }
