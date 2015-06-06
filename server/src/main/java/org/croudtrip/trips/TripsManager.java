@@ -266,7 +266,7 @@ public class TripsManager {
 
         // analyse offers
         TripQuery query = new TripQuery(possiblePassengerRoutes.get(0), queryDescription.getStart(), queryDescription.getEnd(), queryDescription.getMaxWaitingTimeInSeconds(), passenger);
-        List<TripOffer> potentialMatches = findPotentialMatches(tripOfferDAO.findAllActive(), query);
+        List<TripOffer> potentialMatches = tripsMatcher.filterPotentialMatches(tripOfferDAO.findAllActive(), query);
 
         // find and store reservations
         List<TripReservation> reservations = findCheapestMatch(query, potentialMatches);
@@ -500,28 +500,6 @@ public class TripsManager {
         return joinRequest;
     }
 
-
-    private List<TripOffer> findPotentialMatches(List<TripOffer> offers, TripQuery query) {
-        // analyse offers
-        List<TripOffer> potentialMatches = new ArrayList<>();
-        for (TripOffer offer : offers) {
-            if (tripsMatcher.isPotentialMatch(offer, query)) {
-                potentialMatches.add(offer);
-            }
-        }
-
-        return potentialMatches;
-    }
-
-
-    /**
-     * Checks if a specific {@link org.croudtrip.api.trips.TripOffer} matches to a specific
-     * {@link org.croudtrip.api.trips.TripQuery}. That means that the additional route the driver
-     * has to take into account for this query will not exceed his maximum diversion
-     * @param offer The offer you want to check
-     * @param query the query you search a potential match for
-     * @return true, if the offer is a potential match for this query; false, if it is not.
-     */
 
     /**
      * Will compute a list of cheapest @link{TripReservation} for a specific query out of a list of potential matches

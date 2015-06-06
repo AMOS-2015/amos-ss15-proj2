@@ -48,6 +48,26 @@ class TripsMatcher {
 	}
 
 
+	/**
+	 * Checks the passed in offers for potential matches.
+	 * @return a filtered list of potential matches (which can be empty).
+	 */
+	public List<TripOffer> filterPotentialMatches(List<TripOffer> offers, TripQuery query) {
+		List<TripOffer> potentialMatches = new ArrayList<>();
+		for (TripOffer offer : offers) {
+			if (isPotentialMatch(offer, query)) {
+				potentialMatches.add(offer);
+			}
+		}
+
+		return potentialMatches;
+	}
+
+
+	/**
+	 * Checks if a query matches with a given offer (is a potential match). This
+	 * includes max diversion and max waiting time of both driver and passenger.
+	 */
 	public boolean isPotentialMatch(TripOffer offer, TripQuery query) {
 		// check trip status
 		if (!offer.getStatus().equals(TripOfferStatus.ACTIVE_NOT_FULL)) return false;
