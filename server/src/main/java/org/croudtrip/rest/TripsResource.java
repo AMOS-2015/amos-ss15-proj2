@@ -83,20 +83,27 @@ public class TripsResource {
     }
 
 
+    /**
+     * Adds a new {@link TripOffer} which passengers can query for.
+     * @return the newly created offer (which also includes the offer id!).
+     */
     @POST
     @UnitOfWork
     @Path(PATH_OFFERS)
-    public TripOffer addOffer(@Auth User user, @Valid TripOfferDescription offerDescription) throws RouteNotFoundException {
+    public TripOffer addOffer(@Auth User driver, @Valid TripOfferDescription offerDescription) throws RouteNotFoundException {
         logManager.d("Add offer");
         Optional<Vehicle> vehicle = vehicleManager.findVehicleById(offerDescription.getVehicleId());
-        if (!vehicle.isPresent() || vehicle.get().getOwner().getId() != user.getId()) {
+        if (!vehicle.isPresent() || vehicle.get().getOwner().getId() != driver.getId()) {
             throw RestUtils.createNotFoundException("not vehicle with id " + offerDescription.getVehicleId() + " found");
         }
 
-        return tripsManager.addOffer(user, offerDescription);
+        return tripsManager.addOffer(driver, offerDescription);
     }
 
 
+    /**
+     * Find an offer by id.
+     */
     @GET
     @Path(PATH_OFFERS + "/{offerId}")
     @UnitOfWork
@@ -105,6 +112,12 @@ public class TripsResource {
     }
 
 
+    /**
+     * Find all offers that belong to a particular driver.
+     * @param showActiveAndNotFullOnly if false this method will return all offers that belong to a driver,
+     *                                 otherwise only those which are active (not disable due to timeouts etc.)
+     *                                 and are not full (passengers can still join). Default is true.
+     */
     @GET
     @Path(PATH_OFFERS)
     @UnitOfWork
@@ -123,6 +136,10 @@ public class TripsResource {
     }
 
 
+    /**
+     * Allows drivers to update their offers, e.g. update the drivers current location (which changes
+     * what passengers can join a trip).
+     */
     @PUT
     @Path(PATH_OFFERS + "/{offerId}")
     @UnitOfWork
@@ -155,6 +172,10 @@ public class TripsResource {
     }
 
 
+    /**
+     * Removes an offer. You should probably NOT use this method, please consider finishing or canceling
+     * the trip instead.
+     */
     @DELETE
     @UnitOfWork
     @Path(PATH_OFFERS + "/{offerId}")
@@ -163,6 +184,13 @@ public class TripsResource {
     }
 
 
+    /**
+     * Allows passengers to query for offers.
+     * @return the result will EITHER contain a list of {@link TripReservation} which indicate that
+     * trips have been found, OR a {@link RunningTripQuery} which means that a background search has
+     * been started. In the latter case passengers will receive a GCM notification once an offer
+     * has been found.
+     */
     @POST
     @UnitOfWork
     @Path(PATH_QUERIES)
@@ -171,6 +199,11 @@ public class TripsResource {
     }
 
 
+    /**
+     * Returns all running background queries for a passenger.
+     * @param showOnlyRunning if true this method will return only running background queries but not
+     *                        those which have been cancelled, finished, etc. Default is false.
+     */
     @GET
     @UnitOfWork
     @Path(PATH_QUERIES)
@@ -179,6 +212,9 @@ public class TripsResource {
     }
 
 
+    /**
+     * Returns a single running background query for a passenger.
+     */
     @GET
     @UnitOfWork
     @Path(PATH_QUERIES + "/{queryId}")
@@ -190,6 +226,9 @@ public class TripsResource {
     }
 
 
+    /**
+     * Stops one particular background query for a passenger.
+     */
     @DELETE
     @UnitOfWork
     @Path(PATH_QUERIES + "/{queryId}")
@@ -198,6 +237,9 @@ public class TripsResource {
     }
 
 
+    /**
+     * Returns all trip reservations ever made.
+     */
     @GET
     @UnitOfWork
     @Path(PATH_RESERVATIONS)
@@ -206,6 +248,9 @@ public class TripsResource {
     }
 
 
+    /**
+     * Returns one trip price reservation.
+     */
     @GET
     @UnitOfWork
     @Path(PATH_RESERVATIONS + "/{reservationId}")
@@ -216,10 +261,14 @@ public class TripsResource {
     }
 
 
+    /**
+     * Allows passengers to join a trip by "accepting" a previously created {@link TripReservation}.
+     * @return the resulting join requests which indicates all further stages of a trip.
+     */
     @PUT
     @UnitOfWork
     @Path(PATH_RESERVATIONS + "/{reservationId}")
-    public JoinTripRequest joinTrip(@PathParam("reservationId") long reservationId, @Auth User passenger) {
+    public JoinTripRequest joinTrip(@Auth User passenger, @PathParam("reservationId") long reservationId) {
         Optional<TripReservation> reservation = tripsManager.findReservation(reservationId);
         if (!reservation.isPresent()) throw RestUtils.createNotFoundException("reservation does not exist");
 
@@ -229,6 +278,12 @@ public class TripsResource {
     }
 
 
+    /**
+     * Returns a list of join requests for either passengers or drivers.
+     * @param showOnlyPassengerAccepted if true this method will only return those join requests with a
+     *                                  status of {@link JoinTripStatus#PASSENGER_ACCEPTED}.
+     *                                  Default is false.
+     */
     @GET
     @UnitOfWork
     @Path(PATH_JOINS)
@@ -236,6 +291,11 @@ public class TripsResource {
         return tripsManager.findAllJoinRequests(passengerOrDriver, showOnlyPassengerAccepted);
     }
 
+
+    /**
+     * Returns a list of join requests for either passengers or drivers where the status of the join
+     * request if {@link JoinTripStatus#DRIVER_ACCEPTED}.
+     */
     @GET
     @UnitOfWork
     @Path(PATH_ACCEPTED_JOINS)
@@ -243,16 +303,24 @@ public class TripsResource {
         return tripsManager.findDriverAcceptedJoinRequests(passengerOrDriver);
     }
 
+
+    /**
+     * Gets one particular join request.
+     */
     @GET
     @UnitOfWork
     @Path(PATH_JOINS + "/{joinRequestId}")
-    public JoinTripRequest getJoinRequest(@Auth User driver, @PathParam("joinRequestId") long joinRequestId) {
+    public JoinTripRequest getJoinRequest(@Auth User driverOrPassenger, @PathParam("joinRequestId") long joinRequestId) {
         Optional<JoinTripRequest> request = tripsManager.findJoinRequest(joinRequestId);
         if (!request.isPresent()) throw RestUtils.createNotFoundException();
         else return request.get();
     }
 
 
+    /**
+     * Updates a join request. Use this method if you want to advance the state of a join request,
+     * e.g. passenger enters / leaves car.
+     */
     @PUT
     @UnitOfWork
     @Path(PATH_JOINS + "/{joinRequestId}")
