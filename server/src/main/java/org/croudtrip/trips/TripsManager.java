@@ -65,6 +65,7 @@ public class TripsManager {
     private final VehicleManager vehicleManager;
     private final GcmManager gcmManager;
     private final TspSolver tspSolver;
+    private final TripsUtils tripsUtils;
     private final LogManager logManager;
 
 
@@ -78,6 +79,7 @@ public class TripsManager {
             VehicleManager vehicleManager,
             GcmManager gcmManager,
             TspSolver tspSolver,
+            TripsUtils tripsUtils,
             LogManager logManager) {
 
         this.tripOfferDAO = tripOfferDAO;
@@ -88,6 +90,7 @@ public class TripsManager {
         this.vehicleManager = vehicleManager;
         this.gcmManager = gcmManager;
         this.tspSolver = tspSolver;
+        this.tripsUtils = tripsUtils;
         this.logManager = logManager;
     }
 
@@ -95,7 +98,7 @@ public class TripsManager {
      * Adds an offer to the database.
      * @param owner The driver that offers the trip
      * @param description the description of the offer.
-     * @return the newly cerated {@link org.croudtrip.api.trips.TripOffer}
+     * @return the newly created {@link org.croudtrip.api.trips.TripOffer}
      * @throws RouteNotFoundException is thrown, if there was no route from the requested start to
      * the requested destination.
      */
@@ -436,7 +439,7 @@ public class TripsManager {
 
         // update offer if vehicle is full
         TripOffer offer = joinRequest.getOffer();
-        int passengerCount = getActivePassengerCountForOffer(offer);
+        int passengerCount = tripsUtils.getActivePassengerCountForOffer(offer);
         if (passengerCount >= offer.getVehicle().getCapacity()) {
             TripOffer updatedOffer = new TripOffer(
                     offer.getId(),
@@ -498,35 +501,7 @@ public class TripsManager {
     }
 
 
-    /**
-     * Finds a list of {@link org.croudtrip.api.trips.TripOffer} that fulfill
-     * the {@link #isPotentialMatch(org.croudtrip.api.trips.TripOffer, org.croudtrip.api.trips.TripQuery)}
-     * method for a certain query.
-     * @param offers a list of offers that you want to check, if they are a potential match
-     * @param query the query you search a potential match for
-     * @return a (possibly empty) list of TripOffers that contains all the matching trip offers.
-     */
-    private List<TripOffer> findPotentialMatches(List<TripOffer> offers, TripQuery query) {
-        // analyse offers
-        List<TripOffer> potentialMatches = new ArrayList<>();
-        for (TripOffer offer : offers) {
-            if (isPotentialMatch(offer, query)) {
-                potentialMatches.add(offer);
-            }
-        }
 
-        return potentialMatches;
-    }
-
-
-    /**
-     * Checks if a specific {@link org.croudtrip.api.trips.TripOffer} matches to a specific
-     * {@link org.croudtrip.api.trips.TripQuery}. That means that the additional route the driver
-     * has to take into account for this query will not exceed his maximum diversion
-     * @param offer The offer you want to check
-     * @param query the query you search a potential match for
-     * @return true, if the offer is a potential match for this query; false, if it is not.
-     */
     private boolean isPotentialMatch(TripOffer offer, TripQuery query) {
         List<RouteLocation> driverWayPoints = offer.getDriverRoute().getWayPoints();
 
@@ -542,7 +517,7 @@ public class TripsManager {
         }
 
         // check current passenger count
-        int passengerCount = getActivePassengerCountForOffer(offer);
+        int passengerCount = tripsUtils.getActivePassengerCountForOffer(offer);
         if (passengerCount >= offer.getVehicle().getCapacity()) return false;
 
         // Early reject based on airline;
@@ -550,8 +525,8 @@ public class TripsManager {
         double airlineDriverRoute = driverWayPoints.get(0).distanceFrom( driverWayPoints.get( driverWayPoints.size() - 1 ) );
 
         double airlineTotalRoute = driverWayPoints.get(0).distanceFrom( query.getStartLocation() ) +
-                                   query.getStartLocation().distanceFrom( query.getDestinationLocation() ) +
-                                   query.getDestinationLocation().distanceFrom( driverWayPoints.get( driverWayPoints.size() - 1 ) );
+                query.getStartLocation().distanceFrom( query.getDestinationLocation() ) +
+                query.getDestinationLocation().distanceFrom( driverWayPoints.get( driverWayPoints.size() - 1 ) );
 
         logManager.d("airlines compared: driverRoute: " + airlineDriverRoute + " totalRoute: " + airlineTotalRoute + " distance: " + (airlineTotalRoute - airlineDriverRoute) );
         if( (airlineTotalRoute - airlineDriverRoute) > offer.getMaxDiversionInMeters() * 10 )
@@ -623,6 +598,37 @@ public class TripsManager {
         return true;
     }
 
+
+    /**
+     * Finds a list of {@link org.croudtrip.api.trips.TripOffer} that fulfill
+     * the {@link #isPotentialMatch(org.croudtrip.api.trips.TripOffer, org.croudtrip.api.trips.TripQuery)}
+     * method for a certain query.
+     * @param offers a list of offers that you want to check, if they are a potential match
+     * @param query the query you search a potential match for
+     * @return a (possibly empty) list of TripOffers that contains all the matching trip offers.
+     */
+    private List<TripOffer> findPotentialMatches(List<TripOffer> offers, TripQuery query) {
+        // analyse offers
+        List<TripOffer> potentialMatches = new ArrayList<>();
+        for (TripOffer offer : offers) {
+            if (isPotentialMatch(offer, query)) {
+                potentialMatches.add(offer);
+            }
+        }
+
+        return potentialMatches;
+    }
+
+
+    /**
+     * Checks if a specific {@link org.croudtrip.api.trips.TripOffer} matches to a specific
+     * {@link org.croudtrip.api.trips.TripQuery}. That means that the additional route the driver
+     * has to take into account for this query will not exceed his maximum diversion
+     * @param offer The offer you want to check
+     * @param query the query you search a potential match for
+     * @return true, if the offer is a potential match for this query; false, if it is not.
+     */
+
     /**
      * Will compute a list of cheapest @link{TripReservation} for a specific query out of a list of potential matches
      * @param query the query you want to get a match for
@@ -676,27 +682,6 @@ public class TripsManager {
 
         return reservations;
     }
-
-
-    /**
-     * Computes how many passengers actually will be picked up or sit in the car
-     * @param offer the offer for which you want to compute the passenger count
-     * @return the count of passengers that are still actively related to this offer
-     */
-    public int getActivePassengerCountForOffer(TripOffer offer) {
-        int passengerCount = 0;
-        List<JoinTripRequest> joinRequests = findAllJoinRequests(offer.getId());
-        for (JoinTripRequest request : joinRequests) {
-            JoinTripStatus status = request.getStatus();
-            // TODO: There are now a few more states - probably update this if clause to get
-            if (!status.equals(JoinTripStatus.DRIVER_DECLINED)
-                    && !status.equals(JoinTripStatus.PASSENGER_AT_DESTINATION)) {
-                ++passengerCount;
-            }
-        }
-        return passengerCount;
-    }
-
 
 }
 
