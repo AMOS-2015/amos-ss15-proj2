@@ -27,7 +27,7 @@ import javax.inject.Inject;
 /**
  * Removes unused {@link RunningTripQuery} after they have expired.
  */
-public class RunningTripQueryGarbageCollection extends AbstractScheduledTaskExecutor {
+public class RunningTripQueryGarbageCollector extends AbstractScheduledTaskExecutor {
 
 	/**
 	 * Keeps {@link RunningTripQuery} around a little longer to give clients a chance to download results.
@@ -37,10 +37,10 @@ public class RunningTripQueryGarbageCollection extends AbstractScheduledTaskExec
 	private final RunningTripQueryDAO runningTripQueryDAO;
 
 	@Inject
-    RunningTripQueryGarbageCollection(
-            RunningTripQueryDAO runningTripQueryDAO,
-            SessionFactory sessionFactory,
-            LogManager logManager) {
+	RunningTripQueryGarbageCollector(
+			RunningTripQueryDAO runningTripQueryDAO,
+			SessionFactory sessionFactory,
+			LogManager logManager) {
 
 		super(sessionFactory, logManager, 15, TimeUnit.SECONDS);
 		this.runningTripQueryDAO = runningTripQueryDAO;

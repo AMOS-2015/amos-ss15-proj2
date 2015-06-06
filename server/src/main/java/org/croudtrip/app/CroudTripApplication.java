@@ -45,7 +45,7 @@ import org.croudtrip.rest.UsersHeadResource;
 import org.croudtrip.rest.UsersResource;
 import org.croudtrip.rest.VehicleResource;
 import org.croudtrip.trips.ExpireTripExecutor;
-import org.croudtrip.trips.RunningTripQueryGarbageCollection;
+import org.croudtrip.trips.RunningTripQueryGarbageCollector;
 import org.croudtrip.trips.TripOfferChecker;
 import org.croudtrip.trips.TripReservationGarbageCollector;
 
@@ -83,7 +83,7 @@ public final class CroudTripApplication extends Application<CroudTripConfig> {
 				new GcmModule(configuration.getGoogleAPIKey()));
 
 		injector.getInstance(TripReservationGarbageCollector.class).start();
-		injector.getInstance(RunningTripQueryGarbageCollection.class).start();
+		injector.getInstance(RunningTripQueryGarbageCollector.class).start();
 		injector.getInstance(TripOfferChecker.class).start();
         injector.getInstance(ExpireTripExecutor.class).start();
 
