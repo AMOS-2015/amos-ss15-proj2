@@ -69,3 +69,8 @@ For localhost it could look like this:
 	"syncedFilename": ""
 }
 ```
+
+
+## JavaDoc
+
+... for the server can be found at https://amos-2015.github.io/amos-ss15-proj2/
