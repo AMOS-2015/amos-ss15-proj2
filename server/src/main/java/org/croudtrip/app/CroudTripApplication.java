@@ -44,10 +44,10 @@ import org.croudtrip.rest.TripsResource;
 import org.croudtrip.rest.UsersHeadResource;
 import org.croudtrip.rest.UsersResource;
 import org.croudtrip.rest.VehicleResource;
-import org.croudtrip.trips.ExpireTripExecutor;
-import org.croudtrip.trips.RunningTripQueryGarbageCollector;
-import org.croudtrip.trips.TripOfferChecker;
-import org.croudtrip.trips.TripReservationGarbageCollector;
+import org.croudtrip.trips.ExpireTripOffersExecutor;
+import org.croudtrip.trips.RunningTripQueryGarbageCollectionExecutor;
+import org.croudtrip.trips.DisableTripOffersExecutor;
+import org.croudtrip.trips.TripReservationGarbageCollectionExecutor;
 
 import io.dropwizard.Application;
 import io.dropwizard.auth.AuthFactory;
@@ -82,10 +82,10 @@ public final class CroudTripApplication extends Application<CroudTripConfig> {
                 new DirectionsModule(configuration),
 				new GcmModule(configuration.getGoogleAPIKey()));
 
-		injector.getInstance(TripReservationGarbageCollector.class).start();
-		injector.getInstance(RunningTripQueryGarbageCollector.class).start();
-		injector.getInstance(TripOfferChecker.class).start();
-        injector.getInstance(ExpireTripExecutor.class).start();
+		injector.getInstance(TripReservationGarbageCollectionExecutor.class).start();
+		injector.getInstance(RunningTripQueryGarbageCollectionExecutor.class).start();
+		injector.getInstance(DisableTripOffersExecutor.class).start();
+        injector.getInstance(ExpireTripOffersExecutor.class).start();
 
         environment.jersey().register(injector.getInstance(UsersResource.class));
 		environment.jersey().register(injector.getInstance(UsersHeadResource.class));

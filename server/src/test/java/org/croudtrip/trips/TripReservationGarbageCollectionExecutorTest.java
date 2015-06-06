@@ -18,17 +18,17 @@ import mockit.Verifications;
 import mockit.integration.junit4.JMockit;
 
 @RunWith(JMockit.class)
-public class TripReservationGarbageCollectorTest {
+public class TripReservationGarbageCollectionExecutorTest {
 
 	@Mocked TripReservationDAO tripReservationDAO;
 	@Mocked SessionFactory sessionFactory;
 	@Mocked LogManager logManager;
 
-	private  TripReservationGarbageCollector collector;
+	private TripReservationGarbageCollectionExecutor collector;
 
 	@Before
 	public void setupCollector() {
-		collector = new TripReservationGarbageCollector(tripReservationDAO, sessionFactory, logManager);
+		collector = new TripReservationGarbageCollectionExecutor(tripReservationDAO, sessionFactory, logManager);
 	}
 
 

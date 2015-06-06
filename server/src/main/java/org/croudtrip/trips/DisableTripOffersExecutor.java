@@ -26,9 +26,10 @@ import java.util.concurrent.TimeUnit;
 import javax.inject.Inject;
 
 /**
- * Created by Frederik Simon on 18.05.2015.
+ * Disables {@link TripOffer} when they do not receive location
+ * updates from drivers for some time.
  */
-public class TripOfferChecker extends AbstractScheduledTaskExecutor {
+public class DisableTripOffersExecutor extends AbstractScheduledTaskExecutor {
 
     private static final long MAX_TIME_UNTIL_LOST = 360;
 
@@ -36,7 +37,7 @@ public class TripOfferChecker extends AbstractScheduledTaskExecutor {
     private TripsUtils tripsUtils;
 
     @Inject
-    TripOfferChecker(
+    DisableTripOffersExecutor(
             TripOfferDAO tripOfferDAO,
             TripsUtils tripsUtils,
             SessionFactory sessionFactory,
