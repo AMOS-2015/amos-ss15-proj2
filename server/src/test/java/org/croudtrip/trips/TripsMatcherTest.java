@@ -31,6 +31,8 @@ import mockit.integration.junit4.JMockit;
 @RunWith(JMockit.class)
 public class TripsMatcherTest {
 
+	// TODO test updating routes
+
 	private static final User
 			passenger = new User(0, null, null, null, null, null, null, null, null, 0),
 			driver = new User(1, null, null, null, null, null, null, null, null, 0);
@@ -43,14 +45,23 @@ public class TripsMatcherTest {
 			passenger);
 
 	private static final Vehicle vehicle = new Vehicle(0, null, null, null, 4, driver);
+
 	private static final Route driverRoute = new Route.Builder()
 			.wayPoints(Lists.newArrayList(new RouteLocation(45, 45), new RouteLocation(50, 50)))
 			.distanceInMeters(1000)
 			.build();
+
 	private static final Route totalRoute = new Route.Builder()
 			.wayPoints(Lists.newArrayList(driverRoute.getWayPoints().get(0), query.getStartLocation(), query.getDestinationLocation(), driverRoute.getWayPoints().get(1)))
 			.build();
+
 	private static final TripOffer offer = new TripOffer( 0, driverRoute, 0, null, 1000, 0, driver, vehicle, TripOfferStatus.ACTIVE_NOT_FULL, 0);
+
+	private static final List<TspSolver.WayPoint> wayPoints = Lists.newArrayList(
+			new TspSolver.WayPoint(driver, driverRoute.getWayPoints().get(0), true),
+			new TspSolver.WayPoint(passenger, query.getStartLocation(), true),
+			new TspSolver.WayPoint(passenger, query.getDestinationLocation(), false),
+			new TspSolver.WayPoint(driver, driverRoute.getWayPoints().get(1), false));
 
 
 	@Mocked JoinTripRequestDAO joinTripRequestDAO;
@@ -108,22 +119,87 @@ public class TripsMatcherTest {
 	@Test
 	@SuppressWarnings("unchecked")
 	public void testPotentialMatchMaxDiversion() {
+		new TspExpectations(wayPoints);
 		new Expectations() {{
-			tspSolver.getBestOrder((List<JoinTripRequest>) any, offer, query);
-			List<List<RouteLocation>> sortedRoutes = new ArrayList<>();
-			sortedRoutes.add(Lists.newArrayList(new RouteLocation(0, 0), new RouteLocation(0, 0)));
-			result = sortedRoutes;
-
 			directionsManager.getDirections(
 					driverRoute.getWayPoints().get(0),
 					driverRoute.getWayPoints().get(1),
 					(List<RouteLocation>) any);
-			result = Lists.newArrayList(new Route.Builder().wayPoints(new ArrayList<RouteLocation>()).distanceInMeters(10000).build());
+			result = Lists.newArrayList(new Route.Builder()
+					.wayPoints(totalRoute.getWayPoints())
+					.distanceInMeters(10000)
+					.build());
 		}};
 
 		Assert.assertFalse(tripsMatcher.isPotentialMatch(offer, query));
 	}
 
-	// TODO test max waiting time and updating routes
+
+	@Test
+	@SuppressWarnings("unchecked")
+	public void testPotentialMatchMaxWaitingTimeQuery() {
+		// tests that max waiting time of query is honored
+		new TspExpectations(wayPoints);
+		new Expectations() {{
+			directionsManager.getDirections(
+					driverRoute.getWayPoints().get(0),
+					driverRoute.getWayPoints().get(1),
+					(List<RouteLocation>) any);
+			result = Lists.newArrayList(new Route.Builder()
+					.wayPoints(totalRoute.getWayPoints())
+					.legDurationInSeconds(Lists.newArrayList(query.getMaxWaitingTimeInSeconds() + 1l, 0l, 0l))
+					.build());
+		}};
+
+		Assert.assertFalse(tripsMatcher.isPotentialMatch(offer, query));
+	}
+
+
+	@Test
+	@SuppressWarnings("unchecked")
+	public void testPotentialMatchMaxWaitingTimeJoinRequests() {
+		// tests that max waiting time of already existing join requests is honored
+
+		User anotherPassenger = new User(2, null, null, null, null, null, null, null, null, 0);
+		List<TspSolver.WayPoint> newTspWayPoints = new ArrayList<>(wayPoints);
+		newTspWayPoints.add(newTspWayPoints.size() - 1, new TspSolver.WayPoint(anotherPassenger, new RouteLocation(0, 0), true));
+		newTspWayPoints.add(newTspWayPoints.size() - 1, new TspSolver.WayPoint(anotherPassenger, new RouteLocation(0, 0), false));
+
+		final List<RouteLocation> newRouteWayPoints = new ArrayList<>();
+		for (TspSolver.WayPoint wayPoint : newTspWayPoints) newRouteWayPoints.add(wayPoint.getLocation());
+
+		final TripQuery anotherPassengerQuery = new TripQuery(null, null, null, 12345, anotherPassenger);
+		final JoinTripRequest anotherPassengerJoinRequest = new JoinTripRequest(3, anotherPassengerQuery, 0, 0, offer, null);
+
+		new TspExpectations(newTspWayPoints);
+		new Expectations() {{
+			directionsManager.getDirections(
+					driverRoute.getWayPoints().get(0),
+					driverRoute.getWayPoints().get(1),
+					(List<RouteLocation>) any);
+			result = Lists.newArrayList(new Route.Builder()
+					.wayPoints(newRouteWayPoints)
+					.legDurationInSeconds(Lists.newArrayList(query.getMaxWaitingTimeInSeconds(), 1l, anotherPassengerQuery.getMaxWaitingTimeInSeconds(), 1l, 1l))
+					.build());
+
+			joinTripRequestDAO.findByOfferId(offer.getId());
+			result = Lists.newArrayList(anotherPassengerJoinRequest);
+		}};
+
+		Assert.assertFalse(tripsMatcher.isPotentialMatch(offer, query));
+	}
+
+
+	@SuppressWarnings("unchecked")
+	private final class TspExpectations extends Expectations {
+
+		TspExpectations(List<TspSolver.WayPoint> wayPoints) {
+			List<List<TspSolver.WayPoint>> sortedRoutes = new ArrayList<>();
+			sortedRoutes.add(wayPoints);
+			tspSolver.getBestOrder((List<JoinTripRequest>) any, offer, query);
+			result = sortedRoutes;
+		}
+
+	}
 
 }

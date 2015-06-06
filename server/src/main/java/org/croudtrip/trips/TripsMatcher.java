@@ -95,7 +95,7 @@ class TripsMatcher {
 		}
 
 		// check passenger max waiting time
-		if (!assertRouteWithinPassengerMaxWaitingTime(possibleRoutes.get(0), query)) return false;
+		if (!assertRouteWithinPassengerMaxWaitingTime(offer, query, totalRouteWayPoints, possibleRoutes.get(0))) return false;
 
 		return true;
 	}
@@ -157,10 +157,34 @@ class TripsMatcher {
 	}
 
 
-	private boolean assertRouteWithinPassengerMaxWaitingTime(Route route, TripQuery query) {
-		// TODO: It is not that simple for multiple passengers
-		double durationToPassenger = route.getLegDurationsInSeconds().get(0);
-		return durationToPassenger <= query.getMaxWaitingTimeInSeconds();
+	private boolean assertRouteWithinPassengerMaxWaitingTime(
+			TripOffer offer,
+			TripQuery query,
+			List<TspSolver.WayPoint> tspRoute,
+			Route directionsRoute) {
+
+		// check max waiting time for each passenger
+		long durationToPassenger = 0;
+		for (int wayPointIdx = 1; wayPointIdx < tspRoute.size() - 1; ++wayPointIdx) {
+			durationToPassenger += directionsRoute.getLegDurationsInSeconds().get(wayPointIdx - 1);
+			TspSolver.WayPoint passengerWayPoint = tspRoute.get(wayPointIdx);
+			if (!passengerWayPoint.isStart()) continue;
+
+			// find max waiting time (already joined? ...)
+			double passengerMaxWaitingTime = 0;
+			if (passengerWayPoint.getUser().equals(query.getPassenger())) {
+				passengerMaxWaitingTime = query.getMaxWaitingTimeInSeconds();
+			} else {
+				for (JoinTripRequest joinTripRequest : joinTripRequestDAO.findByOfferId(offer.getId())) {
+					if (passengerWayPoint.getUser().equals(joinTripRequest.getQuery().getPassenger())) {
+						passengerMaxWaitingTime = joinTripRequest.getQuery().getMaxWaitingTimeInSeconds();
+						break;
+					}
+				}
+			}
+			if (durationToPassenger > passengerMaxWaitingTime) return false;
+		}
+		return true;
 
 	}
 
