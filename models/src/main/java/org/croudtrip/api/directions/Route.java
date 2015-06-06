@@ -140,4 +140,69 @@ public class Route {
         return Objects.hashCode(polyline, googleCopyrights, durationInSeconds, distanceInMeters, googleWarnings, wayPointsString);
     }
 
+
+    public static class Builder {
+
+        private List<RouteLocation> wayPoints;
+        private String polyline;
+        private long distanceInMeters;
+        private long durationInSeconds;
+        private List<Long> legDurationsInSeconds;
+        private String googleCopyrights;
+        private String googleWarnings;
+        private long lastUpdateTimeInSeconds;
+
+        public Builder wayPoints(List<RouteLocation> wayPoints) {
+            this.wayPoints = wayPoints;
+            return this;
+        }
+
+        public Builder polyline(String polyline) {
+            this.polyline = polyline;
+            return this;
+        }
+
+        public Builder distanceInMeters(long distanceInMeters) {
+            this.distanceInMeters = distanceInMeters;
+            return this;
+        }
+
+        public Builder durationInSeconds(long durationInSeconds) {
+            this.durationInSeconds = durationInSeconds;
+            return this;
+        }
+
+        public Builder legDurationInSeconds(List<Long> legDurationsInSeconds) {
+            this.legDurationsInSeconds = legDurationsInSeconds;
+            return this;
+        }
+
+        public Builder googleCopyrights(String googleCopyrights) {
+            this.googleCopyrights = googleCopyrights;
+            return this;
+        }
+
+        public Builder googleWarnings(String googleWarnings) {
+            this.googleWarnings = googleWarnings;
+            return this;
+        }
+
+        public Builder lastUpdateTimeInSeconds(long lastUpdateTimeInSeconds) {
+            this.lastUpdateTimeInSeconds = lastUpdateTimeInSeconds;
+            return this;
+        }
+
+        public Route build() {
+            return new Route(
+                    wayPoints,
+                    polyline,
+                    distanceInMeters,
+                    durationInSeconds,
+                    legDurationsInSeconds,
+                    googleCopyrights,
+                    googleWarnings,
+                    lastUpdateTimeInSeconds);
+        }
+    }
+
 }
