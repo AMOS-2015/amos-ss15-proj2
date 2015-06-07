@@ -278,7 +278,7 @@ public class MyTripDriverFragment extends SubscriptionFragment {
      */
     private synchronized void loadOffer() {
 
-        subscriptions.add(tripsResource.getOffers(true)
+        subscriptions.add(tripsResource.getActiveOffers()
                 .compose(new DefaultTransformer<List<TripOffer>>())
                 .flatMap(new Func1<List<TripOffer>, Observable<TripOffer>>() {
 
