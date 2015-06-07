@@ -215,4 +215,12 @@ public class GcmManager {
     public void sendPassengerExitCarMsg( JoinTripRequest request) {
         sendGcmMessageToUser(request.getOffer().getDriver(), GcmConstants.GCM_MSG_PASSENGER_AT_DESTINATION);
     }
+
+	public void sendJoinTripRequestExpiredToPassenger(JoinTripRequest joinTripRequest) {
+		sendGcmMessageToUser(joinTripRequest.getQuery().getPassenger(), GcmConstants.GCM_MSG_REQUEST_EXPIRED,
+				new Pair<>(GcmConstants.GCM_MSG_USER_MAIL, "" + joinTripRequest.getQuery().getPassenger().getEmail()),
+				new Pair<>(GcmConstants.GCM_MSG_REQUEST_EXPIRED, "Join request expired due to max waiting time"),
+				new Pair<>(GcmConstants.GCM_MSG_JOIN_REQUEST_ID, "" + joinTripRequest.getId()),
+				new Pair<>(GcmConstants.GCM_MSG_JOIN_REQUEST_OFFER_ID, "" + joinTripRequest.getOffer().getId()));
+	}
 }
