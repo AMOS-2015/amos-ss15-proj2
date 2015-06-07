@@ -180,4 +180,50 @@ public class JoinTripRequest {
 	public int hashCode() {
 		return Objects.hashCode(id, query, totalPriceInCents, pricePerKmInCents, offer, status);
 	}
+
+
+	public static class Builder {
+
+		private long id;
+		private TripQuery query;
+		private int totalPriceInCents;
+		private int pricePerKmInCents;
+		private TripOffer offer;
+		private JoinTripStatus status;
+
+		public Builder setId(long id) {
+			this.id = id;
+			return this;
+		}
+
+		public Builder setQuery(TripQuery query) {
+			this.query = query;
+			return this;
+		}
+
+		public Builder setTotalPriceInCents(int totalPriceInCents) {
+			this.totalPriceInCents = totalPriceInCents;
+			return this;
+		}
+
+		public Builder setPricePerKmInCents(int pricePerKmInCents) {
+			this.pricePerKmInCents = pricePerKmInCents;
+			return this;
+		}
+
+		public Builder setOffer(TripOffer offer) {
+			this.offer = offer;
+			return this;
+		}
+
+		public Builder setStatus(JoinTripStatus status) {
+			this.status = status;
+			return this;
+		}
+
+		public JoinTripRequest build() {
+			return new JoinTripRequest(id, query, totalPriceInCents, pricePerKmInCents, offer, status);
+		}
+
+	}
 }
