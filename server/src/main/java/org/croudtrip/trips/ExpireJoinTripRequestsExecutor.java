@@ -2,6 +2,7 @@ package org.croudtrip.trips;
 
 import org.croudtrip.api.trips.JoinTripRequest;
 import org.croudtrip.api.trips.JoinTripStatus;
+import org.croudtrip.gcm.GcmManager;
 import org.croudtrip.logs.LogManager;
 import org.croudtrip.utils.AbstractScheduledTaskExecutor;
 import org.hibernate.SessionFactory;
@@ -17,11 +18,13 @@ import javax.inject.Inject;
 public class ExpireJoinTripRequestsExecutor extends AbstractScheduledTaskExecutor {
 
     private TripsManager tripsManager;
+    private GcmManager gcmManager;
 
     @Inject
-    ExpireJoinTripRequestsExecutor(TripsManager tripsManager, SessionFactory sessionFactory, LogManager logManager) {
+    ExpireJoinTripRequestsExecutor(TripsManager tripsManager, GcmManager gcmManager, SessionFactory sessionFactory, LogManager logManager) {
         super( sessionFactory, logManager, 15, TimeUnit.MINUTES);
         this.tripsManager = tripsManager;
+        this.gcmManager = gcmManager;
     }
 
     @Override
@@ -32,6 +35,7 @@ public class ExpireJoinTripRequestsExecutor extends AbstractScheduledTaskExecuto
 
             if (currentTimestamp > joinTripRequest.getQuery().getCreationTimestamp() + joinTripRequest.getQuery().getMaxWaitingTimeInSeconds()) {
                 tripsManager.updateJoinRequestPassengerCancel(joinTripRequest);
+                gcmManager.sendJoinTripRequestExpiredToPassenger(joinTripRequest);
             }
         }
     }

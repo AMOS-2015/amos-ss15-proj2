@@ -7,6 +7,7 @@ import junit.framework.TestCase;
 import org.croudtrip.api.trips.JoinTripRequest;
 import org.croudtrip.api.trips.JoinTripStatus;
 import org.croudtrip.api.trips.TripQuery;
+import org.croudtrip.gcm.GcmManager;
 import org.croudtrip.logs.LogManager;
 import org.hibernate.SessionFactory;
 import org.junit.Before;
@@ -39,13 +40,14 @@ public class ExpireJoinTripRequestsExecutorTest extends TestCase {
 
 
 	@Mocked TripsManager tripsManager;
+	@Mocked GcmManager gcmManager;
 	@Mocked SessionFactory sessionFactory;
 	@Mocked LogManager logManager;
 	private ExpireJoinTripRequestsExecutor executor;
 
 	@Before
 	public void setupExecutor() {
-		executor = new ExpireJoinTripRequestsExecutor(tripsManager, sessionFactory, logManager);
+		executor = new ExpireJoinTripRequestsExecutor(tripsManager, gcmManager, sessionFactory, logManager);
 	}
 
 	@Test
@@ -61,6 +63,8 @@ public class ExpireJoinTripRequestsExecutorTest extends TestCase {
 			tripsManager.updateJoinRequestPassengerCancel(request1); times = 0;
 			tripsManager.updateJoinRequestPassengerCancel(request2); times = 1;
 			tripsManager.updateJoinRequestPassengerCancel(request3); times = 0;
+
+			gcmManager.sendJoinTripRequestExpiredToPassenger(request2);
 		}};
 	}
 }
