@@ -379,6 +379,14 @@ public class TripsManager {
 
 
     /**
+     * Returns all {@link JoinTripRequest}s, regardless of their state or user.
+     */
+    public List<JoinTripRequest> findAllJoinRequests() {
+        return joinTripRequestDAO.findAll();
+    }
+
+
+    /**
      * Returns all JoinRequests that are related to a specific user and possibly have as status
      * {@link org.croudtrip.api.trips.JoinTripStatus#PASSENGER_ACCEPTED}.
      * @param passengerOrDriver the user to which all JoinTripRequests should belong.
