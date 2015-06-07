@@ -86,6 +86,8 @@ public class GcmConstants {
      */
     public static final String GCM_MSG_FOUND_MATCHES_QUERY_ID = "QUERY_ID";
 
+    public static final String GCM_MSG_PASSENGER_AT_DESTINATION = "PASSENGER_AT_DESTINATION";
+
     /** Notifications IDs for android notifications */
     public static final int GCM_NOTIFICATION_JOIN_REQUEST_ID = 1;
     public static final int GCM_NOTIFICATION_REQUEST_ACCEPTED_ID = 2;

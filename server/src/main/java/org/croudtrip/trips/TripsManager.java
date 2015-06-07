@@ -467,6 +467,8 @@ public class TripsManager {
         if(passengerAccepted) gcmManager.sendAcceptPassengerMsg(joinRequest);
         else gcmManager.sendDeclinePassengerMsg(joinRequest);
 
+        // TODO: Send all the passengers an arrival time update
+
         return joinTripRequestDAO.findById(joinRequest.getId()).get();
     }
 
@@ -491,6 +493,10 @@ public class TripsManager {
     public JoinTripRequest updateJoinRequestPassengerExitCar(JoinTripRequest joinRequest) {
         JoinTripRequest updatedRequest = new JoinTripRequest(joinRequest, JoinTripStatus.PASSENGER_AT_DESTINATION);
         joinTripRequestDAO.update(updatedRequest);
+
+        // TODO: Send GCM to the driver to notify him that the passenger left the car
+        gcmManager.sendPassengerExitCarMsg( joinRequest );
+
         return updatedRequest;
     }
 
@@ -504,6 +510,9 @@ public class TripsManager {
         JoinTripRequest updatedRequest = new JoinTripRequest(joinRequest, JoinTripStatus.PASSENGER_CANCELLED);
         joinTripRequestDAO.update(updatedRequest);
         gcmManager.sendPassengerCancelledTripMsg(joinRequest);
+
+        // TODO: Update all the passengers arrival time
+
         return joinRequest;
     }
 
