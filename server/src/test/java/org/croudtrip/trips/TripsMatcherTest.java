@@ -136,14 +136,13 @@ public class TripsMatcherTest {
 	@SuppressWarnings("unchecked")
 	public void testPotentialMatchMaxWaitingTimeQuery() {
 		// tests that max waiting time of query is honored
-		final long currentTimestamp = System.currentTimeMillis() / 1000;
 		new Expectations() {{
 			tripsNavigationManager.getRouteWaypointsForOffer(offer, query);
 			result = Lists.newArrayList(
-					new UserWayPoint(driver, null, true, currentTimestamp),
-					new UserWayPoint(passenger, null, true, currentTimestamp + query.getMaxWaitingTimeInSeconds() + 100),
-					new UserWayPoint(passenger, null, false, currentTimestamp + query.getMaxWaitingTimeInSeconds() + 101),
-					new UserWayPoint(driver, null, false, currentTimestamp));
+					new UserWayPoint(driver, null, true, 0),
+					new UserWayPoint(passenger, null, true, query.getCreationTimestamp() + query.getMaxWaitingTimeInSeconds() + 100),
+					new UserWayPoint(passenger, null, false, 0),
+					new UserWayPoint(driver, null, false, 0));
 
 		}};
 

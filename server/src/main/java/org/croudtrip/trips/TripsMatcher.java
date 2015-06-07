@@ -168,23 +168,22 @@ class TripsMatcher {
 			List<UserWayPoint> userWayPoints) {
 
 		// check max waiting time for each passenger
-		long currentTimestamp = System.currentTimeMillis() / 1000; // unix timestamp
 		for (UserWayPoint userWayPoint : userWayPoints) {
 			if (!userWayPoint.isStartOfTrip()) continue;
 			if (userWayPoint.getUser().equals(offer.getDriver())) continue;
 
-			double passengerMaxWaitingTime = 0;
+			long passengerMaxWaitingTimestamp = 0;
 			if (userWayPoint.getUser().equals(query.getPassenger())) {
-				passengerMaxWaitingTime = query.getMaxWaitingTimeInSeconds();
+				passengerMaxWaitingTimestamp = query.getCreationTimestamp() + query.getMaxWaitingTimeInSeconds();
 			} else {
 				for (JoinTripRequest joinTripRequest : joinTripRequestDAO.findByOfferId(offer.getId())) {
 					if (userWayPoint.getUser().equals(joinTripRequest.getQuery().getPassenger())) {
-						passengerMaxWaitingTime = joinTripRequest.getQuery().getMaxWaitingTimeInSeconds();
+						passengerMaxWaitingTimestamp = joinTripRequest.getQuery().getCreationTimestamp() + joinTripRequest.getQuery().getMaxWaitingTimeInSeconds();
 						break;
 					}
 				}
 			}
-			if (userWayPoint.getArrivalTimestamp() - currentTimestamp > passengerMaxWaitingTime) return false;
+			if (userWayPoint.getArrivalTimestamp() > passengerMaxWaitingTimestamp) return false;
 		}
 		return true;
 	}
