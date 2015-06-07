@@ -7,6 +7,7 @@ import org.croudtrip.api.trips.JoinTripRequest;
 import org.croudtrip.api.trips.JoinTripStatus;
 import org.croudtrip.api.trips.TripOffer;
 import org.croudtrip.db.JoinTripRequestDAO;
+import org.croudtrip.gcm.GcmManager;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -20,12 +21,14 @@ import mockit.integration.junit4.JMockit;
 public class TripsUtilsTest {
 
 	@Mocked JoinTripRequestDAO joinTripRequestDAO;
+    @Mocked TripsNavigationManager tripsNavigationManager;
+    @Mocked GcmManager gcmManager;
 	private TripsUtils tripsUtils;
 
 
 	@Before
 	public void setupUtils() {
-		this.tripsUtils = new TripsUtils(joinTripRequestDAO);
+		this.tripsUtils = new TripsUtils(joinTripRequestDAO, tripsNavigationManager, gcmManager);
 	}
 
 
@@ -51,7 +54,7 @@ public class TripsUtilsTest {
 
 
 	private JoinTripRequest createJoinRequest(TripOffer offer, JoinTripStatus status) {
-		return new JoinTripRequest(0, null, 0, 0, offer, status);
+		return new JoinTripRequest(0, null, 0, 0, 0, offer, status);
 	}
 
 }

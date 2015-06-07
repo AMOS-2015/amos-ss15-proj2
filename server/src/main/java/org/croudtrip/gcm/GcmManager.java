@@ -217,10 +217,8 @@ public class GcmManager {
     }
 
     public void sendArrivalTimeUpdate(JoinTripRequest request) {
+        // TODO: Send correct message and handle it on client
         sendGcmMessageToUser(request.getQuery().getPassenger(), GcmConstants.GCM_MSG_REQUEST_ACCEPTED,
-                new Pair<>(GcmConstants.GCM_MSG_USER_MAIL, "" + request.getQuery().getPassenger().getEmail()),
-                new Pair<>(GcmConstants.GCM_MSG_REQUEST_ACCEPTED, "Your request was accepted"),
-                new Pair<>(GcmConstants.GCM_MSG_JOIN_REQUEST_ID, "" + request.getId()),
-                new Pair<>(GcmConstants.GCM_MSG_JOIN_REQUEST_OFFER_ID, "" + request.getOffer().getId()));
+                new Pair<>(GcmConstants.GCM_MSG_JOIN_REQUEST_ID, "" + request.getId()));
     }
 }

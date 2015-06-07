@@ -44,7 +44,7 @@ public class TripsNavigationManagerTest extends TestCase {
 			10,
 			System.currentTimeMillis() / 1000,
 			passenger);
-	private static final JoinTripRequest joinTripRequest = new JoinTripRequest(0, query, 0, 0, offer, null);
+	private static final JoinTripRequest joinTripRequest = new JoinTripRequest(0, query, 0, 0, 0, offer, null);
 
 
 	@Mocked TspSolver tspSolver;

@@ -71,7 +71,7 @@ public class TripsMatcherTest {
 	@Test
 	public void testPotentialMatchStatus() {
 		TripOffer offer = new TripOffer(0, null, 0, null, 0, 0, null, null, TripOfferStatus.ACTIVE_FULL, 0);
-		Assert.assertFalse(tripsMatcher.isPotentialMatch(offer, query));
+		Assert.assertFalse(tripsMatcher.isPotentialMatch(offer, query).isPresent());
 	}
 
 
@@ -80,10 +80,10 @@ public class TripsMatcherTest {
 		new Expectations() {{
 			joinTripRequestDAO.findDeclinedRequests(passenger.getId());
 			result = Lists.newArrayList(
-					new JoinTripRequest(0, query, 0, 0, offer, JoinTripStatus.DRIVER_DECLINED));
+					new JoinTripRequest(0, query, 0, 0, 0, offer, JoinTripStatus.DRIVER_DECLINED));
 		}};
 
-		Assert.assertFalse(tripsMatcher.isPotentialMatch(offer, query));
+		Assert.assertFalse(tripsMatcher.isPotentialMatch(offer, query).isPresent());
 	}
 
 
@@ -94,7 +94,7 @@ public class TripsMatcherTest {
 			result = vehicle.getCapacity();
 		}};
 
-		Assert.assertFalse(tripsMatcher.isPotentialMatch(offer, query));
+		Assert.assertFalse(tripsMatcher.isPotentialMatch(offer, query).isPresent());
 	}
 
 
@@ -107,7 +107,7 @@ public class TripsMatcherTest {
 				10,
 				System.currentTimeMillis() / 1000,
 				passenger);
-		Assert.assertFalse(tripsMatcher.isPotentialMatch(offer, query));
+		Assert.assertFalse(tripsMatcher.isPotentialMatch(offer, query).isPresent());
 	}
 
 
@@ -145,7 +145,7 @@ public class TripsMatcherTest {
 					new UserWayPoint(driver, null, false, 0, 3));
 		}};
 
-		Assert.assertFalse(tripsMatcher.isPotentialMatch(offer, query));
+		Assert.assertFalse(tripsMatcher.isPotentialMatch(offer, query).isPresent());
 	}
 
 
@@ -169,7 +169,7 @@ public class TripsMatcherTest {
 					new UserWayPoint(driver, null, false, 0, 3));
 		}};
 
-		Assert.assertFalse(tripsMatcher.isPotentialMatch(offer, query));
+		Assert.assertFalse(tripsMatcher.isPotentialMatch(offer, query).isPresent());
 	}
 
 
@@ -186,7 +186,7 @@ public class TripsMatcherTest {
 					new UserWayPoint(driver, null, false, currentTimestamp, offer.getDriverRoute().getDistanceInMeters() + offer.getMaxDiversionInMeters() + 100));
 		}};
 
-		Assert.assertFalse(tripsMatcher.isPotentialMatch(offer, query));
+		Assert.assertFalse(tripsMatcher.isPotentialMatch(offer, query).isPresent());
 	}
 
 
@@ -203,7 +203,7 @@ public class TripsMatcherTest {
 					new UserWayPoint(driver, null, false, currentTimestamp, 3));
 		}};
 
-		Assert.assertTrue(tripsMatcher.isPotentialMatch(offer, query));
+		Assert.assertTrue(tripsMatcher.isPotentialMatch(offer, query).isPresent());
 	}
 
 }
