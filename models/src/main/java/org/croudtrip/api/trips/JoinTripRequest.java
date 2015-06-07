@@ -107,6 +107,9 @@ public class JoinTripRequest {
 	@Enumerated(EnumType.STRING)
 	private JoinTripStatus status;
 
+    @Column(name="estimatedArrivalTimestamp")
+    private long estimatedArrivalTimestamp;
+
 	public JoinTripRequest() { }
 
 	@JsonCreator
@@ -115,6 +118,7 @@ public class JoinTripRequest {
 			@JsonProperty("query") TripQuery query,
 			@JsonProperty("totalPriceInCents") int totalPriceInCents,
 			@JsonProperty("pricePerKmInCents") int pricePerKmInCents,
+            @JsonProperty("estimatedArrivalTimestamp") long estimatedArrivalTimestamp,
 			@JsonProperty("offer") TripOffer offer,
 			@JsonProperty("status") JoinTripStatus status) {
 
@@ -124,6 +128,8 @@ public class JoinTripRequest {
 		this.pricePerKmInCents = pricePerKmInCents;
 		this.offer = offer;
 		this.status = status;
+        this.estimatedArrivalTimestamp = estimatedArrivalTimestamp;
+
 	}
 
 
@@ -135,6 +141,7 @@ public class JoinTripRequest {
 				oldRequest.getQuery(),
 				oldRequest.getTotalPriceInCents(),
 				oldRequest.getPricePerKmInCents(),
+                oldRequest.getEstimatedArrivalTimestamp(),
 				oldRequest.getOffer(),
 				newStatus);
 	}
@@ -155,6 +162,8 @@ public class JoinTripRequest {
 		return pricePerKmInCents;
 	}
 
+    public long getEstimatedArrivalTimestamp() { return estimatedArrivalTimestamp; }
+
 	public TripOffer getOffer() {
 		return offer;
 	}
@@ -171,6 +180,7 @@ public class JoinTripRequest {
 		return Objects.equal(id, that.id) &&
 				Objects.equal(totalPriceInCents, that.totalPriceInCents) &&
 				Objects.equal(pricePerKmInCents, that.pricePerKmInCents) &&
+                Objects.equal(estimatedArrivalTimestamp, that.estimatedArrivalTimestamp) &&
 				Objects.equal(query, that.query) &&
 				Objects.equal(offer, that.offer) &&
 				Objects.equal(status, that.status);
@@ -188,6 +198,7 @@ public class JoinTripRequest {
 		private TripQuery query;
 		private int totalPriceInCents;
 		private int pricePerKmInCents;
+        private long estimatedArrivalTimestamp;
 		private TripOffer offer;
 		private JoinTripStatus status;
 
@@ -221,8 +232,13 @@ public class JoinTripRequest {
 			return this;
 		}
 
+        public Builder setEstimatedArrivalTimestamp( long estimatedArrivalTimestamp ){
+            this.estimatedArrivalTimestamp = estimatedArrivalTimestamp;
+            return this;
+        }
+
 		public JoinTripRequest build() {
-			return new JoinTripRequest(id, query, totalPriceInCents, pricePerKmInCents, offer, status);
+			return new JoinTripRequest(id, query, totalPriceInCents, pricePerKmInCents, estimatedArrivalTimestamp, offer, status);
 		}
 
 	}

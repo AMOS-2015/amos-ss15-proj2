@@ -1,6 +1,8 @@
 package org.croudtrip.trips;
 
 
+import com.google.common.base.Optional;
+
 import org.croudtrip.api.directions.Route;
 import org.croudtrip.api.directions.RouteLocation;
 import org.croudtrip.api.trips.JoinTripRequest;
@@ -30,6 +32,19 @@ class TripsMatcher {
 	private final TripsUtils tripsUtils;
 	private final LogManager logManager;
 
+    public static class PotentialMatch
+    {
+        TripOffer offer;
+        TripQuery query;
+        List<UserWayPoint> userWayPoints;
+
+        public PotentialMatch( TripOffer offer, TripQuery query, List<UserWayPoint> userWayPoints ) {
+            this.offer = offer;
+            this.query = query;
+            this.userWayPoints = userWayPoints;
+        }
+    }
+
 
 	@Inject
 	TripsMatcher(
@@ -56,7 +71,7 @@ class TripsMatcher {
 	public List<TripOffer> filterPotentialMatches(List<TripOffer> offers, TripQuery query) {
 		List<TripOffer> potentialMatches = new ArrayList<>();
 		for (TripOffer offer : offers) {
-			if (isPotentialMatch(offer, query)) {
+			if (isPotentialMatch(offer, query).isPresent()) {
 				potentialMatches.add(offer);
 			}
 		}
@@ -69,35 +84,35 @@ class TripsMatcher {
 	 * Checks if a query matches with a given offer (is a potential match). This
 	 * includes max diversion and max waiting time of both driver and passenger.
 	 */
-	public boolean isPotentialMatch(TripOffer offer, TripQuery query) {
+	public Optional<PotentialMatch> isPotentialMatch(TripOffer offer, TripQuery query) {
 		// check trip status
-		if (!offer.getStatus().equals(TripOfferStatus.ACTIVE_NOT_FULL)) return false;
+		if (!offer.getStatus().equals(TripOfferStatus.ACTIVE_NOT_FULL)) return Optional.absent();
 
 		// check that query has not been declined before
-		if (!assertJoinRequestNotDeclined(offer, query)) return false;
+		if (!assertJoinRequestNotDeclined(offer, query)) return Optional.absent();
 
 		// check current passenger count
 		int passengerCount = tripsUtils.getActivePassengerCountForOffer(offer);
-		if (passengerCount >= offer.getVehicle().getCapacity()) return false;
+		if (passengerCount >= offer.getVehicle().getCapacity()) return Optional.absent();
 
 		// early reject based on airline;
-		if (!assertWithinAirDistance(offer, query)) return false;
+		if (!assertWithinAirDistance(offer, query)) return Optional.absent();
 
 		// update driver route on new position update
 		assertUpdatedDriverRoute(offer);
 
 		// get complete new route
 		List<UserWayPoint> userWayPoints = tripsNavigationManager.getRouteWaypointsForOffer(offer, query);
-		if (userWayPoints.isEmpty()) return false;
+		if (userWayPoints.isEmpty()) return Optional.absent();
 
 		// check passenger max waiting time
-		if (!assertRouteWithinPassengerMaxWaitingTime(offer, query, userWayPoints)) return false;
+		if (!assertRouteWithinPassengerMaxWaitingTime(offer, query, userWayPoints)) return Optional.absent();
 
 		// check if passenger route is within max diversion
 		long distanceToDriverInMeters = userWayPoints.get(userWayPoints.size() - 1).getDistanceToDriverInMeters();
-		if (distanceToDriverInMeters - offer.getDriverRoute().getDistanceInMeters() > offer.getMaxDiversionInMeters()) return false;
+		if (distanceToDriverInMeters - offer.getDriverRoute().getDistanceInMeters() > offer.getMaxDiversionInMeters()) return Optional.absent();
 
-		return true;
+		return Optional.of( new PotentialMatch( offer, query, userWayPoints ));
 	}
 
 

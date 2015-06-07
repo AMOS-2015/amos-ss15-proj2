@@ -35,6 +35,7 @@ import org.croudtrip.api.trips.TripQuery;
 import org.croudtrip.api.trips.TripQueryDescription;
 import org.croudtrip.api.trips.TripQueryResult;
 import org.croudtrip.api.trips.TripReservation;
+import org.croudtrip.api.trips.UserWayPoint;
 import org.croudtrip.db.JoinTripRequestDAO;
 import org.croudtrip.db.RunningTripQueryDAO;
 import org.croudtrip.db.TripOfferDAO;
@@ -134,11 +135,12 @@ public class TripsManager {
             if (!runningQuery.getStatus().equals(RunningTripQueryStatus.RUNNING)) continue;
             if (runningQuery.getQuery().getCreationTimestamp() + runningQuery.getQuery().getMaxWaitingTimeInSeconds() < System.currentTimeMillis() / 1000) continue;
 
+            // check if the newly offered trip matches to a running trip query
             TripQuery query = runningQuery.getQuery();
-            boolean isPotentialMatch = tripsMatcher.isPotentialMatch(offer, query);
+            Optional<TripsMatcher.PotentialMatch> potentialMatch = tripsMatcher.isPotentialMatch(offer, query);
 
             // notify passenger about potential match
-            if (isPotentialMatch) {
+            if (potentialMatch.isPresent()) {
                 logManager.d("Found a potential match: send gcm message to user " + query.getPassenger().getFirstName() + " " + query.getPassenger().getLastName());
                 gcmManager.sendGcmMessageToUser(
                         query.getPassenger(),
@@ -352,7 +354,19 @@ public class TripsManager {
         Optional<TripOffer> offerOptional = tripOfferDAO.findById(tripReservation.getOfferId());
         if (!offerOptional.isPresent()) return Optional.absent();
         TripOffer offer = offerOptional.get();
-        if (!tripsMatcher.isPotentialMatch(offer, tripReservation.getQuery())) return Optional.absent();
+
+        // check if the offer is still a valid match for this request (newly accepted requests may change this)
+        Optional<TripsMatcher.PotentialMatch> potentialMatch = tripsMatcher.isPotentialMatch(offer, tripReservation.getQuery());
+        if (!potentialMatch.isPresent()) return Optional.absent();
+
+        // find estimated arrival time in list
+        long arrivalTimestamp = 0;
+        for( UserWayPoint wp : potentialMatch.get().userWayPoints ){
+            if( wp.getUser().equals(tripReservation.getQuery().getPassenger())) {
+                arrivalTimestamp = wp.getArrivalTimestamp();
+                break;
+            }
+        }
 
         // update join request
         JoinTripRequest joinTripRequest = new JoinTripRequest(
@@ -360,6 +374,7 @@ public class TripsManager {
                 tripReservation.getQuery(),
                 tripReservation.getTotalPriceInCents(),
                 tripReservation.getPricePerKmInCents(),
+                arrivalTimestamp,
                 offer,
                 JoinTripStatus.PASSENGER_ACCEPTED);
 
