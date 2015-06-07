@@ -143,48 +143,34 @@ public class TripsMatcherTest {
 					new UserWayPoint(passenger, null, true, query.getCreationTimestamp() + query.getMaxWaitingTimeInSeconds() + 100, 1),
 					new UserWayPoint(passenger, null, false, 0, 2),
 					new UserWayPoint(driver, null, false, 0, 3));
-
 		}};
 
 		Assert.assertFalse(tripsMatcher.isPotentialMatch(offer, query));
 	}
 
 
-	/*
 	@Test
 	@SuppressWarnings("unchecked")
 	public void testPotentialMatchMaxWaitingTimeJoinRequests() {
 		// tests that max waiting time of already existing join requests is honored
+		final User anotherPassenger = new User.Builder().setId(2).build();
 
-		User anotherPassenger = new User(2, null, null, null, null, null, null, null, null, 0);
-		List<TspSolver.TspWayPoint> newTspWayPoints = new ArrayList<>(wayPoints);
-		newTspWayPoints.add(newTspWayPoints.size() - 1, new TspSolver.TspWayPoint(anotherPassenger, new RouteLocation(0, 0), true));
-		newTspWayPoints.add(newTspWayPoints.size() - 1, new TspSolver.TspWayPoint(anotherPassenger, new RouteLocation(0, 0), false));
-
-		final List<RouteLocation> newRouteWayPoints = new ArrayList<>();
-		for (TspSolver.TspWayPoint tspWayPoint : newTspWayPoints) newRouteWayPoints.add(tspWayPoint.getLocation());
-
-		final TripQuery anotherPassengerQuery = new TripQuery(null, null, null, 12345, anotherPassenger);
-		final JoinTripRequest anotherPassengerJoinRequest = new JoinTripRequest(3, anotherPassengerQuery, 0, 0, offer, null);
-
-		new TspExpectations(newTspWayPoints);
 		new Expectations() {{
-			directionsManager.getDirections(
-					driverRoute.getWayPoints().get(0),
-					driverRoute.getWayPoints().get(1),
-					(List<RouteLocation>) any);
-			result = Lists.newArrayList(new Route.Builder()
-					.wayPoints(newRouteWayPoints)
-					.legDurationInSeconds(Lists.newArrayList(query.getMaxWaitingTimeInSeconds(), 1l, anotherPassengerQuery.getMaxWaitingTimeInSeconds(), 1l, 1l))
-					.build());
-
 			joinTripRequestDAO.findByOfferId(offer.getId());
-			result = Lists.newArrayList(anotherPassengerJoinRequest);
+			result = Lists.newArrayList(new JoinTripRequest.Builder().setOffer(offer).setQuery(query).build());
+
+			tripsNavigationManager.getRouteWaypointsForOffer(offer, query);
+			result = Lists.newArrayList(
+					new UserWayPoint(driver, null, true, 0, 0),
+					new UserWayPoint(passenger, null, true, 0, 0),
+					new UserWayPoint(passenger, null, false, 0, 0),
+					new UserWayPoint(anotherPassenger, null, true, query.getCreationTimestamp() + query.getMaxWaitingTimeInSeconds() + 100, 0),
+					new UserWayPoint(anotherPassenger, null, false, 0, 0),
+					new UserWayPoint(driver, null, false, 0, 3));
 		}};
 
 		Assert.assertFalse(tripsMatcher.isPotentialMatch(offer, query));
 	}
-	*/
 
 
 	@Test
