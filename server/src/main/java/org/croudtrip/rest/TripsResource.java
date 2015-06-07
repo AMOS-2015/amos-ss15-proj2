@@ -19,6 +19,7 @@ import com.google.common.base.Optional;
 import org.croudtrip.account.VehicleManager;
 import org.croudtrip.api.account.User;
 import org.croudtrip.api.account.Vehicle;
+import org.croudtrip.api.directions.Route;
 import org.croudtrip.api.trips.JoinTripRequest;
 import org.croudtrip.api.trips.JoinTripRequestUpdate;
 import org.croudtrip.api.trips.JoinTripRequestUpdateType;
@@ -34,6 +35,7 @@ import org.croudtrip.api.trips.TripReservation;
 import org.croudtrip.directions.RouteNotFoundException;
 import org.croudtrip.logs.LogManager;
 import org.croudtrip.trips.TripsManager;
+import org.croudtrip.trips.TripsNavigationManager;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -72,12 +74,14 @@ public class TripsResource {
             PATH_RESERVATIONS = "/reservations";
 
     private final TripsManager tripsManager;
+    private final TripsNavigationManager tripsNavigationManager;
     private final VehicleManager vehicleManager;
     private final LogManager logManager;
 
     @Inject
-    TripsResource(TripsManager tripsManager, VehicleManager vehicleManager, LogManager logManager) {
+    TripsResource(TripsManager tripsManager, TripsNavigationManager tripsNavigationManager, VehicleManager vehicleManager, LogManager logManager) {
         this.tripsManager = tripsManager;
+        this.tripsNavigationManager = tripsNavigationManager;
         this.vehicleManager = vehicleManager;
         this.logManager = logManager;
     }
@@ -109,6 +113,17 @@ public class TripsResource {
     @UnitOfWork
     public TripOffer getOffer(@PathParam("offerId") long offerId) {
         return assertIsValidOfferId(offerId);
+    }
+
+    /**
+     * Get the complete route for an offer
+     */
+    @GET
+    @Path(PATH_OFFERS + "/{offerId}/route")
+    @UnitOfWork
+    public Route getRouteForOffer(@PathParam("offerId") long offerId) throws RouteNotFoundException {
+        TripOffer offer = assertIsValidOfferId( offerId );
+        return tripsNavigationManager.getRouteForOffer( offer );
     }
 
 

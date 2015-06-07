@@ -84,7 +84,7 @@ public class TripsNavigationManagerTest extends TestCase {
 			result = routesList;
 		}};
 
-		List<UserWayPoint> userWayPoints = tripsNavigationManager.getRouteForOffer(offer);
+		List<UserWayPoint> userWayPoints = tripsNavigationManager.getRouteWaypointsForOffer(offer);
 
 		Assert.assertEquals(4, userWayPoints.size());
 		Assert.assertEquals(driver, userWayPoints.get(0).getUser());
