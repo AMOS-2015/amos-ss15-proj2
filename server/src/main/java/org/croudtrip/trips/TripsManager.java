@@ -93,6 +93,7 @@ public class TripsManager {
         this.tripsMatcher = tripsMatcher;
         this.tripsUtils = tripsUtils;
         this.logManager = logManager;
+
     }
 
     /**
@@ -482,7 +483,11 @@ public class TripsManager {
         if(passengerAccepted) gcmManager.sendAcceptPassengerMsg(joinRequest);
         else gcmManager.sendDeclinePassengerMsg(joinRequest);
 
-        // TODO: Send all the passengers an arrival time update
+        // TODO: Check if other pending join requests are still valid
+
+        // Send all the passengers an arrival time update
+        tripsUtils.updateArrivalTimesForOffer( offer );
+
 
         return joinTripRequestDAO.findById(joinRequest.getId()).get();
     }
@@ -509,7 +514,7 @@ public class TripsManager {
         JoinTripRequest updatedRequest = new JoinTripRequest(joinRequest, JoinTripStatus.PASSENGER_AT_DESTINATION);
         joinTripRequestDAO.update(updatedRequest);
 
-        // TODO: Send GCM to the driver to notify him that the passenger left the car
+        // Send GCM to the driver to notify him that the passenger left the car
         gcmManager.sendPassengerExitCarMsg( joinRequest );
 
         return updatedRequest;
@@ -527,6 +532,8 @@ public class TripsManager {
         gcmManager.sendPassengerCancelledTripMsg(joinRequest);
 
         // TODO: Update all the passengers arrival time
+        tripsUtils.updateArrivalTimesForOffer( joinRequest.getOffer() );
+
 
         return joinRequest;
     }

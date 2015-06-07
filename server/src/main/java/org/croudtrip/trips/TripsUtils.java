@@ -3,7 +3,9 @@ package org.croudtrip.trips;
 import org.croudtrip.api.trips.JoinTripRequest;
 import org.croudtrip.api.trips.JoinTripStatus;
 import org.croudtrip.api.trips.TripOffer;
+import org.croudtrip.api.trips.UserWayPoint;
 import org.croudtrip.db.JoinTripRequestDAO;
+import org.croudtrip.gcm.GcmManager;
 
 import java.util.List;
 
@@ -15,10 +17,16 @@ import javax.inject.Inject;
 public class TripsUtils {
 
 	private final JoinTripRequestDAO joinTripRequestDAO;
+    private final TripsNavigationManager tripsNavigationManager;
+    private final GcmManager gcmManager;
 
 	@Inject
-	TripsUtils(JoinTripRequestDAO joinTripRequestDAO) {
+	TripsUtils(JoinTripRequestDAO joinTripRequestDAO,
+               TripsNavigationManager tripsNavigationManager,
+               GcmManager gcmManager) {
 		this.joinTripRequestDAO = joinTripRequestDAO;
+        this.tripsNavigationManager = tripsNavigationManager;
+        this.gcmManager = gcmManager;
 	}
 
 
@@ -44,5 +52,37 @@ public class TripsUtils {
 	}
 
 
+    public void updateArrivalTimesForOffer(TripOffer offer) {
+        List<UserWayPoint> userWayPoints = tripsNavigationManager.getRouteWaypointsForOffer(offer);
+        List<JoinTripRequest> joinRequests = joinTripRequestDAO.findByOfferId( offer.getId() );
 
+        for( JoinTripRequest request : joinRequests ) {
+            // only DRIVER_ACCEPTED requests matter, otherwise they are not active anymore or will be
+            // DRIVER_ACCEPTED in future and therefore updated later
+            if( !request.getStatus().equals( JoinTripStatus.DRIVER_ACCEPTED ) )
+                continue;
+
+            // find estimated arrival time in list
+            long arrivalTimestamp = 0;
+            for( UserWayPoint wp : userWayPoints ){
+                if( wp.getUser().equals(request.getQuery().getPassenger())) {
+                    arrivalTimestamp = wp.getArrivalTimestamp();
+                    break;
+                }
+            }
+
+            request = new JoinTripRequest(
+                    request.getId(),
+                    request.getQuery(),
+                    request.getTotalPriceInCents(),
+                    request.getPricePerKmInCents(),
+                    arrivalTimestamp,
+                    request.getOffer(),
+                    request.getStatus()
+            );
+            joinTripRequestDAO.update( request );
+
+            gcmManager.sendArrivalTimeUpdate( request );
+        }
+    }
 }
