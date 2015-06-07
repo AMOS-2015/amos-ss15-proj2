@@ -116,15 +116,12 @@ public class MyTripDriverFragment extends SubscriptionFragment {
 
     private Button finishButton;
 
-    // Detect if a passenger cancels his trip or has reached his destaintion
+    // Detect if a passenger cancels his trip or has reached his destination
     private BroadcastReceiver passengersChangeReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (offerID != -1) {
-                loadPassengers();
-            } else {
-                Toast.makeText(getActivity(), getString(R.string.load_passengers_failed), Toast.LENGTH_LONG).show();
-            }
+            // Load the whole offer incl. passengers etc. again
+            loadOffer();
         }
     };
 
@@ -205,7 +202,7 @@ public class MyTripDriverFragment extends SubscriptionFragment {
         // Remove the header from the layout. Otherwise it exists twice
         ((ViewManager) view).removeView(header);
 
-        // Get notified if a passenger cancels his trip or has rechaed his destination
+        // Get notified if a passenger cancels his trip or has reached his destination
         IntentFilter filter = new IntentFilter();
         filter.addAction(Constants.EVENT_PASSENGER_CANCELLED_TRIP);
         filter.addAction(Constants.EVENT_PASSENGER_REACHED_DESTINATION);
@@ -279,7 +276,7 @@ public class MyTripDriverFragment extends SubscriptionFragment {
     /**
      * Downloads the current offer and processes its information with the {@link LoadOfferSubscriber}
      */
-    private void loadOffer() {
+    private synchronized void loadOffer() {
 
         subscriptions.add(tripsResource.getOffers(true)
                 .compose(new DefaultTransformer<List<TripOffer>>())
@@ -319,7 +316,7 @@ public class MyTripDriverFragment extends SubscriptionFragment {
         // Change "My Trip" (driver) to "Offer Trip" in navigation drawer
         MaterialNavigationDrawer drawer = ((MaterialNavigationDrawer) getActivity());
 
-        // find "last" "My Trip", so we don't accidently rename the join-trip-my trip
+        // Find "last" "My Trip", so we don't accidentally rename the join-trip-my trip
         List<MaterialSection> sections = drawer.getSectionList();
         MaterialSection section = null;
         for (MaterialSection s : sections) {
