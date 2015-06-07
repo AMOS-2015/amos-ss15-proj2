@@ -171,6 +171,7 @@
     <string name="my_trip_driver_my_earnings">%1$s.%2$s €</string>
     <string name="offer_trip_failed">Offering your trip failed. Please try again.</string>
     <string name="load_trip_failed">Loading your trip failed. Please try again.</string>
+    <string name="load_route_failed">Loading your route failed. Please try again.</string>
     <string name="load_passengers_failed">Loading your passengers failed. Please try again.</string>
 
 </resources>

@@ -46,7 +46,6 @@ import org.croudtrip.Constants;
 import org.croudtrip.R;
 import org.croudtrip.api.DirectionsResource;
 import org.croudtrip.api.TripsResource;
-import org.croudtrip.api.directions.DirectionsRequest;
 import org.croudtrip.api.directions.Route;
 import org.croudtrip.api.directions.RouteLocation;
 import org.croudtrip.api.trips.JoinTripRequest;
@@ -60,7 +59,6 @@ import org.croudtrip.location.LocationUpdater;
 import org.croudtrip.trip.MyTripDriverPassengersAdapter;
 import org.croudtrip.utils.DefaultTransformer;
 
-import java.util.LinkedList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -93,7 +91,6 @@ public class MyTripDriverFragment extends SubscriptionFragment {
     public static final String ACTION_LOAD = "ACTION_LOAD";
     public static final String ACTION_CREATE = "ACTION_CREATE";
 
-    private SupportMapFragment mapFragment;
     private GoogleMap googleMap;
 
     private long offerID = -1;
@@ -126,7 +123,7 @@ public class MyTripDriverFragment extends SubscriptionFragment {
             if (offerID != -1) {
                 loadPassengers();
             } else {
-                Toast.makeText(getActivity(), getString(R.string.load_passengers_failed), Toast.LENGTH_LONG);
+                Toast.makeText(getActivity(), getString(R.string.load_passengers_failed), Toast.LENGTH_LONG).show();
             }
         }
     };
@@ -144,8 +141,7 @@ public class MyTripDriverFragment extends SubscriptionFragment {
 
         setHasOptionsMenu(true);
 
-        View view = inflater.inflate(R.layout.fragment_my_trip_driver, container, false);
-        return view;
+        return inflater.inflate(R.layout.fragment_my_trip_driver, container, false);
     }
 
     @Override
@@ -164,7 +160,8 @@ public class MyTripDriverFragment extends SubscriptionFragment {
         setupFinishButton(header);
 
         // Get the route to display it on the map
-        mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.f_my_trip_driver_map);
+        SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager()
+                .findFragmentById(R.id.f_my_trip_driver_map);
 
         // TODO: Make it asynchronously
         googleMap = mapFragment.getMap();
@@ -179,7 +176,7 @@ public class MyTripDriverFragment extends SubscriptionFragment {
             createOffer(bundle);
         } else {
             Timber.d("Load Offer");
-            loadOffer(bundle);
+            loadOffer();
         }
 
         transparentImageView.setOnTouchListener(new View.OnTouchListener() {
@@ -216,15 +213,8 @@ public class MyTripDriverFragment extends SubscriptionFragment {
     }
 
 
-    private void loadPassengers() {
-        subscriptions.add(tripsResource.getJoinRequests(false)
-                        .compose(new DefaultTransformer<List<JoinTripRequest>>())
-                        .subscribe(new ImportantPassengersSubscriber())
-        );
-    }
-
     private void setupCancelButton(View header) {
-        ((Button) (header.findViewById(R.id.btn_my_trip_driver_cancel_trip)))
+        (header.findViewById(R.id.btn_my_trip_driver_cancel_trip))
                 .setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -286,107 +276,36 @@ public class MyTripDriverFragment extends SubscriptionFragment {
     }
 
 
-    private void loadOffer(Bundle arguments) {
-
-        final RouteLocation[] driverWp = new RouteLocation[2];
+    /**
+     * Downloads the current offer and processes its information with the {@link LoadOfferSubscriber}
+     */
+    private void loadOffer() {
 
         subscriptions.add(tripsResource.getOffers(true)
-                        .compose(new DefaultTransformer<List<TripOffer>>())
-                        .flatMap(new Func1<List<TripOffer>, Observable<TripOffer>>() {
-                            @Override
-                            public Observable<TripOffer> call(List<TripOffer> tripOffers) {
-                                if (tripOffers.isEmpty())
-                                    throw new NoSuchElementException("There's currently no offer of you");
+                .compose(new DefaultTransformer<List<TripOffer>>())
+                .flatMap(new Func1<List<TripOffer>, Observable<TripOffer>>() {
 
-                                return Observable.just(tripOffers.get(0));
-                            }
-                        })
-                        .subscribe(new Action1<TripOffer>() {
-                            @Override
-                            public void call(TripOffer offer) {
-                                if (offer == null)
-                                    throw new NoSuchElementException("There's currently no offer of you");
+                    @Override
+                    public Observable<TripOffer> call(List<TripOffer> tripOffers) {
 
-                                MyTripDriverFragment.this.offerID = offer.getId();
-                                loadPassengers();
+                        if (tripOffers.isEmpty()) {
+                            // Inform user
+                            String errorMsg = getString(R.string.navigation_error_no_offer);
+                            Toast.makeText(getActivity(), errorMsg, Toast.LENGTH_LONG).show();
+                            removeRunningTripOfferState();
+                            throw new NoSuchElementException(errorMsg);
+                        }
 
-                                Timber.d("Got Offer: " + offer.getDriver().getFirstName() + " " + offer.getDriver().getLastName());
-                                driverWp[0] = offer.getDriverRoute().getWayPoints().get(0);
-                                driverWp[1] = offer.getDriverRoute().getWayPoints().get(1);
+                        return Observable.just(tripOffers.get(0));
+                    }
+                }).subscribe(new LoadOfferSubscriber()));
+    }
 
-                                tripsResource.getDriverAcceptedJoinRequests()
-                                        .compose(new DefaultTransformer<List<JoinTripRequest>>())
-                                        .flatMap(new Func1<List<JoinTripRequest>, Observable<List<RouteLocation>>>() {
-                                            @Override
-                                            public Observable<List<RouteLocation>> call(List<JoinTripRequest> joinTripRequests) {
-                                                // TODO: Handle multiple join trip request, but we will stick to one for now
-                                                List<RouteLocation> waypoints = new LinkedList<RouteLocation>();
-                                                if (joinTripRequests == null || joinTripRequests.isEmpty()) {
-                                                    return Observable.just(waypoints);
-                                                }
 
-                                                JoinTripRequest firstRequest = joinTripRequests.get(0);
-                                                List<RouteLocation> reqWaypoints = firstRequest.getQuery().getPassengerRoute().getWayPoints();
-
-                                                waypoints.addAll(reqWaypoints);
-
-                                                return Observable.just(waypoints);
-                                            }
-                                        })
-                                        .flatMap(new Func1<List<RouteLocation>, Observable<List<Route>>>() {
-                                            @Override
-                                            public Observable<List<Route>> call(List<RouteLocation> routeLocations) {
-                                                routeLocations.add(0, driverWp[0]);
-                                                routeLocations.add(driverWp[1]);
-                                                Timber.d("Sending directions request with " + routeLocations.size() + " waypoints");
-                                                DirectionsRequest directionsRequest = new DirectionsRequest(routeLocations);
-                                                return directionsResource.getDirections(directionsRequest);
-                                            }
-                                        })
-                                        .flatMap(new Func1<List<Route>, Observable<Route>>() {
-                                            @Override
-                                            public Observable<Route> call(List<Route> routes) {
-                                                if (routes == null || routes.isEmpty())
-                                                    return Observable.empty();
-
-                                                return Observable.just(routes.get(0));
-                                            }
-                                        })
-                                        .compose(new DefaultTransformer<Route>())
-                                        .subscribe(new Action1<Route>() {
-                                            @Override
-                                            public void call(Route route) {
-                                                Timber.d("Your offer was successfully loaded from the server");
-                                                progressBar.setVisibility(View.GONE);
-                                                generateRouteOnMap(route);
-                                            }
-                                        }, new Action1<Throwable>() {
-                                            @Override
-                                            public void call(Throwable throwable) {
-                                                // on main thread; something went wrong
-                                                progressBar.setVisibility(View.GONE);
-                                                Timber.e(throwable.getMessage());
-                                            }
-                                        });
-
-                            }
-                        }, new Action1<Throwable>() {
-                            @Override
-                            public void call(Throwable throwable) {
-                                Timber.e(throwable.getMessage());
-
-                                if (throwable instanceof NoSuchElementException) {
-                                    // Inform user
-                                    Toast.makeText(getActivity(), getString(R.string.navigation_error_no_offer),
-                                            Toast.LENGTH_LONG).show();
-                                    removeRunningTripOfferState();
-
-                                } else {
-                                    Toast.makeText(getActivity(), getString(R.string.load_trip_failed),
-                                            Toast.LENGTH_LONG).show();
-                                }
-                            }
-                        })
+    private void loadPassengers() {
+        subscriptions.add(tripsResource.getJoinRequests(false)
+                        .compose(new DefaultTransformer<List<JoinTripRequest>>())
+                        .subscribe(new ImportantPassengersSubscriber())
         );
     }
 
@@ -413,6 +332,7 @@ public class MyTripDriverFragment extends SubscriptionFragment {
         // The next fragment shows the "Offer trip" screen
         drawer.setFragment(new OfferTripFragment(), getString(R.string.menu_offer_trip));
     }
+
 
     private void generateRouteOnMap(Route route) {
 
@@ -553,7 +473,67 @@ public class MyTripDriverFragment extends SubscriptionFragment {
         }
 
         @Override
+        public void onCompleted() {}
+    }
+
+
+    /**
+     * This Subscriber loads the current route on the map and load the passengers with the help of
+     * {@link ImportantPassengersSubscriber}
+     */
+    private class LoadOfferSubscriber extends Subscriber<TripOffer> {
+
+        @Override
+        public void onNext(TripOffer offer) {
+
+            if (offer == null) {
+                throw new NoSuchElementException(getString(R.string.navigation_error_no_offer));
+            }
+
+            Timber.d("Received Offer with ID " + offer.getId());
+
+            // Remember the offerID for later and load the passengers for this offer
+            offerID = offer.getId();
+            loadPassengers();
+
+            // Load the Route
+            tripsResource.getRouteForOffer(offerID)
+                    .compose(new DefaultTransformer<Route>())
+                    .subscribe(new Action1<Route>() {
+
+                                   @Override
+                                   public void call(Route route) {
+
+                                       if (route == null) {
+                                           throw new NoSuchElementException("No route available");
+                                       }
+
+                                       Timber.d("Received Route with length (m): " + route.getDistanceInMeters());
+                                       generateRouteOnMap(route);
+                                   }
+
+                               }, new Action1<Throwable>() {
+                                   @Override
+                                   public void call(Throwable throwable) {
+                                       onError(throwable);
+                                   }
+                               }
+                    );
+
+        }
+
+
+        @Override
         public void onCompleted() {
+            progressBar.setVisibility(View.GONE);
+        }
+
+        @Override
+        public void onError(Throwable throwable) {
+
+            progressBar.setVisibility(View.GONE);
+            Timber.e(throwable.getMessage());
+            Toast.makeText(getActivity(), getString(R.string.load_trip_failed), Toast.LENGTH_LONG).show();
         }
     }
 
@@ -608,12 +588,12 @@ public class MyTripDriverFragment extends SubscriptionFragment {
         }
 
         @Override
-        public void onCompleted() {
-        }
+        public void onCompleted() {}
 
         @Override
         public void onError(Throwable e) {
             Timber.e("Receiving Passengers (JoinTripRequest) failed:\n" + e.getMessage());
+            Toast.makeText(getActivity(), getString(R.string.load_passengers_failed), Toast.LENGTH_LONG).show();
         }
     }
 }
