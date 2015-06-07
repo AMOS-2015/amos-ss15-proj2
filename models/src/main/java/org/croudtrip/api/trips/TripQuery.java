@@ -120,4 +120,49 @@ public class TripQuery {
 		return Objects.hashCode(passengerRoute, maxWaitingTimeInSeconds, creationTimestamp, passenger, startLocation, destinationLocation);
 	}
 
+
+	public static class Builder {
+
+		private Route passengerRoute;
+		private RouteLocation startLocation;
+		private RouteLocation destinationLocation;
+		private long maxWaitingTimeInSeconds;
+		private long creationTimestamp; // unix timestamp in seconds
+		private User passenger;
+
+		public Builder setPassengerRoute(Route passengerRoute) {
+			this.passengerRoute = passengerRoute;
+			return this;
+		}
+
+		public Builder setStartLocation(RouteLocation startLocation) {
+			this.startLocation = startLocation;
+			return this;
+		}
+
+		public Builder setDestinationLocation(RouteLocation destinationLocation) {
+			this.destinationLocation = destinationLocation;
+			return this;
+		}
+
+		public Builder setMaxWaitingTimeInSeconds(long maxWaitingTimeInSeconds) {
+			this.maxWaitingTimeInSeconds = maxWaitingTimeInSeconds;
+			return this;
+		}
+
+		public Builder setCreationTimestamp(long creationTimestamp) {
+			this.creationTimestamp = creationTimestamp;
+			return this;
+		}
+
+		public Builder setPassenger(User passenger) {
+			this.passenger = passenger;
+			return this;
+		}
+
+		public  TripQuery build() {
+			return new TripQuery(passengerRoute, startLocation, destinationLocation, maxWaitingTimeInSeconds, creationTimestamp, passenger);
+		}
+	}
+
 }
