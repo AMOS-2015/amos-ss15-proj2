@@ -156,6 +156,31 @@ public class TripsResource {
                 iterator.remove();
             }
         }
+
+        return offers;
+    }
+
+    /**
+     * Find all active offers that belong to a particular driver.
+     * Even offers with a full car will be shown. Call this method if you want to get active running
+     * offers of a driver.
+     */
+    @GET
+    @Path(PATH_OFFERS)
+    @UnitOfWork
+    public List<TripOffer> getActiveOffers(@Auth User driver ) {
+        List<TripOffer> offers = new ArrayList<>(tripsManager.findOffersByDriver(driver));
+
+        // filter by active status
+        Iterator<TripOffer> iterator = offers.iterator();
+        while (iterator.hasNext()) {
+            TripOffer offer = iterator.next();
+            if (!offer.getStatus().equals(TripOfferStatus.ACTIVE_NOT_FULL) ||
+                !offer.getStatus().equals(TripOfferStatus.ACTIVE_FULL)) {
+                iterator.remove();
+            }
+        }
+
         return offers;
     }
 
