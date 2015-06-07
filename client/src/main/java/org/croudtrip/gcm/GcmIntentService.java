@@ -98,11 +98,22 @@ public class GcmIntentService extends RoboIntentService {
             case GcmConstants.GCM_MESSAGE_TRIP_CANCELLED_BY_PASSENGER:
                 handleTripCanceledByPassenger();
                 break;
+            case GcmConstants.GCM_MSG_PASSENGER_AT_DESTINATION:
+                handlePassengerAtDestination();
+                break;
             default:
                 break;
         }
 
         GcmBroadcastReceiver.completeWakefulIntent(intent);
+    }
+
+    private void handlePassengerAtDestination() {
+        if( LifecycleHandler.isApplicationInForeground() ) {
+            // send broadcast while the app is running to reload the application
+            Intent startingIntent = new Intent(Constants.EVENT_PASSENGER_REACHED_DESTINATION);
+            LocalBroadcastManager.getInstance(this).sendBroadcast(startingIntent);
+        }
     }
 
     private void handleFoundMatches( Intent intent ) {
