@@ -58,6 +58,9 @@ public class Route {
     @Column(name="leg_durations")
     private List<Long> legDurationsInSeconds;
 
+    @ElementCollection
+    @Column(name="leg_distances")
+    private List<Long> legDistancesInMeters;
 
     public Route() { }
 
@@ -68,6 +71,7 @@ public class Route {
             @JsonProperty("distanceInMeters") long distanceInMeters,
             @JsonProperty("durationInSeconds") long durationInSeconds,
             @JsonProperty("legDurationsInSeconds") List<Long> legDurationsInSeconds,
+            @JsonProperty("legDistancesInMeters") List<Long> legDistancesInMeters,
             @JsonProperty("copyrights") String googleCopyrights,
             @JsonProperty("warnings") String googleWarnings,
             @JsonProperty("lastUpdateTime") long lastUpdateTimeInSeconds) {
@@ -89,6 +93,7 @@ public class Route {
         this.googleWarnings = googleWarnings;
         this.lastUpdateTimeInSeconds = lastUpdateTimeInSeconds;
         this.legDurationsInSeconds = legDurationsInSeconds;
+        this.legDistancesInMeters= legDistancesInMeters;
     }
 
     @JsonProperty("wayPoints")
@@ -123,6 +128,10 @@ public class Route {
 
     public List<Long> getLegDurationsInSeconds() { return legDurationsInSeconds; }
 
+    public List<Long> getLegDistancesInMeters() {
+        return legDistancesInMeters;
+    }
+
     @Override
     public boolean equals(Object other) {
         if (other == null || !(other instanceof Route)) return false;
@@ -132,12 +141,15 @@ public class Route {
                 && Objects.equal(durationInSeconds, route.durationInSeconds)
                 && Objects.equal(distanceInMeters, route.distanceInMeters)
                 && Objects.equal(googleWarnings, route.googleWarnings)
-                && Objects.equal(wayPointsString, route.wayPointsString);
+                && Objects.equal(wayPointsString, route.wayPointsString)
+                && Objects.equal(legDurationsInSeconds, route.legDurationsInSeconds)
+                && Objects.equal(legDistancesInMeters, route.legDistancesInMeters);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(polyline, googleCopyrights, durationInSeconds, distanceInMeters, googleWarnings, wayPointsString);
+        return Objects.hashCode(polyline, googleCopyrights, durationInSeconds, distanceInMeters,
+                googleWarnings, wayPointsString, legDistancesInMeters, legDurationsInSeconds);
     }
 
 
@@ -148,6 +160,7 @@ public class Route {
         private long distanceInMeters;
         private long durationInSeconds;
         private List<Long> legDurationsInSeconds;
+        private List<Long> legDistancesInMeters;
         private String googleCopyrights;
         private String googleWarnings;
         private long lastUpdateTimeInSeconds;
@@ -177,6 +190,11 @@ public class Route {
             return this;
         }
 
+        public Builder legDistancesInMeters(List<Long> legDistancesInMeters) {
+            this.legDistancesInMeters = legDistancesInMeters;
+            return this;
+        }
+
         public Builder googleCopyrights(String googleCopyrights) {
             this.googleCopyrights = googleCopyrights;
             return this;
@@ -199,6 +217,7 @@ public class Route {
                     distanceInMeters,
                     durationInSeconds,
                     legDurationsInSeconds,
+                    legDistancesInMeters,
                     googleCopyrights,
                     googleWarnings,
                     lastUpdateTimeInSeconds);

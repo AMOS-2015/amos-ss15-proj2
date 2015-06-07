@@ -16,12 +16,10 @@ package org.croudtrip.directions;
 
 import com.google.maps.DirectionsApi;
 import com.google.maps.GeoApiContext;
-import com.google.maps.GeocodingApi;
 import com.google.maps.model.DirectionsLeg;
 import com.google.maps.model.DirectionsRoute;
 import com.google.maps.model.DirectionsStep;
 import com.google.maps.model.EncodedPolyline;
-import com.google.maps.model.GeocodingResult;
 import com.google.maps.model.LatLng;
 
 import org.croudtrip.api.directions.Route;
@@ -102,6 +100,7 @@ public class DirectionsManager {
 		long durationInSeconds = 0;
 
         List<Long> legDurationsInSeconds = new ArrayList<>();
+		List<Long> legDistancesInMeters = new ArrayList<>();
 
 		List<LatLng> points = new ArrayList<>();
 		for (DirectionsLeg leg : googleRoute.legs) {
@@ -109,6 +108,7 @@ public class DirectionsManager {
 			distanceInMeters += leg.distance.inMeters;
 			durationInSeconds += leg.duration.inSeconds;
             legDurationsInSeconds.add( leg.duration.inSeconds );
+			legDistancesInMeters.add(leg.distance.inMeters);
 			for (DirectionsStep step : leg.steps) {
 				points.addAll(step.polyline.decodePath());
 			}
@@ -135,7 +135,16 @@ public class DirectionsManager {
 		List<RouteLocation> wayPoints = new ArrayList<>();
 		wayPoints.add(startLocation);
 		wayPoints.add(endLocation);
-		return new Route(wayPoints, polyline.getEncodedPath(), distanceInMeters, durationInSeconds, legDurationsInSeconds, googleRoute.copyrights, warnings, System.currentTimeMillis()/1000);
+		return new Route(
+				wayPoints,
+				polyline.getEncodedPath(),
+				distanceInMeters,
+				durationInSeconds,
+				legDurationsInSeconds,
+				legDistancesInMeters,
+				googleRoute.copyrights,
+				warnings,
+				System.currentTimeMillis()/1000);
 	}
 
 }
