@@ -275,7 +275,7 @@ public class JoinDrivingFragment extends SubscriptionFragment implements GoogleA
             String dateAsString = "";
             Calendar calendar = Calendar.getInstance();
             calendar.setTimeZone(TimeZone.getDefault());
-            calendar.setTimeInMillis(1000*request.getOffer().getEstimatedArrivalTimeInSeconds());
+            calendar.setTimeInMillis(1000*request.getEstimatedArrivalTimestamp());
             dateAsString = calendar.get(Calendar.HOUR_OF_DAY) + ":" + calendar.get(Calendar.MINUTE);
 
 
