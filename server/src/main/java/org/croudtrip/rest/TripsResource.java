@@ -175,7 +175,7 @@ public class TripsResource {
         Iterator<TripOffer> iterator = offers.iterator();
         while (iterator.hasNext()) {
             TripOffer offer = iterator.next();
-            if (!offer.getStatus().equals(TripOfferStatus.ACTIVE_NOT_FULL) ||
+            if (!offer.getStatus().equals(TripOfferStatus.ACTIVE_NOT_FULL) &&
                 !offer.getStatus().equals(TripOfferStatus.ACTIVE_FULL)) {
                 iterator.remove();
             }
