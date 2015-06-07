@@ -123,9 +123,9 @@ public class MyTripDriverFragment extends SubscriptionFragment {
     private BroadcastReceiver passengersChangeReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if(offerID != -1) {
+            if (offerID != -1) {
                 loadPassengers();
-            }else{
+            } else {
                 Toast.makeText(getActivity(), getString(R.string.load_passengers_failed), Toast.LENGTH_LONG);
             }
         }
@@ -216,7 +216,7 @@ public class MyTripDriverFragment extends SubscriptionFragment {
     }
 
 
-    private void loadPassengers(){
+    private void loadPassengers() {
         subscriptions.add(tripsResource.getJoinRequests(false)
                         .compose(new DefaultTransformer<List<JoinTripRequest>>())
                         .subscribe(new ImportantPassengersSubscriber())
@@ -381,7 +381,7 @@ public class MyTripDriverFragment extends SubscriptionFragment {
                                             Toast.LENGTH_LONG).show();
                                     removeRunningTripOfferState();
 
-                                }else{
+                                } else {
                                     Toast.makeText(getActivity(), getString(R.string.load_trip_failed),
                                             Toast.LENGTH_LONG).show();
                                 }
@@ -517,7 +517,6 @@ public class MyTripDriverFragment extends SubscriptionFragment {
     }
 
 
-
     //*************************** Inner classes ********************************//
 
 
@@ -576,18 +575,26 @@ public class MyTripDriverFragment extends SubscriptionFragment {
             for (JoinTripRequest joinTripRequest : joinTripRequests) {
 
                 // TODO: Filter already on server
-                if(joinTripRequest.getOffer().getId() != offerID){
+                if (joinTripRequest.getOffer().getId() != offerID) {
                     continue;
                 }
 
                 JoinTripStatus status = joinTripRequest.getStatus();
 
-                if (status != JoinTripStatus.DRIVER_DECLINED && status != JoinTripStatus.PASSENGER_CANCELLED) {
-                    adapter.updateRequest(joinTripRequest);
+                if (status != JoinTripStatus.DRIVER_DECLINED) {
 
-                    if (status == JoinTripStatus.DRIVER_ACCEPTED || status == JoinTripStatus.PASSENGER_IN_CAR) {
-                        Timber.d("There is still an important passenger: " + status);
-                        allowFinish = false;
+                    if (status == JoinTripStatus.PASSENGER_CANCELLED) {
+                        // Remove any cancelled passengers from the adapter
+                        adapter.removeRequest(joinTripRequest.getId());
+
+                    } else {
+                        // Simply update (or implicitly add) this passenger request
+                        adapter.updateRequest(joinTripRequest);
+
+                        if (status == JoinTripStatus.DRIVER_ACCEPTED || status == JoinTripStatus.PASSENGER_IN_CAR) {
+                            Timber.d("There is still an important passenger: " + status);
+                            allowFinish = false;
+                        }
                     }
                 }
             }

@@ -117,10 +117,10 @@ public class MyTripDriverPassengersAdapter extends RecyclerView.Adapter<Recycler
 
             // Change background color and show green check mark if destination reached
             int color = 0;
-            if(joinRequest.getStatus() == JoinTripStatus.PASSENGER_AT_DESTINATION){
+            if (joinRequest.getStatus() == JoinTripStatus.PASSENGER_AT_DESTINATION) {
                 color = R.color.my_trip_driver_passenger_destination_reached;
                 holder.checkmark.setVisibility(View.VISIBLE);
-            }else{
+            } else {
                 color = R.color.my_trip_driver_passenger;
                 holder.checkmark.setVisibility(View.GONE);
             }
@@ -249,17 +249,27 @@ public class MyTripDriverPassengersAdapter extends RecyclerView.Adapter<Recycler
 
 
     /**
-     * Removes the given JoinTripRequest from the adapter.
+     * Removes the given JoinTripRequest with the same ID from the adapter.
      *
-     * @param request the JoinTripRequest to remove
+     * @param requestID the ID of the JoinTripRequest to remove
      */
-    public void removeRequest(JoinTripRequest request) {
-        if (request == null) {
-            return;
+    public void removeRequest(long requestID) {
+
+        boolean foundRequest = false;
+        int index = 0;
+
+        for (JoinTripRequest request : passengers) {
+            if (request.getId() == requestID) {
+                foundRequest = true;
+                break;
+            }
+            index++;
         }
 
-        passengers.remove(request);
-        this.notifyDataSetChanged();
+        if (foundRequest) {
+            passengers.remove(index);
+            this.notifyDataSetChanged();
+        }
     }
 
 
@@ -278,31 +288,32 @@ public class MyTripDriverPassengersAdapter extends RecyclerView.Adapter<Recycler
      * Searches for a JoinTripRequest with the same ID as the given request
      * and replaces the request with the given one. If the request isn't in the list yet, it is
      * simply added.
+     *
      * @param request the request to update
      */
-    public void updateRequest(JoinTripRequest request){
+    public void updateRequest(JoinTripRequest request) {
 
-        if(request == null){
+        if (request == null) {
             return;
         }
 
         boolean requestFound = false;
-        for(int i = 0; i < passengers.size(); i++){
+        for (int i = 0; i < passengers.size(); i++) {
             JoinTripRequest r = passengers.get(i);
 
-            if(r.getId() == request.getId()){
+            if (r.getId() == request.getId()) {
                 passengers.set(i, request);
                 requestFound = true;
                 break;
             }
         }
 
-        if(!requestFound){
+        if (!requestFound) {
             passengers.add(request);
             requestFound = true;
         }
 
-        if(requestFound) {
+        if (requestFound) {
             this.notifyDataSetChanged();
         }
     }
