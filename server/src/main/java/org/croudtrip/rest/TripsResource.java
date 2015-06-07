@@ -36,6 +36,7 @@ import org.croudtrip.directions.RouteNotFoundException;
 import org.croudtrip.logs.LogManager;
 import org.croudtrip.trips.TripsManager;
 import org.croudtrip.trips.TripsNavigationManager;
+import org.croudtrip.trips.TripsUtils;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -75,13 +76,21 @@ public class TripsResource {
 
     private final TripsManager tripsManager;
     private final TripsNavigationManager tripsNavigationManager;
+    private final TripsUtils tripsUtils;
     private final VehicleManager vehicleManager;
     private final LogManager logManager;
 
     @Inject
-    TripsResource(TripsManager tripsManager, TripsNavigationManager tripsNavigationManager, VehicleManager vehicleManager, LogManager logManager) {
+    TripsResource(
+            TripsManager tripsManager,
+            TripsNavigationManager tripsNavigationManager,
+            TripsUtils tripsUtils,
+            VehicleManager vehicleManager,
+            LogManager logManager) {
+
         this.tripsManager = tripsManager;
         this.tripsNavigationManager = tripsNavigationManager;
+        this.tripsUtils = tripsUtils;
         this.vehicleManager = vehicleManager;
         this.logManager = logManager;
     }
@@ -165,12 +174,8 @@ public class TripsResource {
 
         // check passenger status
         if (offerUpdate.getFinishOffer()) {
-            for (JoinTripRequest request : tripsManager.findAllJoinRequests(offerId)) {
-                JoinTripStatus status = request.getStatus();
-                if (!status.equals(JoinTripStatus.PASSENGER_ACCEPTED)
-                    && !status.equals(JoinTripStatus.DRIVER_DECLINED)
-                    && !status.equals(JoinTripStatus.PASSENGER_AT_DESTINATION))
-                    throw RestUtils.createJsonFormattedException("there are still passengers that need to be taken care of first!", 400);
+            if (tripsUtils.getActivePassengerCountForOffer(offer) > 0) {
+                throw RestUtils.createJsonFormattedException("there are still passengers that need to be taken care of first!", 400);
             }
 
         } else if (offerUpdate.getCancelOffer()) {

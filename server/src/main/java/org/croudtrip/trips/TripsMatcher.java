@@ -7,6 +7,7 @@ import org.croudtrip.api.trips.JoinTripRequest;
 import org.croudtrip.api.trips.TripOffer;
 import org.croudtrip.api.trips.TripOfferStatus;
 import org.croudtrip.api.trips.TripQuery;
+import org.croudtrip.api.trips.UserWayPoint;
 import org.croudtrip.db.JoinTripRequestDAO;
 import org.croudtrip.db.TripOfferDAO;
 import org.croudtrip.directions.DirectionsManager;
@@ -24,7 +25,7 @@ class TripsMatcher {
 
 	private final JoinTripRequestDAO joinTripRequestDAO;
 	private final TripOfferDAO tripOfferDAO;
-	private final TspSolver tspSolver;
+	private final TripsNavigationManager tripsNavigationManager;
 	private final DirectionsManager directionsManager;
 	private final TripsUtils tripsUtils;
 	private final LogManager logManager;
@@ -34,14 +35,14 @@ class TripsMatcher {
 	TripsMatcher(
 			JoinTripRequestDAO joinTripRequestDAO,
 			TripOfferDAO tripOfferDAO,
-			TspSolver tspSolver,
+			TripsNavigationManager tripsNavigationManager,
 			DirectionsManager directionsManager,
 			TripsUtils tripsUtils,
 			LogManager logManager) {
 
 		this.joinTripRequestDAO = joinTripRequestDAO;
 		this.tripOfferDAO = tripOfferDAO;
-		this.tspSolver = tspSolver;
+		this.tripsNavigationManager = tripsNavigationManager;
 		this.directionsManager = directionsManager;
 		this.tripsUtils = tripsUtils;
 		this.logManager = logManager;
@@ -82,40 +83,24 @@ class TripsMatcher {
 		// early reject based on airline;
 		if (!assertWithinAirDistance(offer, query)) return false;
 
-		// get shortest route by air distance
-		List<TspSolver.TspWayPoint> totalRouteWayPoints = tspSolver.getBestOrder(
-				joinTripRequestDAO.findByOfferId(offer.getId()),
-				offer,
-				query)
-				.get(0);
-
-		// get passenger way points
-		List<RouteLocation> passengerWayPoints = new ArrayList<>();
-		for (int i = 1; i < totalRouteWayPoints.size() - 1; ++i) {
-			passengerWayPoints.add(totalRouteWayPoints.get(i).getLocation());
-		}
-
-		// check for route including passengers
-		List<RouteLocation> driverWayPoints = offer.getDriverRoute().getWayPoints();
-		List<Route> possibleRoutes = directionsManager.getDirections(
-				driverWayPoints.get(0),
-				driverWayPoints.get(1),
-				passengerWayPoints);
-
-		if (possibleRoutes == null || possibleRoutes.isEmpty()) return false;
-
 		// update driver route on new position update
 		assertUpdatedDriverRoute(offer);
-		Route driverRoute = offer.getDriverRoute();
 
+		// get complete new route
+		List<UserWayPoint> userWayPoints = tripsNavigationManager.getRouteWaypointsForOffer(offer, query);
+		if (userWayPoints.isEmpty()) return false;
+
+		// check passenger max waiting time
+		if (!assertRouteWithinPassengerMaxWaitingTime(offer, query, userWayPoints)) return false;
+
+		/*
+		// TODO check this for all passengers!!
 		// check if passenger route is within max diversion
 		if (possibleRoutes.get(0).getDistanceInMeters() - driverRoute.getDistanceInMeters() > offer.getMaxDiversionInMeters()) {
 			logManager.d("Declined Query due to max diversion: " + (possibleRoutes.get(0).getDistanceInMeters() - driverRoute.getDistanceInMeters()) + " > " + offer.getMaxDiversionInMeters() );
 			return false;
 		}
-
-		// check passenger max waiting time
-		if (!assertRouteWithinPassengerMaxWaitingTime(offer, query, totalRouteWayPoints, possibleRoutes.get(0))) return false;
+		*/
 
 		return true;
 	}
@@ -180,32 +165,27 @@ class TripsMatcher {
 	private boolean assertRouteWithinPassengerMaxWaitingTime(
 			TripOffer offer,
 			TripQuery query,
-			List<TspSolver.TspWayPoint> tspRoute,
-			Route directionsRoute) {
+			List<UserWayPoint> userWayPoints) {
 
 		// check max waiting time for each passenger
-		long durationToPassenger = 0;
-		for (int wayPointIdx = 1; wayPointIdx < tspRoute.size() - 1; ++wayPointIdx) {
-			durationToPassenger += directionsRoute.getLegDurationsInSeconds().get(wayPointIdx - 1);
-			TspSolver.TspWayPoint passengerWayPoint = tspRoute.get(wayPointIdx);
-			if (!passengerWayPoint.isStart()) continue;
+		for (UserWayPoint userWayPoint : userWayPoints) {
+			if (!userWayPoint.isStartOfTrip()) continue;
+			if (userWayPoint.getUser().equals(offer.getDriver())) continue;
 
-			// find max waiting time (already joined? ...)
-			double passengerMaxWaitingTime = 0;
-			if (passengerWayPoint.getUser().equals(query.getPassenger())) {
-				passengerMaxWaitingTime = query.getMaxWaitingTimeInSeconds();
+			long passengerMaxWaitingTimestamp = 0;
+			if (userWayPoint.getUser().equals(query.getPassenger())) {
+				passengerMaxWaitingTimestamp = query.getCreationTimestamp() + query.getMaxWaitingTimeInSeconds();
 			} else {
 				for (JoinTripRequest joinTripRequest : joinTripRequestDAO.findByOfferId(offer.getId())) {
-					if (passengerWayPoint.getUser().equals(joinTripRequest.getQuery().getPassenger())) {
-						passengerMaxWaitingTime = joinTripRequest.getQuery().getMaxWaitingTimeInSeconds();
+					if (userWayPoint.getUser().equals(joinTripRequest.getQuery().getPassenger())) {
+						passengerMaxWaitingTimestamp = joinTripRequest.getQuery().getCreationTimestamp() + joinTripRequest.getQuery().getMaxWaitingTimeInSeconds();
 						break;
 					}
 				}
 			}
-			if (durationToPassenger > passengerMaxWaitingTime) return false;
+			if (userWayPoint.getArrivalTimestamp() > passengerMaxWaitingTimestamp) return false;
 		}
 		return true;
-
 	}
 
 }

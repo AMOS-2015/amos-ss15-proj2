@@ -45,7 +45,7 @@ public class TripReservationGarbageCollectionExecutor extends AbstractScheduledT
 	protected void doRun() {
 		long currentTimestamp = System.currentTimeMillis() / 1000;
 		for (TripReservation reservation : tripReservationDAO.findAll()) {
-			if (currentTimestamp > reservation.getCreationTimestamp() + reservation.getQuery().getMaxWaitingTimeInSeconds()) {
+			if (currentTimestamp > reservation.getQuery().getCreationTimestamp() + reservation.getQuery().getMaxWaitingTimeInSeconds()) {
 				logManager.d("Removing reservation " + reservation.getId());
 				tripReservationDAO.delete(reservation);
 			}

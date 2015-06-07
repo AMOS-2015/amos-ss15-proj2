@@ -12,6 +12,7 @@ import org.croudtrip.api.trips.JoinTripStatus;
 import org.croudtrip.api.trips.TripOffer;
 import org.croudtrip.api.trips.TripOfferStatus;
 import org.croudtrip.api.trips.TripQuery;
+import org.croudtrip.api.trips.UserWayPoint;
 import org.croudtrip.db.JoinTripRequestDAO;
 import org.croudtrip.db.TripOfferDAO;
 import org.croudtrip.directions.DirectionsManager;
@@ -20,9 +21,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import mockit.Expectations;
 import mockit.Mocked;
@@ -41,7 +39,8 @@ public class TripsMatcherTest {
 			null,
 			new RouteLocation(45, 45),
 			new RouteLocation(50, 50),
-			10,
+			100,
+			System.currentTimeMillis() / 1000,
 			passenger);
 
 	private static final Vehicle vehicle = new Vehicle(0, null, null, null, 4, driver);
@@ -51,22 +50,12 @@ public class TripsMatcherTest {
 			.distanceInMeters(1000)
 			.build();
 
-	private static final Route totalRoute = new Route.Builder()
-			.wayPoints(Lists.newArrayList(driverRoute.getWayPoints().get(0), query.getStartLocation(), query.getDestinationLocation(), driverRoute.getWayPoints().get(1)))
-			.build();
-
-	private static final TripOffer offer = new TripOffer( 0, driverRoute, 0, null, 1000, 0, driver, vehicle, TripOfferStatus.ACTIVE_NOT_FULL, 0);
-
-	private static final List<TspSolver.TspWayPoint> wayPoints = Lists.newArrayList(
-			new TspSolver.TspWayPoint(driver, driverRoute.getWayPoints().get(0), true),
-			new TspSolver.TspWayPoint(passenger, query.getStartLocation(), true),
-			new TspSolver.TspWayPoint(passenger, query.getDestinationLocation(), false),
-			new TspSolver.TspWayPoint(driver, driverRoute.getWayPoints().get(1), false));
+	private static final TripOffer offer = new TripOffer(0, driverRoute, 0, null, 1000, 0, driver, vehicle, TripOfferStatus.ACTIVE_NOT_FULL, 0);
 
 
 	@Mocked JoinTripRequestDAO joinTripRequestDAO;
 	@Mocked TripOfferDAO tripOfferDAO;
-	@Mocked TspSolver tspSolver;
+	@Mocked TripsNavigationManager tripsNavigationManager;
 	@Mocked DirectionsManager directionsManager;
 	@Mocked TripsUtils tripsUtils;
 	@Mocked LogManager logManager;
@@ -75,7 +64,7 @@ public class TripsMatcherTest {
 
 	@Before
 	public void setupTripsMatcher() {
-		tripsMatcher = new TripsMatcher(joinTripRequestDAO, tripOfferDAO, tspSolver, directionsManager, tripsUtils, logManager);
+		tripsMatcher = new TripsMatcher(joinTripRequestDAO, tripOfferDAO, tripsNavigationManager, directionsManager, tripsUtils, logManager);
 	}
 
 
@@ -111,11 +100,18 @@ public class TripsMatcherTest {
 
 	@Test
 	public void testPotentialMatchWithinAirDistance() {
-		TripQuery query = new TripQuery(null, new RouteLocation(0, 0), new RouteLocation(1, 1), 10, passenger);
+		TripQuery query = new TripQuery(
+				null,
+				new RouteLocation(0, 0),
+				new RouteLocation(1, 1),
+				10,
+				System.currentTimeMillis() / 1000,
+				passenger);
 		Assert.assertFalse(tripsMatcher.isPotentialMatch(offer, query));
 	}
 
 
+	/*
 	@Test
 	@SuppressWarnings("unchecked")
 	public void testPotentialMatchMaxDiversion() {
@@ -133,28 +129,28 @@ public class TripsMatcherTest {
 
 		Assert.assertFalse(tripsMatcher.isPotentialMatch(offer, query));
 	}
+	*/
 
 
 	@Test
 	@SuppressWarnings("unchecked")
 	public void testPotentialMatchMaxWaitingTimeQuery() {
 		// tests that max waiting time of query is honored
-		new TspExpectations(wayPoints);
 		new Expectations() {{
-			directionsManager.getDirections(
-					driverRoute.getWayPoints().get(0),
-					driverRoute.getWayPoints().get(1),
-					(List<RouteLocation>) any);
-			result = Lists.newArrayList(new Route.Builder()
-					.wayPoints(totalRoute.getWayPoints())
-					.legDurationInSeconds(Lists.newArrayList(query.getMaxWaitingTimeInSeconds() + 1l, 0l, 0l))
-					.build());
+			tripsNavigationManager.getRouteWaypointsForOffer(offer, query);
+			result = Lists.newArrayList(
+					new UserWayPoint(driver, null, true, 0),
+					new UserWayPoint(passenger, null, true, query.getCreationTimestamp() + query.getMaxWaitingTimeInSeconds() + 100),
+					new UserWayPoint(passenger, null, false, 0),
+					new UserWayPoint(driver, null, false, 0));
+
 		}};
 
 		Assert.assertFalse(tripsMatcher.isPotentialMatch(offer, query));
 	}
 
 
+	/*
 	@Test
 	@SuppressWarnings("unchecked")
 	public void testPotentialMatchMaxWaitingTimeJoinRequests() {
@@ -188,37 +184,23 @@ public class TripsMatcherTest {
 
 		Assert.assertFalse(tripsMatcher.isPotentialMatch(offer, query));
 	}
+	*/
 
 
 	@Test
 	@SuppressWarnings("unchecked")
 	public void testPotentialMatchSuccess() {
-		new TspExpectations(wayPoints);
+		final long currentTimestamp = System.currentTimeMillis() / 1000;
 		new Expectations() {{
-			directionsManager.getDirections(
-					driverRoute.getWayPoints().get(0),
-					driverRoute.getWayPoints().get(1),
-					(List<RouteLocation>) any);
-			result = Lists.newArrayList(new Route.Builder()
-					.wayPoints(driverRoute.getWayPoints())
-					.legDurationInSeconds(Lists.newArrayList(query.getMaxWaitingTimeInSeconds(), 1l, 1l))
-					.build());
+			tripsNavigationManager.getRouteWaypointsForOffer(offer, query);
+			result = Lists.newArrayList(
+					new UserWayPoint(driver, null, true, currentTimestamp),
+					new UserWayPoint(passenger, null, true, currentTimestamp + 1),
+					new UserWayPoint(passenger, null, false, currentTimestamp + query.getMaxWaitingTimeInSeconds() / 2),
+					new UserWayPoint(driver, null, false, currentTimestamp));
 		}};
 
 		Assert.assertTrue(tripsMatcher.isPotentialMatch(offer, query));
-	}
-
-
-	@SuppressWarnings("unchecked")
-	private final class TspExpectations extends Expectations {
-
-		TspExpectations(List<TspSolver.TspWayPoint> tspWayPoints) {
-			List<List<TspSolver.TspWayPoint>> sortedRoutes = new ArrayList<>();
-			sortedRoutes.add(tspWayPoints);
-			tspSolver.getBestOrder((List<JoinTripRequest>) any, offer, query);
-			result = sortedRoutes;
-		}
-
 	}
 
 }

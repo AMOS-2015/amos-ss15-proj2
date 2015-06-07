@@ -204,4 +204,13 @@ public class GcmManager {
 				new Pair<>(GcmConstants.GCM_MSG_JOIN_REQUEST_OFFER_ID, "" + offer.getId()));
 	}
 
+
+	public void sendJoinTripRequestExpiredToPassenger(JoinTripRequest joinTripRequest) {
+		sendGcmMessageToUser(joinTripRequest.getQuery().getPassenger(), GcmConstants.GCM_MSG_REQUEST_EXPIRED,
+				new Pair<>(GcmConstants.GCM_MSG_USER_MAIL, "" + joinTripRequest.getQuery().getPassenger().getEmail()),
+				new Pair<>(GcmConstants.GCM_MSG_REQUEST_EXPIRED, "Join request expired due to max waiting time"),
+				new Pair<>(GcmConstants.GCM_MSG_JOIN_REQUEST_ID, "" + joinTripRequest.getId()),
+				new Pair<>(GcmConstants.GCM_MSG_JOIN_REQUEST_OFFER_ID, "" + joinTripRequest.getOffer().getId()));
+	}
+
 }

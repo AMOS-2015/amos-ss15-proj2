@@ -2,7 +2,9 @@ package org.croudtrip.trips;
 
 import org.croudtrip.api.directions.Route;
 import org.croudtrip.api.directions.RouteLocation;
+import org.croudtrip.api.trips.JoinTripRequest;
 import org.croudtrip.api.trips.TripOffer;
+import org.croudtrip.api.trips.TripQuery;
 import org.croudtrip.api.trips.UserWayPoint;
 import org.croudtrip.db.JoinTripRequestDAO;
 import org.croudtrip.directions.DirectionsManager;
@@ -37,16 +39,29 @@ public class TripsNavigationManager {
 	}
 
 
+	public List<UserWayPoint> getRouteWaypointsForOffer(TripOffer offer) {
+		return getRouteWaypointsForOffer(offer, null);
+	}
+
+
 	/**
 	 * Returns the complete route for a given {@link TripOffer}
-	 * including all passenger way points and their expected
+	 * and one {@link TripQuery} including all passenger way points and their expected
 	 * arrival time.
+	 * @param offer the offer which includes the driver route and which is used to find
+	 *              the pending {@link org.croudtrip.api.trips.JoinTripRequest}.
+	 * @param query an optional query which should also be considered during the matching
+	 *              process.
 	 */
-	public List<UserWayPoint> getRouteWaypointsForOffer(TripOffer offer) {
-		List<TspSolver.TspWayPoint> tspWayPoints = tspSolver.getBestOrder(
-				joinTripRequestDAO.findByOfferId(offer.getId()),
-				offer)
-				.get(0);
+	public List<UserWayPoint> getRouteWaypointsForOffer(TripOffer offer, TripQuery query) {
+		List<JoinTripRequest> joinTripRequests = joinTripRequestDAO.findByOfferId(offer.getId());
+
+		List<TspSolver.TspWayPoint> tspWayPoints;
+		if (query == null) {
+			tspWayPoints = tspSolver.getBestOrder(joinTripRequests, offer) .get(0);
+		} else {
+			tspWayPoints = tspSolver.getBestOrder(joinTripRequests, offer, query) .get(0);
+		}
 
 		List<RouteLocation> passengerLocations = new ArrayList<>();
 		for (int i = 1; i < tspWayPoints.size() - 1; ++i) {

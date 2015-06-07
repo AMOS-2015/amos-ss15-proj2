@@ -50,7 +50,7 @@ public class RunningTripQueryGarbageCollectionExecutor extends AbstractScheduled
 	protected void doRun() {
 		long currentTimestamp = System.currentTimeMillis() / 1000;
 		for (RunningTripQuery query : runningTripQueryDAO.findAll()) {
-			if (currentTimestamp > query.getCreationTimestamp() + query.getQuery().getMaxWaitingTimeInSeconds() + ADDITIONAL_LIFETIME_IN_SECONDS) {
+			if (currentTimestamp > query.getQuery().getCreationTimestamp() + query.getQuery().getMaxWaitingTimeInSeconds() + ADDITIONAL_LIFETIME_IN_SECONDS) {
 				logManager.d("Removing RunningQuery " + query.getId());
 				runningTripQueryDAO.delete(query);
 			}

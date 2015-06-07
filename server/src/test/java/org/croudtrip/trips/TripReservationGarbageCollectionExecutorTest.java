@@ -57,11 +57,10 @@ public class TripReservationGarbageCollectionExecutorTest {
 
 	private TripReservation createReservation(long creationTimestamp, long maxWaitingTime) {
 		return new TripReservation(0,
-				new TripQuery(null, null, null, maxWaitingTime, null),
+				new TripQuery(null, null, null, maxWaitingTime, creationTimestamp, null),
 				0,
 				0,
 				0,
-				null,
-				creationTimestamp);
+				null);
 	}
 }

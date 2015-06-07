@@ -132,7 +132,7 @@ public class TripsManager {
         // compare offer with running queries
         for (RunningTripQuery runningQuery : runningTripQueryDAO.findByStatusRunning()) {
             if (!runningQuery.getStatus().equals(RunningTripQueryStatus.RUNNING)) continue;
-            if (runningQuery.getCreationTimestamp() + runningQuery.getQuery().getMaxWaitingTimeInSeconds() < System.currentTimeMillis() / 1000) continue;
+            if (runningQuery.getQuery().getCreationTimestamp() + runningQuery.getQuery().getMaxWaitingTimeInSeconds() < System.currentTimeMillis() / 1000) continue;
 
             TripQuery query = runningQuery.getQuery();
             boolean isPotentialMatch = tripsMatcher.isPotentialMatch(offer, query);
@@ -147,7 +147,6 @@ public class TripsManager {
                 RunningTripQuery updatedRunningQuery = new RunningTripQuery(
                         runningQuery.getId(),
                         runningQuery.getQuery(),
-                        runningQuery.getCreationTimestamp(),
                         RunningTripQueryStatus.FOUND);
                 runningTripQueryDAO.update(updatedRunningQuery);
             }
@@ -265,7 +264,8 @@ public class TripsManager {
         if (possiblePassengerRoutes.isEmpty()) throw new RouteNotFoundException();
 
         // analyse offers
-        TripQuery query = new TripQuery(possiblePassengerRoutes.get(0), queryDescription.getStart(), queryDescription.getEnd(), queryDescription.getMaxWaitingTimeInSeconds(), passenger);
+        long queryCreationTimestamp = System.currentTimeMillis() / 1000;
+        TripQuery query = new TripQuery(possiblePassengerRoutes.get(0), queryDescription.getStart(), queryDescription.getEnd(), queryDescription.getMaxWaitingTimeInSeconds(), queryCreationTimestamp, passenger);
         List<TripOffer> potentialMatches = tripsMatcher.filterPotentialMatches(tripOfferDAO.findAllActive(), query);
 
         // find and store reservations
@@ -278,7 +278,6 @@ public class TripsManager {
             runningQuery = new RunningTripQuery(
                     0,
                     query,
-                    System.currentTimeMillis() / 1000,
                     RunningTripQueryStatus.RUNNING);
             runningTripQueryDAO.save(runningQuery);
         }
@@ -374,6 +373,14 @@ public class TripsManager {
                 new Pair<String, String>(GcmConstants.GCM_MSG_JOIN_REQUEST_OFFER_ID, "" + offerOptional.get().getId()));
 
         return Optional.of(joinTripRequest);
+    }
+
+
+    /**
+     * Returns all {@link JoinTripRequest}s, regardless of their state or user.
+     */
+    public List<JoinTripRequest> findAllJoinRequests() {
+        return joinTripRequestDAO.findAll();
     }
 
 
@@ -547,8 +554,7 @@ public class TripsManager {
                     totalPriceInCents,
                     match.getPricePerKmInCents(),
                     match.getId(),
-                    match.getDriver(),
-                    System.currentTimeMillis() / 1000));
+                    match.getDriver()));
 
         }
 
