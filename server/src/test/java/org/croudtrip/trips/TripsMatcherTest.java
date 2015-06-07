@@ -189,6 +189,23 @@ public class TripsMatcherTest {
 
 	@Test
 	@SuppressWarnings("unchecked")
+	public void testPotentialMatchMaxDiversion() {
+		final long currentTimestamp = System.currentTimeMillis() / 1000;
+		new Expectations() {{
+			tripsNavigationManager.getRouteWaypointsForOffer(offer, query);
+			result = Lists.newArrayList(
+					new UserWayPoint(driver, null, true, currentTimestamp, 0),
+					new UserWayPoint(passenger, null, true, currentTimestamp, 0),
+					new UserWayPoint(passenger, null, false, currentTimestamp, 0),
+					new UserWayPoint(driver, null, false, currentTimestamp, offer.getDriverRoute().getDistanceInMeters() + offer.getMaxDiversionInMeters() + 100));
+		}};
+
+		Assert.assertFalse(tripsMatcher.isPotentialMatch(offer, query));
+	}
+
+
+	@Test
+	@SuppressWarnings("unchecked")
 	public void testPotentialMatchSuccess() {
 		final long currentTimestamp = System.currentTimeMillis() / 1000;
 		new Expectations() {{

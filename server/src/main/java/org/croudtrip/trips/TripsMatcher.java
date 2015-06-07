@@ -93,14 +93,9 @@ class TripsMatcher {
 		// check passenger max waiting time
 		if (!assertRouteWithinPassengerMaxWaitingTime(offer, query, userWayPoints)) return false;
 
-		/*
-		// TODO check this for all passengers!!
 		// check if passenger route is within max diversion
-		if (possibleRoutes.get(0).getDistanceInMeters() - driverRoute.getDistanceInMeters() > offer.getMaxDiversionInMeters()) {
-			logManager.d("Declined Query due to max diversion: " + (possibleRoutes.get(0).getDistanceInMeters() - driverRoute.getDistanceInMeters()) + " > " + offer.getMaxDiversionInMeters() );
-			return false;
-		}
-		*/
+		long distanceToDriverInMeters = userWayPoints.get(userWayPoints.size() - 1).getDistanceToDriverInMeters();
+		if (distanceToDriverInMeters - offer.getDriverRoute().getDistanceInMeters() > offer.getMaxDiversionInMeters()) return false;
 
 		return true;
 	}
