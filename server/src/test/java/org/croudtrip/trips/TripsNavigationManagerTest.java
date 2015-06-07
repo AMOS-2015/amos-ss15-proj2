@@ -73,6 +73,7 @@ public class TripsNavigationManagerTest extends TestCase {
 			result = Lists.newArrayList(new Route.Builder()
 					.wayPoints(driverRoute.getWayPoints())
 					.legDurationInSeconds(Lists.newArrayList(1l, 1l, 1l))
+					.legDistancesInMeters(Lists.newArrayList(1l, 1l, 1l))
 					.build());
 
 			tspSolver.getBestOrder((List<JoinTripRequest>) any, offer);
@@ -93,9 +94,13 @@ public class TripsNavigationManagerTest extends TestCase {
 		Assert.assertEquals(passenger, userWayPoints.get(2).getUser());
 		Assert.assertEquals(driver, userWayPoints.get(3).getUser());
 		long arrivalTime = Long.MIN_VALUE;
+		long distanceToDriver = Long.MIN_VALUE;
 		for (UserWayPoint wayPoint : userWayPoints) {
 			Assert.assertTrue(wayPoint.getArrivalTimestamp() > arrivalTime);
 			arrivalTime = wayPoint.getArrivalTimestamp();
+
+			Assert.assertTrue(wayPoint.getDistanceToDriverInMeters() > distanceToDriver);
+			distanceToDriver = wayPoint.getDistanceToDriverInMeters();
 		}
 
 	}

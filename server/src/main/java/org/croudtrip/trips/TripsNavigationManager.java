@@ -77,9 +77,11 @@ public class TripsNavigationManager {
 
 		List<UserWayPoint> userWayPoints = new ArrayList<>();
 		long arrivalTimestamp = System.currentTimeMillis() / 1000;
+		long distanceToDriverInMeters = 0;
 		for (int i = 0; i < tspWayPoints.size(); ++i) {
 			if (i != 0) {
 				arrivalTimestamp += routes.get(0).getLegDurationsInSeconds().get(i - 1);
+				distanceToDriverInMeters += routes.get(0).getLegDistancesInMeters().get(i - 1);
 			}
 
 			TspSolver.TspWayPoint tspWayPoint = tspWayPoints.get(i);
@@ -87,7 +89,8 @@ public class TripsNavigationManager {
 					tspWayPoint.getUser(),
 					tspWayPoint.getLocation(),
 					tspWayPoint.isStart(),
-					arrivalTimestamp));
+					arrivalTimestamp,
+					distanceToDriverInMeters));
 		}
 
 		return userWayPoints;

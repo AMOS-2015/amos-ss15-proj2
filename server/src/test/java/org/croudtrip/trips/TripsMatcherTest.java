@@ -139,10 +139,10 @@ public class TripsMatcherTest {
 		new Expectations() {{
 			tripsNavigationManager.getRouteWaypointsForOffer(offer, query);
 			result = Lists.newArrayList(
-					new UserWayPoint(driver, null, true, 0),
-					new UserWayPoint(passenger, null, true, query.getCreationTimestamp() + query.getMaxWaitingTimeInSeconds() + 100),
-					new UserWayPoint(passenger, null, false, 0),
-					new UserWayPoint(driver, null, false, 0));
+					new UserWayPoint(driver, null, true, 0, 0),
+					new UserWayPoint(passenger, null, true, query.getCreationTimestamp() + query.getMaxWaitingTimeInSeconds() + 100, 1),
+					new UserWayPoint(passenger, null, false, 0, 2),
+					new UserWayPoint(driver, null, false, 0, 3));
 
 		}};
 
@@ -194,10 +194,10 @@ public class TripsMatcherTest {
 		new Expectations() {{
 			tripsNavigationManager.getRouteWaypointsForOffer(offer, query);
 			result = Lists.newArrayList(
-					new UserWayPoint(driver, null, true, currentTimestamp),
-					new UserWayPoint(passenger, null, true, currentTimestamp + 1),
-					new UserWayPoint(passenger, null, false, currentTimestamp + query.getMaxWaitingTimeInSeconds() / 2),
-					new UserWayPoint(driver, null, false, currentTimestamp));
+					new UserWayPoint(driver, null, true, currentTimestamp, 0),
+					new UserWayPoint(passenger, null, true, currentTimestamp + 1, 1),
+					new UserWayPoint(passenger, null, false, currentTimestamp + query.getMaxWaitingTimeInSeconds() / 2, 2),
+					new UserWayPoint(driver, null, false, currentTimestamp, 3));
 		}};
 
 		Assert.assertTrue(tripsMatcher.isPotentialMatch(offer, query));
