@@ -32,8 +32,8 @@ public class TripsMatcherTest {
 	// TODO test updating routes
 
 	private static final User
-			passenger = new User(0, null, null, null, null, null, null, null, null, 0),
-			driver = new User(1, null, null, null, null, null, null, null, null, 0);
+			passenger = new User.Builder().setId(0).build(),
+			driver = new User.Builder().setId(1).build();
 
 	private static final TripQuery query = new TripQuery(
 			null,

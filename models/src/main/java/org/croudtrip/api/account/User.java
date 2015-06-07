@@ -204,4 +204,73 @@ public class User {
         return Objects.hashCode(id, email, firstName, lastName, phoneNumber, isMale, birthday, address, avatarUrl, lastModified);
     }
 
+
+    public static class Builder {
+
+        private long id;
+        private String email;
+        private String firstName;
+        private String lastName;
+        private String phoneNumber;
+        private Boolean isMale;
+        private Date birthday;
+        private String address;
+        private String avatarUrl;
+        private long lastModified; // unix timestamp in seconds
+
+        public Builder setId(long id) {
+            this.id = id;
+            return this;
+        }
+
+        public Builder setEmail(String email) {
+            this.email = email;
+            return this;
+        }
+
+        public Builder setFirstName(String firstName) {
+            this.firstName = firstName;
+            return this;
+        }
+
+        public Builder setLastName(String lastName) {
+            this.lastName = lastName;
+            return this;
+        }
+
+        public Builder setPhoneNumber(String phoneNumber) {
+            this.phoneNumber = phoneNumber;
+            return this;
+        }
+
+        public Builder setIsMale(Boolean isMale) {
+            this.isMale = isMale;
+            return this;
+        }
+
+        public Builder setBirthday(Date birthday) {
+            this.birthday = birthday;
+            return this;
+        }
+
+        public Builder setAddress(String address) {
+            this.address = address;
+            return this;
+        }
+
+        public Builder setAvatarUrl(String avatarUrl) {
+            this.avatarUrl = avatarUrl;
+            return this;
+        }
+
+        public Builder setLastModified(long lastModified) {
+            this.lastModified = lastModified;
+            return this;
+        }
+
+        public User build() {
+            return new User(id, email, firstName,lastName, phoneNumber, isMale, birthday, address, avatarUrl, lastModified);
+        }
+    }
+
 }

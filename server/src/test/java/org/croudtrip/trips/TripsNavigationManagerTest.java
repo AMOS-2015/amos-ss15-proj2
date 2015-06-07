@@ -29,8 +29,8 @@ import mockit.integration.junit4.JMockit;
 public class TripsNavigationManagerTest extends TestCase {
 
 	private static final User
-			passenger = new User(0, null, null, null, null, null, null, null, null, 0),
-			driver = new User(1, null, null, null, null, null, null, null, null, 0);
+			passenger = new User.Builder().setId(0).build(),
+			driver = new User.Builder().setId(1).build();
 
 	private static final Route driverRoute = new Route.Builder()
 			.wayPoints(Lists.newArrayList(new RouteLocation(45, 45), new RouteLocation(50, 50)))
