@@ -315,13 +315,20 @@ public class GcmIntentService extends RoboIntentService {
     private void handleTripCanceledByPassenger() {
         Timber.d("Trip Canceled by passenger");
 
-        //Create a notification for the passengers who already joined the trip
-        Intent startingIntent = new Intent(getApplicationContext(), MainActivity.class);
-        startingIntent.setAction(MainActivity.ACTION_SHOW_JOIN_TRIP_REQUESTS);
+        if( LifecycleHandler.isApplicationInForeground() ) {
+            // send broadcast while the app is running to reload the application
+            Intent startingIntent = new Intent(Constants.EVENT_PASSENGER_CANCELLED_TRIP);
+            LocalBroadcastManager.getInstance(this).sendBroadcast(startingIntent);
+        }
+        else {
+            // create notification if the application is not in foreground
+            Intent startingIntent = new Intent(getApplicationContext(), MainActivity.class);
+            startingIntent.setAction(MainActivity.ACTION_SHOW_JOIN_TRIP_REQUESTS);
 
-        PendingIntent contentIntent = PendingIntent.getActivity(getApplicationContext(), 0, startingIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-        createNotification(getString(R.string.new_msg), getString(R.string.trip_canceled_by_passenger),
-                GcmConstants.GCM_NOTIFICATION_TRIP_CANCELLED_ID, contentIntent);
+            PendingIntent contentIntent = PendingIntent.getActivity(getApplicationContext(), 0, startingIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+            createNotification(getString(R.string.new_msg), getString(R.string.trip_canceled_by_passenger),
+                    GcmConstants.GCM_NOTIFICATION_TRIP_CANCELLED_ID, contentIntent);
+        }
 
     }
 
