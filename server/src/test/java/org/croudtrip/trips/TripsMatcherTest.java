@@ -40,6 +40,7 @@ public class TripsMatcherTest {
 			new RouteLocation(45, 45),
 			new RouteLocation(50, 50),
 			100,
+			System.currentTimeMillis() / 1000,
 			passenger);
 
 	private static final Vehicle vehicle = new Vehicle(0, null, null, null, 4, driver);
@@ -99,7 +100,13 @@ public class TripsMatcherTest {
 
 	@Test
 	public void testPotentialMatchWithinAirDistance() {
-		TripQuery query = new TripQuery(null, new RouteLocation(0, 0), new RouteLocation(1, 1), 10, passenger);
+		TripQuery query = new TripQuery(
+				null,
+				new RouteLocation(0, 0),
+				new RouteLocation(1, 1),
+				10,
+				System.currentTimeMillis() / 1000,
+				passenger);
 		Assert.assertFalse(tripsMatcher.isPotentialMatch(offer, query));
 	}
 

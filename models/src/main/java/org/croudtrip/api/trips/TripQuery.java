@@ -29,7 +29,6 @@ import javax.persistence.Embeddable;
 import javax.persistence.Embedded;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.xml.stream.Location;
 
 /**
  * A passenger query for available routes.
@@ -56,6 +55,9 @@ public class TripQuery {
 	@Column(name = "maxWaitingTimeInSeconds", nullable = false)
 	private long maxWaitingTimeInSeconds;
 
+	@Column(name = "creationTimestamp", nullable = false)
+	private long creationTimestamp; // unix timestamp in seconds
+
 	@ManyToOne
 	@JoinColumn(name = User.COLUMN_ID + "_passenger", nullable = false)
 	private User passenger;
@@ -69,25 +71,28 @@ public class TripQuery {
             @JsonProperty("startLocation") RouteLocation startLocation,
             @JsonProperty("destinationLocation") RouteLocation destinationLocation,
 			@JsonProperty("maxWaitingTimeSeconds") long maxWaitingTimeInSeconds,
+			@JsonProperty("creationTimestamp") long creationTimestamp,
 			@JsonProperty("passenger") User passenger) {
 
 		this.passengerRoute = passengerRoute;
         this.startLocation = startLocation;
         this.destinationLocation = destinationLocation;
 		this.maxWaitingTimeInSeconds = maxWaitingTimeInSeconds;
+		this.creationTimestamp = creationTimestamp;
 		this.passenger = passenger;
 	}
-
 
 	public Route getPassengerRoute() {
 		return passengerRoute;
 	}
 
-
 	public long getMaxWaitingTimeInSeconds() {
 		return maxWaitingTimeInSeconds;
 	}
 
+	public long getCreationTimestamp() {
+		return creationTimestamp;
+	}
 
 	public User getPassenger() {
 		return passenger;
@@ -97,23 +102,22 @@ public class TripQuery {
 
     public RouteLocation getDestinationLocation() { return destinationLocation; }
 
-
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
 		TripQuery tripQuery = (TripQuery) o;
 		return Objects.equal(maxWaitingTimeInSeconds, tripQuery.maxWaitingTimeInSeconds) &&
-                Objects.equal(startLocation, tripQuery.startLocation) &&
+                Objects.equal(creationTimestamp, tripQuery.creationTimestamp) &&
+				Objects.equal(startLocation, tripQuery.startLocation) &&
                 Objects.equal(destinationLocation, tripQuery.destinationLocation) &&
 				Objects.equal(passengerRoute, tripQuery.passengerRoute) &&
 				Objects.equal(passenger, tripQuery.passenger);
 	}
 
-
 	@Override
 	public int hashCode() {
-		return Objects.hashCode(passengerRoute, maxWaitingTimeInSeconds, passenger, startLocation, destinationLocation);
+		return Objects.hashCode(passengerRoute, maxWaitingTimeInSeconds, creationTimestamp, passenger, startLocation, destinationLocation);
 	}
 
 }

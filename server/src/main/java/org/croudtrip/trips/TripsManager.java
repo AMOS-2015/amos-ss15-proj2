@@ -265,7 +265,8 @@ public class TripsManager {
         if (possiblePassengerRoutes.isEmpty()) throw new RouteNotFoundException();
 
         // analyse offers
-        TripQuery query = new TripQuery(possiblePassengerRoutes.get(0), queryDescription.getStart(), queryDescription.getEnd(), queryDescription.getMaxWaitingTimeInSeconds(), passenger);
+        long queryCreationTimestamp = System.currentTimeMillis() / 1000;
+        TripQuery query = new TripQuery(possiblePassengerRoutes.get(0), queryDescription.getStart(), queryDescription.getEnd(), queryDescription.getMaxWaitingTimeInSeconds(), queryCreationTimestamp, passenger);
         List<TripOffer> potentialMatches = tripsMatcher.filterPotentialMatches(tripOfferDAO.findAllActive(), query);
 
         // find and store reservations
@@ -547,8 +548,7 @@ public class TripsManager {
                     totalPriceInCents,
                     match.getPricePerKmInCents(),
                     match.getId(),
-                    match.getDriver(),
-                    System.currentTimeMillis() / 1000));
+                    match.getDriver()));
 
         }
 

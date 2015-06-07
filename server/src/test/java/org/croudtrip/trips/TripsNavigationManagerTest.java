@@ -42,6 +42,7 @@ public class TripsNavigationManagerTest extends TestCase {
 			new RouteLocation(45, 45),
 			new RouteLocation(50, 50),
 			10,
+			System.currentTimeMillis() / 1000,
 			passenger);
 	private static final JoinTripRequest joinTripRequest = new JoinTripRequest(0, query, 0, 0, offer, null);
 
