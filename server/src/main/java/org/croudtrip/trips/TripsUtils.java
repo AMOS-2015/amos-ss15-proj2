@@ -56,10 +56,22 @@ public class TripsUtils {
 		return passengerCount;
 	}
 
+    /**
+     * Updates all the arrival times for the passengers that are waiting for the driver in this offer
+     * and inform the passengers via GCM.
+     * @param offer The offer that should be updated.
+     */
     public void updateArrivalTimesForOffer(TripOffer offer) {
         updateArrivalTimesForOffer(offer, null);
     }
 
+    /**
+     * Updates all the arrival times for the passengers that are waiting for the driver in this offer
+     * and inform the passengers via GCM. This method is used if a new passenger was accepted. The
+     * newly accepted passenger will not be informed if he is passed as an additional parameter.
+     * @param offer the offer that should be updated
+     * @param noReceiver a certain user that will not receive a GCM
+     */
     public void updateArrivalTimesForOffer(TripOffer offer, User noReceiver) {
         List<UserWayPoint> userWayPoints = tripsNavigationManager.getRouteWaypointsForOffer(offer);
         List<JoinTripRequest> joinRequests = joinTripRequestDAO.findByOfferId( offer.getId() );

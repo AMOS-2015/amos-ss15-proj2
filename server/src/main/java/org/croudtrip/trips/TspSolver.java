@@ -28,6 +28,9 @@ public class TspSolver {
 
 
 	/**
+     * Find the best waypoint order using TSP based on a list of participating {@link org.croudtrip.api.trips.JoinTripRequest}
+     * for an {@link org.croudtrip.api.trips.TripOffer} and a {@link org.croudtrip.api.trips.TripQuery}
+     * from a passenger that wants to join this trip.
 	 * @param joinTripRequests all join requests that should be considered, regardless of what state they are in
 	 * @param tripOffer route information for the driver
 	 * @param tripQuery additional way points that should be considered
@@ -52,6 +55,13 @@ public class TspSolver {
 	}
 
 
+    /**
+     * Find the best waypoint order using TSP based on a list of participating {@link org.croudtrip.api.trips.JoinTripRequest}
+     * for an {@link org.croudtrip.api.trips.TripOffer}.
+     * @param joinTripRequests all join requests that should be considered, regardless of what state they are in
+     * @param tripOffer route information for the driver
+     * @return all possible routes sorted by their air distance (shortes first)
+     */
 	public List<List<TspWayPoint>> getBestOrder(
 			List<JoinTripRequest> joinTripRequests,
 			TripOffer tripOffer) {
