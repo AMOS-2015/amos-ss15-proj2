@@ -217,8 +217,7 @@ public class GcmManager {
     }
 
     public void sendArrivalTimeUpdate(JoinTripRequest request) {
-        // TODO: Send correct message and handle it on client
-        sendGcmMessageToUser(request.getQuery().getPassenger(), GcmConstants.GCM_MSG_REQUEST_ACCEPTED,
+        sendGcmMessageToUser(request.getQuery().getPassenger(), GcmConstants.GCM_MSG_ARRIVAL_TIME_UPDATE,
                 new Pair<>(GcmConstants.GCM_MSG_JOIN_REQUEST_ID, "" + request.getId()));
     }
 }

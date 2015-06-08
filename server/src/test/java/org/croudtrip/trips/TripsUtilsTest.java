@@ -52,6 +52,13 @@ public class TripsUtilsTest {
 		Assert.assertEquals(3, passengerCount);
 	}
 
+    @Test
+    public void testUpdateArrivalTimesForOffer() {
+        final TripOffer offer = new TripOffer(0, null, 0, null, 0, 0, null, null, null, 0);
+
+        // TODO: write some test here
+    }
+
 
 	private JoinTripRequest createJoinRequest(TripOffer offer, JoinTripStatus status) {
 		return new JoinTripRequest(0, null, 0, 0, 0, offer, status);

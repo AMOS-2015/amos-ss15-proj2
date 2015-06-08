@@ -61,7 +61,7 @@ public class TripsNavigationManagerTest extends TestCase {
 
 	@Test
 	@SuppressWarnings("unchecked")
-	public void testGetRouteForOffer() {
+	public void testGetRouteWaypointsForOffer() {
 		new Expectations() {{
 			joinTripRequestDAO.findByOfferId(offer.getId());
 			result = Lists.newArrayList(joinTripRequest);

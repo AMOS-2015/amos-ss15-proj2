@@ -486,7 +486,8 @@ public class TripsManager {
         // TODO: Check if other pending join requests are still valid
 
         // Send all the passengers an arrival time update
-        tripsUtils.updateArrivalTimesForOffer( offer );
+        if(passengerAccepted)
+            tripsUtils.updateArrivalTimesForOffer( offer );
 
 
         return joinTripRequestDAO.findById(joinRequest.getId()).get();
