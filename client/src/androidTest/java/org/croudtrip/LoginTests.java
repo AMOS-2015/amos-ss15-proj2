@@ -6,6 +6,7 @@ import android.test.suitebuilder.annotation.LargeTest;
 
 import org.croudtrip.account.AccountManager;
 import org.croudtrip.activities.LoginActivity;
+import org.croudtrip.api.account.User;
 
 import java.util.ArrayList;
 import java.util.Random;
@@ -72,7 +73,12 @@ public class LoginTests extends ActivityInstrumentationTestCase2<LoginActivity> 
         closeSoftKeyboard(); Thread.sleep(1000);
 
         onView(withId(R.id.btn_register)).perform(click());
-        assertTrue(AccountManager.isUserLoggedIn(loginActivity));
+        assertTrue("User logged in (device)", AccountManager.isUserLoggedIn(loginActivity));
+
+        User user = AccountManager.getLoggedInUser(loginActivity);
+        assertTrue("User first name correct", user.getFirstName().equals(firstName));
+        assertTrue("User last name correct", user.getLastName().equals(lastName));
+        assertTrue("User email correct", user.getEmail().equals(email));
     }
 
 
