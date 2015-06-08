@@ -8,7 +8,6 @@ import org.croudtrip.api.trips.JoinTripRequest;
 import org.croudtrip.api.trips.JoinTripStatus;
 import org.croudtrip.api.trips.TripOffer;
 import org.croudtrip.api.trips.TripQuery;
-import org.croudtrip.logs.LogManager;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
