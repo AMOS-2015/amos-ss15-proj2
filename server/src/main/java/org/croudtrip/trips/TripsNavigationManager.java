@@ -45,7 +45,7 @@ public class TripsNavigationManager {
 
 
 	/**
-	 * Returns the complete route for a given {@link TripOffer}
+	 * Returns the complete route waypoints for a given {@link TripOffer}
 	 * and one {@link TripQuery} including all passenger way points and their expected
 	 * arrival time.
 	 * @param offer the offer which includes the driver route and which is used to find

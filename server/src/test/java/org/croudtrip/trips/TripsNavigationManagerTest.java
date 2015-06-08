@@ -104,5 +104,4 @@ public class TripsNavigationManagerTest extends TestCase {
 		}
 
 	}
-
 }
