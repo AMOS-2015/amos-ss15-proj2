@@ -194,7 +194,7 @@ public class TripsManager {
      * @return The updated offer.
      * @throws RouteNotFoundException is thrown, if there is no route from the starting point to the destination of the trip.
      */
-    public TripOffer updateOffer(TripOffer offer, TripOfferUpdate offerUpdate) throws RouteNotFoundException {
+    public TripOffer updateOffer(TripOffer offer, TripOfferUpdate offerUpdate) {
         RouteLocation newStart;
         TripOfferStatus newStatus;
 

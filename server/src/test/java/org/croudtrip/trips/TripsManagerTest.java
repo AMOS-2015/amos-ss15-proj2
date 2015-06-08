@@ -8,9 +8,16 @@ import org.croudtrip.api.account.User;
 import org.croudtrip.api.account.Vehicle;
 import org.croudtrip.api.directions.Route;
 import org.croudtrip.api.directions.RouteLocation;
+import org.croudtrip.api.trips.RunningTripQuery;
+import org.croudtrip.api.trips.RunningTripQueryStatus;
 import org.croudtrip.api.trips.TripOffer;
 import org.croudtrip.api.trips.TripOfferDescription;
 import org.croudtrip.api.trips.TripOfferStatus;
+import org.croudtrip.api.trips.TripOfferUpdate;
+import org.croudtrip.api.trips.TripQuery;
+import org.croudtrip.api.trips.TripQueryDescription;
+import org.croudtrip.api.trips.TripQueryResult;
+import org.croudtrip.api.trips.TripReservation;
 import org.croudtrip.db.JoinTripRequestDAO;
 import org.croudtrip.db.RunningTripQueryDAO;
 import org.croudtrip.db.TripOfferDAO;
@@ -94,6 +101,122 @@ public class TripsManagerTest {
 
         Assert.assertNotNull(addedOffer);
         assertEquals( offer, addedOffer );
+    }
+
+    @Test
+    public void testSimplePositionUpdateOffer() {
+        // test update position
+        RouteLocation updateLocation = new RouteLocation(1,1);
+        TripOffer offer = new TripOffer( 0, null, 0, null, 0, 0, null, null, TripOfferStatus.ACTIVE_NOT_FULL, 0 );
+        TripOfferUpdate positionUpdate = TripOfferUpdate.createNewStartUpdate( updateLocation );
+
+        TripOffer updatedOffer = tripsManager.updateOffer( offer, positionUpdate );
+
+        Assert.assertEquals( TripOfferStatus.ACTIVE_NOT_FULL, updatedOffer.getStatus() );
+        Assert.assertEquals( updateLocation, updatedOffer.getCurrentLocation() );
+    }
+
+    @Test
+    public void testSimpleCancelUpdateOffer() {
+        // test cancel trip
+        TripOffer offer = new TripOffer( 0, null, 0, null, 0, 0, null, null, TripOfferStatus.ACTIVE_NOT_FULL, 0 );
+        TripOfferUpdate cancelUpdate = TripOfferUpdate.createCancelUpdate();
+
+        TripOffer updatedOffer = tripsManager.updateOffer( offer, cancelUpdate );
+
+        Assert.assertEquals( TripOfferStatus.CANCELLED, updatedOffer.getStatus());
+    }
+
+    @Test
+    public void testQueryOffers() {
+        final Route passengerRoute = new Route( Lists.newArrayList(tripStart, tripEnd), "", 12345, 12345, Lists.newArrayList(12345L), Lists.newArrayList(12345L), null, null, 0  );
+        final User d1 = new User(1, "", "", "", "", true, new Date(0), "", "", 0);
+        final User d2 = new User(2, "", "", "", "", true, new Date(0), "", "", 0);
+        final User d3 = new User(3, "", "", "", "", true, new Date(0), "", "", 0);
+        final User d4 = new User(4, "", "", "", "", true, new Date(0), "", "", 0);
+        final User p = new User(10, "", "", "", "", true, new Date(0), "", "", 0);
+
+        final TripQuery query = new TripQuery( passengerRoute, tripStart, tripEnd, 0, 0, p);
+
+        new Expectations(){{
+            directionsManager.getDirections( tripStart, tripEnd );
+            result = Lists.newArrayList( passengerRoute );
+
+            tripOfferDAO.findAllActive();
+            result = Lists.newArrayList(
+                    new TripOffer(0, null, 0, null, 0, 0, d1, null, TripOfferStatus.ACTIVE_NOT_FULL, 0 ),
+                    new TripOffer(0, null, 0, null, 0, 0, d2, null, TripOfferStatus.ACTIVE_NOT_FULL, 0 ),
+                    new TripOffer(0, null, 0, null, 0, 0, d3, null, TripOfferStatus.ACTIVE_NOT_FULL, 0 ),
+                    new TripOffer(0, null, 0, null, 0, 0, d4, null, TripOfferStatus.ACTIVE_NOT_FULL, 0 )
+            );
+
+            tripsMatcher.filterPotentialMatches( (List<TripOffer>)(any), (TripQuery)(any) );
+            result = Lists.newArrayList(
+                    new TripOffer(0, null, 0, null, 0, 4, d1, null, TripOfferStatus.ACTIVE_NOT_FULL, 0 ),
+                    new TripOffer(0, null, 0, null, 0, 14, d2, null, TripOfferStatus.ACTIVE_NOT_FULL, 0 ),
+                    new TripOffer(0, null, 0, null, 0, 12, d3, null, TripOfferStatus.ACTIVE_NOT_FULL, 0 ),
+                    new TripOffer(0, null, 0, null, 0, 3, d4, null, TripOfferStatus.ACTIVE_NOT_FULL, 0 )
+            );
+
+        }};
+
+        TripQueryResult result = null;
+        try {
+             result = tripsManager.queryOffers(p, new TripQueryDescription(tripStart, tripEnd, 0));
+        } catch (RouteNotFoundException e) {
+            Assert.fail(e.getMessage());
+        }
+
+        Assert.assertNotNull(result);
+
+        // running query should be null since there were results for it
+        RunningTripQuery runningQuery = result.getRunningQuery();
+        Assert.assertNull( runningQuery );
+
+        List<TripReservation> reservations = result.getReservations();
+        Assert.assertEquals( "Wrong reservations count", 1, reservations.size() );
+        Assert.assertEquals( "Wrong driver", d4, reservations.get(0).getDriver());
+        Assert.assertEquals( "Wrong query", query.getPassenger(), reservations.get(0).getQuery().getPassenger());
+        Assert.assertEquals( "Wrong query", query.getStartLocation(), reservations.get(0).getQuery().getStartLocation());
+        Assert.assertEquals( "Wrong query", query.getDestinationLocation(), reservations.get(0).getQuery().getDestinationLocation());
+        Assert.assertEquals( "Wrong price per kilometer", 3, reservations.get(0).getPricePerKmInCents());
+        Assert.assertEquals( "Wrong total price", 4*12345/1000, reservations.get(0).getTotalPriceInCents());
+    }
+
+    @Test
+    public void testJoinTrip() {
+        // TODO: add test code here
+    }
+
+    @Test
+    public void testUpdateJoinRequestAcceptance() {
+        // TODO: add test code here
+    }
+
+    @Test
+    public void testUpdateJoinRequestPassengerExitCar() {
+        // TODO: add test code here
+    }
+
+    @Test
+    public void testUpdateJoinRequestPassengerCancel() {
+        // TODO: add test code here
+    }
+
+    @Test
+    public void testFindCheapestMatch() {
+        // TODO: add test code here
+    }
+
+    @Test
+    public void testSimpleFinishUpdateOffer() {
+        // test finish trip
+        TripOffer offer = new TripOffer( 0, null, 0, null, 0, 0, null, null, TripOfferStatus.ACTIVE_NOT_FULL, 0 );
+        TripOfferUpdate finishUpdate = TripOfferUpdate.createFinishUpdate();
+
+        TripOffer updatedOffer = tripsManager.updateOffer( offer, finishUpdate );
+
+        Assert.assertEquals(TripOfferStatus.FINISHED, updatedOffer.getStatus());
     }
 
     private void assertEquals( TripOffer expected, TripOffer actual ){
