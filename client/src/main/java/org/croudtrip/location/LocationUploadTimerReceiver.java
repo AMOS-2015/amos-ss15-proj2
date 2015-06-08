@@ -64,65 +64,71 @@ public class LocationUploadTimerReceiver extends RoboBroadcastReceiver {
         ReactiveLocationProvider reactiveLocationProvider = new ReactiveLocationProvider(context);
         reactiveLocationProvider.getLastKnownLocation()
                 .subscribe( new Action1<Location>() {
-                    @Override
-                    public void call(final Location location) {
-                        tripsResource.getActiveOffers()
-                                .subscribe(new Action1<List<TripOffer>>() {
-                                               @Override
-                                               public void call(List<TripOffer> tripOffers) {
-                                                   if( location == null ) {
-                                                       // null is not good, but happens on startup, so that's okay.
-                                                       Timber.e("No Update of location was possible, since location was null");
-                                                       return;
-                                                   }
+                                @Override
+                                public void call(final Location location) {
+                                    tripsResource.getActiveOffers()
+                                            .subscribe(
+                                                    new Action1<List<TripOffer>>() {
+                                                           @Override
+                                                           public void call(List<TripOffer> tripOffers) {
+                                                               if( tripOffers == null || tripOffers.isEmpty() ) {
+                                                                   Timber.w("You have currently no trips running. No position upload is necessary");
+                                                                   return;
+                                                               }
 
-                                                   Timber.d("Your location accuracy is " + location.getAccuracy());
+                                                               if( location == null ) {
+                                                                   // null is not good, but happens on startup, so that's okay.
+                                                                   Timber.e("No Update of location was possible, since location was null");
+                                                                   return;
+                                                               }
 
-                                                   if( location.getAccuracy() > MIN_ACCURACY ) {
-                                                       Timber.e("Your location is not accurate enough: " + location.getAccuracy());
-                                                       handleError(context);
-                                                       return;
-                                                   }
+                                                               Timber.d("Your location accuracy is " + location.getAccuracy());
 
-                                                   RouteLocation routeLocation = new RouteLocation( location.getLatitude(), location.getLongitude() );
+                                                               if( location.getAccuracy() > MIN_ACCURACY ) {
+                                                                   Timber.e("Your location is not accurate enough: " + location.getAccuracy());
+                                                                   handleError(context);
+                                                                   return;
+                                                               }
 
-                                                   for (final TripOffer offer : tripOffers) {
+                                                               RouteLocation routeLocation = new RouteLocation( location.getLatitude(), location.getLongitude() );
 
-                                                       // TODO: There should only be one offer
-                                                       TripOfferUpdate offerUpdate = TripOfferUpdate.createNewStartUpdate(routeLocation);
-                                                       tripsResource.updateOffer(offer.getId(), offerUpdate)
-                                                               .subscribe( new Action1<TripOffer>() {
-                                                                   @Override
-                                                                   public void call(TripOffer tripOffer) {
-                                                                       Timber.d("Updated your location on the server for offer " + tripOffer.getId());
-                                                                       SharedPreferences prefs = context.getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
-                                                                        if (prefs.getBoolean(Constants.SHARED_PREF_KEY_RUNNING_TRIP_OFFER, false)) {
-                                                                            handleSuccess(context);
-                                                                        }
-                                                                   }
-                                                               }, new Action1<Throwable>() {
-                                                                   @Override
-                                                                   public void call(Throwable throwable) {
-                                                                       Timber.e("Was not able to update your location on the server " + offer.getId() + " : " + throwable.getMessage());
-                                                                       SharedPreferences prefs = context.getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
-                                                                       if (prefs.getBoolean(Constants.SHARED_PREF_KEY_RUNNING_TRIP_OFFER, false)) {
-                                                                           handleError(context);
-                                                                       }
-                                                                   }
-                                                               });
-                                                   }
-                                               }
-                                           },
-                                        new Action1<Throwable>(){
+                                                               for (final TripOffer offer : tripOffers) {
 
-                                            @Override
-                                            public void call(Throwable throwable) {
-                                                Timber.e("Was not able to update your location on the server. Could not download your offers: " + throwable.getMessage());
-                                                handleError(context);
-                                            }
-                                        });
-                    }
-                }, new Action1<Throwable>() {
+                                                                   // TODO: There should only be one offer
+                                                                   TripOfferUpdate offerUpdate = TripOfferUpdate.createNewStartUpdate(routeLocation);
+                                                                   tripsResource.updateOffer(offer.getId(), offerUpdate)
+                                                                           .subscribe( new Action1<TripOffer>() {
+                                                                               @Override
+                                                                               public void call(TripOffer tripOffer) {
+                                                                                   Timber.d("Updated your location on the server for offer " + tripOffer.getId());
+                                                                                   SharedPreferences prefs = context.getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
+                                                                                   if (prefs.getBoolean(Constants.SHARED_PREF_KEY_RUNNING_TRIP_OFFER, false)) {
+                                                                                       handleSuccess(context);
+                                                                                   }
+                                                                               }
+                                                                           }, new Action1<Throwable>() {
+                                                                               @Override
+                                                                               public void call(Throwable throwable) {
+                                                                                   Timber.e("Was not able to update your location on the server " + offer.getId() + " : " + throwable.getMessage());
+                                                                                   SharedPreferences prefs = context.getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
+                                                                                   if (prefs.getBoolean(Constants.SHARED_PREF_KEY_RUNNING_TRIP_OFFER, false)) {
+                                                                                       handleError(context);
+                                                                                   }
+                                                                               }
+                                                                           });
+                                                               }
+                                                           }
+                                                       },
+                                                    new Action1<Throwable>(){
+
+                                                        @Override
+                                                        public void call(Throwable throwable) {
+                                                            Timber.e("Was not able to update your location on the server. Could not download your offers: " + throwable.getMessage());
+                                                            handleError(context);
+                                                        }
+                                                    });
+                                }
+                            }, new Action1<Throwable>() {
                                 @Override
                                 public void call(Throwable throwable) {
                                     Timber.e("There was an error retrieving the last Location: " + throwable.getMessage());
