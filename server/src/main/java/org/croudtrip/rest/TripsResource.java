@@ -163,7 +163,9 @@ public class TripsResource {
     /**
      * Find all active offers that belong to a particular driver.
      * Even offers with a full car will be shown. Call this method if you want to get active running
-     * offers of a driver.
+     * offers of a driver. Also {@link org.croudtrip.api.trips.TripOfferStatus#DISABLED} offers will
+     * be shown, since the offer is basically active (from the point of view of the driver), but
+     * needs to be enabled again.
      */
     @GET
     @Path("active_offers")
@@ -176,7 +178,8 @@ public class TripsResource {
         while (iterator.hasNext()) {
             TripOffer offer = iterator.next();
             if (!offer.getStatus().equals(TripOfferStatus.ACTIVE_NOT_FULL) &&
-                !offer.getStatus().equals(TripOfferStatus.ACTIVE_FULL)) {
+                !offer.getStatus().equals(TripOfferStatus.ACTIVE_FULL) &&
+                !offer.getStatus().equals(TripOfferStatus.DISABLED)) {
                 iterator.remove();
             }
         }
