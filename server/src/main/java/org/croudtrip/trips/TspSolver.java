@@ -75,7 +75,7 @@ public class TspSolver {
 		return getBestOrder(passengerTripRequests, driverTripRequest);
 	}
 
-    
+
 	public List<List<TspWayPoint>> getBestOrder(
 			List<TripRequest> passengerTripRequests,
 			TripRequest driverTripRequest) {

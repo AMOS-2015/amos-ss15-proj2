@@ -13,6 +13,7 @@ import org.croudtrip.api.trips.TripQuery;
 import org.croudtrip.api.trips.UserWayPoint;
 import org.croudtrip.db.JoinTripRequestDAO;
 import org.croudtrip.directions.DirectionsManager;
+import org.croudtrip.directions.RouteNotFoundException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -21,6 +22,7 @@ import org.junit.runner.RunWith;
 import java.util.ArrayList;
 import java.util.List;
 
+import mockit.Delegate;
 import mockit.Expectations;
 import mockit.Mocked;
 import mockit.integration.junit4.JMockit;
@@ -104,4 +106,56 @@ public class TripsNavigationManagerTest extends TestCase {
 		}
 
 	}
+
+    @Test
+    public void getRouteForOffer() {
+        new Expectations() {{
+            joinTripRequestDAO.findByOfferId(offer.getId());
+            result = Lists.newArrayList(joinTripRequest);
+
+            final TspSolver.TspWayPoint wp0 = new TspSolver.TspWayPoint(driver, driverRoute.getWayPoints().get(0), true);
+            final TspSolver.TspWayPoint wp1 = new TspSolver.TspWayPoint(passenger, query.getStartLocation(), true);
+            final TspSolver.TspWayPoint wp2 = new TspSolver.TspWayPoint(passenger, query.getDestinationLocation(), false);
+            final TspSolver.TspWayPoint wp3 = new TspSolver.TspWayPoint(driver, driverRoute.getWayPoints().get(1), false);
+
+
+            directionsManager.getDirections(
+                    driverRoute.getWayPoints().get(0),
+                    driverRoute.getWayPoints().get(1),
+                    (List<RouteLocation>) any);
+            result = new Delegate() {
+                public List<Route> getDirections( RouteLocation start, RouteLocation dest, List<RouteLocation> wps ) {
+
+                    Assert.assertTrue( wps.size() == 2 );
+                    Assert.assertEquals(wp0.getLocation(), start);
+                    Assert.assertEquals(wp3.getLocation(), dest);
+                    Assert.assertEquals(wp1.getLocation(), wps.get(0));
+                    Assert.assertEquals(wp2.getLocation(), wps.get(1));
+
+                    return Lists.newArrayList(new Route.Builder()
+                                .wayPoints(driverRoute.getWayPoints())
+                                .durationInSeconds(33)
+                                .distanceInMeters(33)
+                                .legDurationInSeconds(Lists.newArrayList(1l, 1l, 1l))
+                                .legDistancesInMeters(Lists.newArrayList(1l, 1l, 1l))
+                                .build());
+                }
+            };
+
+            tspSolver.getBestOrder((List<JoinTripRequest>) any, offer);
+            List<List<TspSolver.TspWayPoint>> routesList = new ArrayList<>();
+            routesList.add(Lists.newArrayList(wp0, wp1, wp2, wp3));
+            result = routesList;
+        }};
+
+        Route route = null;
+        try {
+            route = tripsNavigationManager.getRouteForOffer(offer);
+        } catch (RouteNotFoundException e) {
+            Assert.fail(e.getMessage());
+        }
+
+        Assert.assertEquals(33, route.getDurationInSeconds());
+        Assert.assertEquals(33, route.getDistanceInMeters());
+    }
 }
