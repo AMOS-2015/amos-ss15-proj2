@@ -117,7 +117,7 @@
     <string name="select_car">Select your default car</string>
     <string name="save_changes">Save Changes</string>
     <string name="discard_changes">Discard Changes</string>
-
+    <string name="offer_trip_request_expired">Something went wrong, passenger could not be accepted</string>
     <string name="enable_gps_title">GPS not available</string>
     <string name="enable_gps_description">This application works best with GPS on your device enabled. Enable now?</string>
     <string name="enable_gps_ask">Please do not show again</string>

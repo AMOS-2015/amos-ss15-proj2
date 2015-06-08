@@ -22,6 +22,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.croudtrip.R;
 import org.croudtrip.api.DirectionsResource;
@@ -42,11 +43,14 @@ import java.util.List;
 
 import javax.inject.Inject;
 
+import retrofit.RetrofitError;
+import retrofit.client.Response;
 import roboguice.inject.InjectView;
 import rx.Subscriber;
 import rx.Subscription;
 import rx.functions.Action1;
 import timber.log.Timber;
+
 
 /**
  * Shows the driver a list of passengers who want to join the trip. The driver can then
@@ -175,7 +179,7 @@ public class JoinTripRequestsFragment extends SubscriptionFragment {
          * @param accept if this method should handle "accept" (true) or "decline" (false)
          * @param position the position of the clicked JoinTripRequest in the adapter
          */
-        private synchronized void handleAcceptDecline(boolean accept, int position) {
+        private synchronized void handleAcceptDecline(final boolean accept, final int position) {
 
             String task;
             if (accept) {
@@ -184,7 +188,7 @@ public class JoinTripRequestsFragment extends SubscriptionFragment {
                 task = "Declining";
             }
 
-            JoinTripRequest request = adapter.getRequest(position);
+            final JoinTripRequest request = adapter.getRequest(position);
             Timber.i(task + " Request with ID " + request.getId());
 
             // UI
@@ -194,15 +198,87 @@ public class JoinTripRequestsFragment extends SubscriptionFragment {
             //adapter.setOnRequestAcceptDeclineListener(null);
             recyclerView.setOnTouchListener(null);
 
-            // Inform server
-            JoinTripRequestUpdate requestUpdate;
-            if (accept) requestUpdate = new JoinTripRequestUpdate(JoinTripRequestUpdateType.ACCEPT_PASSENGER);
-            else requestUpdate = new JoinTripRequestUpdate(JoinTripRequestUpdateType.DECLINE_PASSENGER);
-            Subscription subscription = tripsResource.updateJoinRequest(request.getId(), requestUpdate)
-                    .compose(new DefaultTransformer<JoinTripRequest>())
-                    .subscribe(new AcceptDeclineRequestSubscriber(accept, position));
+            //Get a list of current Join trip requests from the server
+            //and make sure that the request is still active (hasn't expired)
+            Subscription Jsubscription = tripsResource.getJoinRequests(true)
+                    .compose(new DefaultTransformer<List<JoinTripRequest>>())
+                    .subscribe(new Action1<List<JoinTripRequest>>() {
+                        @Override
+                        public void call(List<JoinTripRequest> requests) {
+                            if (requests.size() > 0) {
+                                for (int i=0;i<requests.size();i++)
+                                {
+                                    if (request.getId() == requests.get(i).getId()) {
+                                        //Inform server only if the request is still active (not expired)
+                                        JoinTripRequestUpdate requestUpdate;
+                                        if (accept)
+                                            requestUpdate = new JoinTripRequestUpdate(JoinTripRequestUpdateType.ACCEPT_PASSENGER);
+                                        else
+                                            requestUpdate = new JoinTripRequestUpdate(JoinTripRequestUpdateType.DECLINE_PASSENGER);
+                                        Subscription subscription = tripsResource.updateJoinRequest(request.getId(), requestUpdate)
+                                                .compose(new DefaultTransformer<JoinTripRequest>())
+                                                .subscribe(new AcceptDeclineRequestSubscriber(accept, position));
+                                        subscriptions.add(subscription);
+                                        // UI
+                                        progressBar.setVisibility(View.VISIBLE);
+                                        Timber.i("request has not expired");
+                                        //Break from the loop when the request is found in the list
+                                        break;
+                                    }
+                                    //If the request wasn't found in the list, show a toast to the driver
+                                    // and remove the card from the list
+                                    if (i==requests.size()-1)
+                                    {
+                                        Timber.d("Request has expired");
+                                        Toast.makeText(getActivity(), getResources().getString(R.string.offer_trip_request_expired), Toast.LENGTH_SHORT).show();
+                                        //Enable clicking the list items again and remove the progress bar
+                                        recyclerView.setOnTouchListener(touchListener);
+                                        progressBar.setVisibility(View.GONE);
+                                        adapter.removeRequest(position);
+                                        int numRequests = adapter.getItemCount();
+                                        //Show text caption if there are no more requests
+                                        if(numRequests == 0) {
+                                            caption.setVisibility(View.VISIBLE);
+                                        }else{
+                                            caption.setVisibility(View.GONE);
+                                        }
+                                    }
+                                }
+                            }
+                            else
+                            //If the expired request was the last one in the list, size() will be 0
+                            //This snippet takes care of this case
+                            {
+                                Timber.d("No requests found (Request has expired)");
+                                Toast.makeText(getActivity(), getResources().getString(R.string.offer_trip_request_expired), Toast.LENGTH_SHORT).show();
+                                //Enable clicking the list items again and remove the progress bar
+                                recyclerView.setOnTouchListener(touchListener);
+                                progressBar.setVisibility(View.GONE);
+                                adapter.removeRequest(position);
+                                int numRequests = adapter.getItemCount();
+                                //Show text caption if there are no more requests
+                                if (numRequests == 0) {
+                                    caption.setVisibility(View.VISIBLE);
+                                } else {
+                                    caption.setVisibility(View.GONE);
+                                }
+                            }
+                        }
+                    }, new Action1<Throwable>() {
+                        @Override
+                        public void call(Throwable throwable) {
+                            Response response = ((RetrofitError) throwable).getResponse();
+                            if (response != null && response.getStatus() == 401) {  // Not Authorized
+                            } else {
+                                Timber.e("error" + throwable.getMessage());
+                            }
+                            Timber.e("Couldn't get data" + throwable.getMessage());
+                        }
+                    });
 
-            subscriptions.add(subscription);
+            subscriptions.add(Jsubscription);
+
+
         }
 
         @Override
