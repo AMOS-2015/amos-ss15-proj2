@@ -88,6 +88,8 @@ public class GcmConstants {
 
     public static final String GCM_MSG_PASSENGER_AT_DESTINATION = "PASSENGER_AT_DESTINATION";
 
+    public static final String GCM_MSG_ARRIVAL_TIME_UPDATE = "ARRIVAL_TIME_UPDATE";
+
     /** Notifications IDs for android notifications */
     public static final int GCM_NOTIFICATION_JOIN_REQUEST_ID = 1;
     public static final int GCM_NOTIFICATION_REQUEST_ACCEPTED_ID = 2;

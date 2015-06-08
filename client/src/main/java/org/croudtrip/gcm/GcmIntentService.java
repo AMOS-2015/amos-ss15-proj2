@@ -101,11 +101,62 @@ public class GcmIntentService extends RoboIntentService {
             case GcmConstants.GCM_MSG_PASSENGER_AT_DESTINATION:
                 handlePassengerAtDestination();
                 break;
+            case GcmConstants.GCM_MSG_ARRIVAL_TIME_UPDATE:
+                handleArrivalTimeUpdate(intent);
             default:
                 break;
         }
 
         GcmBroadcastReceiver.completeWakefulIntent(intent);
+    }
+
+    private void handleArrivalTimeUpdate(Intent intent) {
+        Timber.d("ARRIVAL_TIME_UPDATE");
+
+        // extract join request and offer from message
+        final long joinTripRequestId = Long.parseLong(intent.getExtras().getString(GcmConstants.GCM_MSG_JOIN_REQUEST_ID));
+        long offerId = Long.parseLong(intent.getExtras().getString(GcmConstants.GCM_MSG_JOIN_REQUEST_OFFER_ID));
+
+        // download the join trip request
+        tripsResource.getJoinRequest(joinTripRequestId)
+                .observeOn(Schedulers.io())
+                .subscribeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                        new Action1<JoinTripRequest>() {
+                            @Override
+                            public void call(JoinTripRequest joinTripRequest) {
+
+                                final SharedPreferences prefs = getApplicationContext().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
+                                SharedPreferences.Editor editor = prefs.edit();
+                                editor.putBoolean(Constants.SHARED_PREF_KEY_ACCEPTED, true);
+                                editor.putBoolean(Constants.SHARED_PREF_KEY_WAITING, false);
+                                editor.putBoolean(Constants.SHARED_PREF_KEY_SEARCHING, false);
+                                editor.putLong(Constants.SHARED_PREF_KEY_TRIP_ID, joinTripRequest.getId());
+                                editor.apply();
+
+                                Bundle extras = new Bundle();
+                                ObjectMapper mapper = new ObjectMapper();
+                                try {
+                                    extras.putString(JoinDispatchFragment.KEY_JOIN_TRIP_REQUEST_RESULT, mapper.writeValueAsString(joinTripRequest));
+                                } catch (JsonProcessingException e) {
+                                    Timber.e("Could not map join trip result");
+                                    e.printStackTrace();
+                                }
+
+                                if(LifecycleHandler.isApplicationInForeground()) {
+                                    Intent startingIntent = new Intent(Constants.EVENT_CHANGE_JOIN_UI);
+                                    startingIntent.putExtras(extras);
+                                    LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(startingIntent);
+                                }
+
+                            }
+                        },
+                        new Action1<Throwable>() {
+                            @Override
+                            public void call(Throwable throwable) {
+                                Timber.e("Something went wrong when downloading join request: " + throwable.getMessage());
+                            }
+                        });
     }
 
     private void handlePassengerAtDestination() {
