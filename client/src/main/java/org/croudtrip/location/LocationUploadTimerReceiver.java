@@ -66,7 +66,7 @@ public class LocationUploadTimerReceiver extends RoboBroadcastReceiver {
                 .subscribe( new Action1<Location>() {
                     @Override
                     public void call(final Location location) {
-                        tripsResource.getOffers(false)
+                        tripsResource.getActiveOffers()
                                 .subscribe(new Action1<List<TripOffer>>() {
                                                @Override
                                                public void call(List<TripOffer> tripOffers) {
