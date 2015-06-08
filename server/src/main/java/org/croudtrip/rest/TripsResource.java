@@ -168,7 +168,7 @@ public class TripsResource {
      * needs to be enabled again.
      */
     @GET
-    @Path("active_offers")
+    @Path("/active_offers")
     @UnitOfWork
     public List<TripOffer> getActiveOffers(@Auth User driver ) {
         List<TripOffer> offers = new ArrayList<>(tripsManager.findOffersByDriver(driver));
