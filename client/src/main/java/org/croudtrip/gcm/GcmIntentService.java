@@ -115,7 +115,6 @@ public class GcmIntentService extends RoboIntentService {
 
         // extract join request and offer from message
         final long joinTripRequestId = Long.parseLong(intent.getExtras().getString(GcmConstants.GCM_MSG_JOIN_REQUEST_ID));
-        long offerId = Long.parseLong(intent.getExtras().getString(GcmConstants.GCM_MSG_JOIN_REQUEST_OFFER_ID));
 
         // download the join trip request
         tripsResource.getJoinRequest(joinTripRequestId)
