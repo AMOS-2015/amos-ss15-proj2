@@ -3,7 +3,13 @@ package org.croudtrip.trips;
 import com.google.common.collect.Lists;
 
 import org.croudtrip.api.account.User;
+import org.croudtrip.api.directions.Route;
 import org.croudtrip.api.directions.RouteLocation;
+import org.croudtrip.api.trips.JoinTripRequest;
+import org.croudtrip.api.trips.JoinTripStatus;
+import org.croudtrip.api.trips.TripOffer;
+import org.croudtrip.api.trips.TripQuery;
+import org.croudtrip.db.JoinTripRequestDAO;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -38,7 +44,7 @@ public class TspSolverTest {
 
 
 	@Test
-	public void getBestOrder() {
+	public void testGetBestOrder() {
 		List<TspSolver.TripRequest> passengerTripRequests = Lists.newArrayList(
 				new TspSolver.TripRequest(p1, p1Start, p1End),
 				new TspSolver.TripRequest(p2, p2Start, p2End),
@@ -71,6 +77,51 @@ public class TspSolverTest {
 				new TspSolver.TspWayPoint(driver, dEnd, false));
 		Assert.assertEquals(routeSolution, shortestRoute);
 	}
+
+    @Test
+    public void testGetBestOrderJoinTripRequests() {
+        TripQuery q1 = new TripQuery(null, p1Start, p1End, 0, 0, p1);
+        TripQuery q2 = new TripQuery(null, p2Start, p2End, 0, 0, p2);
+        TripQuery q3 = new TripQuery(null, p3Start, p3End, 0, 0, p3);
+        TripQuery q4 = new TripQuery(null, null, null, 0, 0, p1);
+        TripOffer offer = new TripOffer( 0, new Route.Builder().wayPoints( Lists.newArrayList( dStart, dEnd ) ).build(), 0, dStart, 0, 0, driver, null, null, 0 );
+
+        // TODO: maybe finde some route with one passenger in car
+        List<JoinTripRequest> passengerTripRequests = Lists.newArrayList(
+                new JoinTripRequest( 0, q1, 0, 0, 0, offer, JoinTripStatus.DRIVER_ACCEPTED ),
+                new JoinTripRequest( 0, q2, 0, 0, 0, offer, JoinTripStatus.DRIVER_ACCEPTED ),
+                new JoinTripRequest( 0, q3, 0, 0, 0, offer, JoinTripStatus.DRIVER_ACCEPTED ),
+                new JoinTripRequest( 0, q4, 0, 0, 0, offer, JoinTripStatus.DRIVER_DECLINED ),
+                new JoinTripRequest( 0, q4, 0, 0, 0, offer, JoinTripStatus.DRIVER_CANCELLED ),
+                new JoinTripRequest( 0, q4, 0, 0, 0, offer, JoinTripStatus.PASSENGER_AT_DESTINATION ),
+                new JoinTripRequest( 0, q4, 0, 0, 0, offer, JoinTripStatus.PASSENGER_ACCEPTED ));
+
+        List<List<TspSolver.TspWayPoint>> sortedRoutes = solver.getBestOrder(passengerTripRequests, offer);
+
+        // for 3 passengers there should be 90 routes
+        Assert.assertEquals(90, sortedRoutes.size());
+
+        // assert list is sorted
+        long lastDistance = Long.MIN_VALUE;
+        for (List<TspSolver.TspWayPoint> route : sortedRoutes) {
+            long distance = getDistance(route);
+            Assert.assertTrue(distance > lastDistance);
+            lastDistance = distance;
+        }
+
+        // check order of shortest route
+        List<TspSolver.TspWayPoint> shortestRoute = sortedRoutes.get(0);
+        List<TspSolver.TspWayPoint> routeSolution = Lists.newArrayList(
+                new TspSolver.TspWayPoint(driver, dStart, true),
+                new TspSolver.TspWayPoint(p1, p1Start, true),
+                new TspSolver.TspWayPoint(p2, p2Start, true),
+                new TspSolver.TspWayPoint(p1, p1End, false),
+                new TspSolver.TspWayPoint(p2, p2End, false),
+                new TspSolver.TspWayPoint(p3, p3Start, true),
+                new TspSolver.TspWayPoint(p3, p3End, false),
+                new TspSolver.TspWayPoint(driver, dEnd, false));
+        Assert.assertEquals(routeSolution, shortestRoute);
+    }
 
 
 	private long getDistance(List<TspSolver.TspWayPoint> route) {
