@@ -534,9 +534,8 @@ public class TripsManager {
         joinTripRequestDAO.update(updatedRequest);
         gcmManager.sendPassengerCancelledTripMsg(joinRequest);
 
-        // TODO: Update all the passengers arrival time
-        tripsUtils.updateArrivalTimesForOffer( joinRequest.getOffer(), null );
-
+        // Update all the passenger's arrival time
+        tripsUtils.updateArrivalTimesForOffer( joinRequest.getOffer() );
 
         return joinRequest;
     }

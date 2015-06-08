@@ -56,6 +56,9 @@ public class TripsUtils {
 		return passengerCount;
 	}
 
+    public void updateArrivalTimesForOffer(TripOffer offer) {
+        updateArrivalTimesForOffer(offer, null);
+    }
 
     public void updateArrivalTimesForOffer(TripOffer offer, User noReceiver) {
         List<UserWayPoint> userWayPoints = tripsNavigationManager.getRouteWaypointsForOffer(offer);

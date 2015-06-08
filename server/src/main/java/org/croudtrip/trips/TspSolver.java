@@ -23,12 +23,8 @@ import javax.inject.Inject;
  * it's using brute force ...
  */
 public class TspSolver {
-    private final LogManager logManager;
-
 	@Inject
-	TspSolver( LogManager logManager) {
-        this.logManager = logManager;
-    }
+	TspSolver() {}
 
 
 	/**

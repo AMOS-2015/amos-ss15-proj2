@@ -8,6 +8,7 @@ import org.croudtrip.api.trips.JoinTripStatus;
 import org.croudtrip.api.trips.TripOffer;
 import org.croudtrip.db.JoinTripRequestDAO;
 import org.croudtrip.gcm.GcmManager;
+import org.croudtrip.logs.LogManager;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,12 +24,13 @@ public class TripsUtilsTest {
 	@Mocked JoinTripRequestDAO joinTripRequestDAO;
     @Mocked TripsNavigationManager tripsNavigationManager;
     @Mocked GcmManager gcmManager;
+    @Mocked LogManager logManager;
 	private TripsUtils tripsUtils;
 
 
 	@Before
 	public void setupUtils() {
-		this.tripsUtils = new TripsUtils(joinTripRequestDAO, tripsNavigationManager, gcmManager);
+		this.tripsUtils = new TripsUtils(joinTripRequestDAO, tripsNavigationManager, gcmManager, logManager);
 	}
 
 

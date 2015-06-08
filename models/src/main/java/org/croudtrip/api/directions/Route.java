@@ -54,13 +54,11 @@ public class Route {
     @Column(name="last_update_time_in_seconds", nullable = false)
     private long lastUpdateTimeInSeconds;
 
-    @ElementCollection
     @Column(name="leg_durations")
-    private List<Long> legDurationsInSeconds;
+    private String legDurationsInSeconds;
 
-    @ElementCollection
     @Column(name="leg_distances")
-    private List<Long> legDistancesInMeters;
+    private String legDistancesInMeters;
 
     public Route() { }
 
@@ -92,8 +90,30 @@ public class Route {
         this.googleCopyrights = googleCopyrights;
         this.googleWarnings = googleWarnings;
         this.lastUpdateTimeInSeconds = lastUpdateTimeInSeconds;
-        this.legDurationsInSeconds = legDurationsInSeconds;
-        this.legDistancesInMeters= legDistancesInMeters;
+
+        this.legDurationsInSeconds = "";
+        if( legDurationsInSeconds != null ) {
+            StringBuilder legDurationBuilder = new StringBuilder();
+            firstPoint = true;
+            for (Long value : legDurationsInSeconds) {
+                if (firstPoint) firstPoint = false;
+                else legDurationBuilder.append("#");
+                legDurationBuilder.append(value);
+            }
+            this.legDurationsInSeconds = legDurationBuilder.toString();
+        }
+
+        this.legDistancesInMeters = "";
+        if( legDistancesInMeters != null ){
+            StringBuilder legDistanceBuilder = new StringBuilder();
+            firstPoint = true;
+            for( Long value : legDistancesInMeters ){
+                if( firstPoint ) firstPoint = false;
+                else legDistanceBuilder.append("#");
+                legDistanceBuilder.append(value);
+            }
+            this.legDistancesInMeters= legDistanceBuilder.toString();
+        }
     }
 
     @JsonProperty("wayPoints")
@@ -126,10 +146,18 @@ public class Route {
 
     public long getLastUpdateTimeInSeconds() { return lastUpdateTimeInSeconds; }
 
-    public List<Long> getLegDurationsInSeconds() { return legDurationsInSeconds; }
+    public List<Long> getLegDurationsInSeconds() {
+        List<Long> result = new ArrayList<>();
+        String[] durations = legDurationsInSeconds.split("#");
+        for( String value : durations ) result.add(Long.valueOf(value));
+        return result;
+    }
 
     public List<Long> getLegDistancesInMeters() {
-        return legDistancesInMeters;
+        List<Long> result = new ArrayList<>();
+        String[] distances = legDistancesInMeters.split("#");
+        for( String value : distances ) result.add(Long.valueOf(value));
+        return result;
     }
 
     @Override
