@@ -1,5 +1,6 @@
 package org.croudtrip.trips;
 
+import org.croudtrip.api.account.User;
 import org.croudtrip.api.trips.JoinTripRequest;
 import org.croudtrip.api.trips.JoinTripStatus;
 import org.croudtrip.api.trips.TripOffer;
@@ -56,7 +57,7 @@ public class TripsUtils {
 	}
 
 
-    public void updateArrivalTimesForOffer(TripOffer offer) {
+    public void updateArrivalTimesForOffer(TripOffer offer, User noReceiver) {
         List<UserWayPoint> userWayPoints = tripsNavigationManager.getRouteWaypointsForOffer(offer);
         List<JoinTripRequest> joinRequests = joinTripRequestDAO.findByOfferId( offer.getId() );
 
@@ -64,6 +65,9 @@ public class TripsUtils {
             // only DRIVER_ACCEPTED requests matter, otherwise they are not active anymore or will be
             // DRIVER_ACCEPTED in future and therefore updated later
             if( !request.getStatus().equals( JoinTripStatus.DRIVER_ACCEPTED ) )
+                continue;
+
+            if( noReceiver != null && request.getQuery().getPassenger().getId() == noReceiver.getId())
                 continue;
 
             // find estimated arrival time in list
