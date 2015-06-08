@@ -124,7 +124,9 @@ public class LocationUploadTimerReceiver extends RoboBroadcastReceiver {
                                                         @Override
                                                         public void call(Throwable throwable) {
                                                             Timber.e("Was not able to update your location on the server. Could not download your offers: " + throwable.getMessage());
-                                                            handleError(context);
+                                                            if (context.getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE).getBoolean(Constants.SHARED_PREF_KEY_RUNNING_TRIP_OFFER, false)) {
+                                                                handleError(context);
+                                                            }
                                                         }
                                                     });
                                 }
