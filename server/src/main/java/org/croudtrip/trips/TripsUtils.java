@@ -6,6 +6,7 @@ import org.croudtrip.api.trips.TripOffer;
 import org.croudtrip.api.trips.UserWayPoint;
 import org.croudtrip.db.JoinTripRequestDAO;
 import org.croudtrip.gcm.GcmManager;
+import org.croudtrip.logs.LogManager;
 
 import java.util.List;
 
@@ -19,14 +20,17 @@ public class TripsUtils {
 	private final JoinTripRequestDAO joinTripRequestDAO;
     private final TripsNavigationManager tripsNavigationManager;
     private final GcmManager gcmManager;
+    private final LogManager logManager;
 
 	@Inject
 	TripsUtils(JoinTripRequestDAO joinTripRequestDAO,
                TripsNavigationManager tripsNavigationManager,
-               GcmManager gcmManager) {
+               GcmManager gcmManager,
+               LogManager logManager) {
 		this.joinTripRequestDAO = joinTripRequestDAO;
         this.tripsNavigationManager = tripsNavigationManager;
         this.gcmManager = gcmManager;
+        this.logManager = logManager;
 	}
 
 
@@ -64,8 +68,10 @@ public class TripsUtils {
 
             // find estimated arrival time in list
             long arrivalTimestamp = 0;
+            logManager.d("Potential match has " + userWayPoints.size() + " wps");
             for( UserWayPoint wp : userWayPoints ){
-                if( wp.getUser().equals(request.getQuery().getPassenger())) {
+                logManager.d("WP for user " + wp.getUser().getFirstName());
+                if( wp.getUser().getId() == request.getQuery().getPassenger().getId() ) {
                     arrivalTimestamp = wp.getArrivalTimestamp();
                     break;
                 }

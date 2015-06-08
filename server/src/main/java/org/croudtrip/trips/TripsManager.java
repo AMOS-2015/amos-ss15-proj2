@@ -362,8 +362,10 @@ public class TripsManager {
 
         // find estimated arrival time in list
         long arrivalTimestamp = 0;
+        logManager.d("Potential match has " + potentialMatch.get().userWayPoints.size() + " wps");
         for( UserWayPoint wp : potentialMatch.get().userWayPoints ){
-            if( wp.getUser().equals(tripReservation.getQuery().getPassenger())) {
+            logManager.d("WP for user " + wp.getUser().getFirstName());
+            if( wp.getUser().getId() == tripReservation.getQuery().getPassenger().getId() ) {
                 arrivalTimestamp = wp.getArrivalTimestamp();
                 break;
             }

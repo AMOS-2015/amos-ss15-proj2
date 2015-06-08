@@ -5,8 +5,10 @@ import com.google.common.base.Objects;
 import org.croudtrip.api.account.User;
 import org.croudtrip.api.directions.RouteLocation;
 import org.croudtrip.api.trips.JoinTripRequest;
+import org.croudtrip.api.trips.JoinTripStatus;
 import org.croudtrip.api.trips.TripOffer;
 import org.croudtrip.api.trips.TripQuery;
+import org.croudtrip.logs.LogManager;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -21,9 +23,12 @@ import javax.inject.Inject;
  * it's using brute force ...
  */
 public class TspSolver {
+    private final LogManager logManager;
 
 	@Inject
-	TspSolver() {  }
+	TspSolver( LogManager logManager) {
+        this.logManager = logManager;
+    }
 
 
 	/**
@@ -141,6 +146,11 @@ public class TspSolver {
 				case PASSENGER_IN_CAR:
 					tripRequest.setEnd(joinTripRequest.getQuery().getDestinationLocation());
 			}
+
+            // add the trip request to the final list.
+            if( joinTripRequest.getStatus() == JoinTripStatus.DRIVER_ACCEPTED ||
+                    joinTripRequest.getStatus() == JoinTripStatus.PASSENGER_IN_CAR)
+                tripRequests.add(tripRequest);
 		}
 		return tripRequests;
 	}
