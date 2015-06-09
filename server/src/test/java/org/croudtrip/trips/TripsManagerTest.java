@@ -9,6 +9,7 @@ import org.croudtrip.api.account.Vehicle;
 import org.croudtrip.api.directions.Route;
 import org.croudtrip.api.directions.RouteLocation;
 import org.croudtrip.api.trips.JoinTripRequest;
+import org.croudtrip.api.trips.JoinTripStatus;
 import org.croudtrip.api.trips.RunningTripQuery;
 import org.croudtrip.api.trips.RunningTripQueryStatus;
 import org.croudtrip.api.trips.TripOffer;
@@ -230,17 +231,43 @@ public class TripsManagerTest {
     }
 
     @Test
+    public void testUpdateJoinRequestAcceptanceAlreadyModifiedFails() {
+        JoinTripRequest joinRequest = new JoinTripRequest( 0, null, 0 ,0 , 0, null, JoinTripStatus.DRIVER_ACCEPTED );
+        testFailingJoinRequestAcceptanceUpdate(joinRequest);
+
+        joinRequest = new JoinTripRequest( 0, null, 0 ,0 , 0, null, JoinTripStatus.DRIVER_CANCELLED );
+        testFailingJoinRequestAcceptanceUpdate(joinRequest);
+
+        joinRequest = new JoinTripRequest( 0, null, 0 ,0 , 0, null, JoinTripStatus.PASSENGER_AT_DESTINATION );
+        testFailingJoinRequestAcceptanceUpdate(joinRequest);
+
+        joinRequest = new JoinTripRequest( 0, null, 0 ,0 , 0, null, JoinTripStatus.PASSENGER_IN_CAR );
+        testFailingJoinRequestAcceptanceUpdate(joinRequest);
+
+        joinRequest = new JoinTripRequest( 0, null, 0 ,0 , 0, null, JoinTripStatus.DRIVER_DECLINED );
+        testFailingJoinRequestAcceptanceUpdate(joinRequest);
+
+        joinRequest = new JoinTripRequest( 0, null, 0 ,0 , 0, null, JoinTripStatus.PASSENGER_CANCELLED );
+        testFailingJoinRequestAcceptanceUpdate(joinRequest);
+    }
+
+    private void testFailingJoinRequestAcceptanceUpdate(JoinTripRequest joinRequest) {
+        boolean exception = false;
+        try {
+            tripsManager.updateJoinRequestAcceptance(joinRequest, true);
+        } catch( IllegalArgumentException e){
+            exception = true;
+        }
+        Assert.assertTrue(exception);
+    }
+
+    @Test
     public void testUpdateJoinRequestPassengerExitCar() {
         // TODO: add test code here
     }
 
     @Test
     public void testUpdateJoinRequestPassengerCancel() {
-        // TODO: add test code here
-    }
-
-    @Test
-    public void testFindCheapestMatch() {
         // TODO: add test code here
     }
 
