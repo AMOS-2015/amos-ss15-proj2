@@ -349,6 +349,9 @@ public class MyTripDriverFragment extends SubscriptionFragment {
 
     private void generateRouteOnMap(Route route) {
 
+        // only one route will be shown (old route will be deleted
+        googleMap.clear();
+
         // Show route information on the map
         googleMap.addPolyline(new PolylineOptions().addAll(PolyUtil.decode(route.getPolyline())));
         googleMap.setMyLocationEnabled(true);
