@@ -101,6 +101,8 @@ public class MainActivity extends AbstractRoboDrawerActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+
+
         LocalBroadcastManager.getInstance(this).registerReceiver(driverAcceptedReceiver,
                 new IntentFilter(Constants.EVENT_DRIVER_ACCEPTED));
     }
@@ -226,6 +228,7 @@ public class MainActivity extends AbstractRoboDrawerActivity {
             setFragment( frag, getString(R.string.menu_my_trip));
         }
     };
+
 
 
     private boolean GPSavailable() {

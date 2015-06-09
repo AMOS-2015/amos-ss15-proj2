@@ -78,6 +78,10 @@ public class GcmIntentService extends RoboIntentService {
 
         switch(gcmMessageType)
         {
+
+            case GcmConstants.GCM_MSG_REQUEST_EXPIRED:
+                handleJoinRequestExpired();
+                break;
             case GcmConstants.GCM_MSG_DUMMY:
                 break;
             case GcmConstants.GCM_MSG_JOIN_REQUEST:
@@ -142,7 +146,7 @@ public class GcmIntentService extends RoboIntentService {
                                     e.printStackTrace();
                                 }
 
-                                if(LifecycleHandler.isApplicationInForeground()) {
+                                if (LifecycleHandler.isApplicationInForeground()) {
                                     Intent startingIntent = new Intent(Constants.EVENT_CHANGE_JOIN_UI);
                                     startingIntent.putExtras(extras);
                                     LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(startingIntent);
@@ -225,7 +229,7 @@ public class GcmIntentService extends RoboIntentService {
         long offerId = Long.parseLong( intent.getExtras().getString(GcmConstants.GCM_MSG_JOIN_REQUEST_OFFER_ID) );
 
         // download the join trip request
-        tripsResource.getJoinRequest(joinTripRequestId )
+        tripsResource.getJoinRequest(joinTripRequestId)
                 .observeOn( Schedulers.io() )
                 .subscribeOn(AndroidSchedulers.mainThread())
                 .subscribe(
@@ -335,7 +339,7 @@ public class GcmIntentService extends RoboIntentService {
         long joinTripRequestId = Long.parseLong( intent.getExtras().getString(GcmConstants.GCM_MSG_JOIN_REQUEST_ID) );
 
         // download the join trip request
-        tripsResource.getJoinRequest(joinTripRequestId).observeOn( Schedulers.io() )
+        tripsResource.getJoinRequest(joinTripRequestId).observeOn(Schedulers.io())
                 .subscribeOn(AndroidSchedulers.mainThread())
                 .subscribe(
                         new Action1<JoinTripRequest>() {
@@ -412,7 +416,7 @@ public class GcmIntentService extends RoboIntentService {
 
         notification.flags |= Notification.FLAG_AUTO_CANCEL;
 
-        notificationManager.notify( notificationId, notification );
+        notificationManager.notify(notificationId, notification);
     }
 
     /*
@@ -467,4 +471,16 @@ public class GcmIntentService extends RoboIntentService {
             LocalBroadcastManager.getInstance(this).sendBroadcast(startingIntent);
         }
     }
+
+    public void handleJoinRequestExpired () {
+        Timber.d("Request Expired");
+        if (LifecycleHandler.isApplicationInForeground()) {
+            Timber.d("Request Expired and Broadcast was sent to LocalBroadcastManager");
+            Intent startingIntent = new Intent(Constants.EVENT_JOIN_REQUEST_EXPIRED);
+            LocalBroadcastManager.getInstance(this).sendBroadcast(startingIntent);
+        }
+        else
+            Timber.d("Request Expired but Broadcast was not sent to LocalBroadcastManager, application not in Foreground");
+    }
+
 }

@@ -14,8 +14,10 @@
 
 package org.croudtrip.fragments.join;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -97,6 +99,8 @@ public class JoinDrivingFragment extends SubscriptionFragment implements GoogleA
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        LocalBroadcastManager.getInstance(getActivity()).registerReceiver(joinRequestExpiredReceiver,
+                new IntentFilter(Constants.EVENT_JOIN_REQUEST_EXPIRED));
     }
 
     @Override
@@ -361,4 +365,14 @@ public class JoinDrivingFragment extends SubscriptionFragment implements GoogleA
     public void onConnectionFailed(ConnectionResult connectionResult) {
 
     }
+
+    //The onReceive method is fired when the join trip request expires on the server
+    //The passenger is redirected to the join trip UI accordingly
+    private BroadcastReceiver joinRequestExpiredReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Timber.d("Request expired broadcast receiver: onReceive");
+            sendUserBackToSearch();
+        }
+    };
 }
