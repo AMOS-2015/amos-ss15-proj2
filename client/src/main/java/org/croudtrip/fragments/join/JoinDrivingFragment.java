@@ -350,6 +350,12 @@ public class JoinDrivingFragment extends SubscriptionFragment implements GoogleA
         //inflater.inflate(R.menu.menu_main, menu);
     }
 
+    @Override
+    public void onPause() {
+        super.onPause();
+        LocalBroadcastManager.getInstance(getActivity().getApplicationContext())
+                .unregisterReceiver(joinRequestExpiredReceiver);
+    }
 
 
 
