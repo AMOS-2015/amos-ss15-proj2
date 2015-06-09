@@ -147,7 +147,7 @@ public class MyTripDriverFragment extends SubscriptionFragment {
 
         // Fill the passengers list
         View header = view.findViewById(R.id.ll_my_trip_driver_info);
-        adapter = new MyTripDriverPassengersAdapter(this, header);
+        adapter = new MyTripDriverPassengersAdapter(header);
 
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getActivity());
         recyclerView.setLayoutManager(layoutManager);
@@ -201,14 +201,26 @@ public class MyTripDriverFragment extends SubscriptionFragment {
 
         // Remove the header from the layout. Otherwise it exists twice
         ((ViewManager) view).removeView(header);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
 
         // Get notified if a passenger cancels his trip or has reached his destination
         IntentFilter filter = new IntentFilter();
         filter.addAction(Constants.EVENT_PASSENGER_CANCELLED_TRIP);
         filter.addAction(Constants.EVENT_PASSENGER_REACHED_DESTINATION);
-        LocalBroadcastManager.getInstance(getActivity()).registerReceiver(passengersChangeReceiver, filter);
+        LocalBroadcastManager.getInstance(getActivity().getApplicationContext())
+                .registerReceiver(passengersChangeReceiver, filter);
     }
 
+    @Override
+    public void onPause() {
+        super.onPause();
+        LocalBroadcastManager.getInstance(getActivity().getApplicationContext())
+                .unregisterReceiver(passengersChangeReceiver);
+    }
 
     private void setupCancelButton(View header) {
         (header.findViewById(R.id.btn_my_trip_driver_cancel_trip))
@@ -244,30 +256,34 @@ public class MyTripDriverFragment extends SubscriptionFragment {
     }
 
     private void setupFinishButton(View header) {
+
         finishButton = ((Button) (header.findViewById(R.id.btn_my_trip_driver_finish_trip)));
         finishButton.setOnClickListener(new View.OnClickListener() {
+
             @Override
             public void onClick(View v) {
 
-                // Get the current offer (to get the ID) to tell the server to finish this offer
-                tripsResource.getOffers(true)
-                        .compose(new DefaultTransformer<List<TripOffer>>())
-                        .flatMap(new Func1<List<TripOffer>, Observable<TripOffer>>() {
-                            @Override
-                            public Observable<TripOffer> call(List<TripOffer> tripOffers) {
+                // Tell the server to finish this trip
+                subscriptions.add(
+                        tripsResource.updateOffer(offerID, TripOfferUpdate.createFinishUpdate())
+                                .compose(new DefaultTransformer<TripOffer>())
+                                .subscribe(new Action1<TripOffer>() {
+                                    @Override
+                                    public void call(TripOffer offer) {
+                                        // After the server has been contacted successfully, clean
+                                        // up the SharedPref and show "Offer Trip" screen again
+                                        removeRunningTripOfferState();
+                                    }
 
-                                if (tripOffers.isEmpty()) {
-                                    throw new NoSuchElementException("There's currently no offer");
-                                }
-
-                                if (tripOffers.size() > 1) {
-                                    Timber.e("Found multiple open offers!");
-                                }
-
-                                // There should only be one offer, so simply finish the first
-                                return Observable.just(tripOffers.get(0));
-                            }
-                        }).subscribe(new FinishTripSubscription());
+                                }, new Action1<Throwable>() {
+                                    @Override
+                                    public void call(Throwable throwable) {
+                                        Timber.i("Error when finishing trip with ID " + offerID + ": "
+                                                + throwable.getMessage());
+                                        Toast.makeText(getActivity(), "Error: " + throwable.getMessage(),
+                                                Toast.LENGTH_LONG).show();
+                                    }
+                                }));
             }
         });
     }
@@ -436,44 +452,6 @@ public class MyTripDriverFragment extends SubscriptionFragment {
 
     //*************************** Inner classes ********************************//
 
-
-    private class FinishTripSubscription extends Subscriber<TripOffer> {
-
-        @Override
-        public void onNext(final TripOffer tripOffer) {
-
-            tripsResource.updateOffer(tripOffer.getId(), TripOfferUpdate.createFinishUpdate())
-                    .compose(new DefaultTransformer<TripOffer>())
-                    .subscribe(new Action1<TripOffer>() {
-                        @Override
-                        public void call(TripOffer offer) {
-                            // After the server has been contacted successfully, clean up the SharedPref
-                            // and show "Offer Trip" screen again
-                            removeRunningTripOfferState();
-                        }
-
-                    }, new Action1<Throwable>() {
-                        @Override
-                        public void call(Throwable throwable) {
-                            Timber.i("Error when finishing trip with ID " + tripOffer.getId() + ": " + throwable.getMessage());
-                            Toast.makeText(getActivity(), "Error: " + throwable.getMessage(), Toast.LENGTH_LONG).show();
-                        }
-                    });
-
-
-        }
-
-
-        @Override
-        public void onError(Throwable e) {
-            e.printStackTrace();
-        }
-
-        @Override
-        public void onCompleted() {}
-    }
-
-
     /**
      * This Subscriber loads the current route on the map and load the passengers with the help of
      * {@link ImportantPassengersSubscriber}
@@ -558,17 +536,24 @@ public class MyTripDriverFragment extends SubscriptionFragment {
 
                 JoinTripStatus status = joinTripRequest.getStatus();
 
-                if (status != JoinTripStatus.DRIVER_DECLINED) {
+                if (status != JoinTripStatus.DRIVER_DECLINED
+                        && status != JoinTripStatus.PASSENGER_ACCEPTED) {
 
-                    if (status == JoinTripStatus.PASSENGER_CANCELLED) {
+                    if (status == JoinTripStatus.PASSENGER_CANCELLED
+                            || status == JoinTripStatus.DRIVER_CANCELLED) {
                         // Remove any cancelled passengers from the adapter
                         adapter.removeRequest(joinTripRequest.getId());
 
-                    } else {
+                    } else if (status == JoinTripStatus.DRIVER_ACCEPTED
+                            || status == JoinTripStatus.PASSENGER_IN_CAR
+                            || status == JoinTripStatus.PASSENGER_AT_DESTINATION){
+
                         // Simply update (or implicitly add) this passenger request
                         adapter.updateRequest(joinTripRequest);
 
-                        if (status == JoinTripStatus.DRIVER_ACCEPTED || status == JoinTripStatus.PASSENGER_IN_CAR) {
+                        if (status == JoinTripStatus.DRIVER_ACCEPTED
+                                || status == JoinTripStatus.PASSENGER_IN_CAR) {
+
                             Timber.d("There is still an important passenger: " + status);
                             allowFinish = false;
                         }
@@ -576,16 +561,14 @@ public class MyTripDriverFragment extends SubscriptionFragment {
                 }
             }
 
-            if (allowFinish) {
-                // Allow the driver to finish the trip
-                finishButton.setEnabled(true);
-            }
-
+            // Dis-/Allow the driver to finish the trip
+            finishButton.setEnabled(allowFinish);
             adapter.updateEarnings();
         }
 
         @Override
-        public void onCompleted() {}
+        public void onCompleted() {
+        }
 
         @Override
         public void onError(Throwable e) {

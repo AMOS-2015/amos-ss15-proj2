@@ -14,9 +14,9 @@
 
 package org.croudtrip.trip;
 
+import android.content.Context;
 import android.location.Address;
 import android.location.Geocoder;
-import android.support.v4.app.Fragment;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -54,14 +54,12 @@ public class MyTripDriverPassengersAdapter extends RecyclerView.Adapter<Recycler
     private static final int TYPE_HEADER = 0;           // header element
     private static final int TYPE_ITEM = 1;             // normal passenger element
 
-    private Fragment fragment;
     private List<JoinTripRequest> passengers;
 
 
     //************************** Constructors ***************************//
 
-    public MyTripDriverPassengersAdapter(Fragment fragment, View header) {
-        this.fragment = fragment;
+    public MyTripDriverPassengersAdapter(View header) {
         this.passengers = new ArrayList<JoinTripRequest>();
         this.header = header;
 
@@ -104,7 +102,8 @@ public class MyTripDriverPassengersAdapter extends RecyclerView.Adapter<Recycler
             // Passenger image/avatar
             String avatarURL = passenger.getAvatarUrl();
             if (avatarURL != null) {
-                Picasso.with(fragment.getActivity()).load(avatarURL).into(holder.ivAvatar);
+                Context context = holder.ivAvatar.getContext();
+                Picasso.with(context).load(avatarURL).into(holder.ivAvatar);
             } else {
                 holder.ivAvatar.setImageResource(R.drawable.profile);
             }
@@ -125,7 +124,7 @@ public class MyTripDriverPassengersAdapter extends RecyclerView.Adapter<Recycler
                 holder.checkmark.setVisibility(View.GONE);
             }
 
-            color = fragment.getResources().getColor(color);
+            color = holder.card.getContext().getResources().getColor(color);
             holder.card.setCardBackgroundColor(color);
 
         } else if (h instanceof MyTripDriverPassengersAdapter.HeaderViewHolder) {
@@ -143,7 +142,7 @@ public class MyTripDriverPassengersAdapter extends RecyclerView.Adapter<Recycler
         // Receive addresses for Latitude/Longitude
         Geocoder geocoder;
         List<Address> addresses;
-        geocoder = new Geocoder(fragment.getActivity(), Locale.getDefault());
+        geocoder = new Geocoder(holder.tvPassengerLocation.getContext(), Locale.getDefault());
 
         try {
             addresses = geocoder.getFromLocation(location.getLat(), location.getLng(), 1);
@@ -188,7 +187,7 @@ public class MyTripDriverPassengersAdapter extends RecyclerView.Adapter<Recycler
             pCents = cents + "";
         }
 
-        textView.setText(fragment.getActivity().getString(R.string.my_trip_driver_my_earnings,
+        textView.setText(textView.getContext().getString(R.string.my_trip_driver_my_earnings,
                 pEuros, pCents));
     }
 
