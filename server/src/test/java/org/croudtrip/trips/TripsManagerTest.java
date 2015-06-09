@@ -8,6 +8,8 @@ import org.croudtrip.api.account.User;
 import org.croudtrip.api.account.Vehicle;
 import org.croudtrip.api.directions.Route;
 import org.croudtrip.api.directions.RouteLocation;
+import org.croudtrip.api.trips.JoinTripRequest;
+import org.croudtrip.api.trips.JoinTripStatus;
 import org.croudtrip.api.trips.RunningTripQuery;
 import org.croudtrip.api.trips.RunningTripQueryStatus;
 import org.croudtrip.api.trips.TripOffer;
@@ -18,6 +20,7 @@ import org.croudtrip.api.trips.TripQuery;
 import org.croudtrip.api.trips.TripQueryDescription;
 import org.croudtrip.api.trips.TripQueryResult;
 import org.croudtrip.api.trips.TripReservation;
+import org.croudtrip.api.trips.UserWayPoint;
 import org.croudtrip.db.JoinTripRequestDAO;
 import org.croudtrip.db.RunningTripQueryDAO;
 import org.croudtrip.db.TripOfferDAO;
@@ -129,13 +132,13 @@ public class TripsManagerTest {
 
     @Test
     public void testQueryOffers() {
-        final Route passengerRoute = new Route( Lists.newArrayList(tripStart, tripEnd), "", 12345, 12345, Lists.newArrayList(12345L), Lists.newArrayList(12345L), null, null, 0  );
         final User d1 = new User(1, "", "", "", "", true, new Date(0), "", "", 0);
         final User d2 = new User(2, "", "", "", "", true, new Date(0), "", "", 0);
         final User d3 = new User(3, "", "", "", "", true, new Date(0), "", "", 0);
         final User d4 = new User(4, "", "", "", "", true, new Date(0), "", "", 0);
         final User p = new User(10, "", "", "", "", true, new Date(0), "", "", 0);
 
+        final Route passengerRoute = new Route( Lists.newArrayList(tripStart, tripEnd), "", 12345, 12345, Lists.newArrayList(12345L), Lists.newArrayList(12345L), null, null, 0  );
         final TripQuery query = new TripQuery( passengerRoute, tripStart, tripEnd, 0, 0, p);
 
         new Expectations(){{
@@ -185,12 +188,77 @@ public class TripsManagerTest {
 
     @Test
     public void testJoinTrip() {
-        // TODO: add test code here
+        final User d = new User(1, "", "", "", "", true, new Date(0), "", "", 0);
+        final User p = new User(10, "", "", "", "", true, new Date(0), "", "", 0);
+
+        final RouteLocation passengerStart = new RouteLocation(2,2);
+        final RouteLocation passengerEnd = new RouteLocation(3,3);
+
+        final Route passengerRoute = new Route( Lists.newArrayList(passengerStart, passengerEnd), "", 12345, 12345, Lists.newArrayList(12345L), Lists.newArrayList(12345L), null, null, 0  );
+        final TripQuery query = new TripQuery( passengerRoute, passengerStart, passengerEnd, 0, 0, p);
+
+        final TripOffer offer = new TripOffer(0, null, 0, tripStart, 10, 10, d, null, TripOfferStatus.ACTIVE_NOT_FULL, 0);
+
+        TripReservation reservation = new TripReservation( 0, query, 12345, 10, 0, d );
+
+        new Expectations(){{
+
+            tripOfferDAO.findById( anyLong );
+            result = Optional.of(offer);
+
+            tripsMatcher.isPotentialMatch( offer, query );
+            result = Optional.of( new TripsMatcher.PotentialMatch( offer, query, Lists.newArrayList(
+                    new UserWayPoint(d, tripStart, true, 0, 0 ),
+                    new UserWayPoint(p, passengerStart, true, 1, 1  ),
+                    new UserWayPoint(p, passengerEnd, false, 2, 2  ),
+                    new UserWayPoint(d, tripEnd, false, 3, 3  )
+            ) ));
+        }};
+
+        Optional<JoinTripRequest> requestOptional = tripsManager.joinTrip( reservation );
+
+        Assert.assertTrue( requestOptional.isPresent() );
+        Assert.assertEquals( query, requestOptional.get().getQuery() );
+        Assert.assertEquals( offer, requestOptional.get().getOffer() );
+        Assert.assertEquals( reservation.getTotalPriceInCents(), requestOptional.get().getTotalPriceInCents());
+        Assert.assertEquals( reservation.getPricePerKmInCents(), requestOptional.get().getPricePerKmInCents());
+        Assert.assertEquals( 1, requestOptional.get().getEstimatedArrivalTimestamp());
     }
 
     @Test
     public void testUpdateJoinRequestAcceptance() {
         // TODO: add test code here
+    }
+
+    @Test
+    public void testUpdateJoinRequestAcceptanceAlreadyModifiedFails() {
+        JoinTripRequest joinRequest = new JoinTripRequest( 0, null, 0 ,0 , 0, null, JoinTripStatus.DRIVER_ACCEPTED );
+        testFailingJoinRequestAcceptanceUpdate(joinRequest);
+
+        joinRequest = new JoinTripRequest( 0, null, 0 ,0 , 0, null, JoinTripStatus.DRIVER_CANCELLED );
+        testFailingJoinRequestAcceptanceUpdate(joinRequest);
+
+        joinRequest = new JoinTripRequest( 0, null, 0 ,0 , 0, null, JoinTripStatus.PASSENGER_AT_DESTINATION );
+        testFailingJoinRequestAcceptanceUpdate(joinRequest);
+
+        joinRequest = new JoinTripRequest( 0, null, 0 ,0 , 0, null, JoinTripStatus.PASSENGER_IN_CAR );
+        testFailingJoinRequestAcceptanceUpdate(joinRequest);
+
+        joinRequest = new JoinTripRequest( 0, null, 0 ,0 , 0, null, JoinTripStatus.DRIVER_DECLINED );
+        testFailingJoinRequestAcceptanceUpdate(joinRequest);
+
+        joinRequest = new JoinTripRequest( 0, null, 0 ,0 , 0, null, JoinTripStatus.PASSENGER_CANCELLED );
+        testFailingJoinRequestAcceptanceUpdate(joinRequest);
+    }
+
+    private void testFailingJoinRequestAcceptanceUpdate(JoinTripRequest joinRequest) {
+        boolean exception = false;
+        try {
+            tripsManager.updateJoinRequestAcceptance(joinRequest, true);
+        } catch( IllegalArgumentException e){
+            exception = true;
+        }
+        Assert.assertTrue(exception);
     }
 
     @Test
@@ -200,11 +268,6 @@ public class TripsManagerTest {
 
     @Test
     public void testUpdateJoinRequestPassengerCancel() {
-        // TODO: add test code here
-    }
-
-    @Test
-    public void testFindCheapestMatch() {
         // TODO: add test code here
     }
 
