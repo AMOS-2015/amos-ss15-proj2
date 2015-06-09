@@ -33,6 +33,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.android.gms.common.ConnectionResult;
@@ -53,7 +54,10 @@ import org.w3c.dom.Text;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.TimeZone;
 
@@ -93,11 +97,15 @@ public class JoinDrivingFragment extends SubscriptionFragment implements GoogleA
     @Inject TripsResource tripsResource;
 
     private JoinTripRequest cachedRequest;
+    private ArrayList<JoinTripRequestUpdateType> simpleRequestUpdateCache;
 
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        //Simple cache to store failed requests
+        simpleRequestUpdateCache = new ArrayList<>();
 
         LocalBroadcastManager.getInstance(getActivity()).registerReceiver(joinRequestExpiredReceiver,
                 new IntentFilter(Constants.EVENT_JOIN_REQUEST_EXPIRED));
@@ -129,7 +137,6 @@ public class JoinDrivingFragment extends SubscriptionFragment implements GoogleA
 
         if (prefs.getBoolean(Constants.SHARED_PREF_KEY_WAITING, false)) {
             //passenger is currently waiting for the drivers approval
-
 
             setButtonInactive(btnReportDriver);
             setButtonInactive(btnReachedDestination);
@@ -179,6 +186,7 @@ public class JoinDrivingFragment extends SubscriptionFragment implements GoogleA
                         updateTrip(JoinTripRequestUpdateType.LEAVE_CAR);
                         sendUserBackToSearch();
                     } else {
+                        // If the user enters the car and leaves the car without this method called twice we need this distinction
                         SharedPreferences.Editor editor = prefs.edit();
                         editor.putBoolean(Constants.SHARED_PREF_KEY_DRIVING, true);
                         editor.apply();
@@ -206,11 +214,17 @@ public class JoinDrivingFragment extends SubscriptionFragment implements GoogleA
             @Override
             public void onClick(View v) {
                 //Handle here all the stuff that happens when the user cancels the trip
+                Toast.makeText(getActivity(), getResources().getString(R.string.my_trip_driver_cancel_trip), Toast.LENGTH_SHORT).show();
                 updateTrip(JoinTripRequestUpdateType.CANCEL);
                 sendUserBackToSearch();
             }
         });
 
+
+        /*
+        Get the current request either from the arguments (trip got downloaded somewhere else, so we dont have to
+        do it again here)´or directly from the server
+         */
         if (getArguments() != null) {
             JoinTripRequest request = null;
             ObjectMapper mapper = new ObjectMapper();
@@ -230,11 +244,10 @@ public class JoinDrivingFragment extends SubscriptionFragment implements GoogleA
                         public void call(List<JoinTripRequest> jtr) {
                             if(jtr == null || jtr.isEmpty()) {
                                 Timber.d("Currently there are no trips running.");
-                                // The user is here though he should not - send him back to join trip
-                                //sendUserBackToSearch();
                                 return;
                             }
 
+                            //Update the view with the received data
                             if (isAdded()) {
                                 showJoinedTrip(jtr.get(0));
                             }
@@ -242,13 +255,15 @@ public class JoinDrivingFragment extends SubscriptionFragment implements GoogleA
                     }, new Action1<Throwable>() {
                         @Override
                         public void call(Throwable throwable) {
-                            // The user is here though he should not - send him back to join trip
-                            //sendUserBackToSearch();
+                            Timber.e(throwable.getMessage());
                         }
                     });
         }
     }
 
+    /*
+    Parse and show information about the current trip, like price, driver and cost
+     */
     private void showJoinedTrip(JoinTripRequest request) {
         if( request != null ) {
             int earningsInCents = request.getTotalPriceInCents();
@@ -290,6 +305,9 @@ public class JoinDrivingFragment extends SubscriptionFragment implements GoogleA
         }
     }
 
+    /*
+    Redirect user to the very first screen of the "join" flow. Here he can start a new join-request
+     */
     private void sendUserBackToSearch() {
         SharedPreferences prefs = getActivity().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
@@ -302,7 +320,10 @@ public class JoinDrivingFragment extends SubscriptionFragment implements GoogleA
         LocalBroadcastManager.getInstance(getActivity()).sendBroadcast(startingIntent);
     }
 
-    private void updateTrip(JoinTripRequestUpdateType updateType) {
+    /*
+    Send the new status of the trip to the server. The status may be canceled, entered the car and left the car
+     */
+    private void updateTrip(final JoinTripRequestUpdateType updateType) {
         SharedPreferences prefs = getActivity().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
         JoinTripRequestUpdate requestUpdate= new JoinTripRequestUpdate(updateType);
         Subscription subscription = tripsResource.updateJoinRequest(prefs.getLong(Constants.SHARED_PREF_KEY_TRIP_ID, -1), requestUpdate)
@@ -316,7 +337,13 @@ public class JoinDrivingFragment extends SubscriptionFragment implements GoogleA
 
                     @Override
                     public void onError(Throwable e) {
+                        Toast.makeText(getActivity(), getResources().getString(R.string.error_contacting_server), Toast.LENGTH_SHORT).show();
+                        Timber.e(e.getMessage());
 
+                        /*
+                        Add this JoinTripRequestUpdateType to a simple cache to try it again some other time
+                         */
+                        simpleRequestUpdateCache.add(updateType);
                     }
 
                     @Override
@@ -328,11 +355,17 @@ public class JoinDrivingFragment extends SubscriptionFragment implements GoogleA
         subscriptions.add(subscription);
     }
 
+    /*
+    Activate the given button and make it clickable
+     */
     private void setButtonActive(Button button) {
         button.setClickable(true);
         button.setBackgroundColor(getResources().getColor(R.color.primary));
     }
 
+    /*
+    Deactivate the given button and make it unclickable
+     */
     private void setButtonInactive(Button button) {
         button.setClickable(false);
         button.setBackgroundColor(getResources().getColor(R.color.inactive));
@@ -355,6 +388,14 @@ public class JoinDrivingFragment extends SubscriptionFragment implements GoogleA
         super.onPause();
         LocalBroadcastManager.getInstance(getActivity().getApplicationContext())
                 .unregisterReceiver(joinRequestExpiredReceiver);
+
+        /*
+        Try to resend every failed server call. This will be tried only once.
+         */
+        for (Iterator<JoinTripRequestUpdateType> iterator = simpleRequestUpdateCache.iterator(); iterator.hasNext();) {
+            updateTrip(iterator.next());
+            iterator.remove();
+        }
     }
 
 

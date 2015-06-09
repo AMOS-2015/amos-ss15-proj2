@@ -142,7 +142,7 @@ public class JoinResultsFragment extends SubscriptionFragment implements GoogleA
 
                         @Override
                         public void failure(RetrofitError error) {
-                            //try again?
+                            Timber.e(error.getMessage());
                         }
                     });
                     editor.putLong(Constants.SHARED_PREF_KEY_QUERY_ID, -1);

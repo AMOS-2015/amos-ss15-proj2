@@ -169,6 +169,7 @@
     <string name="my_trip_driver_my_passengers_title">My Passengers</string>
     <string name="my_trip_driver_my_earnings_title">My Earnings</string>
     <string name="my_trip_driver_my_earnings">%1$s.%2$s €</string>
+    <string name="error_contacting_server">Something went wrong with contacting the server</string>
     <string name="offer_trip_failed">Offering your trip failed. Please try again.</string>
     <string name="load_trip_failed">Loading your trip failed. Please try again.</string>
     <string name="load_route_failed">Loading your route failed. Please try again.</string>
