@@ -50,8 +50,8 @@ public class NavigationResult {
     }
 
     /**
-     * Returns as list of {@link org.croudtrip.api.trips.UserWayPoint} for every passenger that
-     * participates at this trip in the best order that was found solving the TSP.
+     * Returns as list of {@link org.croudtrip.api.trips.UserWayPoint} for every user that
+     * participates this trip in the best order that was found solving the TSP.
      * @return a list of waypoints in the best TSP order
      */
     public List<UserWayPoint> getUserWayPoints() {
