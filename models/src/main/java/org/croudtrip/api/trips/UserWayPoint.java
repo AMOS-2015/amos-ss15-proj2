@@ -1,5 +1,7 @@
 package org.croudtrip.api.trips;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Objects;
 
 import org.croudtrip.api.account.User;
@@ -13,12 +15,13 @@ public class UserWayPoint {
 	private final long arrivalTimestamp; // unix timestamp in seconds
 	private final long distanceToDriverInMeters;
 
+    @JsonCreator
 	public UserWayPoint(
-			User user,
-			RouteLocation location,
-			boolean isStart,
-			long arrivalTimestamp,
-			long distanceToDriverInMeters) {
+			@JsonProperty("user") User user,
+			@JsonProperty("routeLocation") RouteLocation location,
+            @JsonProperty("startOfTrip") boolean isStart,
+            @JsonProperty("arrivalTimestamp") long arrivalTimestamp,
+            @JsonProperty("distanceToDriverInMeters") long distanceToDriverInMeters) {
 
 		this.user = user;
 		this.location = location;
