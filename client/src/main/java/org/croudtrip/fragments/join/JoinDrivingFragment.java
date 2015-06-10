@@ -14,16 +14,15 @@
 
 package org.croudtrip.fragments.join;
 
+import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.graphics.Color;
 import android.nfc.NfcAdapter;
 import android.nfc.NfcManager;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -38,8 +37,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.GoogleApiClient;
 import com.squareup.picasso.Picasso;
 
 import org.croudtrip.Constants;
@@ -48,17 +45,14 @@ import org.croudtrip.api.TripsResource;
 import org.croudtrip.api.trips.JoinTripRequest;
 import org.croudtrip.api.trips.JoinTripRequestUpdate;
 import org.croudtrip.api.trips.JoinTripRequestUpdateType;
-import org.croudtrip.fragments.JoinTripFragment;
 import org.croudtrip.fragments.SubscriptionFragment;
 import org.croudtrip.utils.DefaultTransformer;
-import org.w3c.dom.Text;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.TimeZone;
@@ -75,7 +69,7 @@ import timber.log.Timber;
 /**
  * Created by alex on 22.04.15.
  */
-public class JoinDrivingFragment extends SubscriptionFragment implements GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks {
+public class JoinDrivingFragment extends SubscriptionFragment {
 
     @InjectView(R.id.btn_joint_trip_reached)        private Button btnReachedDestination; //also handles the "My driver is here" stuff
     @InjectView(R.id.btn_joint_trip_cancel)         private Button btnCancelTrip;
@@ -104,6 +98,9 @@ public class JoinDrivingFragment extends SubscriptionFragment implements GoogleA
     private JoinTripRequest cachedRequest;
     private ArrayList<JoinTripRequestUpdateType> simpleRequestUpdateCache;
 
+    private NfcAdapter nfcAdapter;
+    private PendingIntent nfcPendingIntent;
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -114,6 +111,16 @@ public class JoinDrivingFragment extends SubscriptionFragment implements GoogleA
 
         LocalBroadcastManager.getInstance(getActivity()).registerReceiver(joinRequestExpiredReceiver,
                 new IntentFilter(Constants.EVENT_JOIN_REQUEST_EXPIRED));
+
+        Log.d("alex", "onCreate");
+        LocalBroadcastManager.getInstance(getActivity()).registerReceiver(nfcScannedReceiver,
+                new IntentFilter(Constants.EVENT_NFC_TAG_SCANNED));
+
+        nfcAdapter = NfcAdapter.getDefaultAdapter(getActivity());
+        if (nfcAdapter != null) {
+            nfcPendingIntent = PendingIntent.getActivity(getActivity(), 0, new Intent(getActivity(), getActivity().getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
+        }
+
     }
 
     @Override
@@ -193,25 +200,12 @@ public class JoinDrivingFragment extends SubscriptionFragment implements GoogleA
                         sendUserBackToSearch();
                     } else {
                         // If the user enters the car and leaves the car without this method called twice we need this distinction
-                        SharedPreferences.Editor editor = prefs.edit();
-                        editor.putBoolean(Constants.SHARED_PREF_KEY_DRIVING, true);
-                        editor.apply();
-                        btnReachedDestination.setText(getResources().getString(R.string.join_trip_results_reached));
-                        setButtonInactive(btnCancelTrip);
-
-                        llWaiting.setVisibility(View.GONE);
-                        llDriving.setVisibility(View.VISIBLE);
-
-                        updateTrip(JoinTripRequestUpdateType.ENTER_CAR);
-                        showJoinedTrip(cachedRequest);
+                        enterCar();
                     }
 
                 }
             });
         }
-
-
-
 
         /*
         Cancel trip
@@ -364,7 +358,9 @@ public class JoinDrivingFragment extends SubscriptionFragment implements GoogleA
                         /*
                         Add this JoinTripRequestUpdateType to a simple cache to try it again some other time
                          */
-                        simpleRequestUpdateCache.add(updateType);
+                        if (simpleRequestUpdateCache != null) {
+                            simpleRequestUpdateCache.add(updateType);
+                        }
                     }
 
                     @Override
@@ -392,6 +388,31 @@ public class JoinDrivingFragment extends SubscriptionFragment implements GoogleA
         button.setBackgroundColor(getResources().getColor(R.color.inactive));
     }
 
+
+    /*
+    The passenger enters the car. Show the correct UI, save the status and send a notification to the server
+     */
+    private void enterCar() {
+        SharedPreferences prefs = getActivity().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putBoolean(Constants.SHARED_PREF_KEY_DRIVING, true);
+        editor.apply();
+        Log.d("alex", "3");
+        updateTrip(JoinTripRequestUpdateType.ENTER_CAR);
+
+        ivNfcIcon.setVisibility(View.GONE);
+        tvNfcExplanation.setVisibility(View.GONE);
+
+        btnReachedDestination.setText(getResources().getString(R.string.join_trip_results_reached));
+        setButtonInactive(btnCancelTrip);
+
+        llWaiting.setVisibility(View.GONE);
+        llDriving.setVisibility(View.VISIBLE);
+        btnReachedDestination.setVisibility(View.VISIBLE);
+
+        showJoinedTrip(cachedRequest);
+    }
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
 
@@ -401,7 +422,17 @@ public class JoinDrivingFragment extends SubscriptionFragment implements GoogleA
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         menu.clear();
-        //inflater.inflate(R.menu.menu_main, menu);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        SharedPreferences prefs = getActivity().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
+        if (!prefs.getBoolean(Constants.SHARED_PREF_KEY_WAITING, false) && !prefs.getBoolean(Constants.SHARED_PREF_KEY_DRIVING, false)) {
+            //listen for NFC events
+            nfcAdapter.enableForegroundDispatch(getActivity(), nfcPendingIntent, null, null);
+        }
     }
 
     @Override
@@ -420,19 +451,15 @@ public class JoinDrivingFragment extends SubscriptionFragment implements GoogleA
     }
 
 
-
     @Override
-    public void onConnected(Bundle bundle) {
+    public void onDestroy() {
+        super.onDestroy();
+
+        //Since the NFC scan pauses the fragment we must unregister this receiver in onDestroy,
+        //otherwise we could not catch this Intent
+        LocalBroadcastManager.getInstance(getActivity().getApplicationContext()).unregisterReceiver(nfcScannedReceiver);
     }
 
-    @Override
-    public void onConnectionSuspended(int i) {
-    }
-
-    @Override
-    public void onConnectionFailed(ConnectionResult connectionResult) {
-
-    }
 
     //The onReceive method is fired when the join trip request expires on the server
     //The passenger is redirected to the join trip UI accordingly
@@ -441,6 +468,21 @@ public class JoinDrivingFragment extends SubscriptionFragment implements GoogleA
         public void onReceive(Context context, Intent intent) {
             Timber.d("Request expired broadcast receiver: onReceive");
             sendUserBackToSearch();
+        }
+    };
+
+    //The onReceive method is fired when an nfc tag is scanned
+    private BroadcastReceiver nfcScannedReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            //Check again if the passenger has the correct status for an nfc scan
+            SharedPreferences prefs = context.getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
+            if (!prefs.getBoolean(Constants.SHARED_PREF_KEY_WAITING, false) && !prefs.getBoolean(Constants.SHARED_PREF_KEY_DRIVING, false)) {
+                enterCar();
+
+                //disable listening to the "scanned NFC" event
+                LocalBroadcastManager.getInstance(getActivity().getApplicationContext()).unregisterReceiver(nfcScannedReceiver);
+            }
         }
     };
 }

@@ -27,6 +27,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.location.LocationManager;
+import android.nfc.NfcAdapter;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
@@ -95,7 +96,16 @@ public class MainActivity extends AbstractRoboDrawerActivity {
 
 
     //********************************* Methods ************************************//
-
+    @Override
+    protected void onNewIntent(Intent intent){
+        if (intent.getAction() != null && intent.getAction().equals(NfcAdapter.ACTION_TAG_DISCOVERED)) {
+            //user scanned an NFC tag -> notify the passenger driving UI to save new status and maybe update UI
+            Intent startingIntent = new Intent(Constants.EVENT_NFC_TAG_SCANNED);
+            LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(startingIntent);
+        } else {
+            Timber.d("Another Intent or detected some other NFC stuff...");
+        }
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
