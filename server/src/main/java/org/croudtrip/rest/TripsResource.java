@@ -19,6 +19,7 @@ import com.google.common.base.Optional;
 import org.croudtrip.account.VehicleManager;
 import org.croudtrip.api.account.User;
 import org.croudtrip.api.account.Vehicle;
+import org.croudtrip.api.directions.NavigationResult;
 import org.croudtrip.api.directions.Route;
 import org.croudtrip.api.trips.JoinTripRequest;
 import org.croudtrip.api.trips.JoinTripRequestUpdate;
@@ -125,14 +126,16 @@ public class TripsResource {
     }
 
     /**
-     * Get the complete route for an offer
+     * Get the {@link org.croudtrip.api.directions.NavigationResult} for an offer
+     * The result will contain a complete route visiting all the passengers pick-up and destination
+     * locations as well as a list of all the waypoints in the correct order of the current trip.
      */
     @GET
-    @Path(PATH_OFFERS + "/{offerId}/route")
+    @Path(PATH_OFFERS + "/{offerId}/navigation")
     @UnitOfWork
-    public Route getRouteForOffer(@PathParam("offerId") long offerId) throws RouteNotFoundException {
+    public NavigationResult computeNavigationResultForOffer(@PathParam("offerId") long offerId) throws RouteNotFoundException {
         TripOffer offer = assertIsValidOfferId( offerId );
-        return tripsNavigationManager.getRouteForOffer( offer );
+        return tripsNavigationManager.getNavigationResultForOffer(offer);
     }
 
 
