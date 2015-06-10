@@ -19,6 +19,7 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -28,6 +29,8 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+//import org.apache.commons.lang.Validate;
+//import org.apache.commons.validator.routines.EmailValidator;
 import org.croudtrip.R;
 import org.croudtrip.account.AccountManager;
 import org.croudtrip.api.UsersResource;
@@ -147,6 +150,15 @@ public class LoginActivity extends RoboActionBarActivity {
         registerButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                if (TextUtils.isEmpty(registerFirstName.getText().toString()) || TextUtils.isEmpty(registerLastName.getText().toString()))
+                {
+                    Toast.makeText(getApplication().getApplicationContext(), "First and Last names are mandatory fields", Toast.LENGTH_SHORT).show();
+                }/*
+                else if (!EmailValidator.getInstance().isValid(registerEmail.getText().toString())) {
+                    Toast.makeText(getApplication().getApplicationContext(), "Please enter a real Email address", Toast.LENGTH_SHORT).show();
+                }
+                */
+                else
                 registerUser(
                         registerFirstName.getText().toString(),
                         registerLastName.getText().toString(),
@@ -240,6 +252,7 @@ public class LoginActivity extends RoboActionBarActivity {
      */
     private void registerUser(final String firstName, final String lastName, final String email,
                               final String password) {
+
 
         // UI: Disable register button and show progress bar
         registerButton.setEnabled(false);
