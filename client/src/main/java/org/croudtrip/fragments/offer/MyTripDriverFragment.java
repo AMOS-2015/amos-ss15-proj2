@@ -38,7 +38,10 @@ import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.maps.android.PolyUtil;
 
@@ -53,6 +56,7 @@ import org.croudtrip.api.trips.JoinTripStatus;
 import org.croudtrip.api.trips.TripOffer;
 import org.croudtrip.api.trips.TripOfferDescription;
 import org.croudtrip.api.trips.TripOfferUpdate;
+import org.croudtrip.api.trips.UserWayPoint;
 import org.croudtrip.fragments.OfferTripFragment;
 import org.croudtrip.fragments.SubscriptionFragment;
 import org.croudtrip.location.LocationUpdater;
@@ -345,7 +349,7 @@ public class MyTripDriverFragment extends SubscriptionFragment {
     }
 
 
-    private void generateRouteOnMap(NavigationResult navigationResult) {
+    private void generateRouteOnMap(TripOffer offer, NavigationResult navigationResult) {
 
         // only one route will be shown (old route will be deleted
         googleMap.clear();
@@ -353,6 +357,18 @@ public class MyTripDriverFragment extends SubscriptionFragment {
         // Show route information on the map
         googleMap.addPolyline(new PolylineOptions().addAll(PolyUtil.decode(navigationResult.getRoute().getPolyline())));
         googleMap.setMyLocationEnabled(true);
+
+        for( UserWayPoint userWp : navigationResult.getUserWayPoints() ){
+            if( !userWp.getUser().equals(offer.getDriver()) ){
+                googleMap.addMarker(
+                        new MarkerOptions()
+                                .position( new LatLng( userWp.getLocation().getLat(), userWp.getLocation().getLng()))
+                                .icon(BitmapDescriptorFactory.fromResource( R.drawable.ic_marker ))
+                                .anchor(0.5f, 0.5f)
+                                .flat(true)
+                );
+            }
+        }
 
         // Move camera to current position
         Location location = locationUpdater.getLastLocation();
@@ -398,7 +414,7 @@ public class MyTripDriverFragment extends SubscriptionFragment {
                         offerID = tripOffer.getId();
 
                         // show route information on the map
-                        generateRouteOnMap( NavigationResult.createNavigationResultForDriverRoute( tripOffer ));
+                        generateRouteOnMap( tripOffer, NavigationResult.createNavigationResultForDriverRoute( tripOffer ));
 
                         loadPassengers();
 
@@ -460,7 +476,7 @@ public class MyTripDriverFragment extends SubscriptionFragment {
     private class LoadOfferSubscriber extends Subscriber<TripOffer> {
 
         @Override
-        public void onNext(TripOffer offer) {
+        public void onNext(final TripOffer offer) {
 
             if (offer == null) {
                 throw new NoSuchElementException(getString(R.string.navigation_error_no_offer));
@@ -484,7 +500,7 @@ public class MyTripDriverFragment extends SubscriptionFragment {
                                            throw new NoSuchElementException("No route available");
                                        }
 
-                                       generateRouteOnMap( navigationResult );
+                                       generateRouteOnMap( offer, navigationResult );
                                    }
 
                                }, new Action1<Throwable>() {
