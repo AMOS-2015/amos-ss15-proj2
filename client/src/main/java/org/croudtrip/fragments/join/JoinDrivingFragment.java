@@ -20,6 +20,8 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.nfc.NfcAdapter;
+import android.nfc.NfcManager;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
@@ -87,9 +89,12 @@ public class JoinDrivingFragment extends SubscriptionFragment implements GoogleA
 
     @InjectView(R.id.pickup_time)               private TextView tvPickupTime;
     @InjectView(R.id.card_name)                 private TextView tvCardName;
+    @InjectView(R.id.nfc_explanation)           private TextView tvNfcExplanation;
     @InjectView(R.id.card_car)                  private TextView tvCardCar;
     @InjectView(R.id.card_price)                private TextView tvCardPrice;
     @InjectView(R.id.card_icon)                 private ImageView ivCardIcon;
+    @InjectView(R.id.nfc_icon)                  private ImageView ivNfcIcon;
+
 
 
 
@@ -176,6 +181,7 @@ public class JoinDrivingFragment extends SubscriptionFragment implements GoogleA
             cvDriver.setVisibility(View.VISIBLE);
             llWaiting.setVisibility(View.VISIBLE);
 
+            switchToNfcIfAvailable();
             btnReachedDestination.setText(getResources().getString(R.string.join_trip_results_driverArrival));
             btnReachedDestination.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -302,6 +308,21 @@ public class JoinDrivingFragment extends SubscriptionFragment implements GoogleA
             tvCardName.setText(request.getOffer().getDriver().getFirstName() + " " + request.getOffer().getDriver().getLastName());
             tvCardCar.setText(request.getOffer().getVehicle().getType());
             tvCardPrice.setText(getString(R.string.join_trip_results_price, pEuros, pCents));
+        }
+    }
+
+    /*
+    Changes the UI to indicate the passenger that he should use NFC to enter the car.
+    In detail: Show icon and explanation for NFC and hide the corresponding button
+     */
+    private void switchToNfcIfAvailable() {
+        NfcManager manager = (NfcManager) getActivity().getSystemService(Context.NFC_SERVICE);
+        NfcAdapter adapter = manager.getDefaultAdapter();
+        if (adapter != null && adapter.isEnabled()) {
+            // nfc exists and is enabled.
+            ivNfcIcon.setVisibility(View.VISIBLE);
+            tvNfcExplanation.setVisibility(View.VISIBLE);
+            btnReachedDestination.setVisibility(View.GONE);
         }
     }
 

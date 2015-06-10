@@ -163,6 +163,8 @@
     <string name="error_position_update_message">Sorry, seems like we lost you. Once your connection is restored more passengers will find your Trip!</string>
     <string name="success_position_update_message">Your position could be successfully uploaded. Your trip will be reenabled.</string>
     <string name="success_position_update_title">Position update was successfull</string>
+    <string name="nfc_explanation_passenger">Tap the phone of your driver to start the trip</string>
+
 
     <string name="my_trip_driver_cancel_trip">Cancel Trip!</string>
     <string name="my_trip_driver_finish_trip">Finish Trip!</string>
