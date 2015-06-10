@@ -93,7 +93,7 @@ public class DirectionsManager {
                     .await();
 
             for (DirectionsRoute googleRoute : googleRoutes) {
-                    result.add(createRoute(waypoints, googleRoute));
+                    result.add(createRoute(allWaypoints, googleRoute));
                 }
             return result;
 		} catch (Exception e) {

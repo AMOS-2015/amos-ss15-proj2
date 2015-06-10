@@ -105,10 +105,23 @@ public class TripsNavigationManager {
      * @throws RouteNotFoundException If there exists no route for the driver.
      */
     public NavigationResult getNavigationResultForOffer(TripOffer offer) throws RouteNotFoundException {
-        List<TspSolver.TspWayPoint> tspWayPoints = tspSolver.getBestOrder(
-                joinTripRequestDAO.findByOfferId(offer.getId()),
-                offer)
-                .get(0);
+        return getNavigationResultForOffer( offer, null );
+    }
+
+    /**
+     * Returns the {@link org.croudtrip.api.directions.NavigationResult}
+     * for a given {@link TripOffer} with an optimal solution for visiting all the passengers
+     * @param offer the offer you want to do the navigation request for.
+     * @param query an optional query which should also be considered during the matching process.
+     * @return the navigation result for this offer.
+     * @throws RouteNotFoundException If there exists no route for the driver.
+     */
+    public NavigationResult getNavigationResultForOffer(TripOffer offer, TripQuery query) throws RouteNotFoundException {
+        List<TspSolver.TspWayPoint> tspWayPoints;
+        if( query != null )
+            tspWayPoints = tspSolver.getBestOrder( joinTripRequestDAO.findByOfferId(offer.getId()), offer, query).get(0);
+        else
+            tspWayPoints = tspSolver.getBestOrder( joinTripRequestDAO.findByOfferId(offer.getId()), offer).get(0);
 
         List<RouteLocation> passengerLocations = new ArrayList<>();
         for (int i = 1; i < tspWayPoints.size() - 1; ++i) {

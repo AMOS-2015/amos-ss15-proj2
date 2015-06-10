@@ -71,13 +71,6 @@ public class ServerModule implements Module {
 		return provideRestAdapter(context).create(UsersHeadResource.class);
 	}
 
-
-	@Provides
-	@Inject
-	public DirectionsResource provideDirectionsResource(Context context) {
-		return provideRestAdapter(context).create(DirectionsResource.class);
-	}
-
     @Provides
     @Inject
     public TripsResource provideTripsResource(Context context) {

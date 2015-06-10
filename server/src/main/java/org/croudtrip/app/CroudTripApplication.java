@@ -33,7 +33,6 @@ import org.croudtrip.directions.DirectionsModule;
 import org.croudtrip.gcm.GcmModule;
 import org.croudtrip.logs.LogEntry;
 import org.croudtrip.rest.AvatarsResource;
-import org.croudtrip.rest.DirectionsResource;
 import org.croudtrip.rest.GcmRegistrationResource;
 import org.croudtrip.rest.JsonExceptionMapper;
 import org.croudtrip.rest.LogsResource;
@@ -92,7 +91,6 @@ public final class CroudTripApplication extends Application<CroudTripConfig> {
         environment.jersey().register(injector.getInstance(UsersResource.class));
 		environment.jersey().register(injector.getInstance(UsersHeadResource.class));
 		environment.jersey().register(injector.getInstance(AvatarsResource.class));
-        environment.jersey().register(injector.getInstance(DirectionsResource.class));
 		environment.jersey().register(injector.getInstance(TripsResource.class));
 		environment.jersey().register(injector.getInstance(VehicleResource.class));
 		environment.jersey().register(injector.getInstance(GcmRegistrationResource.class));
