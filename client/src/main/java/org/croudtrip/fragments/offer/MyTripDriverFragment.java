@@ -38,14 +38,17 @@ import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.maps.android.PolyUtil;
 
 import org.croudtrip.Constants;
 import org.croudtrip.R;
-import org.croudtrip.api.DirectionsResource;
 import org.croudtrip.api.TripsResource;
+import org.croudtrip.api.directions.NavigationResult;
 import org.croudtrip.api.directions.Route;
 import org.croudtrip.api.directions.RouteLocation;
 import org.croudtrip.api.trips.JoinTripRequest;
@@ -53,6 +56,7 @@ import org.croudtrip.api.trips.JoinTripStatus;
 import org.croudtrip.api.trips.TripOffer;
 import org.croudtrip.api.trips.TripOfferDescription;
 import org.croudtrip.api.trips.TripOfferUpdate;
+import org.croudtrip.api.trips.UserWayPoint;
 import org.croudtrip.fragments.OfferTripFragment;
 import org.croudtrip.fragments.SubscriptionFragment;
 import org.croudtrip.location.LocationUpdater;
@@ -109,8 +113,6 @@ public class MyTripDriverFragment extends SubscriptionFragment {
 
     @Inject
     private TripsResource tripsResource;
-    @Inject
-    private DirectionsResource directionsResource;
     @Inject
     private LocationUpdater locationUpdater;
 
@@ -347,14 +349,26 @@ public class MyTripDriverFragment extends SubscriptionFragment {
     }
 
 
-    private void generateRouteOnMap(Route route) {
+    private void generateRouteOnMap(TripOffer offer, NavigationResult navigationResult) {
 
         // only one route will be shown (old route will be deleted
         googleMap.clear();
 
         // Show route information on the map
-        googleMap.addPolyline(new PolylineOptions().addAll(PolyUtil.decode(route.getPolyline())));
+        googleMap.addPolyline(new PolylineOptions().addAll(PolyUtil.decode(navigationResult.getRoute().getPolyline())));
         googleMap.setMyLocationEnabled(true);
+
+        for( UserWayPoint userWp : navigationResult.getUserWayPoints() ){
+            if( !userWp.getUser().equals(offer.getDriver()) ){
+                googleMap.addMarker(
+                        new MarkerOptions()
+                                .position( new LatLng( userWp.getLocation().getLat(), userWp.getLocation().getLng()))
+                                .icon(BitmapDescriptorFactory.fromResource( R.drawable.ic_marker ))
+                                .anchor(0.5f, 0.5f)
+                                .flat(true)
+                );
+            }
+        }
 
         // Move camera to current position
         Location location = locationUpdater.getLastLocation();
@@ -400,7 +414,7 @@ public class MyTripDriverFragment extends SubscriptionFragment {
                         offerID = tripOffer.getId();
 
                         // show route information on the map
-                        generateRouteOnMap(tripOffer.getDriverRoute());
+                        generateRouteOnMap( tripOffer, NavigationResult.createNavigationResultForDriverRoute( tripOffer ));
 
                         loadPassengers();
 
@@ -462,7 +476,7 @@ public class MyTripDriverFragment extends SubscriptionFragment {
     private class LoadOfferSubscriber extends Subscriber<TripOffer> {
 
         @Override
-        public void onNext(TripOffer offer) {
+        public void onNext(final TripOffer offer) {
 
             if (offer == null) {
                 throw new NoSuchElementException(getString(R.string.navigation_error_no_offer));
@@ -475,19 +489,18 @@ public class MyTripDriverFragment extends SubscriptionFragment {
             loadPassengers();
 
             // Load the Route
-            tripsResource.getRouteForOffer(offerID)
-                    .compose(new DefaultTransformer<Route>())
-                    .subscribe(new Action1<Route>() {
+            tripsResource.computeNavigationResultForOffer(offerID)
+                    .compose(new DefaultTransformer<NavigationResult>())
+                    .subscribe(new Action1<NavigationResult>() {
 
                                    @Override
-                                   public void call(Route route) {
+                                   public void call(NavigationResult navigationResult) {
 
-                                       if (route == null) {
+                                       if (navigationResult == null) {
                                            throw new NoSuchElementException("No route available");
                                        }
 
-                                       Timber.d("Received Route with length (m): " + route.getDistanceInMeters());
-                                       generateRouteOnMap(route);
+                                       generateRouteOnMap( offer, navigationResult );
                                    }
 
                                }, new Action1<Throwable>() {

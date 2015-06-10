@@ -75,6 +75,14 @@ public class DirectionsManager {
             stringWaypoints[i] = waypoint.toUrlValue();
         }
 
+        // create a list containing all the waypoints (also start and destination)
+        // don't modify given waypoints list.
+        List<RouteLocation> allWaypoints = new ArrayList<RouteLocation>();
+        allWaypoints.add( startLocation );
+        for( RouteLocation loc : waypoints )
+            allWaypoints.add( loc );
+        allWaypoints.add( endLocation );
+
 		List<Route> result = new ArrayList<>();
         DirectionsRoute[] googleRoutes = new DirectionsRoute[0];
         try {
@@ -85,7 +93,7 @@ public class DirectionsManager {
                     .await();
 
             for (DirectionsRoute googleRoute : googleRoutes) {
-                    result.add(createRoute(startLocation, endLocation, googleRoute));
+                    result.add(createRoute(allWaypoints, googleRoute));
                 }
             return result;
 		} catch (Exception e) {
@@ -94,7 +102,7 @@ public class DirectionsManager {
     }
 
 
-	private Route createRoute(RouteLocation startLocation, RouteLocation endLocation, DirectionsRoute googleRoute) {
+	private Route createRoute(List<RouteLocation> waypoints, DirectionsRoute googleRoute) {
 
 		long distanceInMeters = 0;
 		long durationInSeconds = 0;
@@ -132,11 +140,8 @@ public class DirectionsManager {
 			warnings = null;
 		}
 
-		List<RouteLocation> wayPoints = new ArrayList<>();
-		wayPoints.add(startLocation);
-		wayPoints.add(endLocation);
 		return new Route(
-				wayPoints,
+				waypoints,
 				polyline.getEncodedPath(),
 				distanceInMeters,
 				durationInSeconds,

@@ -25,11 +25,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import org.croudtrip.R;
-import org.croudtrip.api.DirectionsResource;
 import org.croudtrip.api.TripsResource;
-import org.croudtrip.api.directions.DirectionsRequest;
-import org.croudtrip.api.directions.Route;
-import org.croudtrip.api.directions.RouteLocation;
 import org.croudtrip.api.trips.JoinTripRequest;
 import org.croudtrip.api.trips.JoinTripRequestUpdate;
 import org.croudtrip.api.trips.JoinTripRequestUpdateType;
@@ -38,7 +34,6 @@ import org.croudtrip.trip.OnDiversionUpdateListener;
 import org.croudtrip.utils.DefaultTransformer;
 import org.croudtrip.utils.SwipeListener;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -75,7 +70,6 @@ public class JoinTripRequestsFragment extends SubscriptionFragment {
     private SwipeListener touchListener;
 
     @Inject private TripsResource tripsResource;
-    @Inject private DirectionsResource dirResource;
 
     //************************* Methods ****************************//
 
@@ -120,48 +114,23 @@ public class JoinTripRequestsFragment extends SubscriptionFragment {
     public void informAboutDiversion(final JoinTripRequest joinRequest, final OnDiversionUpdateListener listener,
                                      final TextView textView){
 
-        List<RouteLocation> wayPoints = new ArrayList<RouteLocation>();
-
-        // Driver start -> Passenger start -> Passenger end -> Driver end
-        List<RouteLocation> driverWay = joinRequest.getOffer().getDriverRoute().getWayPoints();
-        List<RouteLocation> passengerWay = joinRequest.getQuery().getPassengerRoute().getWayPoints();
-
-        wayPoints.add(driverWay.get(0));
-        wayPoints.add(passengerWay.get(0));
-        wayPoints.add(passengerWay.get(passengerWay.size() - 1));
-        wayPoints.add(driverWay.get(driverWay.size() - 1));
-
-        DirectionsRequest request = new DirectionsRequest(wayPoints);
-
-
         // Ask the server for the diversion
-        subscriptions.add(dirResource
-                .getDirections(request)
-                .compose(new DefaultTransformer<List<Route>>())
-                .subscribe(new Action1<List<Route>>() {
-                    @Override
-                    public void call(List<Route> routes) {
+        subscriptions.add(tripsResource
+                        .getDiversionInSecondsForJoinRequest(joinRequest.getId())
+                        .compose(new DefaultTransformer<Long>())
+                        .subscribe(new Action1<Long>() {
+                            @Override
+                            public void call(Long diversionInSeconds) {
+                                int diversionInMinutes = (int) (diversionInSeconds / 60);
+                                listener.onDiversionUpdate(joinRequest, textView, diversionInMinutes);
+                            }
 
-                        Timber.i("Found " + routes.size() + " routes when taking the passenger");
-
-                        if (routes.size() > 0) {
-                            long durationWithPassenger = routes.get(0).getDurationInSeconds();
-                            long durationWithoutPassenger = joinRequest.getOffer().getDriverRoute()
-                                    .getDurationInSeconds();
-
-                            int diversionInMinutes = Math.max(0,
-                                    Math.round((durationWithPassenger - durationWithoutPassenger) / 60.0f));
-
-                            listener.onDiversionUpdate(joinRequest, textView, diversionInMinutes);
-                        }
-                    }
-
-                }, new Action1<Throwable>() {
-                    @Override
-                    public void call(Throwable throwable) {
-                        Timber.i("Error when searching for routes with passenger: " + throwable.getMessage());
-                    }
-                })
+                        }, new Action1<Throwable>() {
+                            @Override
+                            public void call(Throwable throwable) {
+                                Timber.i("Error when searching for routes with passenger: " + throwable.getMessage());
+                            }
+                        })
         );
     }
 

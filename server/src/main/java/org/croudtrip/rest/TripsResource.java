@@ -19,6 +19,7 @@ import com.google.common.base.Optional;
 import org.croudtrip.account.VehicleManager;
 import org.croudtrip.api.account.User;
 import org.croudtrip.api.account.Vehicle;
+import org.croudtrip.api.directions.NavigationResult;
 import org.croudtrip.api.directions.Route;
 import org.croudtrip.api.trips.JoinTripRequest;
 import org.croudtrip.api.trips.JoinTripRequestUpdate;
@@ -125,14 +126,16 @@ public class TripsResource {
     }
 
     /**
-     * Get the complete route for an offer
+     * Get the {@link org.croudtrip.api.directions.NavigationResult} for an offer
+     * The result will contain a complete route visiting all the passengers pick-up and destination
+     * locations as well as a list of all the waypoints in the correct order of the current trip.
      */
     @GET
-    @Path(PATH_OFFERS + "/{offerId}/route")
+    @Path(PATH_OFFERS + "/{offerId}/navigation")
     @UnitOfWork
-    public Route getRouteForOffer(@PathParam("offerId") long offerId) throws RouteNotFoundException {
+    public NavigationResult computeNavigationResultForOffer(@PathParam("offerId") long offerId) throws RouteNotFoundException {
         TripOffer offer = assertIsValidOfferId( offerId );
-        return tripsNavigationManager.getRouteForOffer( offer );
+        return tripsNavigationManager.getNavigationResultForOffer(offer);
     }
 
 
@@ -364,6 +367,48 @@ public class TripsResource {
         else return request.get();
     }
 
+    /**
+     * Computes the diversion in seconds for a driver if he accepts the query of the {@link org.croudtrip.api.trips.JoinTripRequest}.
+     * @param driverOrPassenger a valid user
+     * @param joinRequestId the id of the JoinTripRequest.
+     * @return the diversion in seconds the driver has to take to pick up the passenger of this request.
+     * @throws RouteNotFoundException if there is no route for the driver or the passenger.
+     */
+    @GET
+    @UnitOfWork
+    @Path(PATH_JOINS + "/{joinRequestId}/diversionInSeconds")
+    public Long getDiversionInSecondsForJoinRequest( @Auth User driverOrPassenger, @PathParam("joinRequestId") long joinRequestId ) throws RouteNotFoundException {
+        // TODO: maybe only allow actual participants of the request to see this information, but for testing this is good enough
+        Optional<JoinTripRequest> joinRequest = tripsManager.findJoinRequest(joinRequestId);
+        if (!joinRequest.isPresent()) throw RestUtils.createNotFoundException();
+
+        NavigationResult actualOfferNavigationResult = tripsNavigationManager.getNavigationResultForOffer( joinRequest.get().getOffer() );
+        NavigationResult diversionOfferNavigationResult = tripsNavigationManager.getNavigationResultForOffer( joinRequest.get().getOffer(), joinRequest.get().getQuery() );
+
+        return diversionOfferNavigationResult.getRoute().getDurationInSeconds() - actualOfferNavigationResult.getRoute().getDurationInSeconds();
+    }
+
+    /**
+     * Computes the diversion in meters for a driver if he accepts the query of the {@link org.croudtrip.api.trips.JoinTripRequest}.
+     * @param driverOrPassenger a valid user
+     * @param joinRequestId the id of the JoinTripRequest.
+     * @return the diversion in meters the driver has to take to pick up the passenger of this request.
+     * @throws RouteNotFoundException if there is no route for the driver or the passenger.
+     */
+    @GET
+    @UnitOfWork
+    @Path(PATH_JOINS + "/{joinRequestId}/diversionInMeters")
+    public Long getDiversionInMetersForJoinRequest( @Auth User driverOrPassenger, @PathParam("joinRequestId") long joinRequestId ) throws RouteNotFoundException {
+        // TODO: maybe only allow actual participants of the request to see this information, but for testing this is good enough
+
+        Optional<JoinTripRequest> joinRequest = tripsManager.findJoinRequest(joinRequestId);
+        if (!joinRequest.isPresent()) throw RestUtils.createNotFoundException();
+
+        NavigationResult actualOfferNavigationResult = tripsNavigationManager.getNavigationResultForOffer( joinRequest.get().getOffer() );
+        NavigationResult diversionOfferNavigationResult = tripsNavigationManager.getNavigationResultForOffer( joinRequest.get().getOffer(), joinRequest.get().getQuery() );
+
+        return diversionOfferNavigationResult.getRoute().getDistanceInMeters() - actualOfferNavigationResult.getRoute().getDistanceInMeters();
+    }
 
     /**
      * Updates a join request. Use this method if you want to advance the state of a join request,

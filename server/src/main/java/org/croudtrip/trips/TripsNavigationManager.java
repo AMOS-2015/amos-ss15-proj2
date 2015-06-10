@@ -1,5 +1,6 @@
 package org.croudtrip.trips;
 
+import org.croudtrip.api.directions.NavigationResult;
 import org.croudtrip.api.directions.Route;
 import org.croudtrip.api.directions.RouteLocation;
 import org.croudtrip.api.trips.JoinTripRequest;
@@ -97,17 +98,30 @@ public class TripsNavigationManager {
 	}
 
     /**
-     * Returns the complete route for a given {@link TripOffer}
-     * with an optimal solution for visiting all the passengers
-     * @param offer the offer you want to compute the route for.
-     * @return the total route for this offer.
+     * Returns the {@link org.croudtrip.api.directions.NavigationResult}
+     * for a given {@link TripOffer} with an optimal solution for visiting all the passengers
+     * @param offer the offer you want to do the navigation request for.
+     * @return the navigation result for this offer.
      * @throws RouteNotFoundException If there exists no route for the driver.
      */
-    public Route getRouteForOffer(TripOffer offer) throws RouteNotFoundException {
-        List<TspSolver.TspWayPoint> tspWayPoints = tspSolver.getBestOrder(
-                joinTripRequestDAO.findByOfferId(offer.getId()),
-                offer)
-                .get(0);
+    public NavigationResult getNavigationResultForOffer(TripOffer offer) throws RouteNotFoundException {
+        return getNavigationResultForOffer( offer, null );
+    }
+
+    /**
+     * Returns the {@link org.croudtrip.api.directions.NavigationResult}
+     * for a given {@link TripOffer} with an optimal solution for visiting all the passengers
+     * @param offer the offer you want to do the navigation request for.
+     * @param query an optional query which should also be considered during the matching process.
+     * @return the navigation result for this offer.
+     * @throws RouteNotFoundException If there exists no route for the driver.
+     */
+    public NavigationResult getNavigationResultForOffer(TripOffer offer, TripQuery query) throws RouteNotFoundException {
+        List<TspSolver.TspWayPoint> tspWayPoints;
+        if( query != null )
+            tspWayPoints = tspSolver.getBestOrder( joinTripRequestDAO.findByOfferId(offer.getId()), offer, query).get(0);
+        else
+            tspWayPoints = tspSolver.getBestOrder( joinTripRequestDAO.findByOfferId(offer.getId()), offer).get(0);
 
         List<RouteLocation> passengerLocations = new ArrayList<>();
         for (int i = 1; i < tspWayPoints.size() - 1; ++i) {
@@ -121,6 +135,24 @@ public class TripsNavigationManager {
 
         if (routes == null || routes.isEmpty()) throw new RouteNotFoundException();
 
-        return routes.get(0);
+        List<UserWayPoint> userWayPoints = new ArrayList<>();
+        long arrivalTimestamp = System.currentTimeMillis() / 1000;
+        long distanceToDriverInMeters = 0;
+        for (int i = 0; i < tspWayPoints.size(); ++i) {
+            if (i != 0) {
+                arrivalTimestamp += routes.get(0).getLegDurationsInSeconds().get(i - 1);
+                distanceToDriverInMeters += routes.get(0).getLegDistancesInMeters().get(i - 1);
+            }
+
+            TspSolver.TspWayPoint tspWayPoint = tspWayPoints.get(i);
+            userWayPoints.add(new UserWayPoint(
+                    tspWayPoint.getUser(),
+                    tspWayPoint.getLocation(),
+                    tspWayPoint.isStart(),
+                    arrivalTimestamp,
+                    distanceToDriverInMeters));
+        }
+
+        return new NavigationResult( routes.get(0), userWayPoints );
     }
 }

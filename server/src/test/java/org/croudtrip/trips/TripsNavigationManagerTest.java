@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
 import junit.framework.TestCase;
 
 import org.croudtrip.api.account.User;
+import org.croudtrip.api.directions.NavigationResult;
 import org.croudtrip.api.directions.Route;
 import org.croudtrip.api.directions.RouteLocation;
 import org.croudtrip.api.trips.JoinTripRequest;
@@ -148,14 +149,20 @@ public class TripsNavigationManagerTest extends TestCase {
             result = routesList;
         }};
 
-        Route route = null;
+        NavigationResult navigationResult = null;
         try {
-            route = tripsNavigationManager.getRouteForOffer(offer);
+            navigationResult = tripsNavigationManager.getNavigationResultForOffer(offer);
         } catch (RouteNotFoundException e) {
             Assert.fail(e.getMessage());
         }
 
-        Assert.assertEquals(33, route.getDurationInSeconds());
-        Assert.assertEquals(33, route.getDistanceInMeters());
+        Assert.assertNotNull( navigationResult );
+        Assert.assertNotNull( navigationResult.getRoute() );
+        Assert.assertNotNull( navigationResult.getUserWayPoints() );
+
+        Assert.assertEquals(33, navigationResult.getRoute().getDurationInSeconds());
+        Assert.assertEquals(33, navigationResult.getRoute().getDistanceInMeters());
+        Assert.assertEquals(4, navigationResult.getUserWayPoints().size());
+
     }
 }
