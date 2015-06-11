@@ -32,6 +32,7 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AlertDialog;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.CheckBox;
@@ -53,6 +54,7 @@ import org.croudtrip.fragments.offer.DispatchOfferTripFragment;
 import org.croudtrip.gcm.GcmManager;
 import org.croudtrip.location.LocationUpdater;
 import org.croudtrip.location.LocationUploadTimerReceiver;
+import org.croudtrip.utils.CrashCallback;
 import org.croudtrip.utils.DefaultTransformer;
 
 import java.io.InputStream;
@@ -179,9 +181,10 @@ public class MainActivity extends AbstractRoboDrawerActivity {
                         public void call(Void aVoid) {
                             Timber.d("Registered at GCM.");
                         }
-                    }, new Action1<Throwable>() {
+                    }, new CrashCallback(this) {
                         @Override
                         public void call(Throwable throwable) {
+                            super.call(throwable);
                             Timber.e("Could not register at GCM services: " + throwable.getMessage() );
                         }
                     });
@@ -278,10 +281,7 @@ public class MainActivity extends AbstractRoboDrawerActivity {
             }
         });
 
-        boolean skip = prefs.getBoolean(Constants.SHARED_PREF_KEY_SKIP_ENABLE_GPS, false);
-        //if (!skip) {
-            adb.show();
-        //}
+        adb.show();
     }
 
 
@@ -323,7 +323,7 @@ public class MainActivity extends AbstractRoboDrawerActivity {
                             account.setPhoto(avatar);
                             notifyAccountDataChanged();
                         }
-                    }, new Action1<Throwable>() {
+                    }, new CrashCallback(this) {
                         @Override
                         public void call(Throwable throwable) {
                             Timber.e(throwable, "failed to download avatar");

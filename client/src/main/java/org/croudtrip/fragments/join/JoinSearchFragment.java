@@ -64,6 +64,8 @@ import org.croudtrip.fragments.SubscriptionFragment;
 import org.croudtrip.location.LocationUpdater;
 import org.croudtrip.location.MyAutoCompleteTextView;
 import org.croudtrip.location.PlaceAutocompleteAdapter;
+import org.croudtrip.utils.CrashPopup;
+
 import com.gc.materialdesign.views.Slider;
 
 import java.io.IOException;
@@ -180,6 +182,7 @@ public class JoinSearchFragment extends SubscriptionFragment implements GoogleAp
             }
             adapter.setHistory(history);
         } catch (SQLException e) {
+            CrashPopup.show(getActivity(), e);
             e.printStackTrace();
         }
 
@@ -209,8 +212,10 @@ public class JoinSearchFragment extends SubscriptionFragment implements GoogleAp
 
                     startActivityForResult(intent, REQUEST_PLACE_PICKER);
                 } catch (GooglePlayServicesRepairableException e) {
+                    CrashPopup.show(getActivity(), e);
                     e.printStackTrace();
                 } catch (GooglePlayServicesNotAvailableException e) {
+                    CrashPopup.show(getActivity(), e);
                     e.printStackTrace();
                 }
             }
@@ -239,6 +244,7 @@ public class JoinSearchFragment extends SubscriptionFragment implements GoogleAp
         btn_join.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
 
                 /*
                 Save maximum waiting time
@@ -272,8 +278,10 @@ public class JoinSearchFragment extends SubscriptionFragment implements GoogleAp
 
                                     startActivityForResult(intent, REQUEST_PLACE_PICKER);
                                 } catch (GooglePlayServicesRepairableException e) {
+                                    CrashPopup.show(getActivity(), e);
                                     e.printStackTrace();
                                 } catch (GooglePlayServicesNotAvailableException e) {
+                                    CrashPopup.show(getActivity(), e);
                                     e.printStackTrace();
                                 }
 
@@ -297,6 +305,7 @@ public class JoinSearchFragment extends SubscriptionFragment implements GoogleAp
                     if (addresses.size() > 0)
                         destination = new LatLng(addresses.get(0).getLatitude(), addresses.get(0).getLongitude());
                 } catch (IOException e) {
+                    CrashPopup.show(getActivity(), e);
                     Toast.makeText(getActivity().getApplicationContext(), R.string.offer_trip_no_destination, Toast.LENGTH_SHORT).show();
                     return;
                 }
@@ -321,6 +330,7 @@ public class JoinSearchFragment extends SubscriptionFragment implements GoogleAp
                         dbHelper.getPlaceDao().create(tempPlace);
                     }
                 } catch (SQLException e) {
+                    CrashPopup.show(getActivity(), e);
                     e.printStackTrace();
                 }
 
@@ -386,7 +396,6 @@ public class JoinSearchFragment extends SubscriptionFragment implements GoogleAp
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         menu.clear();
-        //inflater.inflate(R.menu.menu_main, menu);
     }
 
 

@@ -177,4 +177,7 @@
     <string name="load_route_failed">Loading your route failed. Please try again.</string>
     <string name="load_passengers_failed">Loading your passengers failed. Please try again.</string>
 
+    <string name="crash_popup_title">Something went wrong...</string>
+
+
 </resources>

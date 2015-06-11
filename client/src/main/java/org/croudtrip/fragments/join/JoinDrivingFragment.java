@@ -46,6 +46,8 @@ import org.croudtrip.api.trips.JoinTripRequest;
 import org.croudtrip.api.trips.JoinTripRequestUpdate;
 import org.croudtrip.api.trips.JoinTripRequestUpdateType;
 import org.croudtrip.fragments.SubscriptionFragment;
+import org.croudtrip.utils.CrashCallback;
+import org.croudtrip.utils.CrashPopup;
 import org.croudtrip.utils.DefaultTransformer;
 
 import java.io.IOException;
@@ -231,6 +233,7 @@ public class JoinDrivingFragment extends SubscriptionFragment {
             try {
                 request = mapper.readValue(getArguments().getString(JoinDispatchFragment.KEY_JOIN_TRIP_REQUEST_RESULT), JoinTripRequest.class);
             } catch (IOException e) {
+                CrashPopup.show(getActivity(), e);
                 Timber.e("Could not parse JoinTripRequest");
                 e.printStackTrace();
             }
@@ -252,9 +255,10 @@ public class JoinDrivingFragment extends SubscriptionFragment {
                                 showJoinedTrip(jtr.get(0));
                             }
                         }
-                    }, new Action1<Throwable>() {
+                    }, new CrashCallback(getActivity()){
                         @Override
                         public void call(Throwable throwable) {
+                            super.call(throwable);
                             Timber.e(throwable.getMessage());
                         }
                     });
@@ -287,6 +291,7 @@ public class JoinDrivingFragment extends SubscriptionFragment {
                     new URL(avatarURL);
                     Picasso.with(getActivity()).load(avatarURL).into(ivCardIcon);
                 } catch (MalformedURLException e) {
+                    CrashPopup.show(getActivity(), e);
                     ivCardIcon.setImageResource(R.drawable.profile);
                 }
             }
@@ -343,30 +348,27 @@ public class JoinDrivingFragment extends SubscriptionFragment {
         JoinTripRequestUpdate requestUpdate= new JoinTripRequestUpdate(updateType);
         Subscription subscription = tripsResource.updateJoinRequest(prefs.getLong(Constants.SHARED_PREF_KEY_TRIP_ID, -1), requestUpdate)
                 .compose(new DefaultTransformer<JoinTripRequest>())
-                .subscribe(new Subscriber<JoinTripRequest>() {
-
+                .subscribe(new Action1<JoinTripRequest>() {
                     @Override
-                    public void onCompleted() {
+                    public void call(JoinTripRequest joinTripRequest) {
 
                     }
+                }, new CrashCallback(getActivity()) {
 
                     @Override
-                    public void onError(Throwable e) {
-                        Toast.makeText(getActivity(), getResources().getString(R.string.error_contacting_server), Toast.LENGTH_SHORT).show();
-                        Timber.e(e.getMessage());
+                    public void call(Throwable throwable) {
+                        super.call(throwable);
+
+                        Timber.e(throwable.getMessage());
 
                         /*
                         Add this JoinTripRequestUpdateType to a simple cache to try it again some other time
-                         */
+                        */
                         if (simpleRequestUpdateCache != null) {
                             simpleRequestUpdateCache.add(updateType);
                         }
                     }
 
-                    @Override
-                    public void onNext(JoinTripRequest joinTripRequest) {
-
-                    }
                 });
 
         subscriptions.add(subscription);
@@ -397,7 +399,6 @@ public class JoinDrivingFragment extends SubscriptionFragment {
         SharedPreferences.Editor editor = prefs.edit();
         editor.putBoolean(Constants.SHARED_PREF_KEY_DRIVING, true);
         editor.apply();
-        Log.d("alex", "3");
         updateTrip(JoinTripRequestUpdateType.ENTER_CAR);
 
         ivNfcIcon.setVisibility(View.GONE);
