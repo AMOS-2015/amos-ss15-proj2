@@ -88,9 +88,6 @@ public class TripsManagerTest {
 
             vehicleManager.findVehicleById( offerDescription.getVehicleId() );
             result = Optional.of(vehicle);
-
-            runningTripQueryDAO.findByStatusRunning();
-            result = Lists.newArrayList();
         }};
 
         TripOffer addedOffer = null;
