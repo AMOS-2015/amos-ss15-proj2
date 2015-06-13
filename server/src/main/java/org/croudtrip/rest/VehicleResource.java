@@ -104,7 +104,7 @@ public class VehicleResource {
 
     private Vehicle assertValidVehicleId(User owner, long vehicleId) {
         Optional<Vehicle> vehicle = vehicleManager.findVehicleById(vehicleId);
-        if (!vehicle.isPresent()) RestUtils.createNotFoundException();
+        if (!vehicle.isPresent()) throw RestUtils.createNotFoundException();
         if (vehicle.get().getOwner().getId() != owner.getId()) throw RestUtils.createUnauthorizedException();
         return vehicle.get();
     }
