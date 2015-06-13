@@ -20,6 +20,9 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.location.Location;
+import android.nfc.NdefMessage;
+import android.nfc.NdefRecord;
+import android.nfc.NfcAdapter;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.widget.LinearLayoutManager;
@@ -97,6 +100,9 @@ public class MyTripDriverFragment extends SubscriptionFragment {
 
     private GoogleMap googleMap;
 
+    private NfcAdapter nfcAdapter;
+    private NdefMessage ndefMessage;
+
     private long offerID = -1;
 
     // Passengers list
@@ -139,6 +145,10 @@ public class MyTripDriverFragment extends SubscriptionFragment {
         super.onCreateView(inflater, container, savedInstanceState);
 
         setHasOptionsMenu(true);
+
+        nfcAdapter = NfcAdapter.getDefaultAdapter(getActivity());
+        NdefRecord ndefRecord = new NdefRecord(NdefRecord.TNF_WELL_KNOWN, NdefRecord.RTD_TEXT, new byte[0], null);
+        ndefMessage = new NdefMessage(new NdefRecord[] { ndefRecord });
 
         return inflater.inflate(R.layout.fragment_my_trip_driver, container, false);
     }
@@ -208,6 +218,11 @@ public class MyTripDriverFragment extends SubscriptionFragment {
     @Override
     public void onResume() {
         super.onResume();
+
+
+        if (nfcAdapter != null) {
+            nfcAdapter.setNdefPushMessage(ndefMessage, getActivity());
+        }
 
         // Get notified if a passenger cancels his trip or has reached his destination
         IntentFilter filter = new IntentFilter();
