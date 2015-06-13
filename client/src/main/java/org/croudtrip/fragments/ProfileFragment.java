@@ -37,6 +37,7 @@ import org.croudtrip.account.AccountManager;
 import org.croudtrip.api.VehicleResource;
 import org.croudtrip.api.account.User;
 import org.croudtrip.api.account.Vehicle;
+import org.croudtrip.utils.CrashCallback;
 import org.croudtrip.utils.DataHolder;
 import org.croudtrip.utils.DefaultTransformer;
 import org.croudtrip.utils.VehiclesListAdapter;
@@ -176,12 +177,7 @@ public class ProfileFragment extends SubscriptionFragment {
                                     Timber.d("Profile avatar is null");
                                 }
                             }
-                        }, new Action1<Throwable>() {
-                            @Override
-                            public void call(Throwable throwable) {
-                                Timber.e(throwable, "Failed to download avatar");
-                            }
-                        });
+                        }, new CrashCallback(getActivity()));
 
                 subscriptions.add(subscription);
             }
@@ -216,7 +212,7 @@ public class ProfileFragment extends SubscriptionFragment {
                             DataHolder.getInstance().setIsLast(true);
                         }
                     }
-                }, new Action1<Throwable>() {
+                }, new CrashCallback(getActivity()) {
                     @Override
                     public void call(Throwable throwable) {
                         Response response = ((RetrofitError) throwable).getResponse();

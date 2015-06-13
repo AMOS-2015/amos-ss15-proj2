@@ -42,6 +42,7 @@ import org.croudtrip.api.account.User;
 import org.croudtrip.api.account.Vehicle;
 import org.croudtrip.api.account.VehicleDescription;
 import org.croudtrip.api.trips.TripOffer;
+import org.croudtrip.utils.CrashCallback;
 import org.croudtrip.utils.DataHolder;
 import org.croudtrip.utils.DefaultTransformer;
 
@@ -170,12 +171,7 @@ public class VehicleInfoFragment extends SubscriptionFragment {
                                     @Override
                                     public void call(TripOffer offer) {
                                     }
-                                }, new Action1<Throwable>() {
-                                    @Override
-                                    public void call(Throwable throwable) {
-                                        Timber.e(throwable.getMessage());
-                                    }
-                                })
+                                }, new CrashCallback(getActivity()))
                 );
 
 
@@ -407,13 +403,7 @@ public class VehicleInfoFragment extends SubscriptionFragment {
                         //Set fields to values fetched from the server
                         setFields();
                     }
-                }, new Action1<Throwable>() {
-                    @Override
-                    public void call(Throwable throwable) {
-                        //Response response = ((RetrofitError) throwable).getResponse();
-                        Timber.e("Failed to fetch with error:\n" + throwable.getMessage());
-                    }
-                });
+                }, new CrashCallback(getActivity()));
         subscriptions.add(subscription);
     }
 
@@ -429,13 +419,7 @@ public class VehicleInfoFragment extends SubscriptionFragment {
                         if (VehicleManager.getDefaultVehicleId(getActivity()) == -3)
                             VehicleManager.saveDefaultVehicle(getActivity(), vehicle.getId());
                     }
-                }, new Action1<Throwable>() {
-                    @Override
-                    public void call(Throwable throwable) {
-                        //Response response = ((RetrofitError) throwable).getResponse();
-                        Timber.e("Creation failed with error:\n" + throwable.getMessage());
-                    }
-                });
+                }, new CrashCallback(getActivity()));
         subscriptions.add(subscription);
     }
 
@@ -451,13 +435,7 @@ public class VehicleInfoFragment extends SubscriptionFragment {
                         if (DataHolder.getInstance().getIsLast() == true)
                             VehicleManager.saveDefaultVehicle(getActivity(),-3);
                     }
-                }, new Action1<Throwable>() {
-                    @Override
-                    public void call(Throwable throwable) {
-                        //Response response = ((RetrofitError) throwable).getResponse();
-                        Timber.e("Removal failed with error:\n" + throwable.getMessage());
-                    }
-                });
+                }, new CrashCallback(getActivity()));
         subscriptions.add(subscription);
     }
 
@@ -470,13 +448,7 @@ public class VehicleInfoFragment extends SubscriptionFragment {
                         Toast.makeText(getActivity(), "Updated vehicle info", Toast.LENGTH_SHORT).show();
                         Timber.v("Updated vehicle info");
                     }
-                }, new Action1<Throwable>() {
-                    @Override
-                    public void call(Throwable throwable) {
-                        //Response response = ((RetrofitError) throwable).getResponse();
-                        Timber.e("Update failed with error:\n" + throwable.getMessage());
-                    }
-                });
+                }, new CrashCallback(getActivity()));
         subscriptions.add(subscription);
     }
 

@@ -351,7 +351,7 @@ public class JoinDrivingFragment extends SubscriptionFragment {
                 .subscribe(new Action1<JoinTripRequest>() {
                     @Override
                     public void call(JoinTripRequest joinTripRequest) {
-
+                        Timber.d("update trip successfully called");
                     }
                 }, new CrashCallback(getActivity()) {
 

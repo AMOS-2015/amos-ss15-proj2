@@ -26,6 +26,7 @@ import android.view.ViewGroup;
 import org.croudtrip.R;
 import org.croudtrip.api.VehicleResource;
 import org.croudtrip.api.account.Vehicle;
+import org.croudtrip.utils.CrashCallback;
 import org.croudtrip.utils.DefaultTransformer;
 import org.croudtrip.utils.VehiclesListSelectAdapter;
 
@@ -90,9 +91,11 @@ public class VehicleSelectionFragment extends SubscriptionFragment {
                             adapter.addElements(vehicles);
                         }
                     }
-                }, new Action1<Throwable>() {
+                }, new CrashCallback(getActivity()) {
                     @Override
                     public void call(Throwable throwable) {
+                        super.call(throwable);
+
                         Response response = ((RetrofitError) throwable).getResponse();
                         if (response != null && response.getStatus() == 401) {  // Not Authorized
                         } else {

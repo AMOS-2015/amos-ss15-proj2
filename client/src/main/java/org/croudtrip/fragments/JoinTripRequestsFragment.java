@@ -31,6 +31,7 @@ import org.croudtrip.api.trips.JoinTripRequestUpdate;
 import org.croudtrip.api.trips.JoinTripRequestUpdateType;
 import org.croudtrip.trip.JoinTripRequestsAdapter;
 import org.croudtrip.trip.OnDiversionUpdateListener;
+import org.croudtrip.utils.CrashCallback;
 import org.croudtrip.utils.DefaultTransformer;
 import org.croudtrip.utils.SwipeListener;
 
@@ -125,12 +126,7 @@ public class JoinTripRequestsFragment extends SubscriptionFragment {
                                 listener.onDiversionUpdate(joinRequest, textView, diversionInMinutes);
                             }
 
-                        }, new Action1<Throwable>() {
-                            @Override
-                            public void call(Throwable throwable) {
-                                Timber.i("Error when searching for routes with passenger: " + throwable.getMessage());
-                            }
-                        })
+                        }, new CrashCallback(getActivity()))
         );
     }
 
@@ -233,9 +229,10 @@ public class JoinTripRequestsFragment extends SubscriptionFragment {
                                 }
                             }
                         }
-                    }, new Action1<Throwable>() {
+                    }, new CrashCallback(getActivity()) {
                         @Override
                         public void call(Throwable throwable) {
+                            super.call(throwable);
                             Response response = ((RetrofitError) throwable).getResponse();
                             if (response != null && response.getStatus() == 401) {  // Not Authorized
                             } else {

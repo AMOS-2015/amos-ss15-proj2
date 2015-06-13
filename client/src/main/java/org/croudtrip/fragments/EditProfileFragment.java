@@ -43,6 +43,7 @@ import org.croudtrip.R;
 import org.croudtrip.account.AccountManager;
 import org.croudtrip.api.account.User;
 import org.croudtrip.api.account.UserDescription;
+import org.croudtrip.utils.CrashCallback;
 import org.croudtrip.utils.DefaultTransformer;
 import org.croudtrip.api.UsersResource;
 
@@ -161,12 +162,7 @@ public class EditProfileFragment extends SubscriptionFragment {
                                     Timber.d("Profile avatar is null");
                                 }
                             }
-                        }, new Action1<Throwable>() {
-                            @Override
-                            public void call(Throwable throwable) {
-                                Timber.e(throwable, "Failed to download avatar");
-                            }
-                        });
+                        }, new CrashCallback(getActivity()));
             }
             else
             {
@@ -588,13 +584,7 @@ public class EditProfileFragment extends SubscriptionFragment {
                         Timber.v("Updated user info");
                     }
 
-                }, new Action1<Throwable>() {
-                    @Override
-                    public void call(Throwable throwable) {
-                        //Response response = ((RetrofitError) throwable).getResponse();
-                        Timber.e("Update failed with error:\n" + throwable.getMessage());
-                    }
-                });
+                }, new CrashCallback(getActivity()));
     }
     public void onDestroy() {
         super.onDestroy();
