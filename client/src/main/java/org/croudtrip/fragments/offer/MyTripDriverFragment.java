@@ -74,7 +74,6 @@ import it.neokree.materialnavigationdrawer.elements.MaterialSection;
 import roboguice.inject.InjectView;
 import rx.Observable;
 import rx.Subscriber;
-import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
 import rx.functions.Func1;
@@ -459,29 +458,6 @@ public class MyTripDriverFragment extends SubscriptionFragment {
                         removeRunningTripOfferState();
                     }
                 });
-    }
-
-
-    private void cancelTripOffer(final long id) {
-        Subscription subscription = tripsResource.updateOffer(id, TripOfferUpdate.createCancelUpdate())
-                .compose(new DefaultTransformer<TripOffer>())
-                .subscribe(new Action1<TripOffer>() {
-                    @Override
-                    public void call(TripOffer offer) {
-                        // After the server has been contacted successfully, clean up the SharedPref
-                        // and show "Offer Trip" screen again
-                        removeRunningTripOfferState();
-                        Toast.makeText(getActivity(), "Trip with id: " + id + " was canceled!", Toast.LENGTH_SHORT).show();
-                    }
-
-                }, new Action1<Throwable>() {
-                    @Override
-                    public void call(Throwable throwable) {
-                        Timber.i("Error when cancelling trip with ID " + id + " : " + throwable.getMessage());
-                        Toast.makeText(getActivity(), "Error: " + throwable.getMessage(), Toast.LENGTH_LONG).show();
-                    }
-                });
-        subscriptions.add(subscription);
     }
 
 
