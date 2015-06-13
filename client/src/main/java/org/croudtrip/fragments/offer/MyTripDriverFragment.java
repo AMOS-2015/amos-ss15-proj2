@@ -108,8 +108,8 @@ public class MyTripDriverFragment extends SubscriptionFragment {
     @InjectView(R.id.rv_my_trip_driver_passengers)
     private RecyclerView recyclerView;
 
-    @InjectView(R.id.pb_my_trip_progressBar)
-    private ProgressBar progressBar;
+    private ProgressBar mapProgressBar;
+    private ProgressBar passengersProgressBar;
 
     @InjectView(R.id.iv_transparent_image)
     private ImageView transparentImageView;
@@ -158,6 +158,9 @@ public class MyTripDriverFragment extends SubscriptionFragment {
         // Fill the passengers list
         View header = view.findViewById(R.id.ll_my_trip_driver_info);
         adapter = new MyTripDriverPassengersAdapter(header);
+
+        mapProgressBar = (ProgressBar) adapter.getHeader().findViewById(R.id.pb_my_trip_map_progressBar);
+        passengersProgressBar = (ProgressBar) adapter.getHeader().findViewById(R.id.pb_my_trip_passengers_progressBar);
 
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getActivity());
         recyclerView.setLayoutManager(layoutManager);
@@ -314,6 +317,11 @@ public class MyTripDriverFragment extends SubscriptionFragment {
      */
     private synchronized void loadOffer() {
 
+        // UI
+        mapProgressBar.setVisibility(View.VISIBLE);
+        // Don't show spinner again, looks ugly with already filled adapter
+        // passengersProgressBar.setVisibility(View.VISIBLE);
+
         subscriptions.add(tripsResource.getActiveOffers()
                 .compose(new DefaultTransformer<List<TripOffer>>())
                 .flatMap(new Func1<List<TripOffer>, Observable<TripOffer>>() {
@@ -396,6 +404,8 @@ public class MyTripDriverFragment extends SubscriptionFragment {
         LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
         CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(latLng, 10);
         googleMap.animateCamera(cameraUpdate);
+
+        mapProgressBar.setVisibility(View.GONE);
     }
 
 
@@ -441,8 +451,6 @@ public class MyTripDriverFragment extends SubscriptionFragment {
                         getActivity().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE)
                                 .edit().putBoolean(Constants.SHARED_PREF_KEY_RUNNING_TRIP_OFFER, true).apply();
 
-                        // UI
-                        progressBar.setVisibility(View.GONE);
                     }
 
                 }, new Action1<Throwable>() {
@@ -450,9 +458,6 @@ public class MyTripDriverFragment extends SubscriptionFragment {
                     public void call(Throwable throwable) {
                         // ERROR
                         Timber.e(throwable.getMessage());
-
-                        // UI
-                        progressBar.setVisibility(View.GONE);
 
                         // Inform user
                         Toast.makeText(getActivity(), getString(R.string.offer_trip_failed), Toast.LENGTH_LONG).show();
@@ -510,14 +515,12 @@ public class MyTripDriverFragment extends SubscriptionFragment {
 
 
         @Override
-        public void onCompleted() {
-            progressBar.setVisibility(View.GONE);
-        }
+        public void onCompleted() {}
 
         @Override
         public void onError(Throwable throwable) {
-
-            progressBar.setVisibility(View.GONE);
+            mapProgressBar.setVisibility(View.GONE);
+            passengersProgressBar.setVisibility(View.GONE);
             Timber.e(throwable.getMessage());
             Toast.makeText(getActivity(), getString(R.string.load_trip_failed), Toast.LENGTH_LONG).show();
         }
@@ -586,10 +589,12 @@ public class MyTripDriverFragment extends SubscriptionFragment {
 
         @Override
         public void onCompleted() {
+            passengersProgressBar.setVisibility(View.GONE);
         }
 
         @Override
         public void onError(Throwable e) {
+            passengersProgressBar.setVisibility(View.GONE);
             Timber.e("Receiving Passengers (JoinTripRequest) failed:\n" + e.getMessage());
             Toast.makeText(getActivity(), getString(R.string.load_passengers_failed), Toast.LENGTH_LONG).show();
         }
