@@ -33,6 +33,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.NumberPicker;
+import android.widget.ProgressBar;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Toast;
@@ -41,11 +42,12 @@ import com.getbase.floatingactionbutton.FloatingActionButton;
 
 import org.croudtrip.R;
 import org.croudtrip.account.AccountManager;
+import org.croudtrip.api.UsersResource;
 import org.croudtrip.api.account.User;
 import org.croudtrip.api.account.UserDescription;
 import org.croudtrip.utils.CrashCallback;
+import org.croudtrip.utils.CrashPopup;
 import org.croudtrip.utils.DefaultTransformer;
-import org.croudtrip.api.UsersResource;
 
 import java.io.InputStream;
 import java.net.URL;
@@ -55,8 +57,7 @@ import java.util.Date;
 import javax.inject.Inject;
 import javax.net.ssl.HttpsURLConnection;
 
-
-
+import roboguice.inject.InjectView;
 import rx.Observable;
 import rx.functions.Action1;
 import rx.functions.Func0;
@@ -66,12 +67,16 @@ import timber.log.Timber;
 /**
  * This fragment allows the user to edit their profile information (e.g. name, profile picture, address,
  * etc.).
+ *
  * @author Nazeeh Ammari
  */
 public class EditProfileFragment extends SubscriptionFragment {
 
     @Inject
     private UsersResource usersResource;
+
+    @InjectView(R.id.pb_edit_profile)
+    private ProgressBar progressBar;
 
 
     //************************* Variables ***************************//
@@ -83,7 +88,7 @@ public class EditProfileFragment extends SubscriptionFragment {
     private String profileImageUrl, tempUrl;
 
     private ImageView profilePicture;
-    private EditText  firstNameEdit, lastNameEdit, phoneNumberEdit, addressEdit;
+    private EditText firstNameEdit, lastNameEdit, phoneNumberEdit, addressEdit;
     private RadioGroup genderRadio;
     private Button yearPickerButton, save, discard;
     private FloatingActionButton editProfileImage;
@@ -104,11 +109,11 @@ public class EditProfileFragment extends SubscriptionFragment {
         View view = inflater.inflate(R.layout.fragment_edit_profile, container, false);
 
         //Get EditTexts & Buttons
-        firstNameEdit = (EditText)view.findViewById(R.id.first_name);
-        lastNameEdit = (EditText)view.findViewById(R.id.last_name);
-        phoneNumberEdit = (EditText)view.findViewById(R.id.edit_profile_phone);
-        addressEdit = (EditText)view.findViewById(R.id.edit_profile_address);
-        yearPickerButton=(Button)view.findViewById(R.id.year_picker_button);
+        firstNameEdit = (EditText) view.findViewById(R.id.first_name);
+        lastNameEdit = (EditText) view.findViewById(R.id.last_name);
+        phoneNumberEdit = (EditText) view.findViewById(R.id.edit_profile_phone);
+        addressEdit = (EditText) view.findViewById(R.id.edit_profile_address);
+        yearPickerButton = (Button) view.findViewById(R.id.year_picker_button);
         discard = (Button) view.findViewById(R.id.discard);
         save = (Button) view.findViewById(R.id.save);
         editProfileImage = (FloatingActionButton) view.findViewById(R.id.btn_edit_profile_image);
@@ -116,7 +121,7 @@ public class EditProfileFragment extends SubscriptionFragment {
 
         //Get the ImageView and fill it with the profile picture from SharedPrefs (Uri)
         // TODO
-        profilePicture = (ImageView)view.findViewById(R.id.profile_picture_edit);
+        profilePicture = (ImageView) view.findViewById(R.id.profile_picture_edit);
         /*
         if (prefs.getString(Constants.SHARED_PREF_KEY_PROFILE_IMAGE_URI,null) != null) {
             profileImageUri = Uri.parse(prefs.getString(Constants.SHARED_PREF_KEY_PROFILE_IMAGE_URI,null));
@@ -128,9 +133,9 @@ public class EditProfileFragment extends SubscriptionFragment {
 
         this.user = AccountManager.getLoggedInUser(this.getActivity().getApplicationContext());
 
-        if(user != null) {
+        if (user != null) {
             if (user.getEmail() != null) {
-                email=user.getEmail();
+                email = user.getEmail();
             }
             // download avatar
             if (user.getAvatarUrl() != null) {
@@ -156,25 +161,21 @@ public class EditProfileFragment extends SubscriptionFragment {
                         .subscribe(new Action1<Bitmap>() {
                             @Override
                             public void call(Bitmap avatar) {
-                                if(avatar != null) {
+                                if (avatar != null) {
                                     profilePicture.setImageBitmap(avatar);
-                                }else{
+                                } else {
                                     Timber.d("Profile avatar is null");
                                 }
                             }
                         }, new CrashCallback(getActivity()));
-            }
-            else
-            {
+            } else {
             }
             //Fill EditText fields
             if (user.getFirstName() != null) {
                 firstNameEdit.setText(user.getFirstName());
                 tempFirstName = user.getFirstName();
                 newFirstName = user.getFirstName();
-            }
-            else
-            {
+            } else {
                 firstNameEdit.setText("Unknown");
                 tempFirstName = "Unknown";
                 newFirstName = "Unknown";
@@ -184,35 +185,30 @@ public class EditProfileFragment extends SubscriptionFragment {
                 lastNameEdit.setText(user.getLastName());
                 tempLastName = user.getLastName();
                 newLastName = user.getLastName();
-            }
-            else
-            {
+            } else {
                 lastNameEdit.setText("Unknown");
                 tempLastName = "Unknown";
-                newLastName="Unknown";
+                newLastName = "Unknown";
             }
 
             if (user.getPhoneNumber() != null) {
                 phoneNumberEdit.setText(user.getPhoneNumber());
                 tempNumber = user.getPhoneNumber();
-                newNumber=user.getPhoneNumber();
-            }
-            else
-            {
+                newNumber = user.getPhoneNumber();
+            } else {
                 phoneNumberEdit.setText("0");
                 tempNumber = "0";
-                newNumber="0";
+                newNumber = "0";
             }
 
-            if (user.getAddress()!=null) {
+            if (user.getAddress() != null) {
                 addressEdit.setText(user.getAddress());
                 tempAddress = user.getAddress();
-                newAddress=user.getAddress();
-            }
-            else {
+                newAddress = user.getAddress();
+            } else {
                 addressEdit.setText("Unknown");
                 tempAddress = "Unknown";
-                newAddress="Unknown";
+                newAddress = "Unknown";
             }
 
             if (user.getIsMale() != null) {
@@ -220,14 +216,10 @@ public class EditProfileFragment extends SubscriptionFragment {
                 newGenderIsMale = user.getIsMale();
                 if (user.getIsMale()) {
                     genderRadio.check(R.id.radio_male);
-                }
-                else
-                {
+                } else {
                     genderRadio.check(R.id.radio_female);
                 }
-            }
-            else
-            {
+            } else {
                 genderRadio.check(R.id.radio_male);
                 tempGender = true;
                 newGenderIsMale = true;
@@ -239,9 +231,7 @@ public class EditProfileFragment extends SubscriptionFragment {
                 yearPickerButton.setText(calendar.get(Calendar.YEAR) + "");
                 tempYearOfBirth = calendar.get(Calendar.YEAR);
                 newYearOfBirth = calendar.get(Calendar.YEAR);
-            }
-            else
-            {
+            } else {
                 yearPickerButton.setText("Unknown");
                 tempYearOfBirth = null;
                 newYearOfBirth = null;
@@ -252,10 +242,12 @@ public class EditProfileFragment extends SubscriptionFragment {
         //Name
         firstNameEdit.addTextChangedListener(new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
 
             @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
 
             @Override
             public void afterTextChanged(Editable s) {
@@ -286,10 +278,12 @@ public class EditProfileFragment extends SubscriptionFragment {
 
         lastNameEdit.addTextChangedListener(new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
 
             @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
 
             @Override
             public void afterTextChanged(Editable s) {
@@ -320,10 +314,12 @@ public class EditProfileFragment extends SubscriptionFragment {
 
         phoneNumberEdit.addTextChangedListener(new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
 
             @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
 
             @Override
             public void afterTextChanged(Editable s) {
@@ -356,10 +352,12 @@ public class EditProfileFragment extends SubscriptionFragment {
         //Address
         addressEdit.addTextChangedListener(new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
 
             @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
 
             @Override
             public void afterTextChanged(Editable s) {
@@ -387,8 +385,7 @@ public class EditProfileFragment extends SubscriptionFragment {
             }
         });
         */
-        genderRadio.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener()
-        {
+        genderRadio.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(RadioGroup group, int checkedId) {
                 RadioButton checkedButton = (RadioButton) group.findViewById(checkedId);
@@ -396,13 +393,14 @@ public class EditProfileFragment extends SubscriptionFragment {
             }
         });
 
-    //Year picker button
-    yearPickerButton.setOnClickListener(new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            showYearPicker();
-        }
-    });
+        //Year picker button
+        yearPickerButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showYearPicker();
+            }
+        });
+
         // Discard changes button
         discard.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -453,6 +451,7 @@ public class EditProfileFragment extends SubscriptionFragment {
             //        .show();
         }
     }
+
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
@@ -473,18 +472,21 @@ public class EditProfileFragment extends SubscriptionFragment {
         if (tempYearOfBirth == null)
             yearPickerButton.setText("Unknown");
         else
-            yearPickerButton.setText(tempYearOfBirth+"");
+            yearPickerButton.setText(tempYearOfBirth + "");
 
         Toast.makeText(getActivity(), "Changes discarded", Toast.LENGTH_SHORT)
                 .show();
     }
+
     public void saveProfileChanges() {
+
+        progressBar.setVisibility(View.VISIBLE);
+
         Calendar calendar = Calendar.getInstance();
-        if (newYearOfBirth !=null) {
+        if (newYearOfBirth != null) {
             calendar.set(Calendar.YEAR, newYearOfBirth);
             newBirthDay = calendar.getTime();
-        }
-        else
+        } else
             newBirthDay = null;
 
 
@@ -502,9 +504,7 @@ public class EditProfileFragment extends SubscriptionFragment {
         );
 
         AccountManager.saveUser(getActivity().getApplicationContext(), user, null);
-        Toast.makeText(getActivity(), "Profile Updated!", Toast.LENGTH_SHORT)
-                .show();
-        UserDescription userDescription = new UserDescription(email, newFirstName, newLastName, password,newNumber,newGenderIsMale,newBirthDay,newAddress,"some url");
+        UserDescription userDescription = new UserDescription(email, newFirstName, newLastName, password, newNumber, newGenderIsMale, newBirthDay, newAddress, "some url");
         updateUser(userDescription);
     }
 
@@ -519,7 +519,7 @@ public class EditProfileFragment extends SubscriptionFragment {
         yearPicker.setMaxValue(2015);
         yearPicker.setMinValue(1920);
         yearPicker.setWrapSelectorWheel(false);
-        if (yearPickerButton.getText() != null && ! yearPickerButton.getText().equals("Unknown"))
+        if (yearPickerButton.getText() != null && !yearPickerButton.getText().equals("Unknown"))
             yearPicker.setValue(Integer.parseInt(yearPickerButton.getText().toString()));
         else
             yearPicker.setValue(2015);
@@ -565,8 +565,7 @@ public class EditProfileFragment extends SubscriptionFragment {
                     e.printStackTrace();
                 } catch (Resources.NotFoundException e) {
                     e.printStackTrace();
-                }
-                catch (IllegalAccessException e) {
+                } catch (IllegalAccessException e) {
                     e.printStackTrace();
                 }
                 break;
@@ -574,18 +573,30 @@ public class EditProfileFragment extends SubscriptionFragment {
         }
     }
 
-    public void updateUser (final UserDescription userDescription)
-    {
-        usersResource.updateUser(userDescription)
-                .compose(new DefaultTransformer<User>())
-                .subscribe(new Action1<User>() {
-                    @Override
-                    public void call(User user) {
-                        Timber.v("Updated user info");
-                    }
+    public void updateUser(final UserDescription userDescription) {
+        subscriptions.add(
+                usersResource.updateUser(userDescription)
+                        .compose(new DefaultTransformer<User>())
+                        .subscribe(new Action1<User>() {
+                            @Override
+                            public void call(User user) {
+                                Timber.v("Updated user info");
+                                progressBar.setVisibility(View.GONE);
+                                EditProfileFragment.this.getActivity().onBackPressed();
+                            }
 
-                }, new CrashCallback(getActivity()));
+                        }, new CrashCallback(getActivity()){
+                            @Override
+                            public void call(Throwable throwable) {
+                                super.call(throwable);
+
+                                progressBar.setVisibility(View.GONE);
+                                CrashPopup.show(getActivity(), throwable);
+                            }
+                        })
+        );
     }
+
     public void onDestroy() {
         super.onDestroy();
         /*
