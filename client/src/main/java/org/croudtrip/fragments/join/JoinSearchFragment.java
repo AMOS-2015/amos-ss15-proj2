@@ -23,7 +23,6 @@ import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
@@ -34,11 +33,11 @@ import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gc.materialdesign.views.Slider;
 import com.getbase.floatingactionbutton.FloatingActionButton;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
@@ -52,21 +51,17 @@ import com.google.android.gms.location.places.Places;
 import com.google.android.gms.location.places.ui.PlacePicker;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
-import com.rengwuxian.materialedittext.MaterialEditText;
 
 import org.croudtrip.Constants;
 import org.croudtrip.MainApplication;
 import org.croudtrip.R;
 import org.croudtrip.db.DatabaseHelper;
-import org.croudtrip.fragments.JoinTripResultsFragment;
 import org.croudtrip.fragments.OfferTripFragment;
 import org.croudtrip.fragments.SubscriptionFragment;
 import org.croudtrip.location.LocationUpdater;
 import org.croudtrip.location.MyAutoCompleteTextView;
 import org.croudtrip.location.PlaceAutocompleteAdapter;
 import org.croudtrip.utils.CrashPopup;
-
-import com.gc.materialdesign.views.Slider;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -82,7 +77,6 @@ import roboguice.inject.InjectView;
 import rx.Subscription;
 import rx.functions.Action1;
 import rx.schedulers.Schedulers;
-import timber.log.Timber;
 
 /**
  * Created by alex on 22.04.15.
@@ -102,6 +96,7 @@ public class JoinSearchFragment extends SubscriptionFragment implements GoogleAp
     @InjectView(R.id.destination) private MyAutoCompleteTextView tv_destination;
     @InjectView(R.id.slider_waitingTime) private Slider slider_waitingTime;
     @InjectView(R.id.waitingTime) private TextView tv_waitingTime;
+    @InjectView(R.id.pb_join_trip_destination) private ProgressBar progressBar;
 
 
     @Inject
@@ -437,6 +432,7 @@ public class JoinSearchFragment extends SubscriptionFragment implements GoogleAp
              Issue a request to the Places Geo Data API to retrieve a Place object with additional
               details about the place.
               */
+            progressBar.setVisibility(View.VISIBLE);
             PendingResult<PlaceBuffer> placeResult = Places.GeoDataApi.getPlaceById(googleApiClient, placeId);
             placeResult.setResultCallback(new ResultCallback<PlaceBuffer>() {
                 @Override
@@ -458,6 +454,7 @@ public class JoinSearchFragment extends SubscriptionFragment implements GoogleAp
                     lastSelected.setId(place.getId());
                     lastSelected.setDescription(place.getAddress() + "");
                     tv_address.setText(place.getAddress());
+                    progressBar.setVisibility(View.GONE);
 
 
                     places.release();
