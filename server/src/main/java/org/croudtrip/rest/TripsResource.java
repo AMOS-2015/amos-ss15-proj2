@@ -34,6 +34,7 @@ import org.croudtrip.api.trips.TripQueryResult;
 import org.croudtrip.api.trips.TripReservation;
 import org.croudtrip.directions.RouteNotFoundException;
 import org.croudtrip.logs.LogManager;
+import org.croudtrip.trips.RunningTripQueriesManager;
 import org.croudtrip.trips.TripsManager;
 import org.croudtrip.trips.TripsNavigationManager;
 import org.croudtrip.trips.TripsUtils;
@@ -76,6 +77,7 @@ public class TripsResource {
 
     private final TripsManager tripsManager;
     private final TripsNavigationManager tripsNavigationManager;
+    private final RunningTripQueriesManager runningTripQueriesManager;
     private final TripsUtils tripsUtils;
     private final VehicleManager vehicleManager;
     private final LogManager logManager;
@@ -84,12 +86,14 @@ public class TripsResource {
     TripsResource(
             TripsManager tripsManager,
             TripsNavigationManager tripsNavigationManager,
+            RunningTripQueriesManager runningTripQueriesManager,
             TripsUtils tripsUtils,
             VehicleManager vehicleManager,
             LogManager logManager) {
 
         this.tripsManager = tripsManager;
         this.tripsNavigationManager = tripsNavigationManager;
+        this.runningTripQueriesManager = runningTripQueriesManager;
         this.tripsUtils = tripsUtils;
         this.vehicleManager = vehicleManager;
         this.logManager = logManager;
@@ -256,7 +260,7 @@ public class TripsResource {
     @UnitOfWork
     @Path(PATH_QUERIES)
     public List<RunningTripQuery> getQueries(@Auth User passenger, @DefaultValue("false") @QueryParam("running") boolean showOnlyRunning) {
-        return tripsManager.getRunningQueries(passenger, showOnlyRunning);
+        return runningTripQueriesManager.getRunningQueries(passenger, showOnlyRunning);
     }
 
 
@@ -267,7 +271,7 @@ public class TripsResource {
     @UnitOfWork
     @Path(PATH_QUERIES + "/{queryId}")
     public RunningTripQuery getQuery(@Auth User passenger, @PathParam("queryId") long queryId) {
-        Optional<RunningTripQuery> query = tripsManager.getRunningQuery(queryId);
+        Optional<RunningTripQuery> query = runningTripQueriesManager.getRunningQuery(queryId);
         if (!query.isPresent()) throw RestUtils.createNotFoundException();
         if (query.get().getQuery().getPassenger().getId() != passenger.getId()) throw RestUtils.createUnauthorizedException();
         return query.get();
@@ -281,7 +285,7 @@ public class TripsResource {
     @UnitOfWork
     @Path(PATH_QUERIES + "/{queryId}")
     public void deleteQuery(@Auth User passenger, @PathParam("queryId") long queryId) {
-        tripsManager.deleteRunningQuery(getQuery(passenger, queryId));
+        runningTripQueriesManager.deleteRunningQuery(getQuery(passenger, queryId));
     }
 
 

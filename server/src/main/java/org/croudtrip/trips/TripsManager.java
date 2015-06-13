@@ -26,7 +26,6 @@ import org.croudtrip.api.gcm.GcmConstants;
 import org.croudtrip.api.trips.JoinTripRequest;
 import org.croudtrip.api.trips.JoinTripStatus;
 import org.croudtrip.api.trips.RunningTripQuery;
-import org.croudtrip.api.trips.RunningTripQueryStatus;
 import org.croudtrip.api.trips.TripOffer;
 import org.croudtrip.api.trips.TripOfferDescription;
 import org.croudtrip.api.trips.TripOfferStatus;
@@ -37,7 +36,6 @@ import org.croudtrip.api.trips.TripQueryResult;
 import org.croudtrip.api.trips.TripReservation;
 import org.croudtrip.api.trips.UserWayPoint;
 import org.croudtrip.db.JoinTripRequestDAO;
-import org.croudtrip.db.RunningTripQueryDAO;
 import org.croudtrip.db.TripOfferDAO;
 import org.croudtrip.db.TripReservationDAO;
 import org.croudtrip.directions.DirectionsManager;
@@ -59,7 +57,6 @@ import javax.inject.Singleton;
 public class TripsManager {
 
     private final TripOfferDAO tripOfferDAO;
-    private final RunningTripQueryDAO runningTripQueryDAO;
     private final TripReservationDAO tripReservationDAO;
     private final JoinTripRequestDAO joinTripRequestDAO;
     private final DirectionsManager directionsManager;
@@ -74,7 +71,6 @@ public class TripsManager {
     @Inject
     TripsManager(
             TripOfferDAO tripOfferDAO,
-            RunningTripQueryDAO runningTripQueryDAO,
             TripReservationDAO tripReservationDAO,
             JoinTripRequestDAO joinTripRequestDAO,
             DirectionsManager directionsManager,
@@ -86,7 +82,6 @@ public class TripsManager {
             LogManager logManager) {
 
         this.tripOfferDAO = tripOfferDAO;
-        this.runningTripQueryDAO = runningTripQueryDAO;
         this.tripReservationDAO = tripReservationDAO;
         this.joinTripRequestDAO = joinTripRequestDAO;
         this.directionsManager = directionsManager;
@@ -261,46 +256,12 @@ public class TripsManager {
         // if no reservations start "background search"
         RunningTripQuery runningQuery = null;
         if (reservations.isEmpty()) {
-            runningQuery = new RunningTripQuery(
-                    0,
-                    query,
-                    RunningTripQueryStatus.RUNNING);
-            runningTripQueryDAO.save(runningQuery);
+            runningQuery = runningTripQueriesManager.startRunningQuery(query);
         }
 
         logManager.d("QUERY OFFER END");
 
         return new TripQueryResult(reservations, runningQuery);
-    }
-
-
-    /**
-     * Find all the queries by a certain passenger.
-     * @param passenger The passenger you want to get the queries for
-     * @param showOnlyRunning true, if you want to get only the running queries, false otherwise
-     * @return A list of {@link org.croudtrip.api.trips.RunningTripQuery} by this passenger.
-     */
-    public List<RunningTripQuery> getRunningQueries(User passenger, boolean showOnlyRunning) {
-        if (showOnlyRunning) return runningTripQueryDAO.findByPassengerIdAndSatusRunning(passenger.getId());
-        else return runningTripQueryDAO.findByPassengerId(passenger.getId());
-    }
-
-    /**
-     * Find a running query by its id.
-     * @param queryId the id of the query you want to get.
-     * @return An {@link com.google.common.base.Optional} that contains the {@link org.croudtrip.api.trips.RunningTripQuery}
-     * if it exists in the database.
-     */
-    public Optional<RunningTripQuery> getRunningQuery(long queryId) {
-        return runningTripQueryDAO.findById(queryId);
-    }
-
-    /**
-     * Delete a running query from the database
-     * @param runningTripQuery the query that should be deleted.
-     */
-    public void deleteRunningQuery(RunningTripQuery runningTripQuery) {
-        runningTripQueryDAO.delete(runningTripQuery);
     }
 
     /**
@@ -319,7 +280,6 @@ public class TripsManager {
     public Optional<TripReservation> findReservation(long reservationId) {
         return tripReservationDAO.findById(reservationId);
     }
-
 
     /**
      * Join a specific offer by a {@link org.croudtrip.api.trips.TripReservation}.

@@ -21,7 +21,6 @@ import org.croudtrip.api.trips.TripQueryResult;
 import org.croudtrip.api.trips.TripReservation;
 import org.croudtrip.api.trips.UserWayPoint;
 import org.croudtrip.db.JoinTripRequestDAO;
-import org.croudtrip.db.RunningTripQueryDAO;
 import org.croudtrip.db.TripOfferDAO;
 import org.croudtrip.db.TripReservationDAO;
 import org.croudtrip.directions.DirectionsManager;
@@ -54,17 +53,16 @@ public class TripsManagerTest {
     @Mocked TripsMatcher tripsMatcher;
     @Mocked RunningTripQueriesManager runningTripQueriesManager;
     @Mocked GcmManager gcmManager;
-    @Mocked RunningTripQueryDAO runningTripQueryDAO;
 
     private TripsManager tripsManager;
 
-    RouteLocation tripStart = new RouteLocation(0,0);
-    RouteLocation tripEnd = new RouteLocation(1,1);
+    private RouteLocation tripStart = new RouteLocation(0,0);
+    private RouteLocation tripEnd = new RouteLocation(1,1);
 
     @Before
     public void setupTripsManager() {
-        tripsManager = new TripsManager( tripOfferDAO, runningTripQueryDAO, tripReservationDAO, joinTripRequestDAO,
-                directionsManager, vehicleManager, gcmManager, tripsMatcher, runningTripQueriesManager, tripsUtils, logManager );
+        tripsManager = new TripsManager( tripOfferDAO, tripReservationDAO, joinTripRequestDAO, directionsManager,
+                vehicleManager, gcmManager, tripsMatcher, runningTripQueriesManager, tripsUtils, logManager );
     }
 
     @Test
