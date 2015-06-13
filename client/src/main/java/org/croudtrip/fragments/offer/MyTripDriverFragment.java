@@ -38,7 +38,6 @@ import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -49,7 +48,6 @@ import org.croudtrip.Constants;
 import org.croudtrip.R;
 import org.croudtrip.api.TripsResource;
 import org.croudtrip.api.directions.NavigationResult;
-import org.croudtrip.api.directions.Route;
 import org.croudtrip.api.directions.RouteLocation;
 import org.croudtrip.api.trips.JoinTripRequest;
 import org.croudtrip.api.trips.JoinTripStatus;
@@ -117,6 +115,7 @@ public class MyTripDriverFragment extends SubscriptionFragment {
     private LocationUpdater locationUpdater;
 
     private Button finishButton;
+    private Button cancelButton;
 
     // Detect if a passenger cancels his trip or has reached his destination
     private BroadcastReceiver passengersChangeReceiver = new BroadcastReceiver() {
@@ -225,34 +224,36 @@ public class MyTripDriverFragment extends SubscriptionFragment {
     }
 
     private void setupCancelButton(View header) {
-        (header.findViewById(R.id.btn_my_trip_driver_cancel_trip))
-                .setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        subscriptions.add(tripsResource.getOffers(false)
-                                        .compose(new DefaultTransformer<List<TripOffer>>())
-                                        .flatMap(new Func1<List<TripOffer>, Observable<TripOffer>>() {
-                                            @Override
-                                            public Observable<TripOffer> call(List<TripOffer> tripOffers) {
-                                                // Cancel all the offers for the time being to be changed to
-                                                // get the specific offer at a later stage
-                                                if (!tripOffers.isEmpty())
-                                                    for (int i = 0; i < tripOffers.size(); i++)
-                                                        cancelTripOffer(tripOffers.get(i).getId());
-                                                return Observable.just(tripOffers.get(0));
-                                            }
-                                        })
-                                        .subscribe(new Action1<TripOffer>() {
-                                            @Override
-                                            public void call(TripOffer offer) {
-                                            }
-                                        }, new Action1<Throwable>() {
-                                            @Override
-                                            public void call(Throwable throwable) {
-                                                Timber.e(throwable.getMessage());
-                                            }
-                                        })
-                        );
+
+        cancelButton = ((Button) (header.findViewById(R.id.btn_my_trip_driver_cancel_trip)));
+        cancelButton.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                cancelButton.setEnabled(false);
+
+                // Tell the server to cancel this trip
+                subscriptions.add(
+                        tripsResource.updateOffer(offerID, TripOfferUpdate.createCancelUpdate())
+                                .compose(new DefaultTransformer<TripOffer>())
+                                .subscribe(new Action1<TripOffer>() {
+                                    @Override
+                                    public void call(TripOffer offer) {
+                                        // After the server has been contacted successfully, clean
+                                        // up the SharedPref and show "Offer Trip" screen again
+                                        removeRunningTripOfferState();
+                                    }
+
+                                }, new Action1<Throwable>() {
+                                    @Override
+                                    public void call(Throwable throwable) {
+                                        Timber.i("Error when cancelling trip with ID " + offerID + ": "
+                                                + throwable.getMessage());
+                                        Toast.makeText(getActivity(), "Error: " + throwable.getMessage(),
+                                                Toast.LENGTH_LONG).show();
+                                        cancelButton.setEnabled(true);
+                                    }
+                                }));
                     }
                 });
     }
@@ -264,6 +265,7 @@ public class MyTripDriverFragment extends SubscriptionFragment {
 
             @Override
             public void onClick(View v) {
+                finishButton.setEnabled(false);
 
                 // Tell the server to finish this trip
                 subscriptions.add(
@@ -284,6 +286,7 @@ public class MyTripDriverFragment extends SubscriptionFragment {
                                                 + throwable.getMessage());
                                         Toast.makeText(getActivity(), "Error: " + throwable.getMessage(),
                                                 Toast.LENGTH_LONG).show();
+                                        finishButton.setEnabled(true);
                                     }
                                 }));
             }
@@ -414,7 +417,7 @@ public class MyTripDriverFragment extends SubscriptionFragment {
                         offerID = tripOffer.getId();
 
                         // show route information on the map
-                        generateRouteOnMap( tripOffer, NavigationResult.createNavigationResultForDriverRoute( tripOffer ));
+                        generateRouteOnMap( tripOffer, NavigationResult.createNavigationResultForDriverRoute(tripOffer));
 
                         loadPassengers();
 
@@ -542,6 +545,7 @@ public class MyTripDriverFragment extends SubscriptionFragment {
 
             // Only allow finish if there are no passengers in the car or accepted
             boolean allowFinish = true;
+            boolean allowCancel = true;
 
             for (JoinTripRequest joinTripRequest : joinTripRequests) {
 
@@ -570,8 +574,13 @@ public class MyTripDriverFragment extends SubscriptionFragment {
                         if (status == JoinTripStatus.DRIVER_ACCEPTED
                                 || status == JoinTripStatus.PASSENGER_IN_CAR) {
 
-                            Timber.d("There is still an important passenger: " + status);
+                            Timber.d("Finishing trip not allowed: there is still an important passenger: " + status);
                             allowFinish = false;
+
+                            if(status == JoinTripStatus.PASSENGER_IN_CAR){
+                                allowCancel = false;
+                                Timber.d("Cancelling trip not allowed: there is still a passenger in the car");
+                            }
                         }
                     }
                 }
@@ -579,6 +588,7 @@ public class MyTripDriverFragment extends SubscriptionFragment {
 
             // Dis-/Allow the driver to finish the trip
             finishButton.setEnabled(allowFinish);
+            cancelButton.setEnabled(allowCancel);
             adapter.updateEarnings();
         }
 
