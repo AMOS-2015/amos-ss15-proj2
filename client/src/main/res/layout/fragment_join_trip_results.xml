@@ -54,6 +54,13 @@
             android:text="@string/join_trip_results_waiting"
             android:gravity="center_horizontal" />
 
+        <ProgressBar
+            android:id="@+id/pb_join_trip_results"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity = "center_vertical|center_horizontal"
+            style="@android:style/Widget.ProgressBar.Inverse"/>
+
         <Button
             android:id="@+id/btn_joint_trip_stop"
             android:layout_width="wrap_content"
@@ -101,14 +108,6 @@
             android:text="@string/join_trip_results_cancel"/>
 
     </LinearLayout>
-
-    <!--<ProgressBar
-        android:id="@+id/pb_join_trip"
-        style="?android:attr/progressBarStyleLarge"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity = "center_vertical|center_horizontal">
-    </ProgressBar>-->
 
     <TextView
         android:id="@+id/tv_join_trip_error"
