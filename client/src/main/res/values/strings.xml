@@ -37,6 +37,8 @@
     <string name="registration_error_general">Sorry, there was an error, please retry</string>
     <string name="registration_error_conflict">Email has already been registered</string>
     <string name="register_button">Sign up for CrowdTrip!</string>
+    <string name="email_invalid">Please enter a real Email address</string>
+    <string name="first_last_mandatory">First and Last names are mandatory fields</string>
 
 
     <string name="login">Login</string>

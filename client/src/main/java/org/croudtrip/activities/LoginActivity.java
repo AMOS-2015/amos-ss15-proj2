@@ -20,7 +20,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -30,8 +29,6 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-//import org.apache.commons.lang.Validate;
-//import org.apache.commons.validator.routines.EmailValidator;
 import org.croudtrip.R;
 import org.croudtrip.account.AccountManager;
 import org.croudtrip.api.UsersResource;
@@ -39,6 +36,9 @@ import org.croudtrip.api.account.User;
 import org.croudtrip.api.account.UserDescription;
 import org.croudtrip.utils.CrashCallback;
 import org.croudtrip.utils.DefaultTransformer;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.inject.Inject;
 
@@ -108,6 +108,9 @@ public class LoginActivity extends RoboActionBarActivity {
 
     private int animationDuration;
     private View activeView;
+    public static final Pattern VALID_EMAIL_ADDRESS_REGEX =
+            Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$", Pattern.CASE_INSENSITIVE);
+
 
 
     //************************** Methods ******************************//
@@ -153,12 +156,11 @@ public class LoginActivity extends RoboActionBarActivity {
             @Override
             public void onClick(View view) {
                 if (TextUtils.isEmpty(registerFirstName.getText().toString()) || TextUtils.isEmpty(registerLastName.getText().toString())) {
-                    Toast.makeText(getApplication().getApplicationContext(), "First and Last names are mandatory fields", Toast.LENGTH_SHORT).show();
-                }/*
-                else if (!EmailValidator.getInstance().isValid(registerEmail.getText().toString())) {
-                    Toast.makeText(getApplication().getApplicationContext(), "Please enter a real Email address", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplication().getApplicationContext(), getResources().getString(R.string.first_last_mandatory), Toast.LENGTH_SHORT).show();
                 }
-                */
+                else if (!validate(registerEmail.getText().toString())) {
+                    Toast.makeText(getApplication().getApplicationContext(), getResources().getString(R.string.email_invalid), Toast.LENGTH_SHORT).show();
+                }
                 else
                 registerUser(
                         registerFirstName.getText().toString(),
@@ -397,4 +399,11 @@ public class LoginActivity extends RoboActionBarActivity {
         finish();
 
     }
+
+    public static boolean validate(String emailStr) {
+        Matcher matcher = VALID_EMAIL_ADDRESS_REGEX .matcher(emailStr);
+        return matcher.find();
+    }
+
+
 }
