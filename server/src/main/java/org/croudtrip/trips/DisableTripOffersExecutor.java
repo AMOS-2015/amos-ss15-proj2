@@ -84,9 +84,9 @@ public class DisableTripOffersExecutor extends AbstractScheduledTaskExecutor {
             else {
                 // enable offer if there was a position update again
                 if (lastUpdateSeconds < MAX_TIME_UNTIL_LOST) {
+                    logManager.d("Enabled offer: " + offer.getId());
 
-                    int passengerCount = tripsUtils.getActivePassengerCountForOffer(offer);
-
+                    // update status
                     TripOffer updatedOffer = new TripOffer(
                             offer.getId(),
                             offer.getDriverRoute(),
@@ -101,7 +101,8 @@ public class DisableTripOffersExecutor extends AbstractScheduledTaskExecutor {
                     );
                     tripOfferDAO.update(updatedOffer);
 
-                    logManager.d("Enabled offer: " + updatedOffer.getId());
+                    // check background queries
+                    tripsUtils.checkAndUpdateRunningQueries(updatedOffer);
                 }
             }
         }
