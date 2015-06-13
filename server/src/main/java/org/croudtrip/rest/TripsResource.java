@@ -20,7 +20,6 @@ import org.croudtrip.account.VehicleManager;
 import org.croudtrip.api.account.User;
 import org.croudtrip.api.account.Vehicle;
 import org.croudtrip.api.directions.NavigationResult;
-import org.croudtrip.api.directions.Route;
 import org.croudtrip.api.trips.JoinTripRequest;
 import org.croudtrip.api.trips.JoinTripRequestUpdate;
 import org.croudtrip.api.trips.JoinTripRequestUpdateType;
@@ -155,9 +154,9 @@ public class TripsResource {
         // filter by active status
         Iterator<TripOffer> iterator = offers.iterator();
         while (iterator.hasNext()) {
-            if (!iterator.next().getStatus().equals(TripOfferStatus.ACTIVE_NOT_FULL)) {
-                iterator.remove();
-            }
+            TripOffer offer = iterator.next();
+            if (!offer.getStatus().equals(TripOfferStatus.ACTIVE)) iterator.remove();
+            else if (tripsUtils.getActivePassengerCountForOffer(offer) >= offer.getVehicle().getCapacity()) iterator.remove();
         }
 
         return offers;
@@ -180,9 +179,7 @@ public class TripsResource {
         Iterator<TripOffer> iterator = offers.iterator();
         while (iterator.hasNext()) {
             TripOffer offer = iterator.next();
-            if (!offer.getStatus().equals(TripOfferStatus.ACTIVE_NOT_FULL) &&
-                !offer.getStatus().equals(TripOfferStatus.ACTIVE_FULL) &&
-                !offer.getStatus().equals(TripOfferStatus.DISABLED)) {
+            if (!offer.getStatus().equals(TripOfferStatus.ACTIVE) && !offer.getStatus().equals(TripOfferStatus.DISABLED)) {
                 iterator.remove();
             }
         }

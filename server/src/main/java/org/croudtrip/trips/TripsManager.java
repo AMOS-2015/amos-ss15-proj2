@@ -127,33 +127,13 @@ public class TripsManager {
                 description.getPricePerKmInCents(),
                 owner,
                 vehicle.get(),
-                TripOfferStatus.ACTIVE_NOT_FULL,
+                TripOfferStatus.ACTIVE,
                 System.currentTimeMillis()/1000);
         tripOfferDAO.save(offer);
 
-        // compare offer with running queries
-        for (RunningTripQuery runningQuery : runningTripQueryDAO.findByStatusRunning()) {
-            if (!runningQuery.getStatus().equals(RunningTripQueryStatus.RUNNING)) continue;
-            if (runningQuery.getQuery().getCreationTimestamp() + runningQuery.getQuery().getMaxWaitingTimeInSeconds() < System.currentTimeMillis() / 1000) continue;
+        // check background search
+        tripsUtils.checkAndUpdateRunningQueries(offer);
 
-            // check if the newly offered trip matches to a running trip query
-            TripQuery query = runningQuery.getQuery();
-            Optional<TripsMatcher.PotentialMatch> potentialMatch = tripsMatcher.isPotentialMatch(offer, query);
-
-            // notify passenger about potential match
-            if (potentialMatch.isPresent()) {
-                logManager.d("Found a potential match: send gcm message to user " + query.getPassenger().getFirstName() + " " + query.getPassenger().getLastName());
-                gcmManager.sendGcmMessageToUser(
-                        query.getPassenger(),
-                        GcmConstants.GCM_MSG_FOUND_MATCHES,
-                        new Pair<>(GcmConstants.GCM_MSG_FOUND_MATCHES_QUERY_ID, "" + runningQuery.getId()));
-                RunningTripQuery updatedRunningQuery = new RunningTripQuery(
-                        runningQuery.getId(),
-                        runningQuery.getQuery(),
-                        RunningTripQueryStatus.FOUND);
-                runningTripQueryDAO.update(updatedRunningQuery);
-            }
-        }
         return offer;
     }
 
@@ -462,24 +442,6 @@ public class TripsManager {
         JoinTripRequest updatedRequest = new JoinTripRequest(joinRequest, newStatus);
         joinTripRequestDAO.update(updatedRequest);
 
-        // update offer if vehicle is full
-        TripOffer offer = joinRequest.getOffer();
-        int passengerCount = tripsUtils.getActivePassengerCountForOffer(offer);
-        if (passengerCount >= offer.getVehicle().getCapacity()) {
-            TripOffer updatedOffer = new TripOffer(
-                    offer.getId(),
-                    offer.getDriverRoute(),
-                    offer.getEstimatedArrivalTimeInSeconds(),
-                    offer.getCurrentLocation(),
-                    offer.getMaxDiversionInMeters(),
-                    offer.getPricePerKmInCents(),
-                    offer.getDriver(),
-                    offer.getVehicle(),
-                    TripOfferStatus.ACTIVE_FULL,
-                    offer.getLastPositonUpdateInSeconds() );
-            tripOfferDAO.update(updatedOffer);
-        }
-
         // notify the passenger about status
         logManager.d("User " + joinRequest.getQuery().getPassenger().getId() + " (" + joinRequest.getQuery().getPassenger().getFirstName() + " " + joinRequest.getQuery().getPassenger().getLastName() + ") got status update for joinTripRequest.");
         if(passengerAccepted) gcmManager.sendAcceptPassengerMsg(joinRequest);
@@ -487,11 +449,10 @@ public class TripsManager {
 
         // TODO: Check if other pending join requests are still valid
 
-
         // Send all the passengers an arrival time update
-        if(passengerAccepted)
-            tripsUtils.updateArrivalTimesForOffer( offer, joinRequest.getQuery().getPassenger() );
-
+        if(passengerAccepted) {
+            tripsUtils.updateArrivalTimesForOffer(joinRequest.getOffer(), joinRequest.getQuery().getPassenger());
+        }
 
         return joinTripRequestDAO.findById(joinRequest.getId()).get();
     }
@@ -521,6 +482,9 @@ public class TripsManager {
         // Send GCM to the driver to notify him that the passenger left the car
         gcmManager.sendPassengerExitCarMsg( joinRequest );
 
+        // check background search
+        tripsUtils.checkAndUpdateRunningQueries(joinRequest.getOffer());
+
         return updatedRequest;
     }
 
@@ -537,6 +501,9 @@ public class TripsManager {
 
         // Update all the passenger's arrival time
         tripsUtils.updateArrivalTimesForOffer( joinRequest.getOffer() );
+
+        // check background search
+        tripsUtils.checkAndUpdateRunningQueries(joinRequest.getOffer());
 
         return joinRequest;
     }
