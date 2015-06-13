@@ -131,29 +131,9 @@ public class TripsManager {
                 System.currentTimeMillis()/1000);
         tripOfferDAO.save(offer);
 
-        // compare offer with running queries
-        for (RunningTripQuery runningQuery : runningTripQueryDAO.findByStatusRunning()) {
-            if (!runningQuery.getStatus().equals(RunningTripQueryStatus.RUNNING)) continue;
-            if (runningQuery.getQuery().getCreationTimestamp() + runningQuery.getQuery().getMaxWaitingTimeInSeconds() < System.currentTimeMillis() / 1000) continue;
+        // check background search
+        checkBackgroundSearch(offer);
 
-            // check if the newly offered trip matches to a running trip query
-            TripQuery query = runningQuery.getQuery();
-            Optional<TripsMatcher.PotentialMatch> potentialMatch = tripsMatcher.isPotentialMatch(offer, query);
-
-            // notify passenger about potential match
-            if (potentialMatch.isPresent()) {
-                logManager.d("Found a potential match: send gcm message to user " + query.getPassenger().getFirstName() + " " + query.getPassenger().getLastName());
-                gcmManager.sendGcmMessageToUser(
-                        query.getPassenger(),
-                        GcmConstants.GCM_MSG_FOUND_MATCHES,
-                        new Pair<>(GcmConstants.GCM_MSG_FOUND_MATCHES_QUERY_ID, "" + runningQuery.getId()));
-                RunningTripQuery updatedRunningQuery = new RunningTripQuery(
-                        runningQuery.getId(),
-                        runningQuery.getQuery(),
-                        RunningTripQueryStatus.FOUND);
-                runningTripQueryDAO.update(updatedRunningQuery);
-            }
-        }
         return offer;
     }
 
@@ -502,6 +482,9 @@ public class TripsManager {
         // Send GCM to the driver to notify him that the passenger left the car
         gcmManager.sendPassengerExitCarMsg( joinRequest );
 
+        // check background search
+        checkBackgroundSearch(joinRequest.getOffer());
+
         return updatedRequest;
     }
 
@@ -518,6 +501,9 @@ public class TripsManager {
 
         // Update all the passenger's arrival time
         tripsUtils.updateArrivalTimesForOffer( joinRequest.getOffer() );
+
+        // check background search
+        checkBackgroundSearch(joinRequest.getOffer());
 
         return joinRequest;
     }
@@ -574,6 +560,37 @@ public class TripsManager {
         }
 
         return reservations;
+    }
+
+
+    /**
+     * Checks if the passed in offer is a match for one of the running background searches
+     * and alerts the passenger if that is the case.
+     */
+    private void checkBackgroundSearch(TripOffer offer) {
+        for (RunningTripQuery runningQuery : runningTripQueryDAO.findByStatusRunning()) {
+            // check status and max waiting time
+            if (!runningQuery.getStatus().equals(RunningTripQueryStatus.RUNNING)) continue;
+            if (runningQuery.getQuery().getCreationTimestamp() + runningQuery.getQuery().getMaxWaitingTimeInSeconds() < System.currentTimeMillis() / 1000) continue;
+
+            // check if the newly offered trip matches to a running trip query
+            TripQuery query = runningQuery.getQuery();
+            Optional<TripsMatcher.PotentialMatch> potentialMatch = tripsMatcher.isPotentialMatch(offer, query);
+
+            // notify passenger about potential match
+            if (potentialMatch.isPresent()) {
+                logManager.d("Found a potential match: send gcm message to user " + query.getPassenger().getFirstName() + " " + query.getPassenger().getLastName());
+                gcmManager.sendGcmMessageToUser(
+                        query.getPassenger(),
+                        GcmConstants.GCM_MSG_FOUND_MATCHES,
+                        new Pair<>(GcmConstants.GCM_MSG_FOUND_MATCHES_QUERY_ID, "" + runningQuery.getId()));
+                RunningTripQuery updatedRunningQuery = new RunningTripQuery(
+                        runningQuery.getId(),
+                        runningQuery.getQuery(),
+                        RunningTripQueryStatus.FOUND);
+                runningTripQueryDAO.update(updatedRunningQuery);
+            }
+        }
     }
 
 }
