@@ -69,6 +69,10 @@ public class MyTripDriverPassengersAdapter extends RecyclerView.Adapter<Recycler
 
     //**************************** Methods *****************************//
 
+    public View getHeader(){
+        return header;
+    }
+
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
 
