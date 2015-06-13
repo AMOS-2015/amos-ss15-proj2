@@ -21,7 +21,7 @@ import mockit.integration.junit4.JMockit;
 public class DisableTripOffersExecutorTest {
 
 	@Mocked TripOfferDAO tripOfferDAO;
-	@Mocked TripsUtils tripsUtils;
+	@Mocked RunningTripQueriesManager runningTripQueriesManager;
 	@Mocked SessionFactory sessionFactory;
 	@Mocked LogManager logManager;
 
@@ -29,7 +29,7 @@ public class DisableTripOffersExecutorTest {
 
 	@Before
 	public void setupExecutor() {
-		this.executor = new DisableTripOffersExecutor(tripOfferDAO, tripsUtils, sessionFactory, logManager);
+		this.executor = new DisableTripOffersExecutor(tripOfferDAO, runningTripQueriesManager, sessionFactory, logManager);
 	}
 
 	@Test
@@ -78,7 +78,7 @@ public class DisableTripOffersExecutorTest {
 			tripOfferDAO.update(updatedOffer = withCapture());
 			Assert.assertEquals(TripOfferStatus.ACTIVE, updatedOffer.getStatus());
 
-			tripsUtils.checkAndUpdateRunningQueries(updatedOffer);
+			runningTripQueriesManager.checkAndUpdateRunningQueries(updatedOffer);
 		}};
 	}
 

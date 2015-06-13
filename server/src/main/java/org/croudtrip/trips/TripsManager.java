@@ -66,6 +66,7 @@ public class TripsManager {
     private final VehicleManager vehicleManager;
     private final GcmManager gcmManager;
     private final TripsMatcher tripsMatcher;
+    private final RunningTripQueriesManager runningTripQueriesManager;
     private final TripsUtils tripsUtils;
     private final LogManager logManager;
 
@@ -80,6 +81,7 @@ public class TripsManager {
             VehicleManager vehicleManager,
             GcmManager gcmManager,
             TripsMatcher tripsMatcher,
+            RunningTripQueriesManager runningTripQueriesManager,
             TripsUtils tripsUtils,
             LogManager logManager) {
 
@@ -91,6 +93,7 @@ public class TripsManager {
         this.vehicleManager = vehicleManager;
         this.gcmManager = gcmManager;
         this.tripsMatcher = tripsMatcher;
+        this.runningTripQueriesManager = runningTripQueriesManager;
         this.tripsUtils = tripsUtils;
         this.logManager = logManager;
 
@@ -132,7 +135,7 @@ public class TripsManager {
         tripOfferDAO.save(offer);
 
         // check background search
-        tripsUtils.checkAndUpdateRunningQueries(offer);
+        runningTripQueriesManager.checkAndUpdateRunningQueries(offer);
 
         return offer;
     }
@@ -480,10 +483,10 @@ public class TripsManager {
         joinTripRequestDAO.update(updatedRequest);
 
         // Send GCM to the driver to notify him that the passenger left the car
-        gcmManager.sendPassengerExitCarMsg( joinRequest );
+        gcmManager.sendPassengerExitCarMsg(joinRequest);
 
         // check background search
-        tripsUtils.checkAndUpdateRunningQueries(joinRequest.getOffer());
+        runningTripQueriesManager.checkAndUpdateRunningQueries(joinRequest.getOffer());
 
         return updatedRequest;
     }
@@ -503,7 +506,7 @@ public class TripsManager {
         tripsUtils.updateArrivalTimesForOffer( joinRequest.getOffer() );
 
         // check background search
-        tripsUtils.checkAndUpdateRunningQueries(joinRequest.getOffer());
+        runningTripQueriesManager.checkAndUpdateRunningQueries(joinRequest.getOffer());
 
         return joinRequest;
     }

@@ -1,21 +1,13 @@
 package org.croudtrip.trips;
 
-import com.google.common.base.Optional;
-
 import org.croudtrip.api.account.User;
-import org.croudtrip.api.gcm.GcmConstants;
 import org.croudtrip.api.trips.JoinTripRequest;
 import org.croudtrip.api.trips.JoinTripStatus;
-import org.croudtrip.api.trips.RunningTripQuery;
-import org.croudtrip.api.trips.RunningTripQueryStatus;
 import org.croudtrip.api.trips.TripOffer;
-import org.croudtrip.api.trips.TripQuery;
 import org.croudtrip.api.trips.UserWayPoint;
 import org.croudtrip.db.JoinTripRequestDAO;
-import org.croudtrip.db.RunningTripQueryDAO;
 import org.croudtrip.gcm.GcmManager;
 import org.croudtrip.logs.LogManager;
-import org.croudtrip.utils.Pair;
 
 import java.util.List;
 
@@ -27,8 +19,6 @@ import javax.inject.Inject;
 public class TripsUtils {
 
 	private final JoinTripRequestDAO joinTripRequestDAO;
-    private final RunningTripQueryDAO runningTripQueryDAO;
-    private final TripsMatcher tripsMatcher;
     private final TripsNavigationManager tripsNavigationManager;
     private final GcmManager gcmManager;
     private final LogManager logManager;
@@ -36,15 +26,11 @@ public class TripsUtils {
 	@Inject
 	TripsUtils(
             JoinTripRequestDAO joinTripRequestDAO,
-            RunningTripQueryDAO runningTripQueryDAO,
-            TripsMatcher tripsMatcher,
             TripsNavigationManager tripsNavigationManager,
             GcmManager gcmManager,
             LogManager logManager) {
 
         this.joinTripRequestDAO = joinTripRequestDAO;
-        this.runningTripQueryDAO = runningTripQueryDAO;
-        this.tripsMatcher = tripsMatcher;
         this.tripsNavigationManager = tripsNavigationManager;
         this.gcmManager = gcmManager;
         this.logManager = logManager;
@@ -126,34 +112,6 @@ public class TripsUtils {
             joinTripRequestDAO.update( request );
 
             gcmManager.sendArrivalTimeUpdate( request );
-        }
-    }
-
-    /**
-     * Checks if the passed in offer is a match for one of the running background searches
-     * and alerts the passenger if that is the case.
-     */
-    public void checkAndUpdateRunningQueries(TripOffer offer) {
-        for (RunningTripQuery runningQuery : runningTripQueryDAO.findByStatusRunning()) {
-            // check max waiting time
-            if (runningQuery.getQuery().getCreationTimestamp() + runningQuery.getQuery().getMaxWaitingTimeInSeconds() < System.currentTimeMillis() / 1000) continue;
-
-            // check if the newly offered trip matches to a running trip query
-            TripQuery query = runningQuery.getQuery();
-            Optional<TripsMatcher.PotentialMatch> potentialMatch = tripsMatcher.isPotentialMatch(offer, query);
-
-            // notify passenger about potential match
-            if (potentialMatch.isPresent()) {
-                gcmManager.sendGcmMessageToUser(
-                        query.getPassenger(),
-                        GcmConstants.GCM_MSG_FOUND_MATCHES,
-                        new Pair<>(GcmConstants.GCM_MSG_FOUND_MATCHES_QUERY_ID, "" + runningQuery.getId()));
-                RunningTripQuery updatedRunningQuery = new RunningTripQuery(
-                        runningQuery.getId(),
-                        runningQuery.getQuery(),
-                        RunningTripQueryStatus.FOUND);
-                runningTripQueryDAO.update(updatedRunningQuery);
-            }
         }
     }
 

@@ -34,19 +34,19 @@ public class DisableTripOffersExecutor extends AbstractScheduledTaskExecutor {
     private static final long MAX_TIME_UNTIL_LOST = 360;
 
     private TripOfferDAO tripOfferDAO;
-    private TripsUtils tripsUtils;
+    private RunningTripQueriesManager runningTripQueriesManager;
 
     @Inject
     DisableTripOffersExecutor(
             TripOfferDAO tripOfferDAO,
-            TripsUtils tripsUtils,
+            RunningTripQueriesManager runningTripQueriesManager,
             SessionFactory sessionFactory,
             LogManager logManager) {
 
         super( sessionFactory, logManager, 180, TimeUnit.SECONDS );
 
         this.tripOfferDAO = tripOfferDAO;
-        this.tripsUtils = tripsUtils;
+        this.runningTripQueriesManager = runningTripQueriesManager;
     }
 
     @Override
@@ -102,7 +102,7 @@ public class DisableTripOffersExecutor extends AbstractScheduledTaskExecutor {
                     tripOfferDAO.update(updatedOffer);
 
                     // check background queries
-                    tripsUtils.checkAndUpdateRunningQueries(updatedOffer);
+                    runningTripQueriesManager.checkAndUpdateRunningQueries(updatedOffer);
                 }
             }
         }

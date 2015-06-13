@@ -52,6 +52,7 @@ public class TripsManagerTest {
     @Mocked TripReservationDAO tripReservationDAO;
     @Mocked VehicleManager vehicleManager;
     @Mocked TripsMatcher tripsMatcher;
+    @Mocked RunningTripQueriesManager runningTripQueriesManager;
     @Mocked GcmManager gcmManager;
     @Mocked RunningTripQueryDAO runningTripQueryDAO;
 
@@ -62,7 +63,8 @@ public class TripsManagerTest {
 
     @Before
     public void setupTripsManager() {
-        tripsManager = new TripsManager( tripOfferDAO, runningTripQueryDAO, tripReservationDAO, joinTripRequestDAO, directionsManager, vehicleManager, gcmManager, tripsMatcher, tripsUtils, logManager );
+        tripsManager = new TripsManager( tripOfferDAO, runningTripQueryDAO, tripReservationDAO, joinTripRequestDAO,
+                directionsManager, vehicleManager, gcmManager, tripsMatcher, runningTripQueriesManager, tripsUtils, logManager );
     }
 
     @Test
@@ -270,7 +272,7 @@ public class TripsManagerTest {
 
             gcmManager.sendPassengerExitCarMsg(request);
 
-            tripsUtils.checkAndUpdateRunningQueries(updatedRequest.getOffer());
+            runningTripQueriesManager.checkAndUpdateRunningQueries(updatedRequest.getOffer());
         }};
     }
 
@@ -289,7 +291,7 @@ public class TripsManagerTest {
 
             tripsUtils.updateArrivalTimesForOffer(updatedRequest.getOffer());
 
-            tripsUtils.checkAndUpdateRunningQueries(updatedRequest.getOffer());
+            runningTripQueriesManager.checkAndUpdateRunningQueries(updatedRequest.getOffer());
         }};
     }
 
