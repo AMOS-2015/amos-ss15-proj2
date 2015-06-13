@@ -219,4 +219,11 @@
 
     </LinearLayout>
 
+    <ProgressBar
+        android:id="@+id/pb_profile"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity = "center_vertical|center_horizontal"
+        style="@android:style/Widget.ProgressBar.Inverse"/>
+
 </FrameLayout>

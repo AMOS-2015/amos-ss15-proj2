@@ -28,6 +28,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.getbase.floatingactionbutton.FloatingActionButton;
@@ -63,17 +64,25 @@ import timber.log.Timber;
 /**
  * This fragment shows the user's profile with the data he has entered (e.g. address, phone number
  * etc.). From here he can also edit his profile (will be transferred to fragment EditProfileFragment)
+ *
  * @author Vanessa Lange
  */
 public class ProfileFragment extends SubscriptionFragment {
 
     //************************* Variables ***************************//
-    @InjectView(R.id.vehicles_list)          private RecyclerView recyclerView;
-    @Inject  VehicleResource vehicleResource;
 
+    @InjectView(R.id.vehicles_list)
+    private RecyclerView recyclerView;
+
+    @InjectView(R.id.pb_profile)
+    private ProgressBar progressBar;
+
+    @Inject
+    private VehicleResource vehicleResource;
 
     private RecyclerView.LayoutManager layoutManager;
     private VehiclesListAdapter adapter;
+
     //************************* Methods *****************************//
 
     @Override
@@ -95,7 +104,7 @@ public class ProfileFragment extends SubscriptionFragment {
         // Restore user from SharedPref file
         User user = AccountManager.getLoggedInUser(this.getActivity().getApplicationContext());
 
-        if(user != null) {
+        if (user != null) {
             //  Fill in the profile views
             String name = null;
             if (user.getFirstName() != null && user.getLastName() != null) {
@@ -107,17 +116,17 @@ public class ProfileFragment extends SubscriptionFragment {
             }
 
             String birthYear = null;
-            if(user.getBirthday() != null){
+            if (user.getBirthday() != null) {
                 Calendar calendar = Calendar.getInstance();
                 calendar.setTime(user.getBirthday());
                 birthYear = calendar.get(Calendar.YEAR) + "";
             }
 
             String gender = null;
-            if(user.getIsMale() != null){
-                if(user.getIsMale()) {
+            if (user.getIsMale() != null) {
+                if (user.getIsMale()) {
                     gender = getString(R.string.profile_male);
-                }else if (!user.getIsMale()) {
+                } else if (!user.getIsMale()) {
                     gender = getString(R.string.profile_female);
                 }
             }
@@ -132,8 +141,8 @@ public class ProfileFragment extends SubscriptionFragment {
             addNewVehicle.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                   // ((MaterialNavigationDrawer) getActivity()).getCurrentSection().setTarget(new VehicleInfoFragment());
-                   //((MaterialNavigationDrawer) getActivity()).getCurrentSection().setTitle("Add new vehicle");
+                    // ((MaterialNavigationDrawer) getActivity()).getCurrentSection().setTarget(new VehicleInfoFragment());
+                    //((MaterialNavigationDrawer) getActivity()).getCurrentSection().setTitle("Add new vehicle");
                     DataHolder.getInstance().setVehicle_id(-1);
                     ((MaterialNavigationDrawer) _this.getActivity()).setFragmentChild(new VehicleInfoFragment(), "Add car");
                 }
@@ -153,27 +162,27 @@ public class ProfileFragment extends SubscriptionFragment {
             if (avatarUrl != null) {
                 Subscription subscription = Observable
                         .defer(new Func0<Observable<Bitmap>>() {
-                    @Override
-                    public Observable<Bitmap> call() {
-                        try {
-                            URL url = new URL(avatarUrl);
-                            HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
-                            connection.setDoInput(true);
-                            connection.connect();
-                            InputStream input = connection.getInputStream();
-                            return Observable.just(BitmapFactory.decodeStream(input));
-                        } catch (Exception e) {
-                            return Observable.error(e);
-                        }
-                    }
-                })
+                            @Override
+                            public Observable<Bitmap> call() {
+                                try {
+                                    URL url = new URL(avatarUrl);
+                                    HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
+                                    connection.setDoInput(true);
+                                    connection.connect();
+                                    InputStream input = connection.getInputStream();
+                                    return Observable.just(BitmapFactory.decodeStream(input));
+                                } catch (Exception e) {
+                                    return Observable.error(e);
+                                }
+                            }
+                        })
                         .compose(new DefaultTransformer<Bitmap>())
                         .subscribe(new Action1<Bitmap>() {
                             @Override
                             public void call(Bitmap avatar) {
-                                if(avatar != null) {
+                                if (avatar != null) {
                                     ((ImageView) view.findViewById(R.id.tv_profile_image)).setImageBitmap(avatar);
-                                }else{
+                                } else {
                                     Timber.d("Profile avatar is null");
                                 }
                             }
@@ -211,6 +220,9 @@ public class ProfileFragment extends SubscriptionFragment {
                         if (vehicles.size() == 1) {
                             DataHolder.getInstance().setIsLast(true);
                         }
+                        
+                        progressBar.setVisibility(View.GONE);
+
                     }
                 }, new CrashCallback(getActivity()) {
                     @Override
@@ -221,6 +233,7 @@ public class ProfileFragment extends SubscriptionFragment {
                             Timber.e("error" + throwable.getMessage());
                         }
                         Timber.e("Couldn't get data" + throwable.getMessage());
+                        progressBar.setVisibility(View.GONE);
                     }
                 });
 
@@ -230,12 +243,11 @@ public class ProfileFragment extends SubscriptionFragment {
     }
 
 
-    private void setTextViewContent(TextView tv, String content){
-        if(content != null && !content.equals("")){
+    private void setTextViewContent(TextView tv, String content) {
+        if (content != null && !content.equals("")) {
             tv.setText(content);
         }
     }
-
 
 
     @Override
@@ -244,7 +256,6 @@ public class ProfileFragment extends SubscriptionFragment {
         menu.clear();
         //inflater.inflate(R.menu.menu_main, menu);
     }
-
 
 
 }

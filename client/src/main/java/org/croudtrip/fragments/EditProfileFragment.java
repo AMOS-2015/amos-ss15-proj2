@@ -585,7 +585,7 @@ public class EditProfileFragment extends SubscriptionFragment {
                                 EditProfileFragment.this.getActivity().onBackPressed();
                             }
 
-                        }, new CrashCallback(getActivity()){
+                        }, new CrashCallback(getActivity()) {
                             @Override
                             public void call(Throwable throwable) {
                                 super.call(throwable);
