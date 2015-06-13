@@ -36,6 +36,7 @@ import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -103,7 +104,6 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
 
     private org.croudtrip.db.Place lastSelected;
 
-    @InjectView(R.id.name) private TextView tv_name;
     @InjectView(R.id.attributions) private TextView tv_attributions;
     @InjectView(R.id.address) private TextView tv_address;
     @InjectView(R.id.destination) private MyAutoCompleteTextView tv_destination;
@@ -112,6 +112,7 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
     @InjectView(R.id.diversion) private TextView tv_diversion;
     @InjectView(R.id.price) private TextView tv_price;
     @InjectView(R.id.my_car) private Button myCar;
+    @InjectView(R.id.pb_offer_trip_destination) private ProgressBar progressBar;
 
 
 
@@ -435,6 +436,7 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
              Issue a request to the Places Geo Data API to retrieve a Place object with additional
               details about the place.
               */
+            progressBar.setVisibility(View.VISIBLE);
             PendingResult<PlaceBuffer> placeResult = Places.GeoDataApi.getPlaceById(googleApiClient, placeId);
             placeResult.setResultCallback(new ResultCallback<PlaceBuffer>() {
                 @Override
@@ -456,6 +458,7 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
                     lastSelected.setId(place.getId());
                     lastSelected.setDescription(place.getAddress() + "");
                     tv_address.setText(place.getAddress());
+                    progressBar.setVisibility(View.GONE);
 
                     places.release();
 
