@@ -214,4 +214,74 @@ public class TripOffer {
 		return Objects.hashCode(id, driverRoute, maxDiversionInMeters, pricePerKmInCents, driver, vehicle, status);
 	}
 
+
+	public static class Builder {
+
+		private long id;
+		private Route driverRoute;
+		private RouteLocation currentLocation;
+		private long estimatedArrivalTimeInSeconds;
+		private long maxDiversionInMeters;
+		private int pricePerKmInCents;
+		private User driver;
+		private Vehicle vehicle;
+		private long lastPositonUpdateInSeconds;
+		private TripOfferStatus status;
+
+		public Builder setId(long id) {
+			this.id = id;
+			return this;
+		}
+
+		public Builder setDriverRoute(Route driverRoute) {
+			this.driverRoute = driverRoute;
+			return this;
+		}
+
+		public Builder setCurrentLocation(RouteLocation currentLocation) {
+			this.currentLocation = currentLocation;
+			return this;
+		}
+
+		public Builder setEstimatedArrivalTimeInSeconds(long estimatedArrivalTimeInSeconds) {
+			this.estimatedArrivalTimeInSeconds = estimatedArrivalTimeInSeconds;
+			return this;
+		}
+
+		public Builder setMaxDiversionInMeters(long maxDiversionInMeters) {
+			this.maxDiversionInMeters = maxDiversionInMeters;
+			return this;
+		}
+
+		public Builder setPricePerKmInCents(int pricePerKmInCents) {
+			this.pricePerKmInCents = pricePerKmInCents;
+			return this;
+		}
+
+		public Builder setDriver(User driver) {
+			this.driver = driver;
+			return this;
+		}
+
+		public Builder setVehicle(Vehicle vehicle) {
+			this.vehicle = vehicle;
+			return this;
+		}
+
+		public Builder setLastPositonUpdateInSeconds(long lastPositonUpdateInSeconds) {
+			this.lastPositonUpdateInSeconds = lastPositonUpdateInSeconds;
+			return this;
+		}
+
+		public Builder setStatus(TripOfferStatus status) {
+			this.status = status;
+			return this;
+		}
+
+		public TripOffer build() {
+			return new TripOffer(id, driverRoute, estimatedArrivalTimeInSeconds, currentLocation, maxDiversionInMeters,
+					pricePerKmInCents, driver, vehicle, status, lastPositonUpdateInSeconds);
+		}
+	}
+
 }
