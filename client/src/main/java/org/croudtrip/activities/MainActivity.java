@@ -32,7 +32,6 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AlertDialog;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.CheckBox;
@@ -46,7 +45,6 @@ import org.croudtrip.api.TripsResource;
 import org.croudtrip.api.account.User;
 import org.croudtrip.fragments.JoinTripRequestsFragment;
 import org.croudtrip.fragments.JoinTripResultsFragment;
-import org.croudtrip.fragments.PickUpPassengerFragment;
 import org.croudtrip.fragments.ProfileFragment;
 import org.croudtrip.fragments.SettingsFragment;
 import org.croudtrip.fragments.join.JoinDispatchFragment;
@@ -382,22 +380,7 @@ public class MainActivity extends AbstractRoboDrawerActivity {
         }
 
 
-        // (4) PICK UP PASSENGER
-        // TODO: remove from navigation drawer and call after push notification with REAL data
-        PickUpPassengerFragment fragment = new PickUpPassengerFragment();
-        Bundle args = new Bundle();
-        args.putString(PickUpPassengerFragment.KEY_PASSENGER_NAME, "Otto");
-        args.putDouble(PickUpPassengerFragment.KEY_PASSENGER_LATITUDE, 1234.5);
-        args.putDouble(PickUpPassengerFragment.KEY_PASSENGER_LONGITUDE, 678.9);
-        args.putInt(PickUpPassengerFragment.KEY_PASSENGER_PRICE, 200);
-        fragment.setArguments(args);
-
-        this.addSection(newSection("Pick up passenger",
-                R.drawable.distance,
-                fragment));
-
-
-        // (5) SETTINGS
+        // (4) SETTINGS
         this.addBottomSection(newSection(getString(R.string.menu_settings),
                 R.drawable.ic_settings,
                 new SettingsFragment()));
@@ -416,7 +399,7 @@ public class MainActivity extends AbstractRoboDrawerActivity {
             requestFrag.setArguments(bundle);
 
         }else if( action.equalsIgnoreCase(ACTION_SHOW_JOIN_TRIP_REQUESTS) ) {
-            this.setDefaultSectionLoaded(2);    // PENDING JOIN REQUESTS
+            this.setDefaultSectionLoaded(2);    // (2) PENDING JOIN REQUESTS
         }
     }
 }
