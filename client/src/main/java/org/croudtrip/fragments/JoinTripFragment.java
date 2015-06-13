@@ -19,27 +19,21 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.res.Resources;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.Toolbar;
-import android.text.Html;
-import android.text.Spanned;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.AutoCompleteTextView;
 import android.widget.Button;
-import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -77,7 +71,6 @@ import javax.inject.Inject;
 import it.neokree.materialnavigationdrawer.MaterialNavigationDrawer;
 import it.neokree.materialnavigationdrawer.elements.MaterialSection;
 import pl.charmas.android.reactivelocation.ReactiveLocationProvider;
-import roboguice.fragment.provided.RoboFragment;
 import roboguice.inject.InjectView;
 import rx.Subscription;
 import rx.functions.Action1;
@@ -102,6 +95,7 @@ public class JoinTripFragment extends SubscriptionFragment implements GoogleApiC
     @InjectView(R.id.address) private TextView tv_address;
     @InjectView(R.id.places) private Button btn_destination;
     @InjectView(R.id.destination) private MyAutoCompleteTextView tv_destination;
+    @InjectView(R.id.pb_join_trip_destination) private ProgressBar progressBar;
 
     @Inject LocationUpdater locationUpdater;
     @Inject TripsResource tripsResource;
@@ -388,6 +382,7 @@ public class JoinTripFragment extends SubscriptionFragment implements GoogleApiC
              Issue a request to the Places Geo Data API to retrieve a Place object with additional
               details about the place.
               */
+            progressBar.setVisibility(View.VISIBLE);
             PendingResult<PlaceBuffer> placeResult = Places.GeoDataApi.getPlaceById(googleApiClient, placeId);
             placeResult.setResultCallback(new ResultCallback<PlaceBuffer>() {
                 @Override
@@ -409,6 +404,7 @@ public class JoinTripFragment extends SubscriptionFragment implements GoogleApiC
                     lastSelected.setId(place.getId());
                     lastSelected.setDescription(place.getAddress() + "");
                     tv_address.setText(place.getAddress());
+                    progressBar.setVisibility(View.GONE);
 
 
                     places.release();
