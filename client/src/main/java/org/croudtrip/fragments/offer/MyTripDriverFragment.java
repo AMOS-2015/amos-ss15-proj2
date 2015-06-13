@@ -226,6 +226,7 @@ public class MyTripDriverFragment extends SubscriptionFragment {
         IntentFilter filter = new IntentFilter();
         filter.addAction(Constants.EVENT_PASSENGER_CANCELLED_TRIP);
         filter.addAction(Constants.EVENT_PASSENGER_REACHED_DESTINATION);
+        filter.addAction(Constants.EVENT_PASSENGER_ENTERED_CAR);
         LocalBroadcastManager.getInstance(getActivity().getApplicationContext())
                 .registerReceiver(passengersChangeReceiver, filter);
     }
@@ -431,7 +432,7 @@ public class MyTripDriverFragment extends SubscriptionFragment {
                         offerID = tripOffer.getId();
 
                         // show route information on the map
-                        generateRouteOnMap( tripOffer, NavigationResult.createNavigationResultForDriverRoute(tripOffer));
+                        generateRouteOnMap(tripOffer, NavigationResult.createNavigationResultForDriverRoute(tripOffer));
 
                         loadPassengers();
 
