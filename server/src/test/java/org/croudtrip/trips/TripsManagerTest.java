@@ -38,6 +38,7 @@ import java.util.List;
 
 import mockit.Expectations;
 import mockit.Mocked;
+import mockit.Verifications;
 import mockit.integration.junit4.JMockit;
 
 @RunWith(JMockit.class)
@@ -83,10 +84,10 @@ public class TripsManagerTest {
                 System.currentTimeMillis() / 1000);
 
         new Expectations(){{
-            directionsManager.getDirections( tripStart, tripEnd);
-            result = Lists.newArrayList( finalRoute );
+            directionsManager.getDirections(tripStart, tripEnd);
+            result = Lists.newArrayList(finalRoute);
 
-            vehicleManager.findVehicleById( offerDescription.getVehicleId() );
+            vehicleManager.findVehicleById(offerDescription.getVehicleId());
             result = Optional.of(vehicle);
         }};
 
@@ -110,8 +111,8 @@ public class TripsManagerTest {
 
         TripOffer updatedOffer = tripsManager.updateOffer( offer, positionUpdate );
 
-        Assert.assertEquals( TripOfferStatus.ACTIVE, updatedOffer.getStatus() );
-        Assert.assertEquals( updateLocation, updatedOffer.getCurrentLocation() );
+        Assert.assertEquals(TripOfferStatus.ACTIVE, updatedOffer.getStatus());
+        Assert.assertEquals(updateLocation, updatedOffer.getCurrentLocation());
     }
 
     @Test
@@ -212,7 +213,7 @@ public class TripsManagerTest {
 
         Optional<JoinTripRequest> requestOptional = tripsManager.joinTrip( reservation );
 
-        Assert.assertTrue( requestOptional.isPresent() );
+        Assert.assertTrue(requestOptional.isPresent());
         Assert.assertEquals( query, requestOptional.get().getQuery() );
         Assert.assertEquals( offer, requestOptional.get().getOffer() );
         Assert.assertEquals( reservation.getTotalPriceInCents(), requestOptional.get().getTotalPriceInCents());
@@ -258,12 +259,38 @@ public class TripsManagerTest {
 
     @Test
     public void testUpdateJoinRequestPassengerExitCar() {
-        // TODO: add test code here
+        final JoinTripRequest request = new JoinTripRequest.Builder().build();
+
+        tripsManager.updateJoinRequestPassengerExitCar(request);
+
+        new Verifications() {{
+            JoinTripRequest updatedRequest;
+            joinTripRequestDAO.update(updatedRequest = withCapture());
+            Assert.assertEquals(JoinTripStatus.PASSENGER_AT_DESTINATION, updatedRequest.getStatus());
+
+            gcmManager.sendPassengerExitCarMsg(request);
+
+            tripsUtils.checkAndUpdateRunningQueries(updatedRequest.getOffer());
+        }};
     }
 
     @Test
     public void testUpdateJoinRequestPassengerCancel() {
-        // TODO: add test code here
+        final JoinTripRequest request = new JoinTripRequest.Builder().build();
+
+        tripsManager.updateJoinRequestPassengerCancel(request);
+
+        new Verifications() {{
+            JoinTripRequest updatedRequest;
+            joinTripRequestDAO.update(updatedRequest = withCapture());
+            Assert.assertEquals(JoinTripStatus.PASSENGER_CANCELLED, updatedRequest.getStatus());
+
+            gcmManager.sendPassengerCancelledTripMsg(request);
+
+            tripsUtils.updateArrivalTimesForOffer(updatedRequest.getOffer());
+
+            tripsUtils.checkAndUpdateRunningQueries(updatedRequest.getOffer());
+        }};
     }
 
     @Test
