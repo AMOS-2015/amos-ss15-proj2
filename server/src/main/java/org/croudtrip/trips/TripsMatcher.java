@@ -86,7 +86,7 @@ class TripsMatcher {
 	 */
 	public Optional<PotentialMatch> isPotentialMatch(TripOffer offer, TripQuery query) {
 		// check trip status
-		if (!offer.getStatus().equals(TripOfferStatus.ACTIVE_NOT_FULL)) return Optional.absent();
+		if (!offer.getStatus().equals(TripOfferStatus.ACTIVE)) return Optional.absent();
 
 		// check that query has not been declined before
 		if (!assertJoinRequestNotDeclined(offer, query)) return Optional.absent();

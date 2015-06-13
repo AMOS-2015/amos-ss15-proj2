@@ -11,7 +11,6 @@ import org.croudtrip.api.directions.RouteLocation;
 import org.croudtrip.api.trips.JoinTripRequest;
 import org.croudtrip.api.trips.JoinTripStatus;
 import org.croudtrip.api.trips.RunningTripQuery;
-import org.croudtrip.api.trips.RunningTripQueryStatus;
 import org.croudtrip.api.trips.TripOffer;
 import org.croudtrip.api.trips.TripOfferDescription;
 import org.croudtrip.api.trips.TripOfferStatus;
@@ -43,9 +42,9 @@ import mockit.integration.junit4.JMockit;
 
 @RunWith(JMockit.class)
 public class TripsManagerTest {
+
     @Mocked JoinTripRequestDAO joinTripRequestDAO;
     @Mocked TripOfferDAO tripOfferDAO;
-    @Mocked TripsNavigationManager tripsNavigationManager;
     @Mocked DirectionsManager directionsManager;
     @Mocked LogManager logManager;
     @Mocked TripsUtils tripsUtils;
@@ -74,15 +73,14 @@ public class TripsManagerTest {
 
         final TripOffer offer = new TripOffer(0,
                 finalRoute,
-                System.currentTimeMillis()/1000+finalRoute.getDurationInSeconds(),
+                System.currentTimeMillis() / 1000 + finalRoute.getDurationInSeconds(),
                 offerDescription.getStart(),
                 offerDescription.getMaxDiversionInMeters(),
                 offerDescription.getPricePerKmInCents(),
                 driver,
                 vehicle,
-                TripOfferStatus.ACTIVE_NOT_FULL,
-                System.currentTimeMillis()/1000
-                );
+                TripOfferStatus.ACTIVE,
+                System.currentTimeMillis() / 1000);
 
         new Expectations(){{
             directionsManager.getDirections( tripStart, tripEnd);
@@ -110,19 +108,19 @@ public class TripsManagerTest {
     public void testSimplePositionUpdateOffer() {
         // test update position
         RouteLocation updateLocation = new RouteLocation(1,1);
-        TripOffer offer = new TripOffer( 0, null, 0, null, 0, 0, null, null, TripOfferStatus.ACTIVE_NOT_FULL, 0 );
+        TripOffer offer = new TripOffer( 0, null, 0, null, 0, 0, null, null, TripOfferStatus.ACTIVE, 0 );
         TripOfferUpdate positionUpdate = TripOfferUpdate.createNewStartUpdate( updateLocation );
 
         TripOffer updatedOffer = tripsManager.updateOffer( offer, positionUpdate );
 
-        Assert.assertEquals( TripOfferStatus.ACTIVE_NOT_FULL, updatedOffer.getStatus() );
+        Assert.assertEquals( TripOfferStatus.ACTIVE, updatedOffer.getStatus() );
         Assert.assertEquals( updateLocation, updatedOffer.getCurrentLocation() );
     }
 
     @Test
     public void testSimpleCancelUpdateOffer() {
         // test cancel trip
-        TripOffer offer = new TripOffer( 0, null, 0, null, 0, 0, null, null, TripOfferStatus.ACTIVE_NOT_FULL, 0 );
+        TripOffer offer = new TripOffer( 0, null, 0, null, 0, 0, null, null, TripOfferStatus.ACTIVE, 0 );
         TripOfferUpdate cancelUpdate = TripOfferUpdate.createCancelUpdate();
 
         TripOffer updatedOffer = tripsManager.updateOffer( offer, cancelUpdate );
@@ -147,18 +145,18 @@ public class TripsManagerTest {
 
             tripOfferDAO.findAllActive();
             result = Lists.newArrayList(
-                    new TripOffer(0, null, 0, null, 0, 0, d1, null, TripOfferStatus.ACTIVE_NOT_FULL, 0 ),
-                    new TripOffer(0, null, 0, null, 0, 0, d2, null, TripOfferStatus.ACTIVE_NOT_FULL, 0 ),
-                    new TripOffer(0, null, 0, null, 0, 0, d3, null, TripOfferStatus.ACTIVE_NOT_FULL, 0 ),
-                    new TripOffer(0, null, 0, null, 0, 0, d4, null, TripOfferStatus.ACTIVE_NOT_FULL, 0 )
+                    new TripOffer(0, null, 0, null, 0, 0, d1, null, TripOfferStatus.ACTIVE, 0 ),
+                    new TripOffer(0, null, 0, null, 0, 0, d2, null, TripOfferStatus.ACTIVE, 0 ),
+                    new TripOffer(0, null, 0, null, 0, 0, d3, null, TripOfferStatus.ACTIVE, 0 ),
+                    new TripOffer(0, null, 0, null, 0, 0, d4, null, TripOfferStatus.ACTIVE, 0 )
             );
 
             tripsMatcher.filterPotentialMatches( (List<TripOffer>)(any), (TripQuery)(any) );
             result = Lists.newArrayList(
-                    new TripOffer(0, null, 0, null, 0, 4, d1, null, TripOfferStatus.ACTIVE_NOT_FULL, 0 ),
-                    new TripOffer(0, null, 0, null, 0, 14, d2, null, TripOfferStatus.ACTIVE_NOT_FULL, 0 ),
-                    new TripOffer(0, null, 0, null, 0, 12, d3, null, TripOfferStatus.ACTIVE_NOT_FULL, 0 ),
-                    new TripOffer(0, null, 0, null, 0, 3, d4, null, TripOfferStatus.ACTIVE_NOT_FULL, 0 )
+                    new TripOffer(0, null, 0, null, 0, 4, d1, null, TripOfferStatus.ACTIVE, 0 ),
+                    new TripOffer(0, null, 0, null, 0, 14, d2, null, TripOfferStatus.ACTIVE, 0 ),
+                    new TripOffer(0, null, 0, null, 0, 12, d3, null, TripOfferStatus.ACTIVE, 0 ),
+                    new TripOffer(0, null, 0, null, 0, 3, d4, null, TripOfferStatus.ACTIVE, 0 )
             );
 
         }};
@@ -197,7 +195,7 @@ public class TripsManagerTest {
         final Route passengerRoute = new Route( Lists.newArrayList(passengerStart, passengerEnd), "", 12345, 12345, Lists.newArrayList(12345L), Lists.newArrayList(12345L), null, null, 0  );
         final TripQuery query = new TripQuery( passengerRoute, passengerStart, passengerEnd, 0, 0, p);
 
-        final TripOffer offer = new TripOffer(0, null, 0, tripStart, 10, 10, d, null, TripOfferStatus.ACTIVE_NOT_FULL, 0);
+        final TripOffer offer = new TripOffer(0, null, 0, tripStart, 10, 10, d, null, TripOfferStatus.ACTIVE, 0);
 
         TripReservation reservation = new TripReservation( 0, query, 12345, 10, 0, d );
 
@@ -274,7 +272,7 @@ public class TripsManagerTest {
     @Test
     public void testSimpleFinishUpdateOffer() {
         // test finish trip
-        TripOffer offer = new TripOffer( 0, null, 0, null, 0, 0, null, null, TripOfferStatus.ACTIVE_NOT_FULL, 0 );
+        TripOffer offer = new TripOffer( 0, null, 0, null, 0, 0, null, null, TripOfferStatus.ACTIVE, 0 );
         TripOfferUpdate finishUpdate = TripOfferUpdate.createFinishUpdate();
 
         TripOffer updatedOffer = tripsManager.updateOffer( offer, finishUpdate );

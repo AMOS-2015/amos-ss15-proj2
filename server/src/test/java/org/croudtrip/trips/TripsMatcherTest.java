@@ -50,7 +50,7 @@ public class TripsMatcherTest {
 			.distanceInMeters(1000)
 			.build();
 
-	private static final TripOffer offer = new TripOffer(0, driverRoute, 0, null, 1000, 0, driver, vehicle, TripOfferStatus.ACTIVE_NOT_FULL, 0);
+	private static final TripOffer offer = new TripOffer(0, driverRoute, 0, null, 1000, 0, driver, vehicle, TripOfferStatus.ACTIVE, 0);
 
 
 	@Mocked JoinTripRequestDAO joinTripRequestDAO;
@@ -70,7 +70,7 @@ public class TripsMatcherTest {
 
 	@Test
 	public void testPotentialMatchStatus() {
-		TripOffer offer = new TripOffer(0, null, 0, null, 0, 0, null, null, TripOfferStatus.ACTIVE_FULL, 0);
+		TripOffer offer = new TripOffer(0, null, 0, null, 0, 0, null, null, TripOfferStatus.DISABLED, 0);
 		Assert.assertFalse(tripsMatcher.isPotentialMatch(offer, query).isPresent());
 	}
 

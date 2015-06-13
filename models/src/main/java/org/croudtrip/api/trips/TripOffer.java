@@ -51,7 +51,7 @@ import javax.persistence.Table;
 		),
 		@NamedQuery(
 				name = TripOffer.QUERY_NAME_FIND_ALL_ACTIVE,
-				query = "SELECT t FROM " + TripOffer.ENTITY_NAME + " t WHERE t.status = 'ACTIVE_NOT_FULL'"
+				query = "SELECT t FROM " + TripOffer.ENTITY_NAME + " t WHERE t.status = 'ACTIVE'"
 		),
 		@NamedQuery(
 				name = TripOffer.QUERY_FIND_BY_DRIVER_ID,

@@ -127,7 +127,7 @@ public class TripsManager {
                 description.getPricePerKmInCents(),
                 owner,
                 vehicle.get(),
-                TripOfferStatus.ACTIVE_NOT_FULL,
+                TripOfferStatus.ACTIVE,
                 System.currentTimeMillis()/1000);
         tripOfferDAO.save(offer);
 
@@ -462,24 +462,6 @@ public class TripsManager {
         JoinTripRequest updatedRequest = new JoinTripRequest(joinRequest, newStatus);
         joinTripRequestDAO.update(updatedRequest);
 
-        // update offer if vehicle is full
-        TripOffer offer = joinRequest.getOffer();
-        int passengerCount = tripsUtils.getActivePassengerCountForOffer(offer);
-        if (passengerCount >= offer.getVehicle().getCapacity()) {
-            TripOffer updatedOffer = new TripOffer(
-                    offer.getId(),
-                    offer.getDriverRoute(),
-                    offer.getEstimatedArrivalTimeInSeconds(),
-                    offer.getCurrentLocation(),
-                    offer.getMaxDiversionInMeters(),
-                    offer.getPricePerKmInCents(),
-                    offer.getDriver(),
-                    offer.getVehicle(),
-                    TripOfferStatus.ACTIVE_FULL,
-                    offer.getLastPositonUpdateInSeconds() );
-            tripOfferDAO.update(updatedOffer);
-        }
-
         // notify the passenger about status
         logManager.d("User " + joinRequest.getQuery().getPassenger().getId() + " (" + joinRequest.getQuery().getPassenger().getFirstName() + " " + joinRequest.getQuery().getPassenger().getLastName() + ") got status update for joinTripRequest.");
         if(passengerAccepted) gcmManager.sendAcceptPassengerMsg(joinRequest);
@@ -487,11 +469,10 @@ public class TripsManager {
 
         // TODO: Check if other pending join requests are still valid
 
-
         // Send all the passengers an arrival time update
-        if(passengerAccepted)
-            tripsUtils.updateArrivalTimesForOffer( offer, joinRequest.getQuery().getPassenger() );
-
+        if(passengerAccepted) {
+            tripsUtils.updateArrivalTimesForOffer(joinRequest.getOffer(), joinRequest.getQuery().getPassenger());
+        }
 
         return joinTripRequestDAO.findById(joinRequest.getId()).get();
     }

@@ -96,7 +96,7 @@ public class DisableTripOffersExecutor extends AbstractScheduledTaskExecutor {
                             offer.getPricePerKmInCents(),
                             offer.getDriver(),
                             offer.getVehicle(),
-                            passengerCount >= offer.getVehicle().getCapacity() ? TripOfferStatus.ACTIVE_FULL : TripOfferStatus.ACTIVE_NOT_FULL,
+                            TripOfferStatus.ACTIVE,
                             offer.getLastPositonUpdateInSeconds()
                     );
                     tripOfferDAO.update(updatedOffer);
