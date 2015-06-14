@@ -46,16 +46,20 @@ public class LoginTests extends ActivityInstrumentationTestCase2<LoginActivity> 
 
     public void testCreateValidAccount() throws InterruptedException{
 
+        AccountManager.logout(loginActivity, false);
+
         // Show correct register view after clicking "Register"
         onView(withId(R.id.btn_register_email)).perform(click());
         onView(withId(R.id.btn_register)).check(matches(withText(R.string.register_button)));
 
         // Register a new random user
-        final String ABC = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        String firstName = generateRandomString(20, ABC, "");
-        String lastName = generateRandomString(20, ABC, "");
-        String email = generateRandomString(20, ABC, "@.");
-        String password = generateRandomString(20, ABC, "");
+        final String numbers = "0123456789";
+        final String ABC = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        String firstName = generateRandomString(20, numbers+ABC, "");
+        String lastName = generateRandomString(20, numbers+ABC, "");
+        String email = generateRandomString(10, numbers+ABC, "") + "@" + generateRandomString(6, ABC, "")
+                + "." + generateRandomString(6, ABC, "");
+        String password = generateRandomString(20, numbers+ABC, "");
 
         // Use closeSoftKeyboard and Thread.sleep because Espresso is buggy
         // and crashes if the EditText is not visible due to the keyboard (and it doesn't close
@@ -73,6 +77,8 @@ public class LoginTests extends ActivityInstrumentationTestCase2<LoginActivity> 
         closeSoftKeyboard(); Thread.sleep(1000);
 
         onView(withId(R.id.btn_register)).perform(click());
+        Thread.sleep(1000);
+
         assertTrue("User logged in (device)", AccountManager.isUserLoggedIn(loginActivity));
 
         User user = AccountManager.getLoggedInUser(loginActivity);
