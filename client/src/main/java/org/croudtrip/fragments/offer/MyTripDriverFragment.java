@@ -110,6 +110,8 @@ public class MyTripDriverFragment extends SubscriptionFragment {
 
     private ProgressBar mapProgressBar;
     private ProgressBar passengersProgressBar;
+    private ProgressBar finishProgressBar;
+    private ProgressBar cancelProgressBar;
 
     @InjectView(R.id.iv_transparent_image)
     private ImageView transparentImageView;
@@ -161,6 +163,8 @@ public class MyTripDriverFragment extends SubscriptionFragment {
 
         mapProgressBar = (ProgressBar) adapter.getHeader().findViewById(R.id.pb_my_trip_map_progressBar);
         passengersProgressBar = (ProgressBar) adapter.getHeader().findViewById(R.id.pb_my_trip_passengers_progressBar);
+        finishProgressBar = (ProgressBar) adapter.getHeader().findViewById(R.id.pb_my_trip_finish);
+        cancelProgressBar = (ProgressBar) adapter.getHeader().findViewById(R.id.pb_my_trip_cancel);
 
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getActivity());
         recyclerView.setLayoutManager(layoutManager);
@@ -249,6 +253,7 @@ public class MyTripDriverFragment extends SubscriptionFragment {
             @Override
             public void onClick(View v) {
                 cancelButton.setEnabled(false);
+                cancelProgressBar.setVisibility(View.VISIBLE);
 
                 // Tell the server to cancel this trip
                 subscriptions.add(
@@ -270,6 +275,7 @@ public class MyTripDriverFragment extends SubscriptionFragment {
                                         Toast.makeText(getActivity(), "Error: " + throwable.getMessage(),
                                                 Toast.LENGTH_LONG).show();
                                         cancelButton.setEnabled(true);
+                                        cancelProgressBar.setVisibility(View.GONE);
                                     }
                                 }));
                     }
@@ -284,6 +290,7 @@ public class MyTripDriverFragment extends SubscriptionFragment {
             @Override
             public void onClick(View v) {
                 finishButton.setEnabled(false);
+                finishProgressBar.setVisibility(View.VISIBLE);
 
                 // Tell the server to finish this trip
                 subscriptions.add(
@@ -305,6 +312,7 @@ public class MyTripDriverFragment extends SubscriptionFragment {
                                         Toast.makeText(getActivity(), "Error: " + throwable.getMessage(),
                                                 Toast.LENGTH_LONG).show();
                                         finishButton.setEnabled(true);
+                                        finishProgressBar.setVisibility(View.GONE);
                                     }
                                 }));
             }

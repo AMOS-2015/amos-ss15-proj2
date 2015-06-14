@@ -64,23 +64,48 @@
             android:layout_height="wrap_content"
             android:weightSum="2">
 
-            <Button
-                android:id="@+id/btn_my_trip_driver_cancel_trip"
+            <FrameLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:layout_weight="1"
-                android:enabled="false"
-                android:text="@string/my_trip_driver_cancel_trip"/>
+                android:layout_weight="1">
 
-            <Button
-                android:id="@+id/btn_my_trip_driver_finish_trip"
+                <Button
+                    android:id="@+id/btn_my_trip_driver_cancel_trip"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center_horizontal"
+                    android:enabled="false"
+                    android:text="@string/my_trip_driver_cancel_trip"/>
+
+                <ProgressBar
+                    android:id="@+id/pb_my_trip_cancel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone"
+                    android:layout_gravity = "center_vertical|center_horizontal"
+                    style="@android:style/Widget.ProgressBar.Small.Inverse"/>
+            </FrameLayout>
+
+            <FrameLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:layout_weight="1"
-                android:enabled="false"
-                android:text="@string/my_trip_driver_finish_trip"/>
+                android:layout_weight="1">
+                <Button
+                    android:id="@+id/btn_my_trip_driver_finish_trip"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:enabled="false"
+                    android:text="@string/my_trip_driver_finish_trip"/>
+
+                <ProgressBar
+                    android:id="@+id/pb_my_trip_finish"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone"
+                    android:layout_gravity = "center_vertical|center_horizontal"
+                    style="@android:style/Widget.ProgressBar.Small.Inverse"/>
+            </FrameLayout>
         </LinearLayout>
         
 
