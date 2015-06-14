@@ -33,6 +33,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -63,7 +64,6 @@ import javax.inject.Inject;
 
 import it.neokree.materialnavigationdrawer.MaterialNavigationDrawer;
 import roboguice.inject.InjectView;
-import rx.Subscriber;
 import rx.Subscription;
 import rx.functions.Action1;
 import timber.log.Timber;
@@ -91,9 +91,9 @@ public class JoinDrivingFragment extends SubscriptionFragment {
     @InjectView(R.id.card_icon)                 private ImageView ivCardIcon;
     @InjectView(R.id.nfc_icon)                  private ImageView ivNfcIcon;
 
-
-
-
+    @InjectView(R.id.pb_join_trip_driving_reached_destination) private ProgressBar progressBarDest;
+    @InjectView(R.id.pb_join_trip_driving_report) private ProgressBar progressBarReport;
+    @InjectView(R.id.pb_join_trip_driving_cancel) private ProgressBar progressBarCancel;
 
     @Inject TripsResource tripsResource;
 
@@ -176,7 +176,7 @@ public class JoinDrivingFragment extends SubscriptionFragment {
                 @Override
                 public void onClick(View v) {
                     //Handle here all the stuff that happens when the trip is successfully completed (user hits "I have reached my destination")
-                    updateTrip(JoinTripRequestUpdateType.LEAVE_CAR);
+                    updateTrip(JoinTripRequestUpdateType.LEAVE_CAR, progressBarDest);
                     sendUserBackToSearch();
                 }
             });
@@ -198,7 +198,7 @@ public class JoinDrivingFragment extends SubscriptionFragment {
                     //Handle here all the stuff that happens when the user enters the car (user hits "My driver is here")
 
                     if (prefs.getBoolean(Constants.SHARED_PREF_KEY_DRIVING, false)) {
-                        updateTrip(JoinTripRequestUpdateType.LEAVE_CAR);
+                        updateTrip(JoinTripRequestUpdateType.LEAVE_CAR, progressBarDest);
                         sendUserBackToSearch();
                     } else {
                         // If the user enters the car and leaves the car without this method called twice we need this distinction
@@ -217,7 +217,7 @@ public class JoinDrivingFragment extends SubscriptionFragment {
             public void onClick(View v) {
                 //Handle here all the stuff that happens when the user cancels the trip
                 Toast.makeText(getActivity(), getResources().getString(R.string.my_trip_driver_cancel_trip), Toast.LENGTH_SHORT).show();
-                updateTrip(JoinTripRequestUpdateType.CANCEL);
+                updateTrip(JoinTripRequestUpdateType.CANCEL, progressBarCancel);
                 sendUserBackToSearch();
             }
         });
@@ -343,7 +343,12 @@ public class JoinDrivingFragment extends SubscriptionFragment {
     /*
     Send the new status of the trip to the server. The status may be canceled, entered the car and left the car
      */
-    private void updateTrip(final JoinTripRequestUpdateType updateType) {
+    private void updateTrip(final JoinTripRequestUpdateType updateType, final ProgressBar progressBar) {
+
+        if(progressBar != null) {
+            progressBar.setVisibility(View.VISIBLE);
+        }
+
         SharedPreferences prefs = getActivity().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
         JoinTripRequestUpdate requestUpdate= new JoinTripRequestUpdate(updateType);
         Subscription subscription = tripsResource.updateJoinRequest(prefs.getLong(Constants.SHARED_PREF_KEY_TRIP_ID, -1), requestUpdate)
@@ -352,6 +357,10 @@ public class JoinDrivingFragment extends SubscriptionFragment {
                     @Override
                     public void call(JoinTripRequest joinTripRequest) {
                         Timber.d("update trip successfully called");
+
+                        if(progressBar != null) {
+                            progressBar.setVisibility(View.GONE);
+                        }
                     }
                 }, new CrashCallback(getActivity()) {
 
@@ -366,6 +375,10 @@ public class JoinDrivingFragment extends SubscriptionFragment {
                         */
                         if (simpleRequestUpdateCache != null) {
                             simpleRequestUpdateCache.add(updateType);
+                        }
+
+                        if(progressBar != null) {
+                            progressBar.setVisibility(View.GONE);
                         }
                     }
 
@@ -399,7 +412,7 @@ public class JoinDrivingFragment extends SubscriptionFragment {
         SharedPreferences.Editor editor = prefs.edit();
         editor.putBoolean(Constants.SHARED_PREF_KEY_DRIVING, true);
         editor.apply();
-        updateTrip(JoinTripRequestUpdateType.ENTER_CAR);
+        updateTrip(JoinTripRequestUpdateType.ENTER_CAR, progressBarDest);
 
         ivNfcIcon.setVisibility(View.GONE);
         tvNfcExplanation.setVisibility(View.GONE);
@@ -448,7 +461,7 @@ public class JoinDrivingFragment extends SubscriptionFragment {
         Try to resend every failed server call. This will be tried only once.
          */
         for (Iterator<JoinTripRequestUpdateType> iterator = simpleRequestUpdateCache.iterator(); iterator.hasNext();) {
-            updateTrip(iterator.next());
+            updateTrip(iterator.next(), null);
             iterator.remove();
         }
     }

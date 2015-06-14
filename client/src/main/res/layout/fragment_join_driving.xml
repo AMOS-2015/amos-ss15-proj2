@@ -125,28 +125,67 @@
         android:layout_alignParentBottom="true">
 
 
-        <Button
-            android:id="@+id/btn_joint_trip_reached"
+        <FrameLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="@dimen/default_margin"
-            android:layout_gravity="center_horizontal"/>
+            android:layout_gravity="center_horizontal">
 
-        <Button
-            android:id="@+id/btn_joint_trip_report"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginBottom="@dimen/default_margin"
-            android:text="@string/join_trip_results_report"/>
+            <Button
+                android:id="@+id/btn_joint_trip_reached"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginBottom="@dimen/default_margin"/>
 
-        <Button
-            android:id="@+id/btn_joint_trip_cancel"
+            <ProgressBar
+                android:id="@+id/pb_join_trip_driving_reached_destination"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                android:layout_gravity = "center_vertical|center_horizontal"
+                style="@android:style/Widget.ProgressBar.Small.Inverse"/>
+        </FrameLayout>
+
+        <FrameLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginBottom="@dimen/default_margin"
-            android:text="@string/join_trip_results_cancel"/>
+            android:layout_gravity="center_horizontal">
+
+            <Button
+                android:id="@+id/btn_joint_trip_report"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginBottom="@dimen/default_margin"
+                android:text="@string/join_trip_results_report"/>
+
+            <ProgressBar
+                android:id="@+id/pb_join_trip_driving_report"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                android:layout_gravity = "center_vertical|center_horizontal"
+                style="@android:style/Widget.ProgressBar.Small.Inverse"/>
+        </FrameLayout>
+
+        <FrameLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal">
+
+            <Button
+                android:id="@+id/btn_joint_trip_cancel"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginBottom="@dimen/default_margin"
+                android:text="@string/join_trip_results_cancel"/>
+
+            <ProgressBar
+                android:id="@+id/pb_join_trip_driving_cancel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                android:layout_gravity = "center_vertical|center_horizontal"
+                style="@android:style/Widget.ProgressBar.Small.Inverse"/>
+            </FrameLayout>
         </LinearLayout>
 
 
