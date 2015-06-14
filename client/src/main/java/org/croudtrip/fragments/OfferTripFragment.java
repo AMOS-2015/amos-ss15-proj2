@@ -36,6 +36,7 @@ import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -113,6 +114,8 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
     @InjectView(R.id.price) private TextView tv_price;
     @InjectView(R.id.my_car) private Button myCar;
     @InjectView(R.id.pb_offer_trip_destination) private ProgressBar progressBar;
+    @InjectView(R.id.layout_load_location) private LinearLayout loadLocationLayout;
+    @InjectView(R.id.offer) private Button btn_offer;
 
 
 
@@ -282,7 +285,6 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
         });
 
         // By clicking on the offer-trip-button the driver makes his choice public
-        Button btn_offer = (Button) view.findViewById(R.id.offer);
         btn_offer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -321,6 +323,7 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
                             }
                         });
                         adb.show();
+                        return;
                     }
                 } else {
                     currentLocation = specifiedLocation;
@@ -372,6 +375,11 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
                     showCarPlateDialog();
 
                 }else {
+                    if( currentLocation == null )
+                    {
+                        return;
+                    }
+
                     // Start the My Trip view for the driver
                     final Bundle b = new Bundle();
                     b.putString(MyTripDriverFragment.ARG_ACTION, MyTripDriverFragment.ACTION_CREATE);
@@ -400,6 +408,25 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
 
             }
         });
+
+        // if there is currently no position available disable the offer trip button
+        if( locationUpdater.getLastLocation() == null && specifiedLocation == null ) {
+            btn_offer.setEnabled( false );
+            loadLocationLayout.setVisibility(View.VISIBLE);
+            locationProvider.getLastKnownLocation()
+                            .compose( new DefaultTransformer<Location>())
+                            .subscribe( new Action1<Location>() {
+                                @Override
+                                public void call(Location location) {
+                                    if( location == null )
+                                        return;
+
+                                    locationUpdater.setLastLocation( location );
+                                    btn_offer.setEnabled(true);
+                                    loadLocationLayout.setVisibility(View.GONE);
+                                }
+                            });
+        }
     }
 
     @Override
@@ -410,6 +437,8 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
             l.setLatitude(place.getLatLng().latitude);
             l.setLongitude(place.getLatLng().longitude);
             specifiedLocation = l;
+            btn_offer.setEnabled(true);
+            loadLocationLayout.setVisibility(View.VISIBLE);
         } else {
             super.onActivityResult(requestCode, resultCode, data);
         }

@@ -132,4 +132,34 @@
         android:layout_marginRight="50dp"
         android:layout_marginLeft="50dp" />
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_gravity="center_horizontal"
+        android:gravity="center"
+        android:layout_below="@+id/offer"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:visibility="gone"
+        android:id="@+id/layout_load_location">
+
+        <ProgressBar
+            android:id="@+id/pb_load_location"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity = "center_vertical|center_horizontal"
+            style="@android:style/Widget.ProgressBar.Small.Inverse"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/text"
+            android:id="@+id/tv_load_location"
+            android:minWidth="200dp"
+            android:layout_marginLeft="10dp"
+            android:text="We are waiting for your location."
+            android:layout_centerHorizontal="true" />
+    </LinearLayout>
+
 </RelativeLayout>
