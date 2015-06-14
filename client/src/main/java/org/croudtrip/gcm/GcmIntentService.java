@@ -105,6 +105,9 @@ public class GcmIntentService extends RoboIntentService {
             case GcmConstants.GCM_MSG_PASSENGER_AT_DESTINATION:
                 handlePassengerAtDestination();
                 break;
+            case GcmConstants.GCM_MSG_PASSENGER_ENTERED_CAR:
+                handlePassengerEnteredCar();
+                break;
             case GcmConstants.GCM_MSG_ARRIVAL_TIME_UPDATE:
                 handleArrivalTimeUpdate(intent);
             default:
@@ -166,6 +169,14 @@ public class GcmIntentService extends RoboIntentService {
         if( LifecycleHandler.isApplicationInForeground() ) {
             // send broadcast while the app is running to reload the application
             Intent startingIntent = new Intent(Constants.EVENT_PASSENGER_REACHED_DESTINATION);
+            LocalBroadcastManager.getInstance(this).sendBroadcast(startingIntent);
+        }
+    }
+
+    private void handlePassengerEnteredCar() {
+        if( LifecycleHandler.isApplicationInForeground() ) {
+            // send broadcast while the app is running to reload the application
+            Intent startingIntent = new Intent(Constants.EVENT_PASSENGER_ENTERED_CAR);
             LocalBroadcastManager.getInstance(this).sendBroadcast(startingIntent);
         }
     }
