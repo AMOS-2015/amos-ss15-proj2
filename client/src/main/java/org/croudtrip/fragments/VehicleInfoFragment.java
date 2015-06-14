@@ -28,14 +28,15 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.NumberPicker;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.larswerkman.holocolorpicker.ColorPicker;
 import com.larswerkman.holocolorpicker.SVBar;
 
+import org.croudtrip.R;
 import org.croudtrip.account.AccountManager;
 import org.croudtrip.account.VehicleManager;
-import org.croudtrip.R;
 import org.croudtrip.api.TripsResource;
 import org.croudtrip.api.VehicleResource;
 import org.croudtrip.api.account.User;
@@ -45,7 +46,6 @@ import org.croudtrip.api.trips.TripOffer;
 import org.croudtrip.utils.CrashCallback;
 import org.croudtrip.utils.DataHolder;
 import org.croudtrip.utils.DefaultTransformer;
-
 
 import java.util.List;
 
@@ -60,13 +60,19 @@ import timber.log.Timber;
 
 /**
  * This fragment allows the user to enter the vehicle information and uploads this information to the server
+ *
  * @author nazeehammari
  */
 public class VehicleInfoFragment extends SubscriptionFragment {
 
     @Inject
     private TripsResource tripsResource;
-    @Inject VehicleResource vehicleResource;
+
+    @Inject
+    private VehicleResource vehicleResource;
+
+    private ProgressBar progressBar;
+
     private String newCarType, newCarPlate, newColor;
     private Integer newCarCapacity;
 
@@ -74,19 +80,20 @@ public class VehicleInfoFragment extends SubscriptionFragment {
     private Button colorPickerButton, capacityPickerButton, updateInfo, deleteVehicle;
     private int vehicleId = DataHolder.getInstance().getVehicle_id();
     private User user;
-    private long userId=-1;
+    private long userId = -1;
+
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         setHasOptionsMenu(true);
         View view = inflater.inflate(R.layout.fragment_vehicle_info, container, false);
+        progressBar = (ProgressBar) view.findViewById(R.id.pb_add_vehicle);
 
         if (vehicleId != -1)
             getVehicle(vehicleId);   //Fetches vehicle info from the server and updates the corresponding local variables
@@ -107,55 +114,56 @@ public class VehicleInfoFragment extends SubscriptionFragment {
             carPlateEdit.requestFocus();
 
 
-        if (vehicleId !=-1 && vehicleId != -2)
+        if (vehicleId != -1 && vehicleId != -2)
             deleteVehicle.setVisibility(View.VISIBLE);
 
         this.user = AccountManager.getLoggedInUser(this.getActivity().getApplicationContext());
-        if(user != null)
-            userId=user.getId();
+        if (user != null)
+            userId = user.getId();
 
         setFields();
         updateInfo.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick (View v) {
+            public void onClick(View v) {
                 saveCarChanges(vehicleId);
             }
         });
         deleteVehicle.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick (View v) {
+            public void onClick(View v) {
+
+                progressBar.setVisibility(View.VISIBLE);
 
                 vehicleId = DataHolder.getInstance().getVehicle_id();
                 //Get a list of offers and iterate over them to check if the vehicle is being used before attempting to remove it
                 subscriptions.add(tripsResource.getOffers(false)
                                 .compose(new DefaultTransformer<List<TripOffer>>())
                                 .flatMap(new Func1<List<TripOffer>, Observable<TripOffer>>() {
+
                                     @Override
                                     public Observable<TripOffer> call(List<TripOffer> tripOffers) {
+
                                         //Remove the vehicle if there are no offers
-                                        if (tripOffers.isEmpty())
-                                        {
+                                        if (tripOffers.isEmpty()) {
                                             Timber.d("tripOffers is empty");
                                             removeVehicle(vehicleId);
                                             deleteVehicle.setVisibility(View.INVISIBLE);
                                             vehicleId = -1;
                                             updateInfo.setText(getString(R.string.add_vehicle));
-                                        }
-                                        //Iterate over the offers to check if the vehicle is being used
-                                        else
-                                        {
-                                            for (int i=0;i<tripOffers.size();i++)
-                                            {
-                                                Timber.d("tripOffers has size: "+tripOffers.size());
+
+                                        } else {
+                                            //Iterate over the offers to check if the vehicle is being used
+                                            for (int i = 0; i < tripOffers.size(); i++) {
+
+                                                Timber.d("tripOffers has size: " + tripOffers.size());
+
                                                 //Notify the user if the vehicle is being used in any trip offers
-                                                if (tripOffers.get(i).getVehicle().getId()==vehicleId && userId == tripOffers.get(i).getDriver().getId())
-                                                {
+                                                if (tripOffers.get(i).getVehicle().getId() == vehicleId && userId == tripOffers.get(i).getDriver().getId()) {
                                                     Toast.makeText(getActivity(), getResources().getString(R.string.vehicle_in_use), Toast.LENGTH_SHORT).show();
                                                     Timber.d("The targeted vehicle is in use with id: " + tripOffers.get(i).getVehicle().getId());
-                                                }
-                                                //Remove the vehicle if it's not being used in any of the trip offers
-                                                else
-                                                {
+                                                    progressBar.setVisibility(View.GONE);
+                                                } else {
+                                                    //Remove the vehicle if it's not being used in any of the trip offers
                                                     Timber.d("Vehicle is not being used");
                                                     removeVehicle(vehicleId);
                                                     deleteVehicle.setVisibility(View.INVISIBLE);
@@ -166,18 +174,27 @@ public class VehicleInfoFragment extends SubscriptionFragment {
                                         }
                                         return Observable.just(tripOffers.get(0));
                                     }
-                                })
-                                .subscribe(new Action1<TripOffer>() {
+
+                                }).subscribe(new Action1<TripOffer>() {
+
                                     @Override
                                     public void call(TripOffer offer) {
                                     }
-                                }, new CrashCallback(getActivity()))
+
+                                }, new CrashCallback(getActivity()) {
+
+                                    @Override
+                                    public void call(Throwable throwable) {
+                                        super.call(throwable);
+                                        progressBar.setVisibility(View.GONE);
+                                    }
+                                })
                 );
 
 
             }
         });
-        capacityPickerButton.setOnClickListener(new View.OnClickListener(){
+        capacityPickerButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 showCapacityPicker();
@@ -190,34 +207,14 @@ public class VehicleInfoFragment extends SubscriptionFragment {
             }
         });
 
-
-        /*
-        carTypeEdit.setOnKeyListener(new View.OnKeyListener() {
-            public boolean onKey(View v, int keyCode, KeyEvent event) {
-                if ((event.getAction() == KeyEvent.ACTION_DOWN) &&
-                        ((keyCode == KeyEvent.KEYCODE_ENTER))) {
-                    newCarType = carTypeEdit.getText().toString();
-                    return true;
-                }
-                return false;
-            }
-        });
-        carTypeEdit.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                if (!hasFocus) {
-                    newCarType = carTypeEdit.getText().toString();
-                }
-            }
-        });
-        */
-
         carTypeEdit.addTextChangedListener(new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
 
             @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
 
             @Override
             public void afterTextChanged(Editable s) {
@@ -225,32 +222,14 @@ public class VehicleInfoFragment extends SubscriptionFragment {
             }
         });
 
-        /*
-        carPlateEdit.setOnKeyListener(new View.OnKeyListener() {
-            public boolean onKey(View v, int keyCode, KeyEvent event) {
-                if ((event.getAction() == KeyEvent.ACTION_DOWN) &&
-                        ((keyCode == KeyEvent.KEYCODE_ENTER))) {
-                    newCarPlate = carPlateEdit.getText().toString();
-                    return true;
-                }
-                return false;
-            }
-        });
-        carPlateEdit.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                if (!hasFocus) {
-                    newCarPlate = carPlateEdit.getText().toString();
-                }
-            }
-        });
-        */
         carPlateEdit.addTextChangedListener(new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
 
             @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
 
             @Override
             public void afterTextChanged(Editable s) {
@@ -262,8 +241,7 @@ public class VehicleInfoFragment extends SubscriptionFragment {
         return view;
     }
 
-    public void showColorPicker()
-    {
+    public void showColorPicker() {
         final Dialog colorDialog = new Dialog(getActivity());
         colorDialog.setTitle(Html.fromHtml("<font color='#388e3c'>Select car color</font>"));
         colorDialog.setContentView(R.layout.color_picker_dialog);
@@ -347,8 +325,7 @@ public class VehicleInfoFragment extends SubscriptionFragment {
                     e.printStackTrace();
                 } catch (Resources.NotFoundException e) {
                     e.printStackTrace();
-                }
-                catch (IllegalAccessException e) {
+                } catch (IllegalAccessException e) {
                     e.printStackTrace();
                 }
                 break;
@@ -356,44 +333,15 @@ public class VehicleInfoFragment extends SubscriptionFragment {
         }
     }
 
-    /*
-    public void getVehicles() {
-        Subscription subscription = vehicleResource.getVehicles()
-                .compose(new DefaultTransformer<List<Vehicle>>())
-                .subscribe(new Action1<List<Vehicle>>() {
-                    @Override
-                    public void call(List<Vehicle> vehicles) {
-                        if (vehicles.size() > 0) {
-                            Vehicle vehicle = vehicles.get(0);
-                            newCarPlate = vehicle.getLicensePlate();
-                            newColor = vehicle.getColor();
-                            newCarCapacity = vehicle.getCapacity();
-                            newCarType = vehicle.getType();
-                            //Set fields to values fetched from the server
-                            setFields();
-                        }
-                    }
-                }, new Action1<Throwable>() {
-                    @Override
-                    public void call(Throwable throwable) {
-                        Response response = ((RetrofitError) throwable).getResponse();
-                        if (response != null && response.getStatus() == 401) {  // Not Authorized
-                        } else {
-                            Timber.e("error" + throwable.getMessage());
-                        }
-                        Timber.e("Couldn't get data" + throwable.getMessage());
-                    }
-                });
-
-        subscriptions.add(subscription);
-    }
-    */
-
 
     public void getVehicle(int id) {
+
+        progressBar.setVisibility(View.VISIBLE);
+
         Subscription subscription = vehicleResource.getVehicle(id)
                 .compose(new DefaultTransformer<Vehicle>())
                 .subscribe(new Action1<Vehicle>() {
+
                     @Override
                     public void call(Vehicle vehicle) {
                         newCarPlate = vehicle.getLicensePlate();
@@ -402,53 +350,103 @@ public class VehicleInfoFragment extends SubscriptionFragment {
                         newCarType = vehicle.getType();
                         //Set fields to values fetched from the server
                         setFields();
+
+                        progressBar.setVisibility(View.GONE);
                     }
-                }, new CrashCallback(getActivity()));
+
+                }, new CrashCallback(getActivity()) {
+                    @Override
+                    public void call(Throwable throwable) {
+                        super.call(throwable);
+                        progressBar.setVisibility(View.GONE);
+                    }
+                });
         subscriptions.add(subscription);
     }
 
 
     public void addVehicle(final VehicleDescription vehicleDescription) {
+
+        progressBar.setVisibility(View.VISIBLE);
+
         Subscription subscription = vehicleResource.addVehicle(vehicleDescription)
                 .compose(new DefaultTransformer<Vehicle>())
                 .subscribe(new Action1<Vehicle>() {
+
                     @Override
                     public void call(Vehicle vehicle) {
-                            Toast.makeText(getActivity(), "New vehicle added!", Toast.LENGTH_SHORT).show();
-                            Timber.v("New vehicle added!");
+                        Toast.makeText(getActivity(), "New vehicle added!", Toast.LENGTH_SHORT).show();
+                        Timber.v("New vehicle added!");
+
                         if (VehicleManager.getDefaultVehicleId(getActivity()) == -3)
                             VehicleManager.saveDefaultVehicle(getActivity(), vehicle.getId());
+
+                        progressBar.setVisibility(View.GONE);
                     }
-                }, new CrashCallback(getActivity()));
+
+                }, new CrashCallback(getActivity()) {
+                    @Override
+                    public void call(Throwable throwable) {
+                        super.call(throwable);
+                        progressBar.setVisibility(View.GONE);
+                    }
+                });
+
         subscriptions.add(subscription);
     }
 
 
     public void removeVehicle(int id) {
+
         Subscription subscription = vehicleResource.removeVehicle(id)
                 .compose(new DefaultTransformer<Response>())
                 .subscribe(new Action1<Response>() {
+
                     @Override
                     public void call(Response response) {
                         Toast.makeText(getActivity(), "Vehicle removed!", Toast.LENGTH_SHORT).show();
+
                         //Set default to -3 if the user deletes the last available car
                         if (DataHolder.getInstance().getIsLast() == true)
-                            VehicleManager.saveDefaultVehicle(getActivity(),-3);
+                            VehicleManager.saveDefaultVehicle(getActivity(), -3);
+
+                        progressBar.setVisibility(View.GONE);
                     }
-                }, new CrashCallback(getActivity()));
+
+                }, new CrashCallback(getActivity()) {
+                    @Override
+                    public void call(Throwable throwable) {
+                        super.call(throwable);
+                        progressBar.setVisibility(View.GONE);
+                    }
+                });
+
         subscriptions.add(subscription);
     }
 
     public void updateVehicle(int id, VehicleDescription vehicleDescription) {
+
+        progressBar.setVisibility(View.VISIBLE);
+
         Subscription subscription = vehicleResource.updateVehicle(id, vehicleDescription)
                 .compose(new DefaultTransformer<Vehicle>())
                 .subscribe(new Action1<Vehicle>() {
+
                     @Override
                     public void call(Vehicle vehicle) {
                         Toast.makeText(getActivity(), "Updated vehicle info", Toast.LENGTH_SHORT).show();
                         Timber.v("Updated vehicle info");
+                        progressBar.setVisibility(View.GONE);
                     }
-                }, new CrashCallback(getActivity()));
+
+                }, new CrashCallback(getActivity()) {
+                    @Override
+                    public void call(Throwable throwable) {
+                        super.call(throwable);
+                        progressBar.setVisibility(View.GONE);
+                    }
+                });
+
         subscriptions.add(subscription);
     }
 
@@ -457,50 +455,50 @@ public class VehicleInfoFragment extends SubscriptionFragment {
         //check if car type and plate were entered before updating vehicle info (mandatory fields)
         if ((carPlateEdit.getText() != null && carPlateEdit.length() > 0)
                 && carTypeEdit.getText() != null && carTypeEdit.length() > 0) {
-            if (vehicleId == -1 || vehicleId == -2)
+
+            if (vehicleId == -1 || vehicleId == -2) {
                 addVehicle(vehicleDescription);
-            else if (vehicleId != 0)
+            } else if (vehicleId != 0) {
                 updateVehicle(vehicleId, vehicleDescription);
-        }
-        else
-        //detect which edit text is empty
-        {
-            if (carTypeEdit.getText() == null || carTypeEdit.length() == 0)
+            }
+
+        } else {
+            //detect which edit text is empty
+            if (carTypeEdit.getText() == null || carTypeEdit.length() == 0) {
                 Toast.makeText(getActivity(), "Car Type field is mandatory", Toast.LENGTH_SHORT).show();
-            else if (carPlateEdit.getText() == null || carPlateEdit.length() == 0)
+            } else if (carPlateEdit.getText() == null || carPlateEdit.length() == 0) {
                 Toast.makeText(getActivity(), "Car Plate field is mandatory", Toast.LENGTH_SHORT).show();
+            }
         }
     }
+
     public void setFields() {
-        if (newCarPlate!=null)
+
+        if (newCarPlate != null) {
             carPlateEdit.setText(newCarPlate);
-        else
-        {
+        } else {
             carPlateEdit.setHint(R.string.car_plate_hint);
         }
 
-        if (newCarType!=null)
+        if (newCarType != null) {
             carTypeEdit.setText(newCarType);
-        else
-        {
+        } else {
             carTypeEdit.setHint(R.string.car_type_hint);
         }
 
-        if (newColor != null)
+        if (newColor != null) {
             colorPickerButton.setBackgroundColor(Integer.parseInt(newColor));
-        else
-        {
+        } else {
             colorPickerButton.setBackgroundColor(Color.WHITE);
-            newColor= String.valueOf(Color.WHITE);
+            newColor = String.valueOf(Color.WHITE);
         }
 
-        if (newCarCapacity!=null)
+        if (newCarCapacity != null) {
             capacityPickerButton.setText(String.valueOf(newCarCapacity));
-        else
-        {
+        } else {
             capacityPickerButton.setText("1");
             newCarCapacity = 1;
         }
     }
-    }
+}
 
