@@ -87,6 +87,7 @@ public class GcmConstants {
     public static final String GCM_MSG_FOUND_MATCHES_QUERY_ID = "QUERY_ID";
 
     public static final String GCM_MSG_PASSENGER_AT_DESTINATION = "PASSENGER_AT_DESTINATION";
+    public static final String GCM_MSG_PASSENGER_ENTERED_CAR = "PASSENGER_ENTERED_CAR";
 
     public static final String GCM_MSG_ARRIVAL_TIME_UPDATE = "ARRIVAL_TIME_UPDATE";
 

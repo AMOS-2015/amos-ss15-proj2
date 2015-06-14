@@ -216,6 +216,10 @@ public class GcmManager {
         sendGcmMessageToUser(request.getOffer().getDriver(), GcmConstants.GCM_MSG_PASSENGER_AT_DESTINATION);
     }
 
+    public void sendPassengerEnterCarMsg(JoinTripRequest joinRequest) {
+        sendGcmMessageToUser(joinRequest.getOffer().getDriver(), GcmConstants.GCM_MSG_PASSENGER_ENTERED_CAR);
+    }
+
     public void sendArrivalTimeUpdate(JoinTripRequest request) {
         sendGcmMessageToUser(request.getQuery().getPassenger(), GcmConstants.GCM_MSG_ARRIVAL_TIME_UPDATE,
                 new Pair<>(GcmConstants.GCM_MSG_JOIN_REQUEST_ID, "" + request.getId()));

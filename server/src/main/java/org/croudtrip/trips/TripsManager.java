@@ -429,6 +429,10 @@ public class TripsManager {
     public JoinTripRequest updateJoinRequestPassengerEnterCar(JoinTripRequest joinRequest) {
         JoinTripRequest updatedRequest = new JoinTripRequest(joinRequest, JoinTripStatus.PASSENGER_IN_CAR);
         joinTripRequestDAO.update(updatedRequest);
+
+        // Send GCM to the driver to notify him that the passenger entered the car
+        gcmManager.sendPassengerEnterCarMsg( joinRequest );
+
         return updatedRequest;
     }
 
