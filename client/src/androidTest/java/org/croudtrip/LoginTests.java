@@ -88,6 +88,12 @@ public class LoginTests extends ActivityInstrumentationTestCase2<LoginActivity> 
     }
 
 
+    public void testLogout(){
+        AccountManager.logout(loginActivity, false);
+        assertTrue("User logged out (device)", !AccountManager.isUserLoggedIn(loginActivity));
+    }
+
+
     private String generateRandomString(int length, String allowedChars, String mustHaveChars){
 
         if(mustHaveChars.length() > length){
