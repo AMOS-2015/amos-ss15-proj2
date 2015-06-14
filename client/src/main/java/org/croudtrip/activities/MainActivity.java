@@ -44,7 +44,6 @@ import org.croudtrip.account.AccountManager;
 import org.croudtrip.api.TripsResource;
 import org.croudtrip.api.account.User;
 import org.croudtrip.fragments.JoinTripRequestsFragment;
-import org.croudtrip.fragments.JoinTripResultsFragment;
 import org.croudtrip.fragments.ProfileFragment;
 import org.croudtrip.fragments.SettingsFragment;
 import org.croudtrip.fragments.join.JoinDispatchFragment;
@@ -110,11 +109,6 @@ public class MainActivity extends AbstractRoboDrawerActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-
-
-        LocalBroadcastManager.getInstance(this).registerReceiver(driverAcceptedReceiver,
-                new IntentFilter(Constants.EVENT_DRIVER_ACCEPTED));
     }
 
 
@@ -221,26 +215,8 @@ public class MainActivity extends AbstractRoboDrawerActivity {
 
     @Override
     protected void onDestroy() {
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(driverAcceptedReceiver);
         super.onDestroy();
     }
-
-
-    private BroadcastReceiver driverAcceptedReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            Bundle args = intent.getExtras();
-
-            Fragment frag = new JoinTripResultsFragment();
-            frag.setArguments(args);
-
-            getSectionList().get(0).setTarget( frag );
-            getSectionList().get(0).setTitle(getString(R.string.menu_my_trip));
-            setFragment( frag, getString(R.string.menu_my_trip));
-        }
-    };
-
-
 
     private boolean GPSavailable() {
         LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);

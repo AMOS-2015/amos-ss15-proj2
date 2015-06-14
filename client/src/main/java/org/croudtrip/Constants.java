@@ -36,7 +36,6 @@ public class Constants {
     public final static String SHARED_PREF_KEY_PROFILE_IMAGE_URI = "profileImg";
 
     public final static String EVENT_JOIN_REQUEST_EXPIRED = "request_expired";
-    public final static String EVENT_DRIVER_ACCEPTED = "driver_accepted";
     public final static String EVENT_CHANGE_JOIN_UI = "change_join_ui";
     public final static String EVENT_PASSENGER_CANCELLED_TRIP = "passenger_cancelled_trip";
     public final static String EVENT_PASSENGER_ENTERED_CAR = "passenger_entered_car";

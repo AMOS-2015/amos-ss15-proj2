@@ -37,7 +37,6 @@ import org.croudtrip.api.TripsResource;
 import org.croudtrip.api.gcm.GcmConstants;
 import org.croudtrip.api.trips.JoinTripRequest;
 import org.croudtrip.api.trips.RunningTripQuery;
-import org.croudtrip.fragments.JoinTripResultsFragment;
 import org.croudtrip.fragments.join.JoinDispatchFragment;
 import org.croudtrip.utils.LifecycleHandler;
 
@@ -428,59 +427,6 @@ public class GcmIntentService extends RoboIntentService {
         notification.flags |= Notification.FLAG_AUTO_CANCEL;
 
         notificationManager.notify(notificationId, notification);
-    }
-
-    /*
-    Should be called if the driver accepted this passenger.
-     */
-    private void handleDriverAccepted( JoinTripRequest request ) {
-        SharedPreferences prefs = getApplicationContext().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.putBoolean(Constants.SHARED_PREF_KEY_SEARCHING, false);
-        editor.putBoolean(Constants.SHARED_PREF_KEY_ACCEPTED, true);
-        editor.putLong(Constants.SHARED_PREF_KEY_TRIP_ID, request.getId());
-        editor.apply();
-
-        if( LifecycleHandler.isApplicationInForeground() ) {
-            Intent startingIntent = new Intent(Constants.EVENT_DRIVER_ACCEPTED);
-            ObjectMapper mapper = new ObjectMapper();
-            startingIntent.putExtra(JoinTripResultsFragment.KEY_ACTION_TO_RUN, JoinTripResultsFragment.ACTION_SHOW_RESULT);
-            try {
-                startingIntent.putExtra( JoinTripResultsFragment.KEY_JOIN_TRIP_REQUEST_RESULT, mapper.writeValueAsString(request) );
-            } catch (JsonProcessingException e) {
-                Timber.e("Could not map join trip result");
-                e.printStackTrace();
-            }
-            LocalBroadcastManager.getInstance(this).sendBroadcast(startingIntent);
-        }
-    }
-
-    /*
-    Should be called if the background search for "join trips" found something.
-     */
-    private void handleDriversFound( RunningTripQuery query ) {
-        SharedPreferences prefs = getApplicationContext().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.putBoolean(Constants.SHARED_PREF_KEY_SEARCHING, false);
-        editor.putBoolean(Constants.SHARED_PREF_KEY_ACCEPTED, false);
-        editor.putLong(Constants.SHARED_PREF_KEY_QUERY_ID, -1);
-        editor.apply();
-
-        if( LifecycleHandler.isApplicationInForeground() ) {
-
-            Intent startingIntent = new Intent(Constants.EVENT_DRIVER_ACCEPTED);
-
-            // fill the arguments for the started fragment (main activity will dispatch to correct fragment) with information about the requested search
-            // adding these arguments we can start the query immediately
-            startingIntent.putExtra(JoinTripResultsFragment.KEY_ACTION_TO_RUN, JoinTripResultsFragment.ACTION_START_BACKGROUND_SEARCH);
-            startingIntent.putExtra(JoinTripResultsFragment.KEY_CURRENT_LOCATION_LATITUDE, query.getQuery().getStartLocation().getLat());
-            startingIntent.putExtra(JoinTripResultsFragment.KEY_CURRENT_LOCATION_LONGITUDE, query.getQuery().getStartLocation().getLng());
-            startingIntent.putExtra(JoinTripResultsFragment.KEY_DESTINATION_LATITUDE, query.getQuery().getDestinationLocation().getLat());
-            startingIntent.putExtra(JoinTripResultsFragment.KEY_DESTINATION_LONGITUDE, query.getQuery().getDestinationLocation().getLng());
-            startingIntent.putExtra(JoinTripResultsFragment.KEY_MAX_WAITING_TIME, query.getQuery().getMaxWaitingTimeInSeconds());
-
-            LocalBroadcastManager.getInstance(this).sendBroadcast(startingIntent);
-        }
     }
 
     public void handleJoinRequestExpired () {
