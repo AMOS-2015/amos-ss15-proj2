@@ -29,6 +29,7 @@ import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -72,6 +73,7 @@ public class JoinResultsFragment extends SubscriptionFragment implements GoogleA
     @InjectView(R.id.btn_joint_trip_stop)           private Button btnStop;
     @InjectView(R.id.tv_join_trip_results_caption)  private TextView caption;
     @InjectView(R.id.rv_join_trip_results)          private RecyclerView recyclerView;
+    @InjectView(R.id.pb_join_trip_driver_results)   private ProgressBar progressBar;
 
     @Inject TripsResource tripsResource;
 
@@ -157,6 +159,9 @@ public class JoinResultsFragment extends SubscriptionFragment implements GoogleA
 
             @Override
             public void onItemClicked(View view, int position) {
+
+                progressBar.setVisibility(View.VISIBLE);
+
                 TripReservation reservation = adapter.getItem(position);
                 Timber.d("Clicked on reservation " + reservation.getId());
 
@@ -178,6 +183,7 @@ public class JoinResultsFragment extends SubscriptionFragment implements GoogleA
 
                                 Intent startingIntent = new Intent(Constants.EVENT_CHANGE_JOIN_UI);
                                 LocalBroadcastManager.getInstance(getActivity()).sendBroadcast(startingIntent);
+                                progressBar.setVisibility(View.GONE);
                             }
 
                         }, new Action1<Throwable>() {
@@ -187,7 +193,7 @@ public class JoinResultsFragment extends SubscriptionFragment implements GoogleA
                             public void call(Throwable throwable) {
                                 Timber.e("Error when trying to join a trip: " + throwable.getMessage());
                                 Toast.makeText(getActivity(), R.string.join_request_sending_error, Toast.LENGTH_SHORT).show();
-
+                                progressBar.setVisibility(View.GONE);
                                 // TODO: Refresh this fragment. Current reservation could already
                                 // have been removed on the server (we don't know when the error happened).
 

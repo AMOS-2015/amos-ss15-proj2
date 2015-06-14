@@ -32,10 +32,23 @@
             android:layout_marginBottom="@dimen/activity_vertical_margin"
             android:textAppearance="@android:style/TextAppearance.Large"/>
 
-        <android.support.v7.widget.RecyclerView
-            android:id="@+id/rv_join_trip_results"
+        <FrameLayout
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content">
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/rv_join_trip_results"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+
+            <ProgressBar
+                android:id="@+id/pb_join_trip_driver_results"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                android:layout_gravity = "center_vertical|center_horizontal"
+                style="@android:style/Widget.ProgressBar.Inverse"/>
+        </FrameLayout>
     </LinearLayout>
 
     <LinearLayout
