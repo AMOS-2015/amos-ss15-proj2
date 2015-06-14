@@ -31,7 +31,7 @@ import org.croudtrip.api.account.User;
 import org.croudtrip.api.directions.RouteLocation;
 import org.croudtrip.api.trips.JoinTripRequest;
 import org.croudtrip.api.trips.TripQuery;
-import org.croudtrip.fragments.JoinTripRequestsFragment;
+import org.croudtrip.fragments.join.JoinTripRequestsFragment;
 
 import java.io.IOException;
 import java.util.ArrayList;
