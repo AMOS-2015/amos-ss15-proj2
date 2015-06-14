@@ -81,7 +81,7 @@
     <string name="join_trip_results_waiting">We try our best to find trips for you! Hang in there!</string>
     <string name="join_trip_results_stop">Stop searching</string>
     <string name="join_trip_results_canceled">Searching for trips stopped</string>
-    <string name="join_trip_results_sending">You are sending a request</string>
+    <string name="join_trip_results_sending">You have contacted the driver&#8230; waiting for response</string>
     <string name="join_trip_results_pickup">Driver picks you up at approximately</string>
     <string name="join_trip_results_price">Price: %1$s,%2$s€</string>
     <string name="join_trip_results_happy">Have a nice trip</string>
