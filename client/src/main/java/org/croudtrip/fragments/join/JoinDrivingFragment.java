@@ -218,7 +218,6 @@ public class JoinDrivingFragment extends SubscriptionFragment {
                 //Handle here all the stuff that happens when the user cancels the trip
                 Toast.makeText(getActivity(), getResources().getString(R.string.my_trip_driver_cancel_trip), Toast.LENGTH_SHORT).show();
                 updateTrip(JoinTripRequestUpdateType.CANCEL, progressBarCancel);
-                sendUserBackToSearch();
             }
         });
 
@@ -360,6 +359,10 @@ public class JoinDrivingFragment extends SubscriptionFragment {
 
                         if(progressBar != null) {
                             progressBar.setVisibility(View.GONE);
+                        }
+
+                        if (updateType.equals(JoinTripRequestUpdateType.CANCEL)) {
+                            sendUserBackToSearch();
                         }
                     }
                 }, new CrashCallback(getActivity()) {

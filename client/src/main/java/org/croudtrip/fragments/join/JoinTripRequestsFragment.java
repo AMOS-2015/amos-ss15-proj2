@@ -12,7 +12,7 @@
  *    If not, see http://www.gnu.org/licenses/.
  */
 
-package org.croudtrip.fragments;
+package org.croudtrip.fragments.join;
 
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -29,6 +29,7 @@ import org.croudtrip.api.TripsResource;
 import org.croudtrip.api.trips.JoinTripRequest;
 import org.croudtrip.api.trips.JoinTripRequestUpdate;
 import org.croudtrip.api.trips.JoinTripRequestUpdateType;
+import org.croudtrip.fragments.SubscriptionFragment;
 import org.croudtrip.trip.JoinTripRequestsAdapter;
 import org.croudtrip.trip.OnDiversionUpdateListener;
 import org.croudtrip.utils.CrashCallback;

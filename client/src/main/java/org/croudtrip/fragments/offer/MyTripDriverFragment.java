@@ -58,7 +58,6 @@ import org.croudtrip.api.trips.TripOffer;
 import org.croudtrip.api.trips.TripOfferDescription;
 import org.croudtrip.api.trips.TripOfferUpdate;
 import org.croudtrip.api.trips.UserWayPoint;
-import org.croudtrip.fragments.OfferTripFragment;
 import org.croudtrip.fragments.SubscriptionFragment;
 import org.croudtrip.location.LocationUpdater;
 import org.croudtrip.trip.MyTripDriverPassengersAdapter;

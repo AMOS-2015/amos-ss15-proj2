@@ -56,8 +56,8 @@ import org.croudtrip.Constants;
 import org.croudtrip.MainApplication;
 import org.croudtrip.R;
 import org.croudtrip.db.DatabaseHelper;
-import org.croudtrip.fragments.OfferTripFragment;
 import org.croudtrip.fragments.SubscriptionFragment;
+import org.croudtrip.fragments.offer.DispatchOfferTripFragment;
 import org.croudtrip.location.LocationUpdater;
 import org.croudtrip.location.MyAutoCompleteTextView;
 import org.croudtrip.location.PlaceAutocompleteAdapter;
@@ -363,7 +363,7 @@ public class JoinSearchFragment extends SubscriptionFragment implements GoogleAp
             @Override
             public void onClick(View v) {
                 MaterialNavigationDrawer drawer = (MaterialNavigationDrawer) getActivity();
-                drawer.setFragment(OfferTripFragment.get(), getString(R.string.menu_offer_trip));
+                drawer.setFragment(new DispatchOfferTripFragment(), getString(R.string.menu_offer_trip));
                 MaterialSection section = drawer.getSectionByTitle(getString(R.string.menu_offer_trip));
                 drawer.setSection(section);
             }

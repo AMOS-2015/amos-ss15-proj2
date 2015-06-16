@@ -27,7 +27,6 @@ import android.view.ViewGroup;
 
 import org.croudtrip.Constants;
 import org.croudtrip.R;
-import org.croudtrip.fragments.OfferTripFragment;
 import org.croudtrip.fragments.SubscriptionFragment;
 
 import java.lang.reflect.Field;
@@ -100,7 +99,7 @@ public class DispatchOfferTripFragment extends SubscriptionFragment {
             // OFFER TRIP -> Show the OfferTripFragment
 
             if (args != null) {
-                offerTripFragment = new MyTripDriverFragment();
+                offerTripFragment = new OfferTripFragment();
                 offerTripFragment.setArguments(args);
             }
 

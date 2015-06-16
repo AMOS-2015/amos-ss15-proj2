@@ -12,7 +12,7 @@
  *    If not, see http://www.gnu.org/licenses/.
  */
 
-package org.croudtrip.fragments;
+package org.croudtrip.fragments.offer;
 
 import android.app.Activity;
 import android.app.Dialog;
@@ -63,7 +63,8 @@ import org.croudtrip.api.TripsResource;
 import org.croudtrip.api.VehicleResource;
 import org.croudtrip.api.account.Vehicle;
 import org.croudtrip.db.DatabaseHelper;
-import org.croudtrip.fragments.offer.MyTripDriverFragment;
+import org.croudtrip.fragments.SubscriptionFragment;
+import org.croudtrip.fragments.VehicleInfoFragment;
 import org.croudtrip.location.LocationUpdater;
 import org.croudtrip.location.MyAutoCompleteTextView;
 import org.croudtrip.location.PlaceAutocompleteAdapter;
