@@ -20,9 +20,10 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.pnikosis.materialishprogress.ProgressWheel;
 
 import org.croudtrip.R;
 import org.croudtrip.api.TripsResource;
@@ -64,7 +65,7 @@ public class JoinTripRequestsFragment extends SubscriptionFragment {
     @InjectView(R.id.rv_join_trip_requests)
     private RecyclerView recyclerView;
     @InjectView(R.id.pb_join_trip_requests)
-    private ProgressBar progressBar;
+    private ProgressWheel progressBar;
     @InjectView(R.id.tv_join_trip_requests_error)
     private TextView error;
 

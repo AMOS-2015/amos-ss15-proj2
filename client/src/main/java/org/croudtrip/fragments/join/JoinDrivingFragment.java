@@ -33,11 +33,11 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.pnikosis.materialishprogress.ProgressWheel;
 import com.squareup.picasso.Picasso;
 
 import org.croudtrip.Constants;
@@ -91,9 +91,9 @@ public class JoinDrivingFragment extends SubscriptionFragment {
     @InjectView(R.id.card_icon)                 private ImageView ivCardIcon;
     @InjectView(R.id.nfc_icon)                  private ImageView ivNfcIcon;
 
-    @InjectView(R.id.pb_join_trip_driving_reached_destination) private ProgressBar progressBarDest;
-    @InjectView(R.id.pb_join_trip_driving_report) private ProgressBar progressBarReport;
-    @InjectView(R.id.pb_join_trip_driving_cancel) private ProgressBar progressBarCancel;
+    @InjectView(R.id.pb_join_trip_driving_reached_destination) private ProgressWheel progressBarDest;
+    @InjectView(R.id.pb_join_trip_driving_report) private ProgressWheel progressBarReport;
+    @InjectView(R.id.pb_join_trip_driving_cancel) private ProgressWheel progressBarCancel;
 
     @Inject TripsResource tripsResource;
 
@@ -342,7 +342,7 @@ public class JoinDrivingFragment extends SubscriptionFragment {
     /*
     Send the new status of the trip to the server. The status may be canceled, entered the car and left the car
      */
-    private void updateTrip(final JoinTripRequestUpdateType updateType, final ProgressBar progressBar) {
+    private void updateTrip(final JoinTripRequestUpdateType updateType, final ProgressWheel progressBar) {
 
         if(progressBar != null) {
             progressBar.setVisibility(View.VISIBLE);

@@ -123,6 +123,7 @@ dependencies {
     compile 'com.larswerkman:HoloColorPicker:1.5'
     compile 'com.squareup.picasso:picasso:2.4.0'
     compile 'com.github.navasmdc:MaterialDesign:1.5@aar'
+    compile('com.pnikosis:materialish-progress:1.5')
     compile('com.crashlytics.sdk.android:crashlytics:2.3.2@aar') {
         transitive = true;
     }

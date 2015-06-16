@@ -15,13 +15,15 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:fab="http://schemas.android.com/apk/res-auto"
+    xmlns:wheel="http://schemas.android.com/apk/res-auto"
     android:id="@+id/layout_join_trip"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    android:paddingBottom="@dimen/activity_vertical_margin" tools:context=".MainActivity">
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    tools:context=".MainActivity">
 
     <LinearLayout
         android:layout_width="fill_parent"
@@ -50,13 +52,14 @@
             android:layout_gravity="center_horizontal"
             android:gravity="center">
 
-            <ProgressBar
+            <com.pnikosis.materialishprogress.ProgressWheel
                 android:id="@+id/pb_join_trip_destination"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="25dp"
+                android:layout_height="25dp"
+                wheel:matProg_barColor="@color/primary_light"
+                wheel:matProg_progressIndeterminate="true"
                 android:visibility="gone"
-                android:layout_gravity = "center_vertical|center_horizontal"
-                style="@android:style/Widget.ProgressBar.Small.Inverse"/>
+                android:layout_gravity = "center_vertical|center_horizontal"/>
 
             <TextView
                 android:layout_width="wrap_content"

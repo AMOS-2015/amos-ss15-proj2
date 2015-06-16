@@ -14,10 +14,10 @@
 
 package org.croudtrip.fragments;
 
-import android.support.v4.app.Fragment;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -28,10 +28,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.getbase.floatingactionbutton.FloatingActionButton;
+import com.pnikosis.materialishprogress.ProgressWheel;
 
 import org.croudtrip.R;
 import org.croudtrip.account.AccountManager;
@@ -75,7 +75,7 @@ public class ProfileFragment extends SubscriptionFragment {
     private RecyclerView recyclerView;
 
     @InjectView(R.id.pb_profile)
-    private ProgressBar progressBar;
+    private ProgressWheel progressBar;
 
     @Inject
     private VehicleResource vehicleResource;

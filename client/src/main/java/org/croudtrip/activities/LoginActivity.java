@@ -25,9 +25,10 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.pnikosis.materialishprogress.ProgressWheel;
 
 import org.croudtrip.R;
 import org.croudtrip.account.AccountManager;
@@ -83,7 +84,7 @@ public class LoginActivity extends RoboActionBarActivity {
     @InjectView(R.id.btn_register)
     private Button registerButton;
     @InjectView(R.id.pb_register)
-    private ProgressBar registerProgressBar;
+    private ProgressWheel registerProgressBar;
     @InjectView(R.id.et_firstName)
     private EditText registerFirstName;
     @InjectView(R.id.et_lastName)
@@ -98,7 +99,7 @@ public class LoginActivity extends RoboActionBarActivity {
     @InjectView(R.id.btn_login)
     private Button loginButton;
     @InjectView(R.id.pb_login)
-    private ProgressBar loginProgressBar;
+    private ProgressWheel loginProgressBar;
     @InjectView(R.id.tv_invalid_login)
     private TextView loginErrorTextView;
     @InjectView(R.id.et_login_email)

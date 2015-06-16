@@ -37,7 +37,6 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.LinearLayout;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -54,6 +53,7 @@ import com.google.android.gms.location.places.Places;
 import com.google.android.gms.location.places.ui.PlacePicker;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
+import com.pnikosis.materialishprogress.ProgressWheel;
 
 import org.croudtrip.Constants;
 import org.croudtrip.MainApplication;
@@ -114,7 +114,7 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
     @InjectView(R.id.diversion) private TextView tv_diversion;
     @InjectView(R.id.price) private TextView tv_price;
     @InjectView(R.id.my_car) private Button myCar;
-    @InjectView(R.id.pb_offer_trip_destination) private ProgressBar progressBar;
+    @InjectView(R.id.pb_offer_trip_destination) private ProgressWheel progressBar;
     @InjectView(R.id.layout_load_location) private LinearLayout loadLocationLayout;
     @InjectView(R.id.offer) private Button btn_offer;
 
