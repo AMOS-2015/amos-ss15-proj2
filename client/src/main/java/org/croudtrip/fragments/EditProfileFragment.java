@@ -33,12 +33,12 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.NumberPicker;
-import android.widget.ProgressBar;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Toast;
 
 import com.getbase.floatingactionbutton.FloatingActionButton;
+import com.pnikosis.materialishprogress.ProgressWheel;
 
 import org.croudtrip.R;
 import org.croudtrip.account.AccountManager;
@@ -76,7 +76,7 @@ public class EditProfileFragment extends SubscriptionFragment {
     private UsersResource usersResource;
 
     @InjectView(R.id.pb_edit_profile)
-    private ProgressBar progressBar;
+    private ProgressWheel progressBar;
 
 
     //************************* Variables ***************************//

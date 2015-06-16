@@ -14,6 +14,7 @@
   -->
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:wheel="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
@@ -51,12 +52,13 @@
                     android:src="@color/transparent" />
             </RelativeLayout>
 
-            <ProgressBar
+            <com.pnikosis.materialishprogress.ProgressWheel
                 android:id="@+id/pb_my_trip_map_progressBar"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity = "center_vertical|center_horizontal"
-                style="@android:style/Widget.ProgressBar.Inverse"/>
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                wheel:matProg_barColor="@color/primary_dark"
+                wheel:matProg_progressIndeterminate="true"
+                android:layout_gravity = "center_vertical|center_horizontal"/>
         </FrameLayout>
 
         <LinearLayout
@@ -77,13 +79,14 @@
                     android:enabled="false"
                     android:text="@string/my_trip_driver_cancel_trip"/>
 
-                <ProgressBar
+                <com.pnikosis.materialishprogress.ProgressWheel
                     android:id="@+id/pb_my_trip_cancel"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
                     android:visibility="gone"
-                    android:layout_gravity = "center_vertical|center_horizontal"
-                    style="@android:style/Widget.ProgressBar.Small.Inverse"/>
+                    android:layout_width="25dp"
+                    android:layout_height="25dp"
+                    wheel:matProg_barColor="@color/primary_light"
+                    wheel:matProg_progressIndeterminate="true"
+                    android:layout_gravity = "center_vertical|center_horizontal"/>
             </FrameLayout>
 
             <FrameLayout
@@ -98,13 +101,14 @@
                     android:enabled="false"
                     android:text="@string/my_trip_driver_finish_trip"/>
 
-                <ProgressBar
+                <com.pnikosis.materialishprogress.ProgressWheel
                     android:id="@+id/pb_my_trip_finish"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="25dp"
+                    android:layout_height="25dp"
                     android:visibility="gone"
-                    android:layout_gravity = "center_vertical|center_horizontal"
-                    style="@android:style/Widget.ProgressBar.Small.Inverse"/>
+                    wheel:matProg_barColor="@color/primary_light"
+                    wheel:matProg_progressIndeterminate="true"
+                    android:layout_gravity = "center_vertical|center_horizontal"/>
             </FrameLayout>
         </LinearLayout>
         
@@ -139,12 +143,13 @@
             style="?android:attr/listSeparatorTextViewStyle"/>
 
 
-        <ProgressBar
+        <com.pnikosis.materialishprogress.ProgressWheel
             android:id="@+id/pb_my_trip_passengers_progressBar"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
             android:layout_gravity = "center_vertical|center_horizontal"
-            style="@android:style/Widget.ProgressBar.Inverse"/>
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            wheel:matProg_barColor="@color/primary_dark"
+            wheel:matProg_progressIndeterminate="true"/>
 
     </LinearLayout>
 

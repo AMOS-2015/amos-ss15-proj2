@@ -34,7 +34,6 @@ import android.view.ViewGroup;
 import android.view.ViewManager;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdate;
@@ -46,6 +45,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.maps.android.PolyUtil;
+import com.pnikosis.materialishprogress.ProgressWheel;
 
 import org.croudtrip.Constants;
 import org.croudtrip.R;
@@ -107,10 +107,10 @@ public class MyTripDriverFragment extends SubscriptionFragment {
     @InjectView(R.id.rv_my_trip_driver_passengers)
     private RecyclerView recyclerView;
 
-    private ProgressBar mapProgressBar;
-    private ProgressBar passengersProgressBar;
-    private ProgressBar finishProgressBar;
-    private ProgressBar cancelProgressBar;
+    private ProgressWheel mapProgressBar;
+    private ProgressWheel passengersProgressBar;
+    private ProgressWheel finishProgressBar;
+    private ProgressWheel cancelProgressBar;
 
     @InjectView(R.id.iv_transparent_image)
     private ImageView transparentImageView;
@@ -160,10 +160,10 @@ public class MyTripDriverFragment extends SubscriptionFragment {
         View header = view.findViewById(R.id.ll_my_trip_driver_info);
         adapter = new MyTripDriverPassengersAdapter(header);
 
-        mapProgressBar = (ProgressBar) adapter.getHeader().findViewById(R.id.pb_my_trip_map_progressBar);
-        passengersProgressBar = (ProgressBar) adapter.getHeader().findViewById(R.id.pb_my_trip_passengers_progressBar);
-        finishProgressBar = (ProgressBar) adapter.getHeader().findViewById(R.id.pb_my_trip_finish);
-        cancelProgressBar = (ProgressBar) adapter.getHeader().findViewById(R.id.pb_my_trip_cancel);
+        mapProgressBar = (ProgressWheel) adapter.getHeader().findViewById(R.id.pb_my_trip_map_progressBar);
+        passengersProgressBar = (ProgressWheel) adapter.getHeader().findViewById(R.id.pb_my_trip_passengers_progressBar);
+        finishProgressBar = (ProgressWheel) adapter.getHeader().findViewById(R.id.pb_my_trip_finish);
+        cancelProgressBar = (ProgressWheel) adapter.getHeader().findViewById(R.id.pb_my_trip_cancel);
 
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getActivity());
         recyclerView.setLayoutManager(layoutManager);

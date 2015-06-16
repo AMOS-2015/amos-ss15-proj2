@@ -29,12 +29,12 @@ import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.pnikosis.materialishprogress.ProgressWheel;
 
 import org.croudtrip.Constants;
 import org.croudtrip.R;
@@ -73,7 +73,7 @@ public class JoinResultsFragment extends SubscriptionFragment implements GoogleA
     @InjectView(R.id.btn_joint_trip_stop)           private Button btnStop;
     @InjectView(R.id.tv_join_trip_results_caption)  private TextView caption;
     @InjectView(R.id.rv_join_trip_results)          private RecyclerView recyclerView;
-    @InjectView(R.id.pb_join_trip_driver_results)   private ProgressBar progressBar;
+    @InjectView(R.id.pb_join_trip_driver_results)   private ProgressWheel progressBar;
 
     @Inject TripsResource tripsResource;
 

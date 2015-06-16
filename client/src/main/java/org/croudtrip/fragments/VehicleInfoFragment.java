@@ -28,11 +28,11 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.NumberPicker;
-import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.larswerkman.holocolorpicker.ColorPicker;
 import com.larswerkman.holocolorpicker.SVBar;
+import com.pnikosis.materialishprogress.ProgressWheel;
 
 import org.croudtrip.R;
 import org.croudtrip.account.AccountManager;
@@ -71,7 +71,7 @@ public class VehicleInfoFragment extends SubscriptionFragment {
     @Inject
     private VehicleResource vehicleResource;
 
-    private ProgressBar progressBar;
+    private ProgressWheel progressBar;
 
     private String newCarType, newCarPlate, newColor;
     private Integer newCarCapacity;
@@ -93,7 +93,7 @@ public class VehicleInfoFragment extends SubscriptionFragment {
 
         setHasOptionsMenu(true);
         View view = inflater.inflate(R.layout.fragment_vehicle_info, container, false);
-        progressBar = (ProgressBar) view.findViewById(R.id.pb_add_vehicle);
+        progressBar = (ProgressWheel) view.findViewById(R.id.pb_add_vehicle);
 
         if (vehicleId != -1)
             getVehicle(vehicleId);   //Fetches vehicle info from the server and updates the corresponding local variables

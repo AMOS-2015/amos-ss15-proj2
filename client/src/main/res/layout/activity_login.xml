@@ -14,8 +14,8 @@
   ~    If not, see http://www.gnu.org/licenses/.
   -->
 
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:wheel="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/background">
@@ -107,14 +107,14 @@
                 </LinearLayout>
             </RelativeLayout>
 
-            <ProgressBar
+            <com.pnikosis.materialishprogress.ProgressWheel
                 android:id="@+id/pb_register"
-                style="@android:style/Widget.ProgressBar.Inverse"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                wheel:matProg_barColor="@color/primary_light"
+                wheel:matProg_progressIndeterminate="true"
                 android:layout_gravity = "center_vertical|center_horizontal"
-                android:visibility="gone">
-            </ProgressBar>
+                android:visibility="gone"/>
         </FrameLayout>
 
         <!-- Wrapper login -->
@@ -189,14 +189,14 @@
                         </LinearLayout>
                 </ScrollView>
             </LinearLayout>
-            <ProgressBar
+            <com.pnikosis.materialishprogress.ProgressWheel
                 android:id="@+id/pb_login"
-                style="@android:style/Widget.ProgressBar.Inverse"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity = "center_vertical|center_horizontal"
-                android:visibility="gone">
-            </ProgressBar>
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                wheel:matProg_barColor="@color/primary_light"
+                wheel:matProg_progressIndeterminate="true"
+                android:visibility="gone"
+                android:layout_gravity = "center_vertical|center_horizontal"/>
         </FrameLayout>
 
 

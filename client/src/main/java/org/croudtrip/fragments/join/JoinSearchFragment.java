@@ -33,7 +33,6 @@ import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.Button;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -51,6 +50,7 @@ import com.google.android.gms.location.places.Places;
 import com.google.android.gms.location.places.ui.PlacePicker;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
+import com.pnikosis.materialishprogress.ProgressWheel;
 
 import org.croudtrip.Constants;
 import org.croudtrip.MainApplication;
@@ -96,7 +96,7 @@ public class JoinSearchFragment extends SubscriptionFragment implements GoogleAp
     @InjectView(R.id.destination) private MyAutoCompleteTextView tv_destination;
     @InjectView(R.id.slider_waitingTime) private Slider slider_waitingTime;
     @InjectView(R.id.waitingTime) private TextView tv_waitingTime;
-    @InjectView(R.id.pb_join_trip_destination) private ProgressBar progressBar;
+    @InjectView(R.id.pb_join_trip_destination) private ProgressWheel progressBar;
 
 
     @Inject
