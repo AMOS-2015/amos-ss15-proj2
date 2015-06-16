@@ -180,6 +180,7 @@
     <string name="load_passengers_failed">Loading your passengers failed. Please try again.</string>
 
     <string name="crash_popup_title">Something went wrong...</string>
+    <string name="load_location">We are waiting for your location.</string>
 
 
 </resources>

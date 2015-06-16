@@ -33,6 +33,7 @@ import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -62,6 +63,7 @@ import org.croudtrip.location.LocationUpdater;
 import org.croudtrip.location.MyAutoCompleteTextView;
 import org.croudtrip.location.PlaceAutocompleteAdapter;
 import org.croudtrip.utils.CrashPopup;
+import org.croudtrip.utils.DefaultTransformer;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -74,8 +76,10 @@ import it.neokree.materialnavigationdrawer.MaterialNavigationDrawer;
 import it.neokree.materialnavigationdrawer.elements.MaterialSection;
 import pl.charmas.android.reactivelocation.ReactiveLocationProvider;
 import roboguice.inject.InjectView;
+import rx.Observable;
 import rx.Subscription;
 import rx.functions.Action1;
+import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
 /**
@@ -97,6 +101,8 @@ public class JoinSearchFragment extends SubscriptionFragment implements GoogleAp
     @InjectView(R.id.slider_waitingTime) private Slider slider_waitingTime;
     @InjectView(R.id.waitingTime) private TextView tv_waitingTime;
     @InjectView(R.id.pb_join_trip_destination) private ProgressWheel progressBar;
+    @InjectView(R.id.layout_load_location) private LinearLayout loadLocationLayout;
+    @InjectView(R.id.join) private Button btn_join;
 
 
     @Inject
@@ -235,7 +241,6 @@ public class JoinSearchFragment extends SubscriptionFragment implements GoogleAp
         /*
         Retrieve starting position, save destination and try to join a trip
          */
-        Button btn_join = (Button) view.findViewById(R.id.join);
         btn_join.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -310,6 +315,11 @@ public class JoinSearchFragment extends SubscriptionFragment implements GoogleAp
                     return;
                 }
 
+                if( currentLocation == null ) {
+                    Toast.makeText(getActivity().getApplicationContext(), R.string.offer_trip_no_location, Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
                 /*
                 Save or update destination in database
                  */
@@ -369,6 +379,42 @@ public class JoinSearchFragment extends SubscriptionFragment implements GoogleAp
             }
         });
 
+
+        // if there is currently no position available disable the offer trip button
+        if( locationUpdater.getLastLocation() == null && specifiedLocation == null ) {
+            btn_join.setEnabled( false );
+            loadLocationLayout.setVisibility(View.VISIBLE);
+            Subscription sub = locationProvider.getLastKnownLocation()
+                    /* JUST FOR TESTING!!!
+                            .observeOn( Schedulers.newThread() )
+                            .subscribeOn(Schedulers.newThread())
+                            .flatMap(new Func1<Location, Observable<Location>>() {
+                                @Override
+                                public Observable<Location> call(Location location) {
+                                    try {
+                                        Thread.sleep(4000);
+                                    } catch (InterruptedException e) {
+                                        e.printStackTrace();
+                                    }
+                                    return Observable.just(location);
+                                }
+                            })*/
+                    .compose(new DefaultTransformer<Location>())
+                    .subscribe( new Action1<Location>() {
+                        @Override
+                        public void call(Location location) {
+                            if( location == null )
+                                return;
+
+                            locationUpdater.setLastLocation( location );
+                            btn_join.setEnabled(true);
+                            loadLocationLayout.setVisibility(View.GONE);
+                        }
+                    });
+
+            subscriptions.add( sub );
+        }
+
     }
 
 
@@ -382,6 +428,9 @@ public class JoinSearchFragment extends SubscriptionFragment implements GoogleAp
             l.setLatitude(place.getLatLng().latitude);
             l.setLongitude(place.getLatLng().longitude);
             specifiedLocation = l;
+
+            btn_join.setEnabled(true);
+            loadLocationLayout.setVisibility(View.VISIBLE);
         } else {
             super.onActivityResult(requestCode, resultCode, data);
         }

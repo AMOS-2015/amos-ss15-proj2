@@ -97,8 +97,33 @@
             android:id="@+id/join"
             android:layout_gravity="center_horizontal" />
 
-    </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_gravity="center_horizontal"
+            android:gravity="center"
+            android:visibility="gone"
+            android:id="@+id/layout_load_location">
 
+            <com.pnikosis.materialishprogress.ProgressWheel
+                android:id="@+id/pb_load_location"
+                android:layout_width="25dp"
+                android:layout_height="25dp"
+                wheel:matProg_barColor="@color/primary_light"
+                wheel:matProg_progressIndeterminate="true"
+                android:layout_gravity = "center_vertical|center_horizontal"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/text"
+                android:id="@+id/tv_load_location"
+                android:minWidth="200dp"
+                android:text="@string/load_location"/>
+        </LinearLayout>
+
+    </LinearLayout>
 
     <com.getbase.floatingactionbutton.FloatingActionButton
         android:id="@+id/btn_offer_trip"

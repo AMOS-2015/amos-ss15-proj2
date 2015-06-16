@@ -85,8 +85,10 @@ import pl.charmas.android.reactivelocation.ReactiveLocationProvider;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
 import roboguice.inject.InjectView;
+import rx.Observable;
 import rx.Subscription;
 import rx.functions.Action1;
+import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 import timber.log.Timber;
 
@@ -414,8 +416,22 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
         if( locationUpdater.getLastLocation() == null && specifiedLocation == null ) {
             btn_offer.setEnabled( false );
             loadLocationLayout.setVisibility(View.VISIBLE);
-            locationProvider.getLastKnownLocation()
-                            .compose( new DefaultTransformer<Location>())
+            Subscription sub = locationProvider.getLastKnownLocation()
+                            /* JUST FOR TESTING!!!
+                            .observeOn( Schedulers.newThread() )
+                            .subscribeOn(Schedulers.newThread())
+                            .flatMap(new Func1<Location, Observable<Location>>() {
+                                @Override
+                                public Observable<Location> call(Location location) {
+                                    try {
+                                        Thread.sleep(4000);
+                                    } catch (InterruptedException e) {
+                                        e.printStackTrace();
+                                    }
+                                    return Observable.just(location);
+                                }
+                            })*/
+                            .compose(new DefaultTransformer<Location>())
                             .subscribe( new Action1<Location>() {
                                 @Override
                                 public void call(Location location) {
@@ -427,6 +443,8 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
                                     loadLocationLayout.setVisibility(View.GONE);
                                 }
                             });
+
+            subscriptions.add(sub);
         }
     }
 

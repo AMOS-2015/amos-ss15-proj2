@@ -161,8 +161,7 @@
             android:id="@+id/tv_load_location"
             android:minWidth="200dp"
             android:layout_marginLeft="10dp"
-            android:text="We are waiting for your location."
-            android:layout_centerHorizontal="true" />
+            android:text="@string/load_location" />
     </LinearLayout>
 
 </RelativeLayout>
