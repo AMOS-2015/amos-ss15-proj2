@@ -205,6 +205,7 @@ public class JoinResultsFragment extends SubscriptionFragment implements GoogleA
     }
 
     private void startBackgroundSearch(Bundle bundle) {
+        Timber.d("BG Search started");
         final SharedPreferences prefs = getActivity().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
 
         double currentLocationLat = bundle.getDouble(JoinDispatchFragment.KEY_CURRENT_LOCATION_LATITUDE);
@@ -232,6 +233,8 @@ public class JoinResultsFragment extends SubscriptionFragment implements GoogleA
                         // Update the caption text
                         int numMatches = reservations.size();
                         if (numMatches != 0) {
+                            Timber.d("BG Search found results");
+
                             SharedPreferences.Editor editor = prefs.edit();
                             editor.putBoolean(Constants.SHARED_PREF_KEY_SEARCHING, false);
                             editor.apply();
@@ -254,6 +257,7 @@ public class JoinResultsFragment extends SubscriptionFragment implements GoogleA
                                 drawRegisterDialog();
                             }
                         } else if (result.getRunningQuery() != null) {
+                            Timber.d("BG Search did not find any results");
                             SharedPreferences.Editor editor = prefs.edit();
                             editor.putLong(Constants.SHARED_PREF_KEY_QUERY_ID, result.getRunningQuery().getId());
                             editor.apply();

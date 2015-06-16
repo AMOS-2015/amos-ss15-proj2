@@ -197,7 +197,7 @@ public class GcmIntentService extends RoboIntentService {
 
                                 final SharedPreferences prefs = getApplicationContext().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
                                 SharedPreferences.Editor editor = prefs.edit();
-                                editor.putBoolean(Constants.SHARED_PREF_KEY_SEARCHING, false);
+                                editor.putBoolean(Constants.SHARED_PREF_KEY_SEARCHING, true);
                                 editor.putBoolean(Constants.SHARED_PREF_KEY_ACCEPTED, false);
                                 editor.putLong(Constants.SHARED_PREF_KEY_QUERY_ID, -1);
                                 editor.apply();

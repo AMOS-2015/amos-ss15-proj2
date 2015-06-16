@@ -108,7 +108,7 @@ public class LoginActivity extends RoboActionBarActivity {
 
     private int animationDuration;
     private View activeView;
-    public static final Pattern VALID_EMAIL_ADDRESS_REGEX =
+    private static final Pattern VALID_EMAIL_ADDRESS_REGEX =
             Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$", Pattern.CASE_INSENSITIVE);
 
 
@@ -155,9 +155,11 @@ public class LoginActivity extends RoboActionBarActivity {
         registerButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                //Check if first and last name are entered
                 if (TextUtils.isEmpty(registerFirstName.getText().toString()) || TextUtils.isEmpty(registerLastName.getText().toString())) {
                     Toast.makeText(getApplication().getApplicationContext(), getResources().getString(R.string.first_last_mandatory), Toast.LENGTH_SHORT).show();
                 }
+                //Check the validity of the entered email address using Regex
                 else if (!validate(registerEmail.getText().toString())) {
                     Toast.makeText(getApplication().getApplicationContext(), getResources().getString(R.string.email_invalid), Toast.LENGTH_SHORT).show();
                 }
@@ -400,6 +402,7 @@ public class LoginActivity extends RoboActionBarActivity {
 
     }
 
+    //This method is used to check for email addres validity
     public static boolean validate(String emailStr) {
         Matcher matcher = VALID_EMAIL_ADDRESS_REGEX .matcher(emailStr);
         return matcher.find();
