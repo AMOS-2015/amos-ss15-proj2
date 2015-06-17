@@ -9,6 +9,7 @@ import org.croudtrip.api.directions.Route;
 import org.croudtrip.api.directions.RouteLocation;
 import org.croudtrip.api.trips.JoinTripRequest;
 import org.croudtrip.api.trips.JoinTripStatus;
+import org.croudtrip.api.trips.SuperJoinTripRequest;
 import org.croudtrip.api.trips.TripOffer;
 import org.croudtrip.api.trips.TripOfferStatus;
 import org.croudtrip.api.trips.TripQuery;
@@ -80,7 +81,11 @@ public class TripsMatcherTest {
 		new Expectations() {{
 			joinTripRequestDAO.findDeclinedRequests(passenger.getId());
 			result = Lists.newArrayList(
-					new JoinTripRequest(0, query, 0, 0, 0, offer, JoinTripStatus.DRIVER_DECLINED));
+					new JoinTripRequest.Builder()
+							.setOffer(offer)
+							.setStatus(JoinTripStatus.DRIVER_DECLINED)
+							.setSuperJoinTripRequest(new SuperJoinTripRequest.Builder().setQuery(query).build())
+							.build());
 		}};
 
 		Assert.assertFalse(tripsMatcher.isPotentialMatch(offer, query).isPresent());
@@ -157,7 +162,10 @@ public class TripsMatcherTest {
 
 		new Expectations() {{
 			joinTripRequestDAO.findByOfferId(offer.getId());
-			result = Lists.newArrayList(new JoinTripRequest.Builder().setOffer(offer).setQuery(query).build());
+			result = Lists.newArrayList(new JoinTripRequest.Builder()
+					.setOffer(offer)
+					.setSuperJoinTripRequest(new SuperJoinTripRequest.Builder().setQuery(query).build())
+					.build());
 
 			tripsNavigationManager.getRouteWaypointsForOffer(offer, query);
 			result = Lists.newArrayList(

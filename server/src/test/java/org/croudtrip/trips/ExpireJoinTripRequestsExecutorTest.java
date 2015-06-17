@@ -6,6 +6,7 @@ import junit.framework.TestCase;
 
 import org.croudtrip.api.trips.JoinTripRequest;
 import org.croudtrip.api.trips.JoinTripStatus;
+import org.croudtrip.api.trips.SuperJoinTripRequest;
 import org.croudtrip.api.trips.TripQuery;
 import org.croudtrip.gcm.GcmManager;
 import org.croudtrip.logs.LogManager;
@@ -34,9 +35,18 @@ public class ExpireJoinTripRequestsExecutorTest extends TestCase {
 			.build();
 
 	private static final JoinTripRequest
-			request1 = new JoinTripRequest.Builder().setStatus(JoinTripStatus.PASSENGER_ACCEPTED).setQuery(query1).build(),
-			request2 = new JoinTripRequest.Builder().setStatus(JoinTripStatus.PASSENGER_ACCEPTED).setQuery(query2).build(),
-			request3 = new JoinTripRequest.Builder().setStatus(JoinTripStatus.DRIVER_ACCEPTED).setQuery(query2).build();
+			request1 = new JoinTripRequest.Builder()
+					.setStatus(JoinTripStatus.PASSENGER_ACCEPTED)
+					.setSuperJoinTripRequest(new SuperJoinTripRequest.Builder().setQuery(query1).build())
+					.build(),
+			request2 = new JoinTripRequest.Builder()
+					.setStatus(JoinTripStatus.PASSENGER_ACCEPTED)
+					.setSuperJoinTripRequest(new SuperJoinTripRequest.Builder().setQuery(query2).build())
+					.build(),
+			request3 = new JoinTripRequest.Builder()
+					.setStatus(JoinTripStatus.DRIVER_ACCEPTED)
+					.setSuperJoinTripRequest(new SuperJoinTripRequest.Builder().setQuery(query2).build())
+					.build();
 
 
 	@Mocked TripsManager tripsManager;

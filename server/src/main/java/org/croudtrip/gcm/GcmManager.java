@@ -171,17 +171,17 @@ public class GcmManager {
 
 
 	public void sendDeclinePassengerMsg(JoinTripRequest request) {
-		sendGcmMessageToUser(request.getQuery().getPassenger(), GcmConstants.GCM_MSG_REQUEST_DECLINED,
+		sendGcmMessageToUser(request.getSuperJoinTripRequest().getQuery().getPassenger(), GcmConstants.GCM_MSG_REQUEST_DECLINED,
 				new Pair<>(GcmConstants.GCM_MSG_REQUEST_DECLINED, "Your request was declined"),
-				new Pair<>(GcmConstants.GCM_MSG_USER_MAIL, "" + request.getQuery().getPassenger().getEmail()),
+				new Pair<>(GcmConstants.GCM_MSG_USER_MAIL, "" + request.getSuperJoinTripRequest().getQuery().getPassenger().getEmail()),
 				new Pair<>(GcmConstants.GCM_MSG_JOIN_REQUEST_ID, "" + request.getId()),
 				new Pair<>(GcmConstants.GCM_MSG_JOIN_REQUEST_OFFER_ID, "" + request.getOffer().getId()));
 	}
 
 
 	public void sendAcceptPassengerMsg(JoinTripRequest request) {
-		sendGcmMessageToUser(request.getQuery().getPassenger(), GcmConstants.GCM_MSG_REQUEST_ACCEPTED,
-				new Pair<>(GcmConstants.GCM_MSG_USER_MAIL, "" + request.getQuery().getPassenger().getEmail()),
+		sendGcmMessageToUser(request.getSuperJoinTripRequest().getQuery().getPassenger(), GcmConstants.GCM_MSG_REQUEST_ACCEPTED,
+				new Pair<>(GcmConstants.GCM_MSG_USER_MAIL, "" + request.getSuperJoinTripRequest().getQuery().getPassenger().getEmail()),
 				new Pair<>(GcmConstants.GCM_MSG_REQUEST_ACCEPTED, "Your request was accepted"),
 				new Pair<>(GcmConstants.GCM_MSG_JOIN_REQUEST_ID, "" + request.getId()),
 				new Pair<>(GcmConstants.GCM_MSG_JOIN_REQUEST_OFFER_ID, "" + request.getOffer().getId()));
@@ -205,8 +205,8 @@ public class GcmManager {
 	}
 
 	public void sendJoinTripRequestExpiredToPassenger(JoinTripRequest joinTripRequest) {
-		sendGcmMessageToUser(joinTripRequest.getQuery().getPassenger(), GcmConstants.GCM_MSG_REQUEST_EXPIRED,
-				new Pair<>(GcmConstants.GCM_MSG_USER_MAIL, "" + joinTripRequest.getQuery().getPassenger().getEmail()),
+		sendGcmMessageToUser(joinTripRequest.getSuperJoinTripRequest().getQuery().getPassenger(), GcmConstants.GCM_MSG_REQUEST_EXPIRED,
+				new Pair<>(GcmConstants.GCM_MSG_USER_MAIL, "" + joinTripRequest.getSuperJoinTripRequest().getQuery().getPassenger().getEmail()),
 				new Pair<>(GcmConstants.GCM_MSG_REQUEST_EXPIRED, "Join request expired due to max waiting time"),
 				new Pair<>(GcmConstants.GCM_MSG_JOIN_REQUEST_ID, "" + joinTripRequest.getId()),
 				new Pair<>(GcmConstants.GCM_MSG_JOIN_REQUEST_OFFER_ID, "" + joinTripRequest.getOffer().getId()));
@@ -221,7 +221,7 @@ public class GcmManager {
     }
 
     public void sendArrivalTimeUpdate(JoinTripRequest request) {
-        sendGcmMessageToUser(request.getQuery().getPassenger(), GcmConstants.GCM_MSG_ARRIVAL_TIME_UPDATE,
+        sendGcmMessageToUser(request.getSuperJoinTripRequest().getQuery().getPassenger(), GcmConstants.GCM_MSG_ARRIVAL_TIME_UPDATE,
                 new Pair<>(GcmConstants.GCM_MSG_JOIN_REQUEST_ID, "" + request.getId()));
     }
 }

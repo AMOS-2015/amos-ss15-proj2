@@ -7,9 +7,9 @@ import org.croudtrip.api.directions.Route;
 import org.croudtrip.api.directions.RouteLocation;
 import org.croudtrip.api.trips.JoinTripRequest;
 import org.croudtrip.api.trips.JoinTripStatus;
+import org.croudtrip.api.trips.SuperJoinTripRequest;
 import org.croudtrip.api.trips.TripOffer;
 import org.croudtrip.api.trips.TripQuery;
-import org.croudtrip.db.JoinTripRequestDAO;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -88,13 +88,13 @@ public class TspSolverTest {
 
         // TODO: maybe finde some route with one passenger in car
         List<JoinTripRequest> passengerTripRequests = Lists.newArrayList(
-                new JoinTripRequest( 0, q1, 0, 0, 0, offer, JoinTripStatus.DRIVER_ACCEPTED ),
-                new JoinTripRequest( 0, q2, 0, 0, 0, offer, JoinTripStatus.DRIVER_ACCEPTED ),
-                new JoinTripRequest( 0, q3, 0, 0, 0, offer, JoinTripStatus.DRIVER_ACCEPTED ),
-                new JoinTripRequest( 0, q4, 0, 0, 0, offer, JoinTripStatus.DRIVER_DECLINED ),
-                new JoinTripRequest( 0, q4, 0, 0, 0, offer, JoinTripStatus.DRIVER_CANCELLED ),
-                new JoinTripRequest( 0, q4, 0, 0, 0, offer, JoinTripStatus.PASSENGER_AT_DESTINATION ),
-                new JoinTripRequest( 0, q4, 0, 0, 0, offer, JoinTripStatus.PASSENGER_ACCEPTED ));
+				createJoinTripRequest(offer, q1, JoinTripStatus.DRIVER_ACCEPTED),
+                createJoinTripRequest(offer, q2, JoinTripStatus.DRIVER_ACCEPTED),
+                createJoinTripRequest(offer, q3, JoinTripStatus.DRIVER_ACCEPTED),
+                createJoinTripRequest(offer, q4, JoinTripStatus.DRIVER_DECLINED),
+                createJoinTripRequest(offer, q4, JoinTripStatus.DRIVER_CANCELLED),
+                createJoinTripRequest(offer, q4, JoinTripStatus.PASSENGER_AT_DESTINATION),
+                createJoinTripRequest(offer, q4, JoinTripStatus.PASSENGER_ACCEPTED));
 
         List<List<TspSolver.TspWayPoint>> sortedRoutes = solver.getBestOrder(passengerTripRequests, offer);
 
@@ -130,6 +130,15 @@ public class TspSolverTest {
 			distance += route.get(i).getLocation().distanceFrom(route.get(i + 1).getLocation());
 		}
 		return distance;
+	}
+
+
+	private JoinTripRequest createJoinTripRequest(TripOffer offer, TripQuery query, JoinTripStatus status) {
+		return new JoinTripRequest.Builder()
+				.setOffer(offer)
+				.setStatus(status)
+				.setSuperJoinTripRequest(new SuperJoinTripRequest.Builder().setQuery(query).build())
+				.build();
 	}
 
 }

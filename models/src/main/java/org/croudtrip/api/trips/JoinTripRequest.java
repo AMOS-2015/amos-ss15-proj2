@@ -19,7 +19,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Objects;
 
 import javax.persistence.Column;
-import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -46,29 +45,32 @@ import javax.persistence.Table;
 				name = JoinTripRequest.QUERY_FIND_BY_PASSENGER_OR_DRIVER_ID,
 				query = "SELECT r FROM " + JoinTripRequest.ENTITY_NAME + " r WHERE " +
 						"r.offer.driver.id = :" + JoinTripRequest.QUERY_PARAM_USER_ID + " OR " +
-						"r.query.passenger.id = :" + JoinTripRequest.QUERY_PARAM_USER_ID
+						"r.superJoinTripRequest.query.passenger.id = :" + JoinTripRequest.QUERY_PARAM_USER_ID
 		),
 		@NamedQuery(
 				name = JoinTripRequest.QUERY_FIND_BY_PASSENGER_OR_DRIVER_ID_AND_PASSENGER_ACCEPTED_STATUS,
 				query = "SELECT r FROM " + JoinTripRequest.ENTITY_NAME + " r WHERE (" +
 						"r.offer.driver.id = :" + JoinTripRequest.QUERY_PARAM_USER_ID + " OR " +
-						"r.query.passenger.id = :" + JoinTripRequest.QUERY_PARAM_USER_ID + " ) AND " +
+						"r.superJoinTripRequest.query.passenger.id = :" + JoinTripRequest.QUERY_PARAM_USER_ID + " ) AND " +
 						"r.status = 'PASSENGER_ACCEPTED'"
 		),
         @NamedQuery(
                 name = JoinTripRequest.QUERY_FIND_BY_PASSENGER_OR_DRIVER_ID_AND_DRIVER_ACCEPTED_STATUS,
                 query = "SELECT r FROM " + JoinTripRequest.ENTITY_NAME + " r WHERE (" +
                         "r.offer.driver.id = :" + JoinTripRequest.QUERY_PARAM_USER_ID + " OR " +
-                        "r.query.passenger.id = :" + JoinTripRequest.QUERY_PARAM_USER_ID + " ) AND " +
+                        "r.superJoinTripRequest.query.passenger.id = :" + JoinTripRequest.QUERY_PARAM_USER_ID + " ) AND " +
                         "r.status = 'DRIVER_ACCEPTED'"
         ),
         @NamedQuery(
                 name = JoinTripRequest.QUERY_FIND_BY_PASSENGER_ID_AND_DECLINED_STATUS,
-                query = "SELECT r FROM " + JoinTripRequest.ENTITY_NAME + " r WHERE r.status = 'DRIVER_DECLINED' AND r.query.passenger.id = :" + JoinTripRequest.QUERY_PARAM_USER_ID
+                query = "SELECT r FROM " + JoinTripRequest.ENTITY_NAME + " r WHERE " +
+						"r.status = 'DRIVER_DECLINED' AND " +
+						"r.superJoinTripRequest.query.passenger.id = :" + JoinTripRequest.QUERY_PARAM_USER_ID
         ),
 		@NamedQuery(
 				name = JoinTripRequest.QUERY_FIND_BY_OFFER_ID,
-				query = "SELECT r FROM " + JoinTripRequest.ENTITY_NAME + " r WHERE r.offer.id = :" + JoinTripRequest.QUERY_PARAM_OFFER_ID
+				query = "SELECT r FROM " + JoinTripRequest.ENTITY_NAME + " r WHERE " +
+						"r.offer.id = :" + JoinTripRequest.QUERY_PARAM_OFFER_ID
 		)
 })
 public class JoinTripRequest {
@@ -90,9 +92,6 @@ public class JoinTripRequest {
 	@Column(name = COLUMN_ID)
 	private long id;
 
-	@Embedded
-	private TripQuery query;
-
 	@Column(name = "priceInCents", nullable = false)
 	private int totalPriceInCents;
 
@@ -110,48 +109,48 @@ public class JoinTripRequest {
     @Column(name="estimatedArrivalTimestamp")
     private long estimatedArrivalTimestamp;
 
+	@ManyToOne
+	@JoinColumn(name = "super_join_trip_request_id")
+	private SuperJoinTripRequest superJoinTripRequest;
+
 	public JoinTripRequest() { }
 
 	@JsonCreator
 	public JoinTripRequest(
 			@JsonProperty("id") long id,
-			@JsonProperty("query") TripQuery query,
 			@JsonProperty("totalPriceInCents") int totalPriceInCents,
 			@JsonProperty("pricePerKmInCents") int pricePerKmInCents,
             @JsonProperty("estimatedArrivalTimestamp") long estimatedArrivalTimestamp,
 			@JsonProperty("offer") TripOffer offer,
-			@JsonProperty("status") JoinTripStatus status) {
+			@JsonProperty("status") JoinTripStatus status,
+			@JsonProperty("superJoinTripRequest") SuperJoinTripRequest superJoinTripRequest) {
 
 		this.id = id;
-		this.query = query;
 		this.totalPriceInCents = totalPriceInCents;
 		this.pricePerKmInCents = pricePerKmInCents;
 		this.offer = offer;
 		this.status = status;
         this.estimatedArrivalTimestamp = estimatedArrivalTimestamp;
-
+		this.superJoinTripRequest = superJoinTripRequest;
 	}
 
 
 	public JoinTripRequest(
 			JoinTripRequest oldRequest,
 			JoinTripStatus newStatus) {
+
 		this(
 				oldRequest.getId(),
-				oldRequest.getQuery(),
 				oldRequest.getTotalPriceInCents(),
 				oldRequest.getPricePerKmInCents(),
                 oldRequest.getEstimatedArrivalTimestamp(),
 				oldRequest.getOffer(),
-				newStatus);
+				newStatus,
+				oldRequest.getSuperJoinTripRequest());
 	}
 
 	public long getId() {
 		return id;
-	}
-
-	public TripQuery getQuery() {
-		return query;
 	}
 
 	public int getTotalPriceInCents() {
@@ -172,6 +171,10 @@ public class JoinTripRequest {
 		return status;
 	}
 
+	public SuperJoinTripRequest getSuperJoinTripRequest() {
+		return superJoinTripRequest;
+	}
+
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
@@ -181,34 +184,29 @@ public class JoinTripRequest {
 				Objects.equal(totalPriceInCents, that.totalPriceInCents) &&
 				Objects.equal(pricePerKmInCents, that.pricePerKmInCents) &&
                 Objects.equal(estimatedArrivalTimestamp, that.estimatedArrivalTimestamp) &&
-				Objects.equal(query, that.query) &&
 				Objects.equal(offer, that.offer) &&
-				Objects.equal(status, that.status);
+				Objects.equal(status, that.status) &&
+				Objects.equal(superJoinTripRequest, that.superJoinTripRequest);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hashCode(id, query, totalPriceInCents, pricePerKmInCents, offer, status);
+		return Objects.hashCode(id, totalPriceInCents, pricePerKmInCents, offer, status, superJoinTripRequest);
 	}
 
 
 	public static class Builder {
 
 		private long id;
-		private TripQuery query;
 		private int totalPriceInCents;
 		private int pricePerKmInCents;
         private long estimatedArrivalTimestamp;
 		private TripOffer offer;
 		private JoinTripStatus status;
+		private SuperJoinTripRequest superJoinTripRequest;
 
 		public Builder setId(long id) {
 			this.id = id;
-			return this;
-		}
-
-		public Builder setQuery(TripQuery query) {
-			this.query = query;
 			return this;
 		}
 
@@ -232,14 +230,20 @@ public class JoinTripRequest {
 			return this;
 		}
 
-        public Builder setEstimatedArrivalTimestamp( long estimatedArrivalTimestamp ){
+        public Builder setEstimatedArrivalTimestamp(long estimatedArrivalTimestamp) {
             this.estimatedArrivalTimestamp = estimatedArrivalTimestamp;
             return this;
         }
 
+		public Builder setSuperJoinTripRequest(SuperJoinTripRequest superJoinTripRequest) {
+			this.superJoinTripRequest = superJoinTripRequest;
+			return this;
+		}
+
 		public JoinTripRequest build() {
-			return new JoinTripRequest(id, query, totalPriceInCents, pricePerKmInCents, estimatedArrivalTimestamp, offer, status);
+			return new JoinTripRequest(id, totalPriceInCents, pricePerKmInCents, estimatedArrivalTimestamp, offer, status, superJoinTripRequest);
 		}
 
 	}
+
 }

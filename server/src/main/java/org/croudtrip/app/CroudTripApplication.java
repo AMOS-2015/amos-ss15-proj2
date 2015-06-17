@@ -24,8 +24,9 @@ import org.croudtrip.api.account.Vehicle;
 import org.croudtrip.api.gcm.GcmRegistration;
 import org.croudtrip.api.trips.JoinTripRequest;
 import org.croudtrip.api.trips.RunningTripQuery;
+import org.croudtrip.api.trips.SuperJoinTripRequest;
+import org.croudtrip.api.trips.SuperTripReservation;
 import org.croudtrip.api.trips.TripOffer;
-import org.croudtrip.api.trips.TripReservation;
 import org.croudtrip.auth.BasicAuthenticator;
 import org.croudtrip.auth.BasicCredentials;
 import org.croudtrip.db.DbModule;
@@ -43,10 +44,10 @@ import org.croudtrip.rest.TripsResource;
 import org.croudtrip.rest.UsersHeadResource;
 import org.croudtrip.rest.UsersResource;
 import org.croudtrip.rest.VehicleResource;
+import org.croudtrip.trips.DisableTripOffersExecutor;
 import org.croudtrip.trips.ExpireJoinTripRequestsExecutor;
 import org.croudtrip.trips.ExpireTripOffersExecutor;
 import org.croudtrip.trips.RunningTripQueryGarbageCollectionExecutor;
-import org.croudtrip.trips.DisableTripOffersExecutor;
 import org.croudtrip.trips.TripReservationGarbageCollectionExecutor;
 
 import io.dropwizard.Application;
@@ -111,7 +112,8 @@ public final class CroudTripApplication extends Application<CroudTripConfig> {
 			BasicCredentials.class,
 			Avatar.class,
 			TripOffer.class,
-			TripReservation.class,
+			SuperTripReservation.class,
+			SuperJoinTripRequest.class,
 			JoinTripRequest.class,
 			RunningTripQuery.class,
 			Vehicle.class,

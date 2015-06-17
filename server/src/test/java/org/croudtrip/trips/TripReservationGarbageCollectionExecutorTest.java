@@ -1,8 +1,9 @@
 package org.croudtrip.trips;
 
+import org.croudtrip.api.trips.SuperTripReservation;
 import org.croudtrip.api.trips.TripQuery;
 import org.croudtrip.api.trips.TripReservation;
-import org.croudtrip.db.TripReservationDAO;
+import org.croudtrip.db.SuperTripReservationDAO;
 import org.croudtrip.logs.LogManager;
 import org.hibernate.SessionFactory;
 import org.junit.Before;
@@ -20,7 +21,8 @@ import mockit.integration.junit4.JMockit;
 @RunWith(JMockit.class)
 public class TripReservationGarbageCollectionExecutorTest {
 
-	@Mocked TripReservationDAO tripReservationDAO;
+	@Mocked
+	SuperTripReservationDAO superTripReservationDAO;
 	@Mocked SessionFactory sessionFactory;
 	@Mocked LogManager logManager;
 
@@ -28,39 +30,37 @@ public class TripReservationGarbageCollectionExecutorTest {
 
 	@Before
 	public void setupCollector() {
-		collector = new TripReservationGarbageCollectionExecutor(tripReservationDAO, sessionFactory, logManager);
+		collector = new TripReservationGarbageCollectionExecutor(superTripReservationDAO, sessionFactory, logManager);
 	}
 
 
 	@Test
 	public void testDoRun() {
 		long currentTimestamp = System.currentTimeMillis() / 1000;
-		final List<TripReservation> reservations = new ArrayList<>();
-		final TripReservation newReservation = createReservation(currentTimestamp - 10, 1000);
-		final TripReservation oldReservation = createReservation(currentTimestamp - 10000, 10);
+		final List<SuperTripReservation> reservations = new ArrayList<>();
+		final SuperTripReservation newReservation = createReservation(currentTimestamp - 10, 1000);
+		final SuperTripReservation oldReservation = createReservation(currentTimestamp - 10000, 10);
 		reservations.add(newReservation);
 		reservations.add(oldReservation);
 
 		new Expectations() {{
-			tripReservationDAO.findAll();
+			superTripReservationDAO.findAll();
 			result = reservations;
 		}};
 
 		collector.doRun();
 
 		new Verifications() {{
-			tripReservationDAO.delete(oldReservation); times = 1;
-			tripReservationDAO.delete(newReservation); times = 0;
+			superTripReservationDAO.delete(oldReservation); times = 1;
+			superTripReservationDAO.delete(newReservation); times = 0;
 		}};
 	}
 
 
-	private TripReservation createReservation(long creationTimestamp, long maxWaitingTime) {
-		return new TripReservation(0,
-				new TripQuery(null, null, null, maxWaitingTime, creationTimestamp, null),
-				0,
-				0,
-				0,
-				null);
+	private SuperTripReservation createReservation(long creationTimestamp, long maxWaitingTime) {
+		return new SuperTripReservation.Builder()
+				.setQuery(new TripQuery.Builder().setMaxWaitingTimeInSeconds(maxWaitingTime).setCreationTimestamp(creationTimestamp).build())
+				.addReservation(new TripReservation(0, 0, 0, null))
+				.build();
 	}
 }

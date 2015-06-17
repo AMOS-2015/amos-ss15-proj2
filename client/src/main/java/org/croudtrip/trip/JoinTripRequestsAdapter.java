@@ -81,7 +81,7 @@ public class JoinTripRequestsAdapter extends RecyclerView.Adapter<JoinTripReques
     public void onBindViewHolder(ViewHolder holder, int position) {
 
         JoinMatch joinMatch = joinMatches.get(position);
-        TripQuery query = joinMatch.joinRequest.getQuery();
+        TripQuery query = joinMatch.joinRequest.getSuperJoinTripRequest().getQuery();
 
         // Passenger name
         User passenger = query.getPassenger();

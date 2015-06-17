@@ -15,23 +15,29 @@
 package org.croudtrip.db;
 
 
-import org.croudtrip.api.trips.TripReservation;
+import org.croudtrip.api.trips.SuperJoinTripRequest;
 import org.hibernate.SessionFactory;
 
 import java.util.List;
 
 import javax.inject.Inject;
 
-public class TripReservationDAO extends AbstractDAO<TripReservation> {
+public class SuperJoinTripRequestDAO extends AbstractDAO<SuperJoinTripRequest> {
 
-	@Inject
-	TripReservationDAO(SessionFactory sessionFactory) {
-		super(sessionFactory);
-	}
+    @Inject
+    SuperJoinTripRequestDAO(SessionFactory sessionFactory) {
+        super(sessionFactory);
+    }
 
 
-	public List<TripReservation> findAll() {
-		return list(namedQuery(TripReservation.QUERY_NAME_FIND_ALL));
-	}
+    public List<SuperJoinTripRequest> findAll() {
+        return list(namedQuery(SuperJoinTripRequest.QUERY_NAME_FIND_ALL));
+    }
+
+
+    public List<SuperJoinTripRequest> findByPassengerId(long passengerId) {
+        return list(namedQuery(SuperJoinTripRequest.QUERY_FIND_BY_PASSENGER_ID)
+                .setParameter(SuperJoinTripRequest.QUERY_PARAM_USER_ID, passengerId));
+    }
 
 }

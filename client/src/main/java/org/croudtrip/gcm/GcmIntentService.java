@@ -23,7 +23,6 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
-import android.util.Log;
 import android.widget.Toast;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -37,6 +36,7 @@ import org.croudtrip.api.TripsResource;
 import org.croudtrip.api.gcm.GcmConstants;
 import org.croudtrip.api.trips.JoinTripRequest;
 import org.croudtrip.api.trips.RunningTripQuery;
+import org.croudtrip.api.trips.TripQuery;
 import org.croudtrip.fragments.join.JoinDispatchFragment;
 import org.croudtrip.utils.LifecycleHandler;
 
@@ -254,11 +254,12 @@ public class GcmIntentService extends RoboIntentService {
                                 editor.apply();
 
                                 Bundle extras = new Bundle();
-                                extras.putDouble(JoinDispatchFragment.KEY_CURRENT_LOCATION_LATITUDE, joinTripRequest.getQuery().getStartLocation().getLat());
-                                extras.putDouble(JoinDispatchFragment.KEY_CURRENT_LOCATION_LONGITUDE, joinTripRequest.getQuery().getStartLocation().getLng());
-                                extras.putDouble(JoinDispatchFragment.KEY_DESTINATION_LATITUDE, joinTripRequest.getQuery().getDestinationLocation().getLat());
-                                extras.putDouble(JoinDispatchFragment.KEY_DESTINATION_LONGITUDE, joinTripRequest.getQuery().getDestinationLocation().getLng());
-                                extras.putInt(JoinDispatchFragment.KEY_MAX_WAITING_TIME, (int) joinTripRequest.getQuery().getMaxWaitingTimeInSeconds());
+                                TripQuery query = joinTripRequest.getSuperJoinTripRequest().getQuery();
+                                extras.putDouble(JoinDispatchFragment.KEY_CURRENT_LOCATION_LATITUDE, query.getStartLocation().getLat());
+                                extras.putDouble(JoinDispatchFragment.KEY_CURRENT_LOCATION_LONGITUDE, query.getStartLocation().getLng());
+                                extras.putDouble(JoinDispatchFragment.KEY_DESTINATION_LATITUDE, query.getDestinationLocation().getLat());
+                                extras.putDouble(JoinDispatchFragment.KEY_DESTINATION_LONGITUDE, query.getDestinationLocation().getLng());
+                                extras.putInt(JoinDispatchFragment.KEY_MAX_WAITING_TIME, (int) query.getMaxWaitingTimeInSeconds());
 
                                 if(LifecycleHandler.isApplicationInForeground()) {
                                     Toast.makeText(getApplicationContext(), getString(R.string.join_request_declined_msg), Toast.LENGTH_SHORT).show();
@@ -362,7 +363,7 @@ public class GcmIntentService extends RoboIntentService {
 
                                 PendingIntent contentIntent = PendingIntent.getActivity(getApplicationContext(), 0, startingIntent, PendingIntent.FLAG_UPDATE_CURRENT);
                                 createNotification(getString(R.string.join_request_title), getString(R.string.joint_request_msg,
-                                                joinTripRequest.getQuery().getPassenger().getFirstName()),
+                                                joinTripRequest.getSuperJoinTripRequest().getQuery().getPassenger().getFirstName()),
                                         GcmConstants.GCM_NOTIFICATION_JOIN_REQUEST_ID, contentIntent);
                             }
                         },

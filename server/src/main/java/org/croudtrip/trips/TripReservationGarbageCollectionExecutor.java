@@ -14,8 +14,8 @@
 
 package org.croudtrip.trips;
 
-import org.croudtrip.api.trips.TripReservation;
-import org.croudtrip.db.TripReservationDAO;
+import org.croudtrip.api.trips.SuperTripReservation;
+import org.croudtrip.db.SuperTripReservationDAO;
 import org.croudtrip.logs.LogManager;
 import org.croudtrip.utils.AbstractScheduledTaskExecutor;
 import org.hibernate.SessionFactory;
@@ -29,25 +29,25 @@ import javax.inject.Inject;
  */
 public class TripReservationGarbageCollectionExecutor extends AbstractScheduledTaskExecutor {
 
-	private final TripReservationDAO tripReservationDAO;
+	private final SuperTripReservationDAO superTripReservationDAO;
 
 	@Inject
 	TripReservationGarbageCollectionExecutor(
-			TripReservationDAO tripReservationDAO,
+			SuperTripReservationDAO superTripReservationDAO,
 			SessionFactory sessionFactory,
 			LogManager logManager) {
 
 		super(sessionFactory, logManager, 60*60, TimeUnit.SECONDS);
-		this.tripReservationDAO = tripReservationDAO;
+		this.superTripReservationDAO = superTripReservationDAO;
 	}
 
 	@Override
 	protected void doRun() {
 		long currentTimestamp = System.currentTimeMillis() / 1000;
-		for (TripReservation reservation : tripReservationDAO.findAll()) {
+		for (SuperTripReservation reservation : superTripReservationDAO.findAll()) {
 			if (currentTimestamp > reservation.getQuery().getCreationTimestamp() + reservation.getQuery().getMaxWaitingTimeInSeconds()) {
 				logManager.d("Removing reservation " + reservation.getId());
-				tripReservationDAO.delete(reservation);
+				superTripReservationDAO.delete(reservation);
 			}
 		}
 	}
