@@ -72,7 +72,7 @@ public class TripsManagerTest {
     public void testAddOffer() {
         final TripOfferDescription offerDescription = new TripOfferDescription(tripStart, tripEnd, 100, 10, 0);
         final User driver = new User(0, "", "", "", "", true, new Date(0), "", "", 0);
-        final Route finalRoute = new Route( Lists.newArrayList(tripStart, tripEnd), "", 12345, 12345, Lists.newArrayList(12345L), Lists.newArrayList(12345L), null, null, 0  );
+        final Route finalRoute = new Route( Lists.newArrayList(tripStart, tripEnd), "", 12345, 12345, Lists.newArrayList(12345L), Lists.newArrayList(12345L), null, null, 0, null  );
         final Vehicle vehicle = new Vehicle(0, "abc", "", "", 1, driver);
 
         final TripOffer offer = new TripOffer(0,
@@ -137,7 +137,7 @@ public class TripsManagerTest {
         final User d4 = new User(4, "", "", "", "", true, new Date(0), "", "", 0);
         final User p = new User(10, "", "", "", "", true, new Date(0), "", "", 0);
 
-        final Route passengerRoute = new Route( Lists.newArrayList(tripStart, tripEnd), "", 12345, 12345, Lists.newArrayList(12345L), Lists.newArrayList(12345L), null, null, 0  );
+        final Route passengerRoute = new Route( Lists.newArrayList(tripStart, tripEnd), "", 12345, 12345, Lists.newArrayList(12345L), Lists.newArrayList(12345L), null, null, 0, null  );
         final TripQuery query = new TripQuery( passengerRoute, tripStart, tripEnd, 0, 0, p);
 
         new Expectations(){{
@@ -193,7 +193,7 @@ public class TripsManagerTest {
         final RouteLocation passengerStart = new RouteLocation(2,2);
         final RouteLocation passengerEnd = new RouteLocation(3,3);
 
-        final Route passengerRoute = new Route( Lists.newArrayList(passengerStart, passengerEnd), "", 12345, 12345, Lists.newArrayList(12345L), Lists.newArrayList(12345L), null, null, 0  );
+        final Route passengerRoute = new Route( Lists.newArrayList(passengerStart, passengerEnd), "", 12345, 12345, Lists.newArrayList(12345L), Lists.newArrayList(12345L), null, null, 0, null  );
         final TripQuery query = new TripQuery( passengerRoute, passengerStart, passengerEnd, 0, 0, p);
 
         final TripOffer offer = new TripOffer(0, null, 0, tripStart, 10, 10, d, null, TripOfferStatus.ACTIVE, 0);
