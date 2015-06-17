@@ -144,12 +144,13 @@ public class TspSolver {
 	private List<TripRequest> joinTripRequestsToTripRequests(List<JoinTripRequest> joinTripRequests) {
 		List<TripRequest> tripRequests = new ArrayList<>();
 		for (JoinTripRequest joinTripRequest : joinTripRequests) {
-			TripRequest tripRequest = new TripRequest(joinTripRequest.getQuery().getPassenger());
+			TripQuery query = joinTripRequest.getSuperJoinTripRequest().getQuery();
+			TripRequest tripRequest = new TripRequest(query.getPassenger());
 			switch (joinTripRequest.getStatus()) {
 				case DRIVER_ACCEPTED:
-					tripRequest.setStart(joinTripRequest.getQuery().getStartLocation());
+					tripRequest.setStart(query.getStartLocation());
 				case PASSENGER_IN_CAR:
-					tripRequest.setEnd(joinTripRequest.getQuery().getDestinationLocation());
+					tripRequest.setEnd(query.getDestinationLocation());
 			}
 
             // add the trip request to the final list.

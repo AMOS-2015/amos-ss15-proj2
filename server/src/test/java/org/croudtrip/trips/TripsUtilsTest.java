@@ -7,6 +7,7 @@ import org.croudtrip.api.account.User;
 import org.croudtrip.api.directions.RouteLocation;
 import org.croudtrip.api.trips.JoinTripRequest;
 import org.croudtrip.api.trips.JoinTripStatus;
+import org.croudtrip.api.trips.SuperJoinTripRequest;
 import org.croudtrip.api.trips.TripOffer;
 import org.croudtrip.api.trips.TripQuery;
 import org.croudtrip.api.trips.UserWayPoint;
@@ -114,7 +115,7 @@ public class TripsUtilsTest {
                 Assert.assertEquals( 12345, request.getEstimatedArrivalTimestamp());
             }
             else {
-                int userId = (int) request.getQuery().getPassenger().getId();
+                int userId = (int) request.getSuperJoinTripRequest().getQuery().getPassenger().getId();
                 switch( userId ) {
                     case 0:
                         Assert.assertEquals( request.getEstimatedArrivalTimestamp(), 1 );
@@ -138,13 +139,21 @@ public class TripsUtilsTest {
 
 
 	private JoinTripRequest createJoinRequest(TripOffer offer, JoinTripStatus status) {
-		return new JoinTripRequest(0, null, 0, 0, 0, offer, status);
+		return new JoinTripRequest.Builder()
+                .setStatus(status)
+                .setOffer(offer)
+                .build();
 	}
 
 
     private JoinTripRequest createJoinRequest( User passenger, TripOffer offer, JoinTripStatus status){
         TripQuery query = new TripQuery(null, null, null, 0, 0, passenger);
-        return new JoinTripRequest(0, query, 0, 0, 12345, offer, status);
+        return new JoinTripRequest.Builder()
+                .setOffer(offer)
+                .setStatus(status)
+                .setEstimatedArrivalTimestamp(12345)
+                .setSuperJoinTripRequest(new SuperJoinTripRequest.Builder().setQuery(query).build())
+                .build();
     }
 
 }

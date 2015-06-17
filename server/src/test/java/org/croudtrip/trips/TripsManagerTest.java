@@ -22,6 +22,7 @@ import org.croudtrip.api.trips.TripQueryResult;
 import org.croudtrip.api.trips.TripReservation;
 import org.croudtrip.api.trips.UserWayPoint;
 import org.croudtrip.db.JoinTripRequestDAO;
+import org.croudtrip.db.SuperJoinTripRequestDAO;
 import org.croudtrip.db.SuperTripReservationDAO;
 import org.croudtrip.db.TripOfferDAO;
 import org.croudtrip.directions.DirectionsManager;
@@ -44,13 +45,13 @@ import mockit.integration.junit4.JMockit;
 @RunWith(JMockit.class)
 public class TripsManagerTest {
 
+    @Mocked SuperJoinTripRequestDAO superJoinTripRequestDAO;
     @Mocked JoinTripRequestDAO joinTripRequestDAO;
     @Mocked TripOfferDAO tripOfferDAO;
     @Mocked DirectionsManager directionsManager;
     @Mocked LogManager logManager;
     @Mocked TripsUtils tripsUtils;
-    @Mocked
-    SuperTripReservationDAO superTripReservationDAO;
+    @Mocked SuperTripReservationDAO superTripReservationDAO;
     @Mocked VehicleManager vehicleManager;
     @Mocked TripsMatcher tripsMatcher;
     @Mocked RunningTripQueriesManager runningTripQueriesManager;
@@ -63,7 +64,7 @@ public class TripsManagerTest {
 
     @Before
     public void setupTripsManager() {
-        tripsManager = new TripsManager( tripOfferDAO, superTripReservationDAO, joinTripRequestDAO, directionsManager,
+        tripsManager = new TripsManager( tripOfferDAO, superTripReservationDAO, superJoinTripRequestDAO, joinTripRequestDAO, directionsManager,
                 vehicleManager, gcmManager, tripsMatcher, runningTripQueriesManager, tripsUtils, logManager );
     }
 
@@ -219,7 +220,7 @@ public class TripsManagerTest {
         Optional<JoinTripRequest> requestOptional = tripsManager.joinTrip( reservation );
 
         Assert.assertTrue(requestOptional.isPresent());
-        Assert.assertEquals( query, requestOptional.get().getQuery() );
+        Assert.assertEquals( query, requestOptional.get().getSuperJoinTripRequest().getQuery() );
         Assert.assertEquals( offer, requestOptional.get().getOffer() );
         Assert.assertEquals( reservation.getReservations().get(0).getTotalPriceInCents(), requestOptional.get().getTotalPriceInCents());
         Assert.assertEquals( reservation.getReservations().get(0).getPricePerKmInCents(), requestOptional.get().getPricePerKmInCents());
@@ -233,22 +234,22 @@ public class TripsManagerTest {
 
     @Test
     public void testUpdateJoinRequestAcceptanceAlreadyModifiedFails() {
-        JoinTripRequest joinRequest = new JoinTripRequest( 0, null, 0 ,0 , 0, null, JoinTripStatus.DRIVER_ACCEPTED );
+        JoinTripRequest joinRequest = new JoinTripRequest.Builder().setStatus(JoinTripStatus.DRIVER_ACCEPTED).build();
         testFailingJoinRequestAcceptanceUpdate(joinRequest);
 
-        joinRequest = new JoinTripRequest( 0, null, 0 ,0 , 0, null, JoinTripStatus.DRIVER_CANCELLED );
+        joinRequest = new JoinTripRequest.Builder().setStatus(JoinTripStatus.DRIVER_CANCELLED).build();
         testFailingJoinRequestAcceptanceUpdate(joinRequest);
 
-        joinRequest = new JoinTripRequest( 0, null, 0 ,0 , 0, null, JoinTripStatus.PASSENGER_AT_DESTINATION );
+        joinRequest = new JoinTripRequest.Builder().setStatus(JoinTripStatus.PASSENGER_AT_DESTINATION).build();
         testFailingJoinRequestAcceptanceUpdate(joinRequest);
 
-        joinRequest = new JoinTripRequest( 0, null, 0 ,0 , 0, null, JoinTripStatus.PASSENGER_IN_CAR );
+        joinRequest = new JoinTripRequest.Builder().setStatus(JoinTripStatus.PASSENGER_IN_CAR).build();
         testFailingJoinRequestAcceptanceUpdate(joinRequest);
 
-        joinRequest = new JoinTripRequest( 0, null, 0 ,0 , 0, null, JoinTripStatus.DRIVER_DECLINED );
+        joinRequest = new JoinTripRequest.Builder().setStatus(JoinTripStatus.DRIVER_DECLINED).build();
         testFailingJoinRequestAcceptanceUpdate(joinRequest);
 
-        joinRequest = new JoinTripRequest( 0, null, 0 ,0 , 0, null, JoinTripStatus.PASSENGER_CANCELLED );
+        joinRequest = new JoinTripRequest.Builder().setStatus(JoinTripStatus.PASSENGER_CANCELLED).build();
         testFailingJoinRequestAcceptanceUpdate(joinRequest);
     }
 

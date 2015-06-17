@@ -385,7 +385,7 @@ public class TripsResource {
         if (!joinRequest.isPresent()) throw RestUtils.createNotFoundException();
 
         NavigationResult actualOfferNavigationResult = tripsNavigationManager.getNavigationResultForOffer( joinRequest.get().getOffer() );
-        NavigationResult diversionOfferNavigationResult = tripsNavigationManager.getNavigationResultForOffer( joinRequest.get().getOffer(), joinRequest.get().getQuery() );
+        NavigationResult diversionOfferNavigationResult = tripsNavigationManager.getNavigationResultForOffer( joinRequest.get().getOffer(), joinRequest.get().getSuperJoinTripRequest().getQuery() );
 
         return diversionOfferNavigationResult.getRoute().getDurationInSeconds() - actualOfferNavigationResult.getRoute().getDurationInSeconds();
     }
@@ -407,7 +407,7 @@ public class TripsResource {
         if (!joinRequest.isPresent()) throw RestUtils.createNotFoundException();
 
         NavigationResult actualOfferNavigationResult = tripsNavigationManager.getNavigationResultForOffer( joinRequest.get().getOffer() );
-        NavigationResult diversionOfferNavigationResult = tripsNavigationManager.getNavigationResultForOffer( joinRequest.get().getOffer(), joinRequest.get().getQuery() );
+        NavigationResult diversionOfferNavigationResult = tripsNavigationManager.getNavigationResultForOffer( joinRequest.get().getOffer(), joinRequest.get().getSuperJoinTripRequest().getQuery() );
 
         return diversionOfferNavigationResult.getRoute().getDistanceInMeters() - actualOfferNavigationResult.getRoute().getDistanceInMeters();
     }
@@ -465,7 +465,7 @@ public class TripsResource {
 
 
     private void assertUserIsPassenger(JoinTripRequest request, User user) {
-        if (user.getId() != request.getQuery().getPassenger().getId()) {
+        if (user.getId() != request.getSuperJoinTripRequest().getQuery().getPassenger().getId()) {
             throw RestUtils.createJsonFormattedException("only passenger can take this action", 400);
         }
     }

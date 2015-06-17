@@ -2,6 +2,7 @@ package org.croudtrip.trips;
 
 import org.croudtrip.api.trips.JoinTripRequest;
 import org.croudtrip.api.trips.JoinTripStatus;
+import org.croudtrip.api.trips.TripQuery;
 import org.croudtrip.gcm.GcmManager;
 import org.croudtrip.logs.LogManager;
 import org.croudtrip.utils.AbstractScheduledTaskExecutor;
@@ -33,7 +34,8 @@ public class ExpireJoinTripRequestsExecutor extends AbstractScheduledTaskExecuto
         for (JoinTripRequest joinTripRequest : tripsManager.findAllJoinRequests()) {
             if (!joinTripRequest.getStatus().equals(JoinTripStatus.PASSENGER_ACCEPTED)) continue;
 
-            if (currentTimestamp > joinTripRequest.getQuery().getCreationTimestamp() + joinTripRequest.getQuery().getMaxWaitingTimeInSeconds()) {
+            TripQuery query = joinTripRequest.getSuperJoinTripRequest().getQuery();
+            if (currentTimestamp > query.getCreationTimestamp() + query.getMaxWaitingTimeInSeconds()) {
                 tripsManager.updateJoinRequestPassengerCancel(joinTripRequest);
                 gcmManager.sendJoinTripRequestExpiredToPassenger(joinTripRequest);
             }

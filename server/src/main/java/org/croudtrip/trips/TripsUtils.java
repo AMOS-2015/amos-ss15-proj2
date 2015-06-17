@@ -86,7 +86,7 @@ public class TripsUtils {
             if( !request.getStatus().equals( JoinTripStatus.DRIVER_ACCEPTED ) )
                 continue;
 
-            if( noReceiver != null && request.getQuery().getPassenger().getId() == noReceiver.getId())
+            if( noReceiver != null && request.getSuperJoinTripRequest().getQuery().getPassenger().getId() == noReceiver.getId())
                 continue;
 
             // find estimated arrival time in list
@@ -94,7 +94,7 @@ public class TripsUtils {
             logManager.d("Potential match has " + userWayPoints.size() + " wps");
             for( UserWayPoint wp : userWayPoints ){
                 logManager.d("WP for user " + wp.getUser().getFirstName());
-                if( wp.getUser().getId() == request.getQuery().getPassenger().getId() ) {
+                if( wp.getUser().getId() == request.getSuperJoinTripRequest().getQuery().getPassenger().getId() ) {
                     arrivalTimestamp = wp.getArrivalTimestamp();
                     break;
                 }
@@ -102,12 +102,12 @@ public class TripsUtils {
 
             request = new JoinTripRequest(
                     request.getId(),
-                    request.getQuery(),
                     request.getTotalPriceInCents(),
                     request.getPricePerKmInCents(),
                     arrivalTimestamp,
                     request.getOffer(),
-                    request.getStatus()
+                    request.getStatus(),
+                    request.getSuperJoinTripRequest()
             );
             joinTripRequestDAO.update( request );
 

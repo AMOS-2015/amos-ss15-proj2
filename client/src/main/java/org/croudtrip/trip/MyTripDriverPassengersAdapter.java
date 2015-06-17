@@ -97,7 +97,7 @@ public class MyTripDriverPassengersAdapter extends RecyclerView.Adapter<Recycler
             ItemViewHolder holder = (ItemViewHolder) h;
 
             JoinTripRequest joinRequest = getRequest(position);
-            TripQuery query = joinRequest.getQuery();
+            TripQuery query = joinRequest.getSuperJoinTripRequest().getQuery();
 
             // Passenger name
             User passenger = query.getPassenger();

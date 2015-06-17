@@ -187,8 +187,9 @@ class TripsMatcher {
 				passengerMaxWaitingTimestamp = query.getCreationTimestamp() + query.getMaxWaitingTimeInSeconds();
 			} else {
 				for (JoinTripRequest joinTripRequest : joinTripRequestDAO.findByOfferId(offer.getId())) {
-					if (userWayPoint.getUser().equals(joinTripRequest.getQuery().getPassenger())) {
-						passengerMaxWaitingTimestamp = joinTripRequest.getQuery().getCreationTimestamp() + joinTripRequest.getQuery().getMaxWaitingTimeInSeconds();
+					TripQuery foundQuery = joinTripRequest.getSuperJoinTripRequest().getQuery();
+					if (userWayPoint.getUser().equals(foundQuery.getPassenger())) {
+						passengerMaxWaitingTimestamp = foundQuery.getCreationTimestamp() + foundQuery.getMaxWaitingTimeInSeconds();
 						break;
 					}
 				}
