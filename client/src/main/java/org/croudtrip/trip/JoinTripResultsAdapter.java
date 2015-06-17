@@ -23,7 +23,7 @@ import android.widget.TextView;
 
 import org.croudtrip.R;
 import org.croudtrip.api.account.User;
-import org.croudtrip.api.trips.TripReservation;
+import org.croudtrip.api.trips.SuperTripReservation;
 
 import java.util.List;
 
@@ -36,7 +36,7 @@ public class JoinTripResultsAdapter extends RecyclerView.Adapter<JoinTripResults
     //************************** Variables ***************************//
 
     private final Context context;
-    private List<TripReservation> reservations;
+    private List<SuperTripReservation> reservations;
 
     protected OnItemClickListener listener;
 
@@ -85,7 +85,7 @@ public class JoinTripResultsAdapter extends RecyclerView.Adapter<JoinTripResults
 
     //************************** Constructors ***************************//
 
-    public JoinTripResultsAdapter(Context context, List<TripReservation> reservations) {
+    public JoinTripResultsAdapter(Context context, List<SuperTripReservation> reservations) {
         this.context = context;
         this.reservations = reservations;
     }
@@ -107,11 +107,11 @@ public class JoinTripResultsAdapter extends RecyclerView.Adapter<JoinTripResults
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
 
-        TripReservation reservation = reservations.get(position);
+        SuperTripReservation reservation = reservations.get(position);
 
         // Price info
-        String price = reservation.getTotalPriceInCents() / 100 + ","; // euros
-        int cents = reservation.getTotalPriceInCents()  % 100;
+        String price = reservation.getReservations().get(0).getTotalPriceInCents() / 100 + ","; // euros
+        int cents = reservation.getReservations().get(0).getTotalPriceInCents()  % 100;
 
         if(cents == 0){
             price = price + "00";
@@ -125,7 +125,7 @@ public class JoinTripResultsAdapter extends RecyclerView.Adapter<JoinTripResults
 
 
         // Driver info
-        User driver = reservation.getDriver();
+        User driver = reservation.getReservations().get(0).getDriver();
         holder.tvDriverName.setText(driver.getFirstName());
 
 
@@ -159,7 +159,7 @@ public class JoinTripResultsAdapter extends RecyclerView.Adapter<JoinTripResults
      * Adds the given items to the adapter.
      * @param additionalReservations new elements to add to the adapter
      */
-    public void addElements(List<TripReservation> additionalReservations){
+    public void addElements(List<SuperTripReservation> additionalReservations){
 
         if(additionalReservations == null){
             return;
@@ -191,11 +191,11 @@ public class JoinTripResultsAdapter extends RecyclerView.Adapter<JoinTripResults
 
 
     /**
-     * Returns the TripReservation at the specific position
+     * Returns the reservation at the specific position
      * @param position the position in the adapter of the item to return
      * @return the item at the specific position
      */
-    public TripReservation getItem(int position){
+    public SuperTripReservation getItem(int position){
 
         if(position < 0 || position >= reservations.size()){
             return null;

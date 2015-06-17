@@ -42,9 +42,9 @@ import org.croudtrip.account.AccountManager;
 import org.croudtrip.api.TripsResource;
 import org.croudtrip.api.directions.RouteLocation;
 import org.croudtrip.api.trips.JoinTripRequest;
+import org.croudtrip.api.trips.SuperTripReservation;
 import org.croudtrip.api.trips.TripQueryDescription;
 import org.croudtrip.api.trips.TripQueryResult;
-import org.croudtrip.api.trips.TripReservation;
 import org.croudtrip.fragments.SubscriptionFragment;
 import org.croudtrip.trip.JoinTripResultsAdapter;
 import org.croudtrip.utils.DefaultTransformer;
@@ -162,7 +162,7 @@ public class JoinResultsFragment extends SubscriptionFragment implements GoogleA
 
                 progressBar.setVisibility(View.VISIBLE);
 
-                TripReservation reservation = adapter.getItem(position);
+                SuperTripReservation reservation = adapter.getItem(position);
                 Timber.d("Clicked on reservation " + reservation.getId());
 
                 Subscription subscription = tripsResource.joinTrip(reservation.getId())
@@ -228,7 +228,7 @@ public class JoinResultsFragment extends SubscriptionFragment implements GoogleA
                     @Override
                     public void call(TripQueryResult result) {
 
-                        List<TripReservation> reservations = result.getReservations();
+                        List<SuperTripReservation> reservations = result.getReservations();
 
                         // Update the caption text
                         int numMatches = reservations.size();

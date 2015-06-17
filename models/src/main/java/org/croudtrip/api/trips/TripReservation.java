@@ -21,42 +21,15 @@ import com.google.common.base.Objects;
 import org.croudtrip.api.account.User;
 
 import javax.persistence.Column;
-import javax.persistence.Embedded;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.Embeddable;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.Table;
 
 /**
- * A trip that is being offered by a driver.
+ * A (price) reservation for one offered trip.
  */
-@Entity(name = TripReservation.ENTITY_NAME)
-@Table(name = "trip_reservation")
-@NamedQueries({
-		@NamedQuery(
-				name = TripReservation.QUERY_NAME_FIND_ALL,
-				query = "SELECT r FROM " + TripReservation.ENTITY_NAME + " r"
-		)
-})
+@Embeddable
 public class TripReservation {
-
-	public static final String
-			ENTITY_NAME =  "TripMatchReservation",
-			COLUMN_ID = "trip_match_reservation_id",
-			QUERY_NAME_FIND_ALL = "org.croudtrip.api.trips.TripReservation.findAll";
-
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = COLUMN_ID)
-	private long id;
-
-	@Embedded
-	private TripQuery query;
 
 	@Column(name = "priceInCents", nullable = false)
 	private int totalPriceInCents;
@@ -73,29 +46,18 @@ public class TripReservation {
 
 	public TripReservation() { }
 
+
 	@JsonCreator
 	public TripReservation(
-			@JsonProperty("id") long id,
-			@JsonProperty("query") TripQuery query,
 			@JsonProperty("totalPriceInCents") int totalPriceInCents,
 			@JsonProperty("pricePerKmInCents") int pricePerKmInCents,
 			@JsonProperty("offerId") long offerId,
 			@JsonProperty("driver") User driver) {
 
-		this.id = id;
-		this.query = query;
 		this.totalPriceInCents = totalPriceInCents;
 		this.pricePerKmInCents = pricePerKmInCents;
 		this.offerId = offerId;
 		this.driver = driver;
-	}
-
-	public long getId() {
-		return id;
-	}
-
-	public TripQuery getQuery() {
-		return query;
 	}
 
 	public int getTotalPriceInCents() {
@@ -119,16 +81,14 @@ public class TripReservation {
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
 		TripReservation that = (TripReservation) o;
-		return Objects.equal(id, that.id) &&
-				Objects.equal(totalPriceInCents, that.totalPriceInCents) &&
+		return Objects.equal(totalPriceInCents, that.totalPriceInCents) &&
 				Objects.equal(pricePerKmInCents, that.pricePerKmInCents) &&
 				Objects.equal(offerId, that.offerId) &&
-				Objects.equal(query, that.query) &&
 				Objects.equal(driver, that.driver);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hashCode(id, query, totalPriceInCents, pricePerKmInCents, offerId, driver);
+		return Objects.hashCode(totalPriceInCents, pricePerKmInCents, offerId, driver);
 	}
 }

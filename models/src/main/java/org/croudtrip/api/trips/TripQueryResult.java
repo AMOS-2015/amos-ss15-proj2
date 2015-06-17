@@ -27,19 +27,19 @@ import java.util.List;
  */
 public class TripQueryResult {
 
-	private final List<TripReservation> reservations;
+	private final List<SuperTripReservation> reservations;
 	private final RunningTripQuery runningQuery;
 
 	@JsonCreator
 	public TripQueryResult(
-			@JsonProperty("reservations") List<TripReservation> reservations,
+			@JsonProperty("reservations") List<SuperTripReservation> reservations,
 			@JsonProperty("runningQuery") RunningTripQuery runningQuery) {
 
 		this.reservations = reservations;
 		this.runningQuery = runningQuery;
 	}
 
-	public List<TripReservation> getReservations() {
+	public List<SuperTripReservation> getReservations() {
 		return reservations;
 	}
 

@@ -26,6 +26,7 @@ import org.croudtrip.api.gcm.GcmConstants;
 import org.croudtrip.api.trips.JoinTripRequest;
 import org.croudtrip.api.trips.JoinTripStatus;
 import org.croudtrip.api.trips.RunningTripQuery;
+import org.croudtrip.api.trips.SuperTripReservation;
 import org.croudtrip.api.trips.TripOffer;
 import org.croudtrip.api.trips.TripOfferDescription;
 import org.croudtrip.api.trips.TripOfferStatus;
@@ -36,8 +37,8 @@ import org.croudtrip.api.trips.TripQueryResult;
 import org.croudtrip.api.trips.TripReservation;
 import org.croudtrip.api.trips.UserWayPoint;
 import org.croudtrip.db.JoinTripRequestDAO;
+import org.croudtrip.db.SuperTripReservationDAO;
 import org.croudtrip.db.TripOfferDAO;
-import org.croudtrip.db.TripReservationDAO;
 import org.croudtrip.directions.DirectionsManager;
 import org.croudtrip.directions.RouteNotFoundException;
 import org.croudtrip.gcm.GcmManager;
@@ -57,7 +58,7 @@ import javax.inject.Singleton;
 public class TripsManager {
 
     private final TripOfferDAO tripOfferDAO;
-    private final TripReservationDAO tripReservationDAO;
+    private final SuperTripReservationDAO superTripReservationDAO;
     private final JoinTripRequestDAO joinTripRequestDAO;
     private final DirectionsManager directionsManager;
     private final VehicleManager vehicleManager;
@@ -71,7 +72,7 @@ public class TripsManager {
     @Inject
     TripsManager(
             TripOfferDAO tripOfferDAO,
-            TripReservationDAO tripReservationDAO,
+            SuperTripReservationDAO superTripReservationDAO,
             JoinTripRequestDAO joinTripRequestDAO,
             DirectionsManager directionsManager,
             VehicleManager vehicleManager,
@@ -82,7 +83,7 @@ public class TripsManager {
             LogManager logManager) {
 
         this.tripOfferDAO = tripOfferDAO;
-        this.tripReservationDAO = tripReservationDAO;
+        this.superTripReservationDAO = superTripReservationDAO;
         this.joinTripRequestDAO = joinTripRequestDAO;
         this.directionsManager = directionsManager;
         this.vehicleManager = vehicleManager;
@@ -250,8 +251,8 @@ public class TripsManager {
         List<TripOffer> potentialMatches = tripsMatcher.filterPotentialMatches(tripOfferDAO.findAllActive(), query);
 
         // find and store reservations
-        List<TripReservation> reservations = findCheapestMatch(query, potentialMatches);
-        for (TripReservation reservation : reservations) tripReservationDAO.save(reservation);
+        List<SuperTripReservation> reservations = findCheapestMatch(query, potentialMatches);
+        for (SuperTripReservation reservation : reservations) superTripReservationDAO.save(reservation);
 
         // if no reservations start "background search"
         RunningTripQuery runningQuery = null;
@@ -268,34 +269,34 @@ public class TripsManager {
      * Get a list of all the reservations that exists.
      * @return returns all trip reservations from the database.
      */
-    public List<TripReservation> findAllReservations() {
-        return tripReservationDAO.findAll();
+    public List<SuperTripReservation> findAllReservations() {
+        return superTripReservationDAO.findAll();
     }
 
     /**
      * Find a specific reservation by its id.
-     * @param reservationId the id of the {@link org.croudtrip.api.trips.TripReservation} that you want to get.
-     * @return An {@link com.google.common.base.Optional} that contains the TripReservation if it exists.
+     * @param reservationId the id of the {@link org.croudtrip.api.trips.SuperTripReservation} that you want to get.
+     * @return An {@link com.google.common.base.Optional} that contains the reservation
      */
-    public Optional<TripReservation> findReservation(long reservationId) {
-        return tripReservationDAO.findById(reservationId);
+    public Optional<SuperTripReservation> findReservation(long reservationId) {
+        return superTripReservationDAO.findById(reservationId);
     }
 
     /**
-     * Join a specific offer by a {@link org.croudtrip.api.trips.TripReservation}.
+     * Join a specific offer by a {@link org.croudtrip.api.trips.SuperTripReservation}.
      * A {@link org.croudtrip.api.trips.JoinTripRequest} for this query will be created and a
      * notification is sent to the driver, that he has either to decline or to accept this new
      * passenger.
      * @param tripReservation The reservation for that the user want to join the trip
-     * @return An {@link com.google.common.base.Optional} that contains a JoinTripRequest if the
+     * @return An {@link com.google.common.base.Optional} that contains a join request if the
      * reservation was still valid.
      */
-    public Optional<JoinTripRequest> joinTrip(TripReservation tripReservation) {
+    public Optional<JoinTripRequest> joinTrip(SuperTripReservation tripReservation) {
         // remove reservation (either it has now been accepted or is can be discarded)
-        tripReservationDAO.delete(tripReservation);
+        superTripReservationDAO.delete(tripReservation);
 
         // find and check trip
-        Optional<TripOffer> offerOptional = tripOfferDAO.findById(tripReservation.getOfferId());
+        Optional<TripOffer> offerOptional = tripOfferDAO.findById(tripReservation.getReservations().get(0).getOfferId());
         if (!offerOptional.isPresent()) return Optional.absent();
         TripOffer offer = offerOptional.get();
 
@@ -318,8 +319,8 @@ public class TripsManager {
         JoinTripRequest joinTripRequest = new JoinTripRequest(
                 0,
                 tripReservation.getQuery(),
-                tripReservation.getTotalPriceInCents(),
-                tripReservation.getPricePerKmInCents(),
+                tripReservation.getReservations().get(0).getTotalPriceInCents(),
+                tripReservation.getReservations().get(0).getPricePerKmInCents(),
                 arrivalTimestamp,
                 offer,
                 JoinTripStatus.PASSENGER_ACCEPTED);
@@ -477,12 +478,13 @@ public class TripsManager {
 
 
     /**
-     * Will compute a list of cheapest @link{TripReservation} for a specific query out of a list of potential matches
+     * Will compute a list of cheapest {@link org.croudtrip.api.trips.SuperTripReservation} for a
+     * specific query out of a list of potential matches
      * @param query the query you want to get a match for
      * @param potentialMatches the list of potential matches for this query
-     * @return a list of TripReservations for this query with the cheapest price
+     * @return a list of reservations for this query with the cheapest price
      */
-    private List<TripReservation> findCheapestMatch(TripQuery query, List<TripOffer> potentialMatches) {
+    private List<SuperTripReservation> findCheapestMatch(TripQuery query, List<TripOffer> potentialMatches) {
         if (potentialMatches.isEmpty()) return new ArrayList<>();
 
         Collections.sort(potentialMatches, new Comparator<TripOffer>() {
@@ -514,16 +516,17 @@ public class TripsManager {
         int totalPriceInCents = (int) (pricePerKmInCents * query.getPassengerRoute().getDistanceInMeters() / 1000);
 
         // create price reservations
-        List<TripReservation> reservations = new ArrayList<>();
+        List<SuperTripReservation> reservations = new ArrayList<>();
         for (TripOffer match : matches) {
-            reservations.add(new TripReservation(
-                    0,
-                    query,
-                    totalPriceInCents,
-                    match.getPricePerKmInCents(),
-                    match.getId(),
-                    match.getDriver()));
-
+            reservations.add(new SuperTripReservation.Builder()
+                    .setQuery(query)
+                    .addReservation(new TripReservation(
+                                    totalPriceInCents,
+                                    match.getPricePerKmInCents(),
+                                    match.getId(),
+                                    match.getDriver())
+                    )
+                    .build());
         }
 
         return reservations;

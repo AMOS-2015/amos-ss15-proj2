@@ -11,6 +11,7 @@ import org.croudtrip.api.directions.RouteLocation;
 import org.croudtrip.api.trips.JoinTripRequest;
 import org.croudtrip.api.trips.JoinTripStatus;
 import org.croudtrip.api.trips.RunningTripQuery;
+import org.croudtrip.api.trips.SuperTripReservation;
 import org.croudtrip.api.trips.TripOffer;
 import org.croudtrip.api.trips.TripOfferDescription;
 import org.croudtrip.api.trips.TripOfferStatus;
@@ -21,8 +22,8 @@ import org.croudtrip.api.trips.TripQueryResult;
 import org.croudtrip.api.trips.TripReservation;
 import org.croudtrip.api.trips.UserWayPoint;
 import org.croudtrip.db.JoinTripRequestDAO;
+import org.croudtrip.db.SuperTripReservationDAO;
 import org.croudtrip.db.TripOfferDAO;
-import org.croudtrip.db.TripReservationDAO;
 import org.croudtrip.directions.DirectionsManager;
 import org.croudtrip.directions.RouteNotFoundException;
 import org.croudtrip.gcm.GcmManager;
@@ -48,7 +49,8 @@ public class TripsManagerTest {
     @Mocked DirectionsManager directionsManager;
     @Mocked LogManager logManager;
     @Mocked TripsUtils tripsUtils;
-    @Mocked TripReservationDAO tripReservationDAO;
+    @Mocked
+    SuperTripReservationDAO superTripReservationDAO;
     @Mocked VehicleManager vehicleManager;
     @Mocked TripsMatcher tripsMatcher;
     @Mocked RunningTripQueriesManager runningTripQueriesManager;
@@ -61,7 +63,7 @@ public class TripsManagerTest {
 
     @Before
     public void setupTripsManager() {
-        tripsManager = new TripsManager( tripOfferDAO, tripReservationDAO, joinTripRequestDAO, directionsManager,
+        tripsManager = new TripsManager( tripOfferDAO, superTripReservationDAO, joinTripRequestDAO, directionsManager,
                 vehicleManager, gcmManager, tripsMatcher, runningTripQueriesManager, tripsUtils, logManager );
     }
 
@@ -172,14 +174,14 @@ public class TripsManagerTest {
         RunningTripQuery runningQuery = result.getRunningQuery();
         Assert.assertNull( runningQuery );
 
-        List<TripReservation> reservations = result.getReservations();
+        List<SuperTripReservation> reservations = result.getReservations();
         Assert.assertEquals( "Wrong reservations count", 1, reservations.size() );
-        Assert.assertEquals( "Wrong driver", d4, reservations.get(0).getDriver());
+        Assert.assertEquals( "Wrong driver", d4, reservations.get(0).getReservations().get(0).getDriver());
         Assert.assertEquals( "Wrong query", query.getPassenger(), reservations.get(0).getQuery().getPassenger());
         Assert.assertEquals( "Wrong query", query.getStartLocation(), reservations.get(0).getQuery().getStartLocation());
         Assert.assertEquals( "Wrong query", query.getDestinationLocation(), reservations.get(0).getQuery().getDestinationLocation());
-        Assert.assertEquals( "Wrong price per kilometer", 3, reservations.get(0).getPricePerKmInCents());
-        Assert.assertEquals( "Wrong total price", 4*12345/1000, reservations.get(0).getTotalPriceInCents());
+        Assert.assertEquals( "Wrong price per kilometer", 3, reservations.get(0).getReservations().get(0).getPricePerKmInCents());
+        Assert.assertEquals( "Wrong total price", 4*12345/1000, reservations.get(0).getReservations().get(0).getTotalPriceInCents());
     }
 
     @Test
@@ -195,7 +197,10 @@ public class TripsManagerTest {
 
         final TripOffer offer = new TripOffer(0, null, 0, tripStart, 10, 10, d, null, TripOfferStatus.ACTIVE, 0);
 
-        TripReservation reservation = new TripReservation( 0, query, 12345, 10, 0, d );
+        SuperTripReservation reservation = new SuperTripReservation.Builder()
+                .setQuery(query)
+                .addReservation(new TripReservation(12345, 10, 0, d))
+                .build();
 
         new Expectations(){{
 
@@ -216,8 +221,8 @@ public class TripsManagerTest {
         Assert.assertTrue(requestOptional.isPresent());
         Assert.assertEquals( query, requestOptional.get().getQuery() );
         Assert.assertEquals( offer, requestOptional.get().getOffer() );
-        Assert.assertEquals( reservation.getTotalPriceInCents(), requestOptional.get().getTotalPriceInCents());
-        Assert.assertEquals( reservation.getPricePerKmInCents(), requestOptional.get().getPricePerKmInCents());
+        Assert.assertEquals( reservation.getReservations().get(0).getTotalPriceInCents(), requestOptional.get().getTotalPriceInCents());
+        Assert.assertEquals( reservation.getReservations().get(0).getPricePerKmInCents(), requestOptional.get().getPricePerKmInCents());
         Assert.assertEquals( 1, requestOptional.get().getEstimatedArrivalTimestamp());
     }
 
