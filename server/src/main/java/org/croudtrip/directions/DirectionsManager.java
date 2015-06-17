@@ -110,6 +110,8 @@ public class DirectionsManager {
         List<Long> legDurationsInSeconds = new ArrayList<>();
 		List<Long> legDistancesInMeters = new ArrayList<>();
 
+        List<Integer> waypointIndices = new ArrayList<>();
+
 		List<LatLng> points = new ArrayList<>();
 		for (DirectionsLeg leg : googleRoute.legs) {
             //logManager.d("Leg: " + leg.distance.inMeters);
@@ -117,14 +119,24 @@ public class DirectionsManager {
 			durationInSeconds += leg.duration.inSeconds;
             legDurationsInSeconds.add( leg.duration.inSeconds );
 			legDistancesInMeters.add(leg.distance.inMeters);
+
+            waypointIndices.add( points.size() );
+
 			for (DirectionsStep step : leg.steps) {
 				points.addAll(step.polyline.decodePath());
 			}
 		}
 
-        //logManager.d("Total Distance: " + distanceInMeters);
+		Polyline polyline = PolylineEncoder.encode( points, waypointIndices );
 
-		EncodedPolyline polyline = new EncodedPolyline(points);
+        logManager.d("PolylineLength: " + polyline.getPolyline().length());
+        logManager.d("WaypointIndices: " + waypointIndices.size() + " : stringIndices: " + polyline.getPolylineStringIndices().size());
+
+        StringBuilder debugString = new StringBuilder();
+        for( Integer i : polyline.getPolylineStringIndices() )
+            debugString.append(i + "#");
+        logManager.d("StringIndices: " + debugString.toString());
+
 		String warnings;
 		if (googleRoute.warnings.length > 0) {
 			boolean firstIter = true;
@@ -142,14 +154,15 @@ public class DirectionsManager {
 
 		return new Route(
 				waypoints,
-				polyline.getEncodedPath(),
+				polyline.getPolyline(),
 				distanceInMeters,
 				durationInSeconds,
 				legDurationsInSeconds,
 				legDistancesInMeters,
 				googleRoute.copyrights,
 				warnings,
-				System.currentTimeMillis()/1000);
+				System.currentTimeMillis()/1000,
+                polyline.getPolylineStringIndices());
 	}
 
 }

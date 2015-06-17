@@ -19,6 +19,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Objects;
 
+import org.croudtrip.api.account.User;
+import org.croudtrip.api.trips.UserWayPoint;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -60,6 +63,10 @@ public class Route {
     @Column(name="leg_distances")
     private String legDistancesInMeters;
 
+    @Column(name="waypointPolylineIndices")
+    @JsonIgnore
+    private String waypointPolylineIndicesString;
+
     public Route() { }
 
     @JsonCreator
@@ -72,7 +79,8 @@ public class Route {
             @JsonProperty("legDistancesInMeters") List<Long> legDistancesInMeters,
             @JsonProperty("copyrights") String googleCopyrights,
             @JsonProperty("warnings") String googleWarnings,
-            @JsonProperty("lastUpdateTime") long lastUpdateTimeInSeconds) {
+            @JsonProperty("lastUpdateTime") long lastUpdateTimeInSeconds,
+            @JsonProperty("waypointPolylineIndices") List<Integer> waypointPolylineIndices ) {
 
         // convert JSON fields to string for persistence
         StringBuilder wayPointsBuilder = new StringBuilder();
@@ -114,6 +122,20 @@ public class Route {
             }
             this.legDistancesInMeters= legDistanceBuilder.toString();
         }
+
+        this.waypointPolylineIndicesString = "";
+        if( waypointPolylineIndices != null ) {
+            StringBuilder wpPlIdxBuiler = new StringBuilder();
+            firstPoint = true;
+            for( Integer value : waypointPolylineIndices ){
+                if( firstPoint ) firstPoint = false;
+                else wpPlIdxBuiler.append("#");
+                wpPlIdxBuiler.append(value);
+            }
+
+            this.waypointPolylineIndicesString = wpPlIdxBuiler.toString();
+        }
+
     }
 
     @JsonProperty("wayPoints")
@@ -126,10 +148,6 @@ public class Route {
             result.add(new RouteLocation(Float.valueOf(parts[0]), Float.valueOf(parts[1])));
         }
         return result;
-    }
-
-    public String getPolyline() {
-        return polyline;
     }
 
     public long getDistanceInMeters() {
@@ -160,6 +178,94 @@ public class Route {
         return result;
     }
 
+    /**
+     * Gets you the mapping from waypoints (that are visited on the route) into an index value
+     * of where the polyline does begin for this particular waypoint. So use
+     * getWaypointPolylineIndices.get(1) to get the polyline start index for the first waypoint.
+     * Therefore you can create route passages by simply using {@link java.lang.String#substring(int, int)}
+     * on the polyline.
+     *
+     * @return
+     */
+    @JsonProperty("waypointPolylineIndices")
+    private List<Integer> getWaypointPolylineIndices() {
+        List<Integer> result = new ArrayList<>();
+
+        String[] polylineIndices = waypointPolylineIndicesString.split("#");
+        for( String value : polylineIndices ) result.add(Integer.valueOf(value));
+
+        return result;
+    }
+
+    /**
+     * Gets you the polyline for the whole trip-
+     * @return The polyline as a string for the whole trip
+     */
+    public String getPolyline() {
+        return polyline;
+    }
+
+    /**
+     * Gets you the waypoints for a polyline from a specific waypoint index on the route
+     * to a certain waypoint index on the route.
+     * @param fromWaypoint index of the waypoint the polyline should start
+     * @param toWaypoint index of the waypoint where the polyline should end
+     * @return a list of waypoints that are part of the polyline
+     * @throws java.lang.IllegalArgumentException if toWaypoint is smaller than fromWaypoint
+     */
+    public List<RouteLocation> getPolylineWaypoints( int fromWaypoint, int toWaypoint ) {
+        if( toWaypoint < fromWaypoint)
+            throw new IllegalArgumentException("toWaypoint must be greater than fromWaypoint");
+
+        // compute the string index from the given waypoint indices
+        List<Integer> wayppointPolylineIndices = getWaypointPolylineIndices();
+        int fromStringIdx = wayppointPolylineIndices.get(fromWaypoint);
+        int toStringIdx = wayppointPolylineIndices.get(toWaypoint);
+
+        return PolylineDecoder.decode( polyline, fromStringIdx, toStringIdx );
+    }
+
+    /**
+     * Gets you subsection of the polyline for a specific user that should have waypoints accross the total route.
+     * If the user is already picked up and therefore has no starting waypoint anymore the starting waypoint of
+     * this route is used instead.
+     * @param user A user that has according waypoints in the userWaypoint
+     * @param userWayPoints A list of user waypoints that are visited during the trip.
+     * @return a list of waypoints that are part of the polyline
+     * @throws java.lang.IllegalArgumentException if the given user has no corresponding waypoints
+     * @throws java.lang.IllegalStateException if the given user has no corresponding destination waypoint
+     * (and therefore somthing went wrong when creating the user waypoints)
+     */
+    public List<RouteLocation> getPolylineWaypointsForUser( User user, List<UserWayPoint> userWayPoints ) {
+
+        // extract the waypoint id for the users starting point and destination point
+        int userFromWaypoint = -1;
+        int userToWaypoint = -1;
+        for( int i = 0; i < userWayPoints.size(); ++i ) {
+            UserWayPoint uwp = userWayPoints.get(i);
+            if( uwp.getUser().getId() == user.getId() && uwp.isStartOfTrip() )
+                userFromWaypoint = i;
+            else if( uwp.getUser().getId() == user.getId() ){
+                userToWaypoint = i;
+            }
+        }
+
+        // we cannot do anything if the user is not at all in the given waypoints list
+        if( userToWaypoint == -1 && userFromWaypoint == -1)
+            throw new IllegalArgumentException("User has no waypoints in the given user waypoints list");
+
+        // if the user has no destination, something went wrong, too
+        if( userToWaypoint == -1)
+            throw new IllegalStateException("User has a starting position but no destination in the given user waypoints list");
+
+        // if the user has no starting point, we will show the route from the current starting point
+        // this could happen, if the passenger already is in the car, so that's not really an error
+        if( userFromWaypoint == -1)
+            userFromWaypoint = 0;
+
+        return getPolylineWaypoints( userFromWaypoint, userToWaypoint );
+    }
+
     @Override
     public boolean equals(Object other) {
         if (other == null || !(other instanceof Route)) return false;
@@ -171,13 +277,14 @@ public class Route {
                 && Objects.equal(googleWarnings, route.googleWarnings)
                 && Objects.equal(wayPointsString, route.wayPointsString)
                 && Objects.equal(legDurationsInSeconds, route.legDurationsInSeconds)
-                && Objects.equal(legDistancesInMeters, route.legDistancesInMeters);
+                && Objects.equal(legDistancesInMeters, route.legDistancesInMeters)
+                && Objects.equal(waypointPolylineIndicesString, route.waypointPolylineIndicesString);
     }
 
     @Override
     public int hashCode() {
         return Objects.hashCode(polyline, googleCopyrights, durationInSeconds, distanceInMeters,
-                googleWarnings, wayPointsString, legDistancesInMeters, legDurationsInSeconds);
+                googleWarnings, wayPointsString, legDistancesInMeters, legDurationsInSeconds, waypointPolylineIndicesString);
     }
 
 
@@ -192,6 +299,7 @@ public class Route {
         private String googleCopyrights;
         private String googleWarnings;
         private long lastUpdateTimeInSeconds;
+        private List<Integer> waypointPolylineIndices;
 
         public Builder wayPoints(List<RouteLocation> wayPoints) {
             this.wayPoints = wayPoints;
@@ -238,6 +346,11 @@ public class Route {
             return this;
         }
 
+        public Builder waypointPolylineIndices(List<Integer> waypointPolylineIndices ) {
+            this.waypointPolylineIndices = waypointPolylineIndices;
+            return this;
+        }
+
         public Route build() {
             return new Route(
                     wayPoints,
@@ -248,7 +361,8 @@ public class Route {
                     legDistancesInMeters,
                     googleCopyrights,
                     googleWarnings,
-                    lastUpdateTimeInSeconds);
+                    lastUpdateTimeInSeconds,
+                    waypointPolylineIndices);
         }
     }
 

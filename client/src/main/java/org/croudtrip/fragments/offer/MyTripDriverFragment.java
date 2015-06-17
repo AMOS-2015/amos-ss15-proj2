@@ -63,6 +63,7 @@ import org.croudtrip.location.LocationUpdater;
 import org.croudtrip.trip.MyTripDriverPassengersAdapter;
 import org.croudtrip.utils.DefaultTransformer;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -387,8 +388,18 @@ public class MyTripDriverFragment extends SubscriptionFragment {
         // only one route will be shown (old route will be deleted
         googleMap.clear();
 
+
+        // get the polyline that should be shown as a list of RouteLocation objects and convert
+        // it to LatLng objects. We have to do it this way, because the models can not import
+        // the android maps libraries since the models also exist on the server.
+        List<RouteLocation> polyline = navigationResult.getRoute().getPolylineWaypointsForUser(offer.getDriver(), navigationResult.getUserWayPoints());
+        List<LatLng> polylinePoints = new ArrayList<LatLng>();
+        for( RouteLocation loc : polyline )
+            polylinePoints.add( new LatLng( loc.getLat(), loc.getLng() ) );
+
+        Timber.d("polyline: " + polyline);
         // Show route information on the map
-        googleMap.addPolyline(new PolylineOptions().addAll(PolyUtil.decode(navigationResult.getRoute().getPolyline())));
+        googleMap.addPolyline(new PolylineOptions().addAll( polylinePoints ) );
         googleMap.setMyLocationEnabled(true);
 
         for( UserWayPoint userWp : navigationResult.getUserWayPoints() ){
