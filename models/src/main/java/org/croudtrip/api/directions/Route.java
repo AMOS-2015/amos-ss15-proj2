@@ -233,8 +233,6 @@ public class Route {
      * @param userWayPoints A list of user waypoints that are visited during the trip.
      * @return a list of waypoints that are part of the polyline
      * @throws java.lang.IllegalArgumentException if the given user has no corresponding waypoints
-     * @throws java.lang.IllegalStateException if the given user has no corresponding destination waypoint
-     * (and therefore somthing went wrong when creating the user waypoints)
      */
     public List<RouteLocation> getPolylineWaypointsForUser( User user, List<UserWayPoint> userWayPoints ) {
 
@@ -254,9 +252,9 @@ public class Route {
         if( userToWaypoint == -1 && userFromWaypoint == -1)
             throw new IllegalArgumentException("User has no waypoints in the given user waypoints list");
 
-        // if the user has no destination, something went wrong, too
+        // if the user has no destination, we will simply take the route until the end of the trip
         if( userToWaypoint == -1)
-            throw new IllegalStateException("User has a starting position but no destination in the given user waypoints list");
+            userToWaypoint = userWayPoints.size() - 1;
 
         // if the user has no starting point, we will show the route from the current starting point
         // this could happen, if the passenger already is in the car, so that's not really an error
