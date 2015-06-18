@@ -7,7 +7,7 @@ import org.croudtrip.api.account.User;
 import org.croudtrip.api.directions.RouteLocation;
 import org.croudtrip.api.trips.JoinTripRequest;
 import org.croudtrip.api.trips.JoinTripStatus;
-import org.croudtrip.api.trips.SuperJoinTripRequest;
+import org.croudtrip.api.trips.SuperPassengerTrip;
 import org.croudtrip.api.trips.TripOffer;
 import org.croudtrip.api.trips.TripQuery;
 import org.croudtrip.api.trips.UserWayPoint;
@@ -115,7 +115,7 @@ public class TripsUtilsTest {
                 Assert.assertEquals( 12345, request.getEstimatedArrivalTimestamp());
             }
             else {
-                int userId = (int) request.getSuperJoinTripRequest().getQuery().getPassenger().getId();
+                int userId = (int) request.getSuperPassengerTrip().getQuery().getPassenger().getId();
                 switch( userId ) {
                     case 0:
                         Assert.assertEquals( request.getEstimatedArrivalTimestamp(), 1 );
@@ -152,7 +152,7 @@ public class TripsUtilsTest {
                 .setOffer(offer)
                 .setStatus(status)
                 .setEstimatedArrivalTimestamp(12345)
-                .setSuperJoinTripRequest(new SuperJoinTripRequest.Builder().setQuery(query).build())
+                .setSuperPassengerTrip(new SuperPassengerTrip.Builder().setQuery(query).build())
                 .build();
     }
 

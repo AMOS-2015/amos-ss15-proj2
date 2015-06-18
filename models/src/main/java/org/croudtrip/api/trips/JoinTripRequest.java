@@ -111,7 +111,7 @@ public class JoinTripRequest {
 
 	@ManyToOne
 	@JoinColumn(name = "super_join_trip_request_id")
-	private SuperJoinTripRequest superJoinTripRequest;
+	private SuperPassengerTrip superPassengerTrip;
 
 	public JoinTripRequest() { }
 
@@ -123,7 +123,7 @@ public class JoinTripRequest {
             @JsonProperty("estimatedArrivalTimestamp") long estimatedArrivalTimestamp,
 			@JsonProperty("offer") TripOffer offer,
 			@JsonProperty("status") JoinTripStatus status,
-			@JsonProperty("superJoinTripRequest") SuperJoinTripRequest superJoinTripRequest) {
+			@JsonProperty("superJoinTripRequest") SuperPassengerTrip superPassengerTrip) {
 
 		this.id = id;
 		this.totalPriceInCents = totalPriceInCents;
@@ -131,7 +131,7 @@ public class JoinTripRequest {
 		this.offer = offer;
 		this.status = status;
         this.estimatedArrivalTimestamp = estimatedArrivalTimestamp;
-		this.superJoinTripRequest = superJoinTripRequest;
+		this.superPassengerTrip = superPassengerTrip;
 	}
 
 
@@ -146,7 +146,7 @@ public class JoinTripRequest {
                 oldRequest.getEstimatedArrivalTimestamp(),
 				oldRequest.getOffer(),
 				newStatus,
-				oldRequest.getSuperJoinTripRequest());
+				oldRequest.getSuperPassengerTrip());
 	}
 
 	public long getId() {
@@ -171,8 +171,8 @@ public class JoinTripRequest {
 		return status;
 	}
 
-	public SuperJoinTripRequest getSuperJoinTripRequest() {
-		return superJoinTripRequest;
+	public SuperPassengerTrip getSuperPassengerTrip() {
+		return superPassengerTrip;
 	}
 
 	@Override
@@ -186,12 +186,12 @@ public class JoinTripRequest {
                 Objects.equal(estimatedArrivalTimestamp, that.estimatedArrivalTimestamp) &&
 				Objects.equal(offer, that.offer) &&
 				Objects.equal(status, that.status) &&
-				Objects.equal(superJoinTripRequest, that.superJoinTripRequest);
+				Objects.equal(superPassengerTrip, that.superPassengerTrip);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hashCode(id, totalPriceInCents, pricePerKmInCents, offer, status, superJoinTripRequest);
+		return Objects.hashCode(id, totalPriceInCents, pricePerKmInCents, offer, status, superPassengerTrip);
 	}
 
 
@@ -203,7 +203,7 @@ public class JoinTripRequest {
         private long estimatedArrivalTimestamp;
 		private TripOffer offer;
 		private JoinTripStatus status;
-		private SuperJoinTripRequest superJoinTripRequest;
+		private SuperPassengerTrip superPassengerTrip;
 
 		public Builder setId(long id) {
 			this.id = id;
@@ -235,13 +235,13 @@ public class JoinTripRequest {
             return this;
         }
 
-		public Builder setSuperJoinTripRequest(SuperJoinTripRequest superJoinTripRequest) {
-			this.superJoinTripRequest = superJoinTripRequest;
+		public Builder setSuperPassengerTrip(SuperPassengerTrip superPassengerTrip) {
+			this.superPassengerTrip = superPassengerTrip;
 			return this;
 		}
 
 		public JoinTripRequest build() {
-			return new JoinTripRequest(id, totalPriceInCents, pricePerKmInCents, estimatedArrivalTimestamp, offer, status, superJoinTripRequest);
+			return new JoinTripRequest(id, totalPriceInCents, pricePerKmInCents, estimatedArrivalTimestamp, offer, status, superPassengerTrip);
 		}
 
 	}

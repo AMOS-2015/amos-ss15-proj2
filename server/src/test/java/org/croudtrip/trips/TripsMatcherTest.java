@@ -9,7 +9,7 @@ import org.croudtrip.api.directions.Route;
 import org.croudtrip.api.directions.RouteLocation;
 import org.croudtrip.api.trips.JoinTripRequest;
 import org.croudtrip.api.trips.JoinTripStatus;
-import org.croudtrip.api.trips.SuperJoinTripRequest;
+import org.croudtrip.api.trips.SuperPassengerTrip;
 import org.croudtrip.api.trips.TripOffer;
 import org.croudtrip.api.trips.TripOfferStatus;
 import org.croudtrip.api.trips.TripQuery;
@@ -84,7 +84,7 @@ public class TripsMatcherTest {
 					new JoinTripRequest.Builder()
 							.setOffer(offer)
 							.setStatus(JoinTripStatus.DRIVER_DECLINED)
-							.setSuperJoinTripRequest(new SuperJoinTripRequest.Builder().setQuery(query).build())
+							.setSuperPassengerTrip(new SuperPassengerTrip.Builder().setQuery(query).build())
 							.build());
 		}};
 
@@ -164,7 +164,7 @@ public class TripsMatcherTest {
 			joinTripRequestDAO.findByOfferId(offer.getId());
 			result = Lists.newArrayList(new JoinTripRequest.Builder()
 					.setOffer(offer)
-					.setSuperJoinTripRequest(new SuperJoinTripRequest.Builder().setQuery(query).build())
+					.setSuperPassengerTrip(new SuperPassengerTrip.Builder().setQuery(query).build())
 					.build());
 
 			tripsNavigationManager.getRouteWaypointsForOffer(offer, query);

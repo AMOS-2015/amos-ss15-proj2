@@ -24,7 +24,7 @@ import org.croudtrip.api.account.Vehicle;
 import org.croudtrip.api.gcm.GcmRegistration;
 import org.croudtrip.api.trips.JoinTripRequest;
 import org.croudtrip.api.trips.RunningTripQuery;
-import org.croudtrip.api.trips.SuperJoinTripRequest;
+import org.croudtrip.api.trips.SuperPassengerTrip;
 import org.croudtrip.api.trips.SuperTripReservation;
 import org.croudtrip.api.trips.TripOffer;
 import org.croudtrip.auth.BasicAuthenticator;
@@ -113,7 +113,7 @@ public final class CroudTripApplication extends Application<CroudTripConfig> {
 			Avatar.class,
 			TripOffer.class,
 			SuperTripReservation.class,
-			SuperJoinTripRequest.class,
+			SuperPassengerTrip.class,
 			JoinTripRequest.class,
 			RunningTripQuery.class,
 			Vehicle.class,

@@ -41,7 +41,7 @@ import org.croudtrip.R;
 import org.croudtrip.account.AccountManager;
 import org.croudtrip.api.TripsResource;
 import org.croudtrip.api.directions.RouteLocation;
-import org.croudtrip.api.trips.SuperJoinTripRequest;
+import org.croudtrip.api.trips.SuperPassengerTrip;
 import org.croudtrip.api.trips.SuperTripReservation;
 import org.croudtrip.api.trips.TripQueryDescription;
 import org.croudtrip.api.trips.TripQueryResult;
@@ -166,12 +166,12 @@ public class JoinResultsFragment extends SubscriptionFragment implements GoogleA
                 Timber.d("Clicked on reservation " + reservation.getId());
 
                 Subscription subscription = tripsResource.joinTrip(reservation.getId())
-                        .compose(new DefaultTransformer<SuperJoinTripRequest>())
-                        .subscribe(new Action1<SuperJoinTripRequest>() {
+                        .compose(new DefaultTransformer<SuperPassengerTrip>())
+                        .subscribe(new Action1<SuperPassengerTrip>() {
                             // SUCCESS
 
                             @Override
-                            public void call(SuperJoinTripRequest joinRequest) {
+                            public void call(SuperPassengerTrip joinRequest) {
                                 Toast.makeText(getActivity(), R.string.join_request_sent,
                                         Toast.LENGTH_SHORT).show();
 

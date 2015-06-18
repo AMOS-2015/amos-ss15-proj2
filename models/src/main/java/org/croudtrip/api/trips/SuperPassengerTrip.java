@@ -20,22 +20,23 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 /**
- * A collection of {@link JoinTripRequest}s.
+ * A collection of {@link JoinTripRequest}s which together form a "super trip" for one
+ * passenger.
  */
-@Entity(name = SuperJoinTripRequest.ENTITY_NAME)
+@Entity(name = SuperPassengerTrip.ENTITY_NAME)
 @Table(name = "super_join_trip_requests")
 @NamedQueries({
 		@NamedQuery(
-				name = SuperJoinTripRequest.QUERY_NAME_FIND_ALL,
-				query = "SELECT s FROM " + SuperJoinTripRequest.ENTITY_NAME + " s"
+				name = SuperPassengerTrip.QUERY_NAME_FIND_ALL,
+				query = "SELECT s FROM " + SuperPassengerTrip.ENTITY_NAME + " s"
 		),
 		@NamedQuery(
-				name = SuperJoinTripRequest.QUERY_FIND_BY_PASSENGER_ID,
-				query = "SELECT s FROM " + SuperJoinTripRequest.ENTITY_NAME + " s WHERE " +
-						"s.query.passenger.id = :" + SuperJoinTripRequest.QUERY_PARAM_USER_ID
+				name = SuperPassengerTrip.QUERY_FIND_BY_PASSENGER_ID,
+				query = "SELECT s FROM " + SuperPassengerTrip.ENTITY_NAME + " s WHERE " +
+						"s.query.passenger.id = :" + SuperPassengerTrip.QUERY_PARAM_USER_ID
 		)
 })
-public class SuperJoinTripRequest {
+public class SuperPassengerTrip {
 
 	public static final String
 			ENTITY_NAME = "SuperJoinTripRequest",
@@ -56,11 +57,11 @@ public class SuperJoinTripRequest {
 	private List<JoinTripRequest> requests;
 
 
-	public SuperJoinTripRequest() {
+	public SuperPassengerTrip() {
 	}
 
 	@JsonCreator
-	public SuperJoinTripRequest(
+	public SuperPassengerTrip(
 			@JsonProperty("id") long id,
 			@JsonProperty("query") TripQuery query,
 			@JsonProperty("requests") List<JoinTripRequest> requests) {
@@ -86,7 +87,7 @@ public class SuperJoinTripRequest {
 	public boolean equals(Object o) {
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
-		SuperJoinTripRequest that = (SuperJoinTripRequest) o;
+		SuperPassengerTrip that = (SuperPassengerTrip) o;
 		return Objects.equal(id, that.id) &&
 				Objects.equal(query, that.query) &&
 				Objects.equal(requests, that.requests);
@@ -118,8 +119,8 @@ public class SuperJoinTripRequest {
 			return this;
 		}
 
-		public SuperJoinTripRequest build() {
-			return new SuperJoinTripRequest(id, query, requests);
+		public SuperPassengerTrip build() {
+			return new SuperPassengerTrip(id, query, requests);
 		}
 
 	}

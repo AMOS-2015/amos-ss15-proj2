@@ -26,7 +26,7 @@ import org.croudtrip.api.gcm.GcmConstants;
 import org.croudtrip.api.trips.JoinTripRequest;
 import org.croudtrip.api.trips.JoinTripStatus;
 import org.croudtrip.api.trips.RunningTripQuery;
-import org.croudtrip.api.trips.SuperJoinTripRequest;
+import org.croudtrip.api.trips.SuperPassengerTrip;
 import org.croudtrip.api.trips.SuperTripReservation;
 import org.croudtrip.api.trips.TripOffer;
 import org.croudtrip.api.trips.TripOfferDescription;
@@ -38,7 +38,7 @@ import org.croudtrip.api.trips.TripQueryResult;
 import org.croudtrip.api.trips.TripReservation;
 import org.croudtrip.api.trips.UserWayPoint;
 import org.croudtrip.db.JoinTripRequestDAO;
-import org.croudtrip.db.SuperJoinTripRequestDAO;
+import org.croudtrip.db.SuperPassengerTripDAO;
 import org.croudtrip.db.SuperTripReservationDAO;
 import org.croudtrip.db.TripOfferDAO;
 import org.croudtrip.directions.DirectionsManager;
@@ -61,7 +61,7 @@ public class TripsManager {
 
     private final TripOfferDAO tripOfferDAO;
     private final SuperTripReservationDAO superTripReservationDAO;
-    private final SuperJoinTripRequestDAO superJoinTripRequestDAO;
+    private final SuperPassengerTripDAO superPassengerTripDAO;
     private final JoinTripRequestDAO joinTripRequestDAO;
     private final DirectionsManager directionsManager;
     private final VehicleManager vehicleManager;
@@ -76,7 +76,7 @@ public class TripsManager {
     TripsManager(
             TripOfferDAO tripOfferDAO,
             SuperTripReservationDAO superTripReservationDAO,
-            SuperJoinTripRequestDAO superJoinTripRequestDAO,
+            SuperPassengerTripDAO superPassengerTripDAO,
             JoinTripRequestDAO joinTripRequestDAO,
             DirectionsManager directionsManager,
             VehicleManager vehicleManager,
@@ -88,7 +88,7 @@ public class TripsManager {
 
         this.tripOfferDAO = tripOfferDAO;
         this.superTripReservationDAO = superTripReservationDAO;
-        this.superJoinTripRequestDAO = superJoinTripRequestDAO;
+        this.superPassengerTripDAO = superPassengerTripDAO;
         this.joinTripRequestDAO = joinTripRequestDAO;
         this.directionsManager = directionsManager;
         this.vehicleManager = vehicleManager;
@@ -208,7 +208,7 @@ public class TripsManager {
                     // alert accepted passengers
                     JoinTripRequest updatedRequest = new JoinTripRequest(request, JoinTripStatus.DRIVER_CANCELLED);
                     joinTripRequestDAO.update(updatedRequest);
-                    gcmManager.sendDriverCancelledTripMsg(offer, request.getSuperJoinTripRequest().getQuery().getPassenger());
+                    gcmManager.sendDriverCancelledTripMsg(offer, request.getSuperPassengerTrip().getQuery().getPassenger());
                 }
             }
 
@@ -289,13 +289,13 @@ public class TripsManager {
 
     /**
      * Join a specific offer by a {@link org.croudtrip.api.trips.SuperTripReservation}.
-     * A {@link org.croudtrip.api.trips.SuperJoinTripRequest} for this query will be created and a
+     * A {@link SuperPassengerTrip} for this query will be created and a
      * notification is sent to the drivers (might be multiple!), that they have to either decline or accept.
      * @param tripReservation The reservation for that the user want to join the trip
      * @return An {@link com.google.common.base.Optional} that contains a join request if the
      * reservation was still valid.
      */
-    public Optional<SuperJoinTripRequest> joinTrip(SuperTripReservation tripReservation) {
+    public Optional<SuperPassengerTrip> joinTrip(SuperTripReservation tripReservation) {
         // remove reservation (either it has now been accepted or is can be discarded)
         superTripReservationDAO.delete(tripReservation);
 
@@ -321,7 +321,7 @@ public class TripsManager {
         }
 
         // update join request
-        SuperJoinTripRequest superJoinTripRequest = new SuperJoinTripRequest.Builder().setQuery(tripReservation.getQuery()).build();
+        SuperPassengerTrip superPassengerTrip = new SuperPassengerTrip.Builder().setQuery(tripReservation.getQuery()).build();
         JoinTripRequest joinTripRequest = new JoinTripRequest(
                 0,
                 tripReservation.getReservations().get(0).getTotalPriceInCents(),
@@ -329,9 +329,9 @@ public class TripsManager {
                 arrivalTimestamp,
                 offer,
                 JoinTripStatus.PASSENGER_ACCEPTED,
-                superJoinTripRequest);
+                superPassengerTrip);
 
-        superJoinTripRequestDAO.save(superJoinTripRequest);
+        superPassengerTripDAO.save(superPassengerTrip);
         joinTripRequestDAO.save(joinTripRequest);
 
         // send push notification to driver
@@ -342,7 +342,7 @@ public class TripsManager {
                 new Pair<String, String>(GcmConstants.GCM_MSG_JOIN_REQUEST_ID, "" + joinTripRequest.getId()),
                 new Pair<String, String>(GcmConstants.GCM_MSG_JOIN_REQUEST_OFFER_ID, "" + offerOptional.get().getId()));
 
-        return Optional.of(superJoinTripRequest);
+        return Optional.of(superPassengerTrip);
     }
 
 
@@ -415,7 +415,7 @@ public class TripsManager {
         joinTripRequestDAO.update(updatedRequest);
 
         // notify the passenger about status
-        User passenger = joinRequest.getSuperJoinTripRequest().getQuery().getPassenger();
+        User passenger = joinRequest.getSuperPassengerTrip().getQuery().getPassenger();
         logManager.d("User " + passenger.getId() + " (" + passenger.getFirstName() + " " + passenger.getLastName() + ") got status update for joinTripRequest.");
         if(passengerAccepted) gcmManager.sendAcceptPassengerMsg(joinRequest);
         else gcmManager.sendDeclinePassengerMsg(joinRequest);
