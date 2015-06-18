@@ -25,6 +25,7 @@ import org.croudtrip.api.trips.JoinTripRequestUpdate;
 import org.croudtrip.api.trips.JoinTripRequestUpdateType;
 import org.croudtrip.api.trips.JoinTripStatus;
 import org.croudtrip.api.trips.RunningTripQuery;
+import org.croudtrip.api.trips.SuperJoinTripRequest;
 import org.croudtrip.api.trips.SuperTripReservation;
 import org.croudtrip.api.trips.TripOffer;
 import org.croudtrip.api.trips.TripOfferDescription;
@@ -321,13 +322,13 @@ public class TripsResource {
     @PUT
     @UnitOfWork
     @Path(PATH_RESERVATIONS + "/{reservationId}")
-    public JoinTripRequest joinTrip(@Auth User passenger, @PathParam("reservationId") long reservationId) {
+    public SuperJoinTripRequest joinTrip(@Auth User passenger, @PathParam("reservationId") long reservationId) {
         Optional<SuperTripReservation> reservation = tripsManager.findReservation(reservationId);
         if (!reservation.isPresent()) throw RestUtils.createNotFoundException("reservation does not exist");
 
-        Optional<JoinTripRequest> joinTripRequest = tripsManager.joinTrip(reservation.get());
-        if (!joinTripRequest.isPresent()) throw RestUtils.createNotFoundException("offer does not exist");
-        return joinTripRequest.get();
+        Optional<SuperJoinTripRequest> joinRequest = tripsManager.joinTrip(reservation.get());
+        if (!joinRequest.isPresent()) throw RestUtils.createNotFoundException("offer does not exist");
+        return joinRequest.get();
     }
 
 

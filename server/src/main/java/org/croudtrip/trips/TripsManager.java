@@ -289,18 +289,18 @@ public class TripsManager {
 
     /**
      * Join a specific offer by a {@link org.croudtrip.api.trips.SuperTripReservation}.
-     * A {@link org.croudtrip.api.trips.JoinTripRequest} for this query will be created and a
-     * notification is sent to the driver, that he has either to decline or to accept this new
-     * passenger.
+     * A {@link org.croudtrip.api.trips.SuperJoinTripRequest} for this query will be created and a
+     * notification is sent to the drivers (might be multiple!), that they have to either decline or accept.
      * @param tripReservation The reservation for that the user want to join the trip
      * @return An {@link com.google.common.base.Optional} that contains a join request if the
      * reservation was still valid.
      */
-    public Optional<JoinTripRequest> joinTrip(SuperTripReservation tripReservation) {
+    public Optional<SuperJoinTripRequest> joinTrip(SuperTripReservation tripReservation) {
         // remove reservation (either it has now been accepted or is can be discarded)
         superTripReservationDAO.delete(tripReservation);
 
         // find and check trip
+        // TODO check all offers that belong to a super trip
         Optional<TripOffer> offerOptional = tripOfferDAO.findById(tripReservation.getReservations().get(0).getOfferId());
         if (!offerOptional.isPresent()) return Optional.absent();
         TripOffer offer = offerOptional.get();
@@ -335,13 +335,14 @@ public class TripsManager {
         joinTripRequestDAO.save(joinTripRequest);
 
         // send push notification to driver
+        // TODO send notification to all drivers!
         gcmManager.sendGcmMessageToUser(offerOptional.get().getDriver(), GcmConstants.GCM_MSG_JOIN_REQUEST,
                 new Pair<String, String>(GcmConstants.GCM_MSG_JOIN_REQUEST, "There is a new request to join your trip"),
                 new Pair<String, String>(GcmConstants.GCM_MSG_USER_MAIL, "" + offerOptional.get().getDriver().getEmail()),
                 new Pair<String, String>(GcmConstants.GCM_MSG_JOIN_REQUEST_ID, "" + joinTripRequest.getId()),
                 new Pair<String, String>(GcmConstants.GCM_MSG_JOIN_REQUEST_OFFER_ID, "" + offerOptional.get().getId()));
 
-        return Optional.of(joinTripRequest);
+        return Optional.of(superJoinTripRequest);
     }
 
 
