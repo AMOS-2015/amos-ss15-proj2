@@ -1,0 +1,38 @@
+Bill of Materials
+
+This is a list of all currently used external libraries and its licenses.
+
+Client:
+	Retrofit 1.9.0								Apache v2.0
+	JaxRs2Retrofit 0.3.0						Apache v2.0
+	ORMLite 4.48								Creative Commons Attribution-Share Alike 3.0 License
+	Timber 3.0.1								Apache v2.0
+	RxJava 1.0.8								Apache v2.0
+	FloatingActionButton 1.9.0					Apache v2.0
+	MaterialNavigationDrawer 1.3.3				Apache v2.0
+	MaterialEditText 2.1.3						Apache v2.0
+	RoboGuice 3.0.1								Apache v2.0
+	Android ReactiveLocation 0.5				Apache v2.0
+	HoloColorPicker 1.5							Apache v2.0
+	Picasso	2.4.0								Apache v2.0
+	MaterialDesign 1.5							Apache v2.0
+	Material-ish Progress 1.5					Apache v2.0
+	Crashlytics 2.3.2	
+	Google Play Services v7.0	
+	Google Maps Android API utility library		
+	Google Maps Services for Java	
+	
+Server:	
+	DropWizard 0.8.0							Apache v2.0
+	WizardInABox 0.8-1-1						Apache v2.0
+	Google Guice 4.0-beta5						Apache v2.0
+	Hibernate									LGPL v2.1
+		
+Testing:	
+	Espresso 2.2								Apache v2.0
+	JUnit 4.11									Eclipse Public License - v 1.0
+	JMockit 1.13								MIT License
+
+Other:
+	Gradle 2.3
+	Tavis CI
