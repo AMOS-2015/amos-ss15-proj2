@@ -254,7 +254,7 @@ public class GcmIntentService extends RoboIntentService {
                                 editor.apply();
 
                                 Bundle extras = new Bundle();
-                                TripQuery query = joinTripRequest.getSuperPassengerTrip().getQuery();
+                                TripQuery query = joinTripRequest.getSuperTrip().getQuery();
                                 extras.putDouble(JoinDispatchFragment.KEY_CURRENT_LOCATION_LATITUDE, query.getStartLocation().getLat());
                                 extras.putDouble(JoinDispatchFragment.KEY_CURRENT_LOCATION_LONGITUDE, query.getStartLocation().getLng());
                                 extras.putDouble(JoinDispatchFragment.KEY_DESTINATION_LATITUDE, query.getDestinationLocation().getLat());
@@ -363,7 +363,7 @@ public class GcmIntentService extends RoboIntentService {
 
                                 PendingIntent contentIntent = PendingIntent.getActivity(getApplicationContext(), 0, startingIntent, PendingIntent.FLAG_UPDATE_CURRENT);
                                 createNotification(getString(R.string.join_request_title), getString(R.string.joint_request_msg,
-                                                joinTripRequest.getSuperPassengerTrip().getQuery().getPassenger().getFirstName()),
+                                                joinTripRequest.getSuperTrip().getQuery().getPassenger().getFirstName()),
                                         GcmConstants.GCM_NOTIFICATION_JOIN_REQUEST_ID, contentIntent);
                             }
                         },

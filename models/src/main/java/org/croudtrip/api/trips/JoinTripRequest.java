@@ -45,27 +45,27 @@ import javax.persistence.Table;
 				name = JoinTripRequest.QUERY_FIND_BY_PASSENGER_OR_DRIVER_ID,
 				query = "SELECT r FROM " + JoinTripRequest.ENTITY_NAME + " r WHERE " +
 						"r.offer.driver.id = :" + JoinTripRequest.QUERY_PARAM_USER_ID + " OR " +
-						"r.superJoinTripRequest.query.passenger.id = :" + JoinTripRequest.QUERY_PARAM_USER_ID
+						"r.superTrip.query.passenger.id = :" + JoinTripRequest.QUERY_PARAM_USER_ID
 		),
 		@NamedQuery(
 				name = JoinTripRequest.QUERY_FIND_BY_PASSENGER_OR_DRIVER_ID_AND_PASSENGER_ACCEPTED_STATUS,
 				query = "SELECT r FROM " + JoinTripRequest.ENTITY_NAME + " r WHERE (" +
 						"r.offer.driver.id = :" + JoinTripRequest.QUERY_PARAM_USER_ID + " OR " +
-						"r.superJoinTripRequest.query.passenger.id = :" + JoinTripRequest.QUERY_PARAM_USER_ID + " ) AND " +
+						"r.superTrip.query.passenger.id = :" + JoinTripRequest.QUERY_PARAM_USER_ID + " ) AND " +
 						"r.status = 'PASSENGER_ACCEPTED'"
 		),
         @NamedQuery(
                 name = JoinTripRequest.QUERY_FIND_BY_PASSENGER_OR_DRIVER_ID_AND_DRIVER_ACCEPTED_STATUS,
                 query = "SELECT r FROM " + JoinTripRequest.ENTITY_NAME + " r WHERE (" +
                         "r.offer.driver.id = :" + JoinTripRequest.QUERY_PARAM_USER_ID + " OR " +
-                        "r.superJoinTripRequest.query.passenger.id = :" + JoinTripRequest.QUERY_PARAM_USER_ID + " ) AND " +
+                        "r.superTrip.query.passenger.id = :" + JoinTripRequest.QUERY_PARAM_USER_ID + " ) AND " +
                         "r.status = 'DRIVER_ACCEPTED'"
         ),
         @NamedQuery(
                 name = JoinTripRequest.QUERY_FIND_BY_PASSENGER_ID_AND_DECLINED_STATUS,
                 query = "SELECT r FROM " + JoinTripRequest.ENTITY_NAME + " r WHERE " +
 						"r.status = 'DRIVER_DECLINED' AND " +
-						"r.superJoinTripRequest.query.passenger.id = :" + JoinTripRequest.QUERY_PARAM_USER_ID
+						"r.superTrip.query.passenger.id = :" + JoinTripRequest.QUERY_PARAM_USER_ID
         ),
 		@NamedQuery(
 				name = JoinTripRequest.QUERY_FIND_BY_OFFER_ID,
@@ -110,8 +110,8 @@ public class JoinTripRequest {
     private long estimatedArrivalTimestamp;
 
 	@ManyToOne
-	@JoinColumn(name = "super_join_trip_request_id")
-	private SuperPassengerTrip superPassengerTrip;
+	@JoinColumn(name = "super_passenger_trip_id")
+	private SuperTrip superTrip;
 
 	public JoinTripRequest() { }
 
@@ -123,7 +123,7 @@ public class JoinTripRequest {
             @JsonProperty("estimatedArrivalTimestamp") long estimatedArrivalTimestamp,
 			@JsonProperty("offer") TripOffer offer,
 			@JsonProperty("status") JoinTripStatus status,
-			@JsonProperty("superJoinTripRequest") SuperPassengerTrip superPassengerTrip) {
+			@JsonProperty("superTrip") SuperTrip superTrip) {
 
 		this.id = id;
 		this.totalPriceInCents = totalPriceInCents;
@@ -131,7 +131,7 @@ public class JoinTripRequest {
 		this.offer = offer;
 		this.status = status;
         this.estimatedArrivalTimestamp = estimatedArrivalTimestamp;
-		this.superPassengerTrip = superPassengerTrip;
+		this.superTrip = superTrip;
 	}
 
 
@@ -146,7 +146,7 @@ public class JoinTripRequest {
                 oldRequest.getEstimatedArrivalTimestamp(),
 				oldRequest.getOffer(),
 				newStatus,
-				oldRequest.getSuperPassengerTrip());
+				oldRequest.getSuperTrip());
 	}
 
 	public long getId() {
@@ -171,8 +171,8 @@ public class JoinTripRequest {
 		return status;
 	}
 
-	public SuperPassengerTrip getSuperPassengerTrip() {
-		return superPassengerTrip;
+	public SuperTrip getSuperTrip() {
+		return superTrip;
 	}
 
 	@Override
@@ -186,12 +186,12 @@ public class JoinTripRequest {
                 Objects.equal(estimatedArrivalTimestamp, that.estimatedArrivalTimestamp) &&
 				Objects.equal(offer, that.offer) &&
 				Objects.equal(status, that.status) &&
-				Objects.equal(superPassengerTrip, that.superPassengerTrip);
+				Objects.equal(superTrip, that.superTrip);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hashCode(id, totalPriceInCents, pricePerKmInCents, offer, status, superPassengerTrip);
+		return Objects.hashCode(id, totalPriceInCents, pricePerKmInCents, offer, status, superTrip);
 	}
 
 
@@ -203,7 +203,7 @@ public class JoinTripRequest {
         private long estimatedArrivalTimestamp;
 		private TripOffer offer;
 		private JoinTripStatus status;
-		private SuperPassengerTrip superPassengerTrip;
+		private SuperTrip superTrip;
 
 		public Builder setId(long id) {
 			this.id = id;
@@ -235,13 +235,13 @@ public class JoinTripRequest {
             return this;
         }
 
-		public Builder setSuperPassengerTrip(SuperPassengerTrip superPassengerTrip) {
-			this.superPassengerTrip = superPassengerTrip;
+		public Builder setSuperTrip(SuperTrip superTrip) {
+			this.superTrip = superTrip;
 			return this;
 		}
 
 		public JoinTripRequest build() {
-			return new JoinTripRequest(id, totalPriceInCents, pricePerKmInCents, estimatedArrivalTimestamp, offer, status, superPassengerTrip);
+			return new JoinTripRequest(id, totalPriceInCents, pricePerKmInCents, estimatedArrivalTimestamp, offer, status, superTrip);
 		}
 
 	}

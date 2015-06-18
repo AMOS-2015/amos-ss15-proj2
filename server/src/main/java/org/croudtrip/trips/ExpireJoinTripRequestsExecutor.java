@@ -34,7 +34,7 @@ public class ExpireJoinTripRequestsExecutor extends AbstractScheduledTaskExecuto
         for (JoinTripRequest joinTripRequest : tripsManager.findAllJoinRequests()) {
             if (!joinTripRequest.getStatus().equals(JoinTripStatus.PASSENGER_ACCEPTED)) continue;
 
-            TripQuery query = joinTripRequest.getSuperPassengerTrip().getQuery();
+            TripQuery query = joinTripRequest.getSuperTrip().getQuery();
             if (currentTimestamp > query.getCreationTimestamp() + query.getMaxWaitingTimeInSeconds()) {
                 tripsManager.updateJoinRequestPassengerCancel(joinTripRequest);
                 gcmManager.sendJoinTripRequestExpiredToPassenger(joinTripRequest);

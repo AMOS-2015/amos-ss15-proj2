@@ -9,7 +9,7 @@ import org.croudtrip.api.directions.NavigationResult;
 import org.croudtrip.api.directions.Route;
 import org.croudtrip.api.directions.RouteLocation;
 import org.croudtrip.api.trips.JoinTripRequest;
-import org.croudtrip.api.trips.SuperPassengerTrip;
+import org.croudtrip.api.trips.SuperTrip;
 import org.croudtrip.api.trips.TripOffer;
 import org.croudtrip.api.trips.TripQuery;
 import org.croudtrip.api.trips.UserWayPoint;
@@ -50,7 +50,7 @@ public class TripsNavigationManagerTest extends TestCase {
 			passenger);
 	private static final JoinTripRequest joinTripRequest = new JoinTripRequest.Builder()
 			.setOffer(offer)
-			.setSuperPassengerTrip(new SuperPassengerTrip.Builder().setQuery(query).build())
+			.setSuperTrip(new SuperTrip.Builder().setQuery(query).build())
 			.build();
 
 

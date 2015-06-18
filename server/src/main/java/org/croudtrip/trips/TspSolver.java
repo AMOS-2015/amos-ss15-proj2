@@ -144,7 +144,7 @@ public class TspSolver {
 	private List<TripRequest> joinTripRequestsToTripRequests(List<JoinTripRequest> joinTripRequests) {
 		List<TripRequest> tripRequests = new ArrayList<>();
 		for (JoinTripRequest joinTripRequest : joinTripRequests) {
-			TripQuery query = joinTripRequest.getSuperPassengerTrip().getQuery();
+			TripQuery query = joinTripRequest.getSuperTrip().getQuery();
 			TripRequest tripRequest = new TripRequest(query.getPassenger());
 			switch (joinTripRequest.getStatus()) {
 				case DRIVER_ACCEPTED:

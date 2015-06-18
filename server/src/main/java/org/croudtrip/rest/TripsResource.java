@@ -25,7 +25,7 @@ import org.croudtrip.api.trips.JoinTripRequestUpdate;
 import org.croudtrip.api.trips.JoinTripRequestUpdateType;
 import org.croudtrip.api.trips.JoinTripStatus;
 import org.croudtrip.api.trips.RunningTripQuery;
-import org.croudtrip.api.trips.SuperPassengerTrip;
+import org.croudtrip.api.trips.SuperTrip;
 import org.croudtrip.api.trips.SuperTripReservation;
 import org.croudtrip.api.trips.TripOffer;
 import org.croudtrip.api.trips.TripOfferDescription;
@@ -322,11 +322,11 @@ public class TripsResource {
     @PUT
     @UnitOfWork
     @Path(PATH_RESERVATIONS + "/{reservationId}")
-    public SuperPassengerTrip joinTrip(@Auth User passenger, @PathParam("reservationId") long reservationId) {
+    public SuperTrip joinTrip(@Auth User passenger, @PathParam("reservationId") long reservationId) {
         Optional<SuperTripReservation> reservation = tripsManager.findReservation(reservationId);
         if (!reservation.isPresent()) throw RestUtils.createNotFoundException("reservation does not exist");
 
-        Optional<SuperPassengerTrip> joinRequest = tripsManager.joinTrip(reservation.get());
+        Optional<SuperTrip> joinRequest = tripsManager.joinTrip(reservation.get());
         if (!joinRequest.isPresent()) throw RestUtils.createNotFoundException("offer does not exist");
         return joinRequest.get();
     }
@@ -386,7 +386,7 @@ public class TripsResource {
         if (!joinRequest.isPresent()) throw RestUtils.createNotFoundException();
 
         NavigationResult actualOfferNavigationResult = tripsNavigationManager.getNavigationResultForOffer( joinRequest.get().getOffer() );
-        NavigationResult diversionOfferNavigationResult = tripsNavigationManager.getNavigationResultForOffer( joinRequest.get().getOffer(), joinRequest.get().getSuperPassengerTrip().getQuery() );
+        NavigationResult diversionOfferNavigationResult = tripsNavigationManager.getNavigationResultForOffer( joinRequest.get().getOffer(), joinRequest.get().getSuperTrip().getQuery() );
 
         return diversionOfferNavigationResult.getRoute().getDurationInSeconds() - actualOfferNavigationResult.getRoute().getDurationInSeconds();
     }
@@ -408,7 +408,7 @@ public class TripsResource {
         if (!joinRequest.isPresent()) throw RestUtils.createNotFoundException();
 
         NavigationResult actualOfferNavigationResult = tripsNavigationManager.getNavigationResultForOffer( joinRequest.get().getOffer() );
-        NavigationResult diversionOfferNavigationResult = tripsNavigationManager.getNavigationResultForOffer( joinRequest.get().getOffer(), joinRequest.get().getSuperPassengerTrip().getQuery() );
+        NavigationResult diversionOfferNavigationResult = tripsNavigationManager.getNavigationResultForOffer( joinRequest.get().getOffer(), joinRequest.get().getSuperTrip().getQuery() );
 
         return diversionOfferNavigationResult.getRoute().getDistanceInMeters() - actualOfferNavigationResult.getRoute().getDistanceInMeters();
     }
@@ -466,7 +466,7 @@ public class TripsResource {
 
 
     private void assertUserIsPassenger(JoinTripRequest request, User user) {
-        if (user.getId() != request.getSuperPassengerTrip().getQuery().getPassenger().getId()) {
+        if (user.getId() != request.getSuperTrip().getQuery().getPassenger().getId()) {
             throw RestUtils.createJsonFormattedException("only passenger can take this action", 400);
         }
     }

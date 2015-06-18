@@ -11,7 +11,7 @@ import org.croudtrip.api.directions.RouteLocation;
 import org.croudtrip.api.trips.JoinTripRequest;
 import org.croudtrip.api.trips.JoinTripStatus;
 import org.croudtrip.api.trips.RunningTripQuery;
-import org.croudtrip.api.trips.SuperPassengerTrip;
+import org.croudtrip.api.trips.SuperTrip;
 import org.croudtrip.api.trips.SuperTripReservation;
 import org.croudtrip.api.trips.TripOffer;
 import org.croudtrip.api.trips.TripOfferDescription;
@@ -23,7 +23,7 @@ import org.croudtrip.api.trips.TripQueryResult;
 import org.croudtrip.api.trips.TripReservation;
 import org.croudtrip.api.trips.UserWayPoint;
 import org.croudtrip.db.JoinTripRequestDAO;
-import org.croudtrip.db.SuperPassengerTripDAO;
+import org.croudtrip.db.SuperTripDAO;
 import org.croudtrip.db.SuperTripReservationDAO;
 import org.croudtrip.db.TripOfferDAO;
 import org.croudtrip.directions.DirectionsManager;
@@ -47,7 +47,7 @@ import mockit.integration.junit4.JMockit;
 public class TripsManagerTest {
 
     @Mocked
-    SuperPassengerTripDAO superPassengerTripDAO;
+    SuperTripDAO superTripDAO;
     @Mocked JoinTripRequestDAO joinTripRequestDAO;
     @Mocked TripOfferDAO tripOfferDAO;
     @Mocked DirectionsManager directionsManager;
@@ -66,7 +66,7 @@ public class TripsManagerTest {
 
     @Before
     public void setupTripsManager() {
-        tripsManager = new TripsManager( tripOfferDAO, superTripReservationDAO, superPassengerTripDAO, joinTripRequestDAO, directionsManager,
+        tripsManager = new TripsManager( tripOfferDAO, superTripReservationDAO, superTripDAO, joinTripRequestDAO, directionsManager,
                 vehicleManager, gcmManager, tripsMatcher, runningTripQueriesManager, tripsUtils, logManager );
     }
 
@@ -219,7 +219,7 @@ public class TripsManagerTest {
             ) ));
         }};
 
-        Optional<SuperPassengerTrip> tripOptional = tripsManager.joinTrip( reservation );
+        Optional<SuperTrip> tripOptional = tripsManager.joinTrip( reservation );
 
         /* TODO fix this
         Assert.assertTrue(tripOptional.isPresent());

@@ -23,26 +23,26 @@ import javax.persistence.Table;
  * A collection of {@link JoinTripRequest}s which together form a "super trip" for one
  * passenger.
  */
-@Entity(name = SuperPassengerTrip.ENTITY_NAME)
-@Table(name = "super_join_trip_requests")
+@Entity(name = SuperTrip.ENTITY_NAME)
+@Table(name = "super_trips")
 @NamedQueries({
 		@NamedQuery(
-				name = SuperPassengerTrip.QUERY_NAME_FIND_ALL,
-				query = "SELECT s FROM " + SuperPassengerTrip.ENTITY_NAME + " s"
+				name = SuperTrip.QUERY_NAME_FIND_ALL,
+				query = "SELECT s FROM " + SuperTrip.ENTITY_NAME + " s"
 		),
 		@NamedQuery(
-				name = SuperPassengerTrip.QUERY_FIND_BY_PASSENGER_ID,
-				query = "SELECT s FROM " + SuperPassengerTrip.ENTITY_NAME + " s WHERE " +
-						"s.query.passenger.id = :" + SuperPassengerTrip.QUERY_PARAM_USER_ID
+				name = SuperTrip.QUERY_FIND_BY_PASSENGER_ID,
+				query = "SELECT s FROM " + SuperTrip.ENTITY_NAME + " s WHERE " +
+						"s.query.passenger.id = :" + SuperTrip.QUERY_PARAM_USER_ID
 		)
 })
-public class SuperPassengerTrip {
+public class SuperTrip {
 
 	public static final String
-			ENTITY_NAME = "SuperJoinTripRequest",
-			COLUMN_ID = "super_join_trip_request_id",
-			QUERY_NAME_FIND_ALL = "org.croudtrip.api.trips.SuperJoinTripRequest.findAll",
-			QUERY_FIND_BY_PASSENGER_ID = "org.croudtrip.api.trips.SuperJoinTripRequest.findByPassengerId",
+			ENTITY_NAME = "SuperTrip",
+			COLUMN_ID = "super_trip_id",
+			QUERY_NAME_FIND_ALL = "org.croudtrip.api.trips.SuperTrip.findAll",
+			QUERY_FIND_BY_PASSENGER_ID = "org.croudtrip.api.trips.SuperTrip.findByPassengerId",
 			QUERY_PARAM_USER_ID = "user_id";
 
 	@Id
@@ -53,22 +53,22 @@ public class SuperPassengerTrip {
 	@Embedded
 	private TripQuery query;
 
-	@OneToMany(mappedBy = "superJoinTripRequest")
-	private List<JoinTripRequest> requests;
+	@OneToMany(mappedBy = "superTrip")
+	private List<JoinTripRequest> joinRequests;
 
 
-	public SuperPassengerTrip() {
+	public SuperTrip() {
 	}
 
 	@JsonCreator
-	public SuperPassengerTrip(
+	public SuperTrip(
 			@JsonProperty("id") long id,
 			@JsonProperty("query") TripQuery query,
-			@JsonProperty("requests") List<JoinTripRequest> requests) {
+			@JsonProperty("joinRequests") List<JoinTripRequest> joinRequests) {
 
 		this.id = id;
 		this.query = query;
-		this.requests = requests;
+		this.joinRequests = joinRequests;
 	}
 
 	public long getId() {
@@ -79,23 +79,23 @@ public class SuperPassengerTrip {
 		return query;
 	}
 
-	public List<JoinTripRequest> getRequests() {
-		return requests;
+	public List<JoinTripRequest> getJoinRequests() {
+		return joinRequests;
 	}
 
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
-		SuperPassengerTrip that = (SuperPassengerTrip) o;
+		SuperTrip that = (SuperTrip) o;
 		return Objects.equal(id, that.id) &&
 				Objects.equal(query, that.query) &&
-				Objects.equal(requests, that.requests);
+				Objects.equal(joinRequests, that.joinRequests);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hashCode(id, query, requests);
+		return Objects.hashCode(id, query, joinRequests);
 	}
 
 	public static class Builder {
@@ -119,8 +119,8 @@ public class SuperPassengerTrip {
 			return this;
 		}
 
-		public SuperPassengerTrip build() {
-			return new SuperPassengerTrip(id, query, requests);
+		public SuperTrip build() {
+			return new SuperTrip(id, query, requests);
 		}
 
 	}
