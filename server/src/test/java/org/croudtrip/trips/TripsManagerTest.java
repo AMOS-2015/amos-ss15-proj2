@@ -55,6 +55,7 @@ public class TripsManagerTest {
     @Mocked VehicleManager vehicleManager;
     @Mocked TripsMatcher tripsMatcher;
     @Mocked RunningTripQueriesManager runningTripQueriesManager;
+    @Mocked SuperTripManager superTripManager;
     @Mocked GcmManager gcmManager;
 
     private TripsManager tripsManager;
@@ -65,7 +66,7 @@ public class TripsManagerTest {
     @Before
     public void setupTripsManager() {
         tripsManager = new TripsManager( tripOfferDAO, superTripReservationDAO, superJoinTripRequestDAO, joinTripRequestDAO, directionsManager,
-                vehicleManager, gcmManager, tripsMatcher, runningTripQueriesManager, tripsUtils, logManager );
+                vehicleManager, gcmManager, tripsMatcher, superTripManager, runningTripQueriesManager, tripsUtils, logManager );
     }
 
     @Test
