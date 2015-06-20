@@ -3,6 +3,7 @@ package org.croudtrip.api.trips;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Objects;
 
@@ -62,11 +63,20 @@ public class SuperTrip {
 
 	public SuperTrip() { }
 
-	@JsonCreator
+    @JsonCreator
+    public SuperTrip(
+            @JsonProperty("id") long id,
+            @JsonProperty("query") TripQuery query ) {
+
+        this.id = id;
+        this.query = query;
+        this.joinRequests = joinRequests;
+    }
+
 	public SuperTrip(
-			@JsonProperty("id") long id,
-			@JsonProperty("query") TripQuery query,
-			@JsonProperty("joinRequests") List<JoinTripRequest> joinRequests) {
+			long id,
+			TripQuery query,
+			List<JoinTripRequest> joinRequests) {
 
 		this.id = id;
 		this.query = query;
