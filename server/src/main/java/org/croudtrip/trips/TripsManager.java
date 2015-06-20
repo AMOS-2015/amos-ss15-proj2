@@ -68,7 +68,7 @@ public class TripsManager {
     private final VehicleManager vehicleManager;
     private final GcmManager gcmManager;
     private final TripsMatcher tripsMatcher;
-    private final SuperTripManager superTripManager;
+    private final SuperTripsMatcher superTripsMatcher;
     private final RunningTripQueriesManager runningTripQueriesManager;
     private final TripsUtils tripsUtils;
     private final LogManager logManager;
@@ -84,7 +84,7 @@ public class TripsManager {
             VehicleManager vehicleManager,
             GcmManager gcmManager,
             TripsMatcher tripsMatcher,
-            SuperTripManager superTripManager,
+            SuperTripsMatcher superTripsMatcher,
             RunningTripQueriesManager runningTripQueriesManager,
             TripsUtils tripsUtils,
             LogManager logManager) {
@@ -98,7 +98,7 @@ public class TripsManager {
         this.gcmManager = gcmManager;
         this.tripsMatcher = tripsMatcher;
         this.runningTripQueriesManager = runningTripQueriesManager;
-        this.superTripManager = superTripManager;
+        this.superTripsMatcher = superTripsMatcher;
         this.tripsUtils = tripsUtils;
         this.logManager = logManager;
 
@@ -265,7 +265,7 @@ public class TripsManager {
 
         } else {
             // try finding super matches
-            reservations = superTripManager.findSuperTrips( tripOfferDAO.findAll(), query );
+            reservations = superTripsMatcher.findSuperTrips( tripOfferDAO.findAll(), query );
             for (SuperTripReservation reservation : reservations) {
                 logManager.d("Found a super trip: ");
                 for (TripReservation res : reservation.getReservations()) {

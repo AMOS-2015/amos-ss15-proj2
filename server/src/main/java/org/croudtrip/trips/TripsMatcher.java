@@ -123,9 +123,9 @@ class TripsMatcher {
 	 * @param offer The offer that should be checked
 	 * @param query The query that should be checked
 	 * @param singleWaypoint the waypoint the route should follow
-	 * @return If the trip is a potential match a {@link org.croudtrip.trips.SuperTripManager.PotentialSuperTripMatch} will be returned.
+	 * @return If the trip is a potential match a {@link SuperTripsMatcher.PotentialSuperTripMatch} will be returned.
 	 */
-	public Optional<SuperTripManager.PotentialSuperTripMatch> isPotentialSuperTripMatchForOneWaypoint( TripOffer offer, TripQuery query, boolean useStartWaypoint ) throws RouteNotFoundException {
+	public Optional<SuperTripsMatcher.PotentialSuperTripMatch> isPotentialSuperTripMatchForOneWaypoint( TripOffer offer, TripQuery query, boolean useStartWaypoint ) throws RouteNotFoundException {
 		// check trip status
 		if (!offer.getStatus().equals(TripOfferStatus.ACTIVE)) return Optional.absent();
 
@@ -160,7 +160,7 @@ class TripsMatcher {
 		long distanceToDriverInMeters = navigationResult.getUserWayPoints().get(navigationResult.getUserWayPoints().size() - 1).getDistanceToDriverInMeters();
 		if (distanceToDriverInMeters - offer.getDriverRoute().getDistanceInMeters() > offer.getMaxDiversionInMeters()) return Optional.absent();
 
-		return Optional.of( new SuperTripManager.PotentialSuperTripMatch( offer, query, useStartWaypoint ? query.getStartLocation() : query.getDestinationLocation(), navigationResult ));
+		return Optional.of( new SuperTripsMatcher.PotentialSuperTripMatch( offer, query, useStartWaypoint ? query.getStartLocation() : query.getDestinationLocation(), navigationResult ));
 	}
 
 

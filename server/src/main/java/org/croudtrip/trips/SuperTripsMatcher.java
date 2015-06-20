@@ -8,10 +8,8 @@ import org.croudtrip.api.directions.RouteLocation;
 import org.croudtrip.api.trips.SuperTripReservation;
 import org.croudtrip.api.trips.SuperTripSubQuery;
 import org.croudtrip.api.trips.TripOffer;
-import org.croudtrip.api.trips.TripOfferStatus;
 import org.croudtrip.api.trips.TripQuery;
 import org.croudtrip.api.trips.TripReservation;
-import org.croudtrip.api.trips.UserWayPoint;
 import org.croudtrip.closestpair.ClosestPair;
 import org.croudtrip.closestpair.ClosestPairResult;
 import org.croudtrip.directions.DirectionsManager;
@@ -24,19 +22,15 @@ import java.util.List;
 import javax.inject.Inject;
 
 /**
+ * Responsible for finding and creating super trips.
  */
-public class SuperTripManager {
-    final private TripsMatcher tripsMatcher;
-    final private ClosestPair closestPair;
-    final private DirectionsManager directionsManager;
-    final private LogManager logManager;
-
+public class SuperTripsMatcher {
 
     public static class PotentialSuperTripMatch {
-        private TripOffer offer;
-        private TripQuery query;
-        private RouteLocation singleWaypoint;
-        private NavigationResult diversionNavigationResult;
+        private final TripOffer offer;
+        private final TripQuery query;
+        private final RouteLocation singleWaypoint;
+        private final NavigationResult diversionNavigationResult;
 
         public PotentialSuperTripMatch(TripOffer offer, TripQuery query, RouteLocation singleWaypoint, NavigationResult diversionNavigationResult) {
             this.offer = offer;
@@ -62,8 +56,15 @@ public class SuperTripManager {
         }
     }
 
+
+    private final TripsMatcher tripsMatcher;
+    private final ClosestPair closestPair;
+    private final DirectionsManager directionsManager;
+    private final LogManager logManager;
+
+
     @Inject
-    SuperTripManager( TripsMatcher tripsMatcher, ClosestPair closestPair, DirectionsManager directionsManager, LogManager logManager ) {
+    SuperTripsMatcher(TripsMatcher tripsMatcher, ClosestPair closestPair, DirectionsManager directionsManager, LogManager logManager) {
         this.tripsMatcher = tripsMatcher;
         this.closestPair = closestPair;
         this.directionsManager = directionsManager;
