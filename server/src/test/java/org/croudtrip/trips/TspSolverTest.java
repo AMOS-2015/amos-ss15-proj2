@@ -8,6 +8,7 @@ import org.croudtrip.api.directions.RouteLocation;
 import org.croudtrip.api.trips.JoinTripRequest;
 import org.croudtrip.api.trips.JoinTripStatus;
 import org.croudtrip.api.trips.SuperTrip;
+import org.croudtrip.api.trips.SuperTripSubQuery;
 import org.croudtrip.api.trips.TripOffer;
 import org.croudtrip.api.trips.TripQuery;
 import org.junit.Assert;
@@ -138,6 +139,7 @@ public class TspSolverTest {
 				.setOffer(offer)
 				.setStatus(status)
 				.setSuperTrip(new SuperTrip.Builder().setQuery(query).build())
+                .setSubQuery( new SuperTripSubQuery(query))
 				.build();
 	}
 

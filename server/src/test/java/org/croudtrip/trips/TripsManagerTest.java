@@ -41,6 +41,7 @@ import java.util.List;
 
 import mockit.Expectations;
 import mockit.Mocked;
+import mockit.NonStrictExpectations;
 import mockit.Verifications;
 import mockit.integration.junit4.JMockit;
 
@@ -204,7 +205,7 @@ public class TripsManagerTest {
                 .addReservation(new TripReservation(new SuperTripSubQuery(query), 12345, 10, 0, d))
                 .build();
 
-        new Expectations(){{
+        new NonStrictExpectations(){{
 
             tripOfferDAO.findById( anyLong );
             result = Optional.of(offer);
