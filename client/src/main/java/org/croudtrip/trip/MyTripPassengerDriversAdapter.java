@@ -73,7 +73,7 @@ public class MyTripPassengerDriversAdapter extends RecyclerView.Adapter<Recycler
         if (viewType == TYPE_ITEM) {
             // Inflate item layout and pass it to view holder
             return new ItemViewHolder(LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.cardview_my_trip_passenger_drivers, parent, false));
+                    .inflate(R.layout.cardview_my_trip_passenger_driver, parent, false));
 
         } else if (viewType == TYPE_HEADER) {
             //inflate your layout and pass it to view holder
@@ -165,6 +165,15 @@ public class MyTripPassengerDriversAdapter extends RecyclerView.Adapter<Recycler
         }
 
         return drivers.size() + 1;   // don't forget the header
+    }
+
+    public int getNumDrivers(){
+
+        if (drivers == null) {
+            return 0;
+        }
+
+        return drivers.size();
     }
 
 
@@ -318,13 +327,13 @@ public class MyTripPassengerDriversAdapter extends RecyclerView.Adapter<Recycler
         public ItemViewHolder(View view) {
             super(view);
             this.tvDriverName = (TextView)
-                    view.findViewById(R.id.tv_my_trip_passenger_drivers_driver_name);
+                    view.findViewById(R.id.card_name);
             this.tvDriverCar = (TextView)
-                    view.findViewById(R.id.tv_my_trip_passenger_drivers_driver_car);
+                    view.findViewById(R.id.card_car);
             this.price = (TextView)
-                    view.findViewById(R.id.tv_my_trip_passenger_drivers_price);
+                    view.findViewById(R.id.card_price);
             this.ivAvatar = (ImageView)
-                    view.findViewById(R.id.iv_my_trip_passenger_drivers_user_image);
+                    view.findViewById(R.id.card_icon);
 
             this.card = (CardView)
                     view.findViewById(R.id.cv_my_trip_passenger_drivers);

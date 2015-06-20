@@ -17,7 +17,7 @@
 <android.support.v7.widget.CardView
     xmlns:card_view="http://schemas.android.com/apk/res-auto"
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/cv_my_trip_driver_passengers"
+    android:id="@+id/cv_my_trip_passenger_drivers"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_marginBottom="2dp"
@@ -36,6 +36,7 @@
 
         <TextView
             android:id="@+id/card_name"
+            android:textAppearance="@android:style/TextAppearance.Medium"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_toRightOf="@id/card_icon"
