@@ -16,12 +16,16 @@ package org.croudtrip.trip;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import com.squareup.picasso.Picasso;
 
 import org.croudtrip.R;
 import org.croudtrip.api.account.User;
@@ -39,7 +43,9 @@ public class JoinTripResultsAdapter extends RecyclerView.Adapter<JoinTripResults
     //************************** Variables ***************************//
 
     private final Context context;
+    private ViewGroup parent;
     private List<SuperTripReservation> reservations;
+    private OnJoinListener onJoinListener;
 
     protected OnItemClickListener listener;
 
@@ -48,38 +54,6 @@ public class JoinTripResultsAdapter extends RecyclerView.Adapter<JoinTripResults
 
     public static interface OnItemClickListener {
         public void onItemClicked(View view, int position);
-    }
-
-
-    /**
-     * Provides a reference to the views for each data item.
-     */
-    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
-
-
-        protected TextView tvPrice, tvDuration, tvDistance;
-        protected Button btJoin;
-        protected LinearLayout llDrivers;
-
-        public ViewHolder(View view) {
-            super(view);
-
-            this.tvPrice = (TextView) view.findViewById(R.id.trip_price);
-            this.tvDuration = (TextView) view.findViewById(R.id.trip_duration);
-            this.tvDistance = (TextView) view.findViewById(R.id.trip_distance);
-            this.btJoin = (Button) view.findViewById(R.id.trip_join);
-            this.llDrivers = (LinearLayout) view.findViewById(R.id.trip_drivers);
-
-
-            view.setOnClickListener(this);
-        }
-
-        @Override
-        public void onClick(View view) {
-            if (listener != null) {
-                listener.onItemClicked(view, getPosition());
-            }
-        }
     }
 
 
@@ -97,15 +71,15 @@ public class JoinTripResultsAdapter extends RecyclerView.Adapter<JoinTripResults
     public JoinTripResultsAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
 
         // Create new views (invoked by the layout manager)
-        View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.cardview_join_trip_results, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.cardview_join_trip_results, parent, false);
+        this.parent = parent;
 
         return new ViewHolder(view);
     }
 
 
     @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
+    public void onBindViewHolder(ViewHolder holder, final int position) {
 
         SuperTripReservation superTripReservation = reservations.get(position);
 
@@ -114,24 +88,41 @@ public class JoinTripResultsAdapter extends RecyclerView.Adapter<JoinTripResults
             totalPrice += reservation.getTotalPriceInCents();
         }
         // Price info
-        String price = totalPrice / 100 + ","; // euros
-        int cents = totalPrice  % 100;
+        holder.tvPrice.setText(getFormattedPriceInEuro(totalPrice));
 
 
-        if(cents == 0){
-            price = price + "00";
-        }else if(cents < 10){
-            price = price + "0" + cents;
-        }else{
-            price = price + cents;
+        //Inflate, fill and display the drivers
+        for (TripReservation reservation : superTripReservation.getReservations()) {
+            View driverView = LayoutInflater.from(parent.getContext()).inflate(R.layout.cardview_join_trip_driver, parent, false);
+
+            //Fill in the name of the driver
+            User driver = reservation.getDriver();
+            ((TextView) driverView.findViewById(R.id.driver_name)).setText(driver.getFirstName() + " " + driver.getLastName());
+
+            //Show the price of this driver only if he/she is not the only one
+            String price = "";
+            if (superTripReservation.getReservations().size() > 1) {
+                price = getFormattedPriceInEuro(reservation.getTotalPriceInCents());
+            }
+            ((TextView) driverView.findViewById(R.id.driver_price)).setText(price);
+
+            //Show the duration of this subtrip only if it actually is a subtrip
+            String duration = "";
+            if (reservation.getSubQuery() != null) {
+                duration = getFormattedDuration(reservation.getSubQuery().getPassengerRoute().getDurationInSeconds());
+            }
+            ((TextView) driverView.findViewById(R.id.driver_duration)).setText(duration);
+
+            //Downlaod and display the image of the driver
+            ImageView driveImage = (ImageView) driverView.findViewById(R.id.driver_image);
+            String avatarURL = driver.getAvatarUrl();
+            if (avatarURL != null) {
+                Picasso.with(context).load(avatarURL).into(driveImage);
+            }
+
+            //Add the driver card to the UI
+            holder.llDrivers.addView(driverView);
         }
-
-        holder.tvPrice.setText(price + " €");
-
-
-        // Driver info
-        User driver = superTripReservation.getReservations().get(0).getDriver();
-        //holder.tvDriverName.setText(driver.getFirstName());
 
 
         // Distance information
@@ -146,17 +137,21 @@ public class JoinTripResultsAdapter extends RecyclerView.Adapter<JoinTripResults
                     R.string.join_trip_results_distance_km, distance));
         }
 
-
         // Duration info
-        long timeInMinutes = superTripReservation.getQuery().getPassengerRoute().getDurationInSeconds() / 60;
+        holder.tvDuration.setText(getFormattedDuration(superTripReservation.getQuery().getPassengerRoute().getDurationInSeconds()));
 
-        if(timeInMinutes < 60){
-            holder.tvDuration.setText(context.getString(R.string.join_trip_results_duration_min,
-                    timeInMinutes));
-        }else{
-            holder.tvDuration.setText(context.getString(R.string.join_trip_results_duration_hmin,
-                    timeInMinutes / 60, timeInMinutes % 60));
-        }
+        holder.btJoin.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (onJoinListener != null) {
+                    onJoinListener.onJoin(position);
+                }
+            }
+        });
+    }
+
+    public void setOnJoinListener(OnJoinListener joinListener) {
+        this.onJoinListener = joinListener;
     }
 
 
@@ -207,5 +202,67 @@ public class JoinTripResultsAdapter extends RecyclerView.Adapter<JoinTripResults
         }
 
         return reservations.get(position);
+    }
+
+    private String getFormattedDuration(long durationInSeconds) {
+        long timeInMinutes = durationInSeconds / 60;
+
+        if(timeInMinutes < 60){
+            return String.format(context.getResources().getString(R.string.join_trip_results_duration_min), timeInMinutes);
+        }else{
+            return String.format(context.getResources().getString(R.string.join_trip_results_duration_hmin), timeInMinutes / 60, timeInMinutes % 60);
+        }
+    }
+
+    private String getFormattedPriceInEuro(int priceInCents) {
+        String price = priceInCents / 100 + ","; // euros
+        int cents = priceInCents  % 100;
+
+
+        if(cents == 0){
+            price = price + "00";
+        }else if(cents < 10){
+            price = price + "0" + cents;
+        }else{
+            price = price + cents;
+        }
+
+        return price + "€";
+    }
+
+    public interface OnJoinListener {
+
+        public void onJoin(int position);
+    }
+
+
+    /**
+     * Provides a reference to the views for each data item.
+     */
+    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
+
+        protected TextView tvPrice, tvDuration, tvDistance;
+        protected Button btJoin;
+        protected LinearLayout llDrivers;
+
+        public ViewHolder(View view) {
+            super(view);
+
+            this.tvPrice = (TextView) view.findViewById(R.id.trip_price);
+            this.tvDuration = (TextView) view.findViewById(R.id.trip_duration);
+            this.tvDistance = (TextView) view.findViewById(R.id.trip_distance);
+            this.btJoin = (Button) view.findViewById(R.id.trip_join);
+            this.llDrivers = (LinearLayout) view.findViewById(R.id.trip_drivers);
+
+
+            view.setOnClickListener(this);
+        }
+
+        @Override
+        public void onClick(View view) {
+            if (listener != null) {
+                listener.onItemClicked(view, getPosition());
+            }
+        }
     }
 }
