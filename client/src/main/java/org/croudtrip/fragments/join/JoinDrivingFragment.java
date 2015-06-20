@@ -27,7 +27,6 @@ import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -151,7 +150,6 @@ public class JoinDrivingFragment extends SubscriptionFragment {
         LocalBroadcastManager.getInstance(getActivity()).registerReceiver(joinRequestExpiredReceiver,
                 new IntentFilter(Constants.EVENT_JOIN_REQUEST_EXPIRED));
 
-        Log.d("alex", "onCreate");
         LocalBroadcastManager.getInstance(getActivity()).registerReceiver(nfcScannedReceiver,
                 new IntentFilter(Constants.EVENT_NFC_TAG_SCANNED));
 

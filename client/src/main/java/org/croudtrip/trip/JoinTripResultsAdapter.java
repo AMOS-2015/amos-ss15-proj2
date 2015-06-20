@@ -109,7 +109,7 @@ public class JoinTripResultsAdapter extends RecyclerView.Adapter<JoinTripResults
             //Show the duration of this subtrip only if it actually is a subtrip
             String duration = "";
             if (reservation.getSubQuery() != null) {
-                duration = getFormattedDuration(reservation.getSubQuery().getPassengerRoute().getDurationInSeconds());
+                //duration = getFormattedDuration(reservation.getSubQuery().getPassengerRoute().getDurationInSeconds());
             }
             ((TextView) driverView.findViewById(R.id.driver_duration)).setText(duration);
 
