@@ -7,9 +7,12 @@ import org.croudtrip.api.directions.NavigationResult;
 import org.croudtrip.api.directions.Route;
 import org.croudtrip.api.directions.RouteLocation;
 import org.croudtrip.api.trips.JoinTripRequest;
+import org.croudtrip.api.trips.SuperTripReservation;
+import org.croudtrip.api.trips.SuperTripSubQuery;
 import org.croudtrip.api.trips.TripOffer;
 import org.croudtrip.api.trips.TripOfferStatus;
 import org.croudtrip.api.trips.TripQuery;
+import org.croudtrip.api.trips.TripReservation;
 import org.croudtrip.api.trips.UserWayPoint;
 import org.croudtrip.db.JoinTripRequestDAO;
 import org.croudtrip.db.TripOfferDAO;
@@ -18,6 +21,8 @@ import org.croudtrip.directions.RouteNotFoundException;
 import org.croudtrip.logs.LogManager;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -27,25 +32,24 @@ import javax.inject.Inject;
  */
 class TripsMatcher {
 
+	public static class PotentialMatch {
+		TripOffer offer;
+		TripQuery query;
+		List<UserWayPoint> userWayPoints;
+
+		public PotentialMatch( TripOffer offer, TripQuery query, List<UserWayPoint> userWayPoints ) {
+			this.offer = offer;
+			this.query = query;
+			this.userWayPoints = userWayPoints;
+		}
+	}
+
 	private final JoinTripRequestDAO joinTripRequestDAO;
 	private final TripOfferDAO tripOfferDAO;
 	private final TripsNavigationManager tripsNavigationManager;
 	private final DirectionsManager directionsManager;
 	private final TripsUtils tripsUtils;
 	private final LogManager logManager;
-
-    public static class PotentialMatch
-    {
-        TripOffer offer;
-        TripQuery query;
-        List<UserWayPoint> userWayPoints;
-
-        public PotentialMatch( TripOffer offer, TripQuery query, List<UserWayPoint> userWayPoints ) {
-            this.offer = offer;
-            this.query = query;
-            this.userWayPoints = userWayPoints;
-        }
-    }
 
 
 	@Inject
@@ -70,7 +74,7 @@ class TripsMatcher {
 	 * Checks the passed in offers for potential matches.
 	 * @return a filtered list of potential matches (which can be empty).
 	 */
-	public List<TripOffer> filterPotentialMatches(List<TripOffer> offers, TripQuery query) {
+	public List<SuperTripReservation> filterPotentialMatches(List<TripOffer> offers, TripQuery query) {
 		List<TripOffer> potentialMatches = new ArrayList<>();
 		for (TripOffer offer : offers) {
 			if (isPotentialMatch(offer, query).isPresent()) {
@@ -78,7 +82,7 @@ class TripsMatcher {
 			}
 		}
 
-		return potentialMatches;
+		return findCheapestMatch(query, potentialMatches);
 	}
 
 
@@ -122,7 +126,6 @@ class TripsMatcher {
 	 * It will be used in super trips to compute offers that are able to pick up or drop passenger.
 	 * @param offer The offer that should be checked
 	 * @param query The query that should be checked
-	 * @param singleWaypoint the waypoint the route should follow
 	 * @return If the trip is a potential match a {@link SuperTripsMatcher.PotentialSuperTripMatch} will be returned.
 	 */
 	public Optional<SuperTripsMatcher.PotentialSuperTripMatch> isPotentialSuperTripMatchForOneWaypoint( TripOffer offer, TripQuery query, boolean useStartWaypoint ) throws RouteNotFoundException {
@@ -257,6 +260,64 @@ class TripsMatcher {
 			if (userWayPoint.getArrivalTimestamp() > passengerMaxWaitingTimestamp) return false;
 		}
 		return true;
+	}
+
+
+	/**
+	 * Will compute a list of cheapest {@link org.croudtrip.api.trips.SuperTripReservation} for a
+	 * specific query out of a list of potential matches
+	 * @param query the query you want to get a match for
+	 * @param potentialMatches the list of potential matches for this query
+	 * @return a list of reservations for this query with the cheapest price
+	 */
+	private List<SuperTripReservation> findCheapestMatch(TripQuery query, List<TripOffer> potentialMatches) {
+		if (potentialMatches.isEmpty()) return new ArrayList<>();
+
+		// sort by price per km
+		Collections.sort(potentialMatches, new Comparator<TripOffer>() {
+			@Override
+			public int compare(TripOffer offer1, TripOffer offer2) {
+				return Integer.valueOf(offer1.getPricePerKmInCents()).compareTo(offer2.getPricePerKmInCents());
+			}
+		});
+
+		List<TripOffer> matches = new ArrayList<>();
+
+		// find prices
+		int lowestPricePerKmInCents  = potentialMatches.get(0).getPricePerKmInCents(), secondLowestPricePerKmInCents = -1;
+		for (TripOffer potentialMatch : potentialMatches) {
+			if (potentialMatch.getPricePerKmInCents() == lowestPricePerKmInCents) {
+				// all cheapest trips are matches
+				matches.add(potentialMatch);
+
+			} else if (potentialMatch.getPricePerKmInCents() != secondLowestPricePerKmInCents) {
+				// second cheapest determines price
+				secondLowestPricePerKmInCents = potentialMatch.getPricePerKmInCents();
+				break;
+			}
+		}
+
+		// calculate final price
+		int pricePerKmInCents = lowestPricePerKmInCents;
+		if (secondLowestPricePerKmInCents != -1) pricePerKmInCents = secondLowestPricePerKmInCents;
+		int totalPriceInCents = (int) (pricePerKmInCents * query.getPassengerRoute().getDistanceInMeters() / 1000);
+
+		// create price reservations
+		List<SuperTripReservation> reservations = new ArrayList<>();
+		for (TripOffer match : matches) {
+			reservations.add(new SuperTripReservation.Builder()
+					.setQuery(query)
+					.addReservation(new TripReservation(
+									new SuperTripSubQuery(query),
+									totalPriceInCents,
+									match.getPricePerKmInCents(),
+									match.getId(),
+									match.getDriver())
+					)
+					.build());
+		}
+
+		return reservations;
 	}
 
 }

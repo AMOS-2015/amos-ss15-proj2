@@ -10,6 +10,7 @@ import org.croudtrip.api.directions.RouteLocation;
 import org.croudtrip.api.trips.JoinTripRequest;
 import org.croudtrip.api.trips.JoinTripStatus;
 import org.croudtrip.api.trips.SuperTrip;
+import org.croudtrip.api.trips.SuperTripReservation;
 import org.croudtrip.api.trips.TripOffer;
 import org.croudtrip.api.trips.TripOfferStatus;
 import org.croudtrip.api.trips.TripQuery;
@@ -23,6 +24,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.List;
+
+import mockit.Deencapsulation;
 import mockit.Expectations;
 import mockit.Mocked;
 import mockit.integration.junit4.JMockit;
@@ -37,7 +41,7 @@ public class TripsMatcherTest {
 			driver = new User.Builder().setId(1).build();
 
 	private static final TripQuery query = new TripQuery(
-			null,
+			new Route.Builder().distanceInMeters(2345).build(),
 			new RouteLocation(45, 45),
 			new RouteLocation(50, 50),
 			100,
@@ -212,6 +216,26 @@ public class TripsMatcherTest {
 		}};
 
 		Assert.assertTrue(tripsMatcher.isPotentialMatch(offer, query).isPresent());
+	}
+
+
+	@Test
+	public void testFindCheapestMatch() {
+		TripOffer offer1 = new TripOffer.Builder().setPricePerKmInCents(12).build();
+		TripOffer offer2 = new TripOffer.Builder().setPricePerKmInCents(12).build();
+		TripOffer offer3 = new TripOffer.Builder().setPricePerKmInCents(13).build();
+		TripOffer offer4 = new TripOffer.Builder().setPricePerKmInCents(14).build();
+
+		List<SuperTripReservation> reservations = Deencapsulation.invoke(
+				tripsMatcher,
+				"findCheapestMatch",
+				query,
+				Lists.newArrayList(offer1, offer2, offer3, offer4));
+
+		Assert.assertEquals(2, reservations.size());
+		long totalPrice = offer3.getPricePerKmInCents() * query.getPassengerRoute().getDistanceInMeters() / 1000;
+		Assert.assertEquals(totalPrice, reservations.get(0).getReservations().get(0).getTotalPriceInCents());
+		Assert.assertEquals(totalPrice, reservations.get(1).getReservations().get(0).getTotalPriceInCents());
 	}
 
 }

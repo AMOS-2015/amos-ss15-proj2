@@ -28,7 +28,6 @@ import org.croudtrip.api.trips.JoinTripStatus;
 import org.croudtrip.api.trips.RunningTripQuery;
 import org.croudtrip.api.trips.SuperTrip;
 import org.croudtrip.api.trips.SuperTripReservation;
-import org.croudtrip.api.trips.SuperTripSubQuery;
 import org.croudtrip.api.trips.TripOffer;
 import org.croudtrip.api.trips.TripOfferDescription;
 import org.croudtrip.api.trips.TripOfferStatus;
@@ -49,9 +48,6 @@ import org.croudtrip.logs.LogManager;
 import org.croudtrip.utils.Assert;
 import org.croudtrip.utils.Pair;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -249,23 +245,18 @@ public class TripsManager {
     public TripQueryResult queryOffers(User passenger, TripQueryDescription queryDescription) throws RouteNotFoundException {
         logManager.d("QUERY OFFER: User " + passenger.getId() + " (" + passenger.getFirstName() + " " + passenger.getLastName() + ") from " + queryDescription.getStart() + " to " + queryDescription.getEnd() + " with " + " max waiting time: " + queryDescription.getMaxWaitingTimeInSeconds());
 
-        // compute passenger route
+        // compute passenger route + query
         List<Route> possiblePassengerRoutes = directionsManager.getDirections(queryDescription.getStart(), queryDescription.getEnd());
         if (possiblePassengerRoutes.isEmpty()) throw new RouteNotFoundException();
-
-        // try finding regular match
         long queryCreationTimestamp = System.currentTimeMillis() / 1000;
         TripQuery query = new TripQuery(possiblePassengerRoutes.get(0), queryDescription.getStart(), queryDescription.getEnd(), queryDescription.getMaxWaitingTimeInSeconds(), queryCreationTimestamp, passenger);
-        List<TripOffer> potentialMatches = tripsMatcher.filterPotentialMatches(tripOfferDAO.findAllActive(), query);
 
-        List<SuperTripReservation> reservations;
-        if (!potentialMatches.isEmpty()) {
-            // found regular match --> create reservation
-            reservations = findCheapestMatch(query, potentialMatches);
+        // try finding regular match
+        List<SuperTripReservation> reservations = tripsMatcher.filterPotentialMatches(tripOfferDAO.findAllActive(), query);
 
-        } else {
-            // try finding super matches
-            reservations = superTripsMatcher.findSuperTrips( tripOfferDAO.findAll(), query );
+        // if no regular trips --> try finding super matches
+        if (reservations.isEmpty()) {
+            reservations = superTripsMatcher.findSuperTrips(tripOfferDAO.findAllActive(), query );
             for (SuperTripReservation reservation : reservations) {
                 logManager.d("Found a super trip: ");
                 for (TripReservation res : reservation.getReservations()) {
@@ -501,62 +492,6 @@ public class TripsManager {
         return joinRequest;
     }
 
-
-    /**
-     * Will compute a list of cheapest {@link org.croudtrip.api.trips.SuperTripReservation} for a
-     * specific query out of a list of potential matches
-     * @param query the query you want to get a match for
-     * @param potentialMatches the list of potential matches for this query
-     * @return a list of reservations for this query with the cheapest price
-     */
-    private List<SuperTripReservation> findCheapestMatch(TripQuery query, List<TripOffer> potentialMatches) {
-        if (potentialMatches.isEmpty()) return new ArrayList<>();
-
-        Collections.sort(potentialMatches, new Comparator<TripOffer>() {
-            @Override
-            public int compare(TripOffer offer1, TripOffer offer2) {
-                return Integer.valueOf(offer1.getPricePerKmInCents()).compareTo(offer2.getPricePerKmInCents());
-            }
-        });
-
-        List<TripOffer> matches = new ArrayList<>();
-
-        // find prices
-        int lowestPricePerKmInCents  = potentialMatches.get(0).getPricePerKmInCents(), secondLowestPricePerKmInCents = -1;
-        for (TripOffer potentialMatch : potentialMatches) {
-            if (potentialMatch.getPricePerKmInCents() == lowestPricePerKmInCents) {
-                // all cheapest trips are matches
-                matches.add(potentialMatch);
-
-            } else if (potentialMatch.getPricePerKmInCents() != secondLowestPricePerKmInCents) {
-                // second cheapest determines price
-                secondLowestPricePerKmInCents = potentialMatch.getPricePerKmInCents();
-                break;
-            }
-        }
-
-        // calculate final price
-        int pricePerKmInCents = lowestPricePerKmInCents;
-        if (secondLowestPricePerKmInCents != -1) pricePerKmInCents = secondLowestPricePerKmInCents;
-        int totalPriceInCents = (int) (pricePerKmInCents * query.getPassengerRoute().getDistanceInMeters() / 1000);
-
-        // create price reservations
-        List<SuperTripReservation> reservations = new ArrayList<>();
-        for (TripOffer match : matches) {
-            reservations.add(new SuperTripReservation.Builder()
-                    .setQuery(query)
-                    .addReservation(new TripReservation(
-                                    new SuperTripSubQuery(query),
-                                    totalPriceInCents,
-                                    match.getPricePerKmInCents(),
-                                    match.getId(),
-                                    match.getDriver())
-                    )
-                    .build());
-        }
-
-        return reservations;
-    }
 
 }
 

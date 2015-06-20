@@ -26,7 +26,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.Column;
-import javax.persistence.ElementCollection;
 import javax.persistence.Embeddable;
 
 /**
@@ -83,14 +82,16 @@ public class Route {
             @JsonProperty("waypointPolylineIndices") List<Integer> waypointPolylineIndices ) {
 
         // convert JSON fields to string for persistence
-        StringBuilder wayPointsBuilder = new StringBuilder();
-        boolean firstPoint = true;
-        for (RouteLocation location : wayPoints) {
-            if (firstPoint) firstPoint = false;
-            else wayPointsBuilder.append("#");
-            wayPointsBuilder.append(location.getLat()).append(":").append(location.getLng());
+        if (wayPoints != null) {
+            StringBuilder wayPointsBuilder = new StringBuilder();
+            boolean firstPoint = true;
+            for (RouteLocation location : wayPoints) {
+                if (firstPoint) firstPoint = false;
+                else wayPointsBuilder.append("#");
+                wayPointsBuilder.append(location.getLat()).append(":").append(location.getLng());
+            }
+            this.wayPointsString = wayPointsBuilder.toString();
         }
-        this.wayPointsString = wayPointsBuilder.toString();
 
         this.polyline = polyline;
         this.distanceInMeters = distanceInMeters;
@@ -102,7 +103,7 @@ public class Route {
         this.legDurationsInSeconds = "";
         if( legDurationsInSeconds != null ) {
             StringBuilder legDurationBuilder = new StringBuilder();
-            firstPoint = true;
+            boolean firstPoint = true;
             for (Long value : legDurationsInSeconds) {
                 if (firstPoint) firstPoint = false;
                 else legDurationBuilder.append("#");
@@ -114,7 +115,7 @@ public class Route {
         this.legDistancesInMeters = "";
         if( legDistancesInMeters != null ){
             StringBuilder legDistanceBuilder = new StringBuilder();
-            firstPoint = true;
+            boolean firstPoint = true;
             for( Long value : legDistancesInMeters ){
                 if( firstPoint ) firstPoint = false;
                 else legDistanceBuilder.append("#");
@@ -126,7 +127,7 @@ public class Route {
         this.waypointPolylineIndicesString = "";
         if( waypointPolylineIndices != null ) {
             StringBuilder wpPlIdxBuiler = new StringBuilder();
-            firstPoint = true;
+            boolean firstPoint = true;
             for( Integer value : waypointPolylineIndices ){
                 if( firstPoint ) firstPoint = false;
                 else wpPlIdxBuiler.append("#");

@@ -157,12 +157,10 @@ public class TripsManagerTest {
             );
 
             tripsMatcher.filterPotentialMatches( (List<TripOffer>)(any), (TripQuery)(any) );
-            result = Lists.newArrayList(
-                    new TripOffer(0, null, 0, null, 0, 4, d1, null, TripOfferStatus.ACTIVE, 0 ),
-                    new TripOffer(0, null, 0, null, 0, 14, d2, null, TripOfferStatus.ACTIVE, 0 ),
-                    new TripOffer(0, null, 0, null, 0, 12, d3, null, TripOfferStatus.ACTIVE, 0 ),
-                    new TripOffer(0, null, 0, null, 0, 3, d4, null, TripOfferStatus.ACTIVE, 0 )
-            );
+            result = Lists.newArrayList(new SuperTripReservation.Builder()
+                    .addReservation(new TripReservation.Builder().setPricePerKmInCents(3).setDriver(d4).build())
+                    .setQuery(query)
+                    .build());
 
         }};
 
@@ -186,7 +184,6 @@ public class TripsManagerTest {
         Assert.assertEquals( "Wrong query", query.getStartLocation(), reservations.get(0).getQuery().getStartLocation());
         Assert.assertEquals( "Wrong query", query.getDestinationLocation(), reservations.get(0).getQuery().getDestinationLocation());
         Assert.assertEquals( "Wrong price per kilometer", 3, reservations.get(0).getReservations().get(0).getPricePerKmInCents());
-        Assert.assertEquals( "Wrong total price", 4*12345/1000, reservations.get(0).getReservations().get(0).getTotalPriceInCents());
     }
 
     @Test
