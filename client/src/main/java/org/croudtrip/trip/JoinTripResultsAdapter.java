@@ -19,11 +19,14 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.croudtrip.R;
 import org.croudtrip.api.account.User;
 import org.croudtrip.api.trips.SuperTripReservation;
+import org.croudtrip.api.trips.TripReservation;
 
 import java.util.List;
 
@@ -54,22 +57,19 @@ public class JoinTripResultsAdapter extends RecyclerView.Adapter<JoinTripResults
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
 
 
-        protected TextView tvPrice;
-        protected TextView tvDriverName;
-        protected TextView tvDistance;
-        protected TextView tvDuration;
+        protected TextView tvPrice, tvDuration, tvDistance;
+        protected Button btJoin;
+        protected LinearLayout llDrivers;
 
         public ViewHolder(View view) {
             super(view);
 
-            this.tvPrice = (TextView)
-                    view.findViewById(R.id.tv_join_trip_results_price);
-            this.tvDriverName = (TextView)
-                    view.findViewById(R.id.tv_join_trip_results_driver_name);
-            this.tvDistance = (TextView)
-                    view.findViewById(R.id.tv_join_trip_results_distance);
-            this.tvDuration = (TextView)
-                    view.findViewById(R.id.tv_join_trip_results_duration);
+            this.tvPrice = (TextView) view.findViewById(R.id.trip_price);
+            this.tvDuration = (TextView) view.findViewById(R.id.trip_duration);
+            this.tvDistance = (TextView) view.findViewById(R.id.trip_distance);
+            this.btJoin = (Button) view.findViewById(R.id.trip_join);
+            this.llDrivers = (LinearLayout) view.findViewById(R.id.trip_drivers);
+
 
             view.setOnClickListener(this);
         }
@@ -107,11 +107,16 @@ public class JoinTripResultsAdapter extends RecyclerView.Adapter<JoinTripResults
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
 
-        SuperTripReservation reservation = reservations.get(position);
+        SuperTripReservation superTripReservation = reservations.get(position);
 
+        int totalPrice = 0;
+        for (TripReservation reservation : superTripReservation.getReservations()) {
+            totalPrice += reservation.getTotalPriceInCents();
+        }
         // Price info
-        String price = reservation.getReservations().get(0).getTotalPriceInCents() / 100 + ","; // euros
-        int cents = reservation.getReservations().get(0).getTotalPriceInCents()  % 100;
+        String price = totalPrice / 100 + ","; // euros
+        int cents = totalPrice  % 100;
+
 
         if(cents == 0){
             price = price + "00";
@@ -125,12 +130,12 @@ public class JoinTripResultsAdapter extends RecyclerView.Adapter<JoinTripResults
 
 
         // Driver info
-        User driver = reservation.getReservations().get(0).getDriver();
-        holder.tvDriverName.setText(driver.getFirstName());
+        User driver = superTripReservation.getReservations().get(0).getDriver();
+        //holder.tvDriverName.setText(driver.getFirstName());
 
 
         // Distance information
-        long distance = reservation.getQuery().getPassengerRoute().getDistanceInMeters();
+        long distance = superTripReservation.getQuery().getPassengerRoute().getDistanceInMeters();
 
         if(distance < 1000){
             holder.tvDistance.setText(context.getString(
@@ -143,7 +148,7 @@ public class JoinTripResultsAdapter extends RecyclerView.Adapter<JoinTripResults
 
 
         // Duration info
-        long timeInMinutes = reservation.getQuery().getPassengerRoute().getDurationInSeconds() / 60;
+        long timeInMinutes = superTripReservation.getQuery().getPassengerRoute().getDurationInSeconds() / 60;
 
         if(timeInMinutes < 60){
             holder.tvDuration.setText(context.getString(R.string.join_trip_results_duration_min,

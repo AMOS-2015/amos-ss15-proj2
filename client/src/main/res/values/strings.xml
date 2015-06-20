@@ -73,10 +73,10 @@
         <item quantity="other">We found %d rides for you</item>
     </plurals>
     <string name="join_trip_results_costs">%s €</string>
-    <string name="join_trip_results_distance_km">Distance: %d km</string>
-    <string name="join_trip_results_distance_m">Distance: %d m</string>
-    <string name="join_trip_results_duration_min">Duration: %dmin</string>
-    <string name="join_trip_results_duration_hmin">Duration: %1$dh %2$dmin</string>
+    <string name="join_trip_results_distance_km">%d km</string>
+    <string name="join_trip_results_distance_m">%d m</string>
+    <string name="join_trip_results_duration_min">%dmin</string>
+    <string name="join_trip_results_duration_hmin">%1$dh %2$dmin</string>
     <string name="join_trip_results_error">An error occurred when sending your request to the server. Please try again.</string>
     <string name="join_trip_results_waiting">We try our best to find trips for you! Hang in there!</string>
     <string name="join_trip_results_stop">Stop searching</string>
