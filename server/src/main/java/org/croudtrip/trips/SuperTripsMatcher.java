@@ -79,6 +79,9 @@ class SuperTripsMatcher extends SimpleTripsMatcher {
 
     @Override
     public List<SuperTripReservation> findPotentialTrips(List<TripOffer> offers, TripQuery query) {
+        List<SuperTripReservation> simpleReservations = super.findPotentialTrips(offers, query);
+        if (!simpleReservations.isEmpty()) return simpleReservations;
+
         logManager.d("STARTED SEARCHING FOR SUPER TRIPS");
 
         // compute all offers that would be able to pickup or drop the passenger along their route

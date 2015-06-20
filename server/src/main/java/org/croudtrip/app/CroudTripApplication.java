@@ -49,6 +49,7 @@ import org.croudtrip.trips.ExpireJoinTripRequestsExecutor;
 import org.croudtrip.trips.ExpireTripOffersExecutor;
 import org.croudtrip.trips.RunningTripQueryGarbageCollectionExecutor;
 import org.croudtrip.trips.TripReservationGarbageCollectionExecutor;
+import org.croudtrip.trips.TripsModule;
 
 import io.dropwizard.Application;
 import io.dropwizard.auth.AuthFactory;
@@ -81,7 +82,8 @@ public final class CroudTripApplication extends Application<CroudTripConfig> {
 		Injector injector = Guice.createInjector(
 				new DbModule(hibernateBundle.getSessionFactory()),
                 new DirectionsModule(configuration),
-				new GcmModule(configuration.getGoogleAPIKey()));
+				new GcmModule(configuration.getGoogleAPIKey()),
+				new TripsModule());
 
 		injector.getInstance(TripReservationGarbageCollectionExecutor.class).start();
 		injector.getInstance(RunningTripQueryGarbageCollectionExecutor.class).start();

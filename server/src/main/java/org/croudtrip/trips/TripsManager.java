@@ -65,8 +65,7 @@ public class TripsManager {
     private final DirectionsManager directionsManager;
     private final VehicleManager vehicleManager;
     private final GcmManager gcmManager;
-    private final SimpleTripsMatcher simpleTripsMatcher;
-    private final SuperTripsMatcher superTripsMatcher;
+    private final TripsMatcher tripMatcher;
     private final RunningTripQueriesManager runningTripQueriesManager;
     private final TripsUtils tripsUtils;
     private final LogManager logManager;
@@ -81,8 +80,7 @@ public class TripsManager {
             DirectionsManager directionsManager,
             VehicleManager vehicleManager,
             GcmManager gcmManager,
-            SimpleTripsMatcher simpleTripsMatcher,
-            SuperTripsMatcher superTripsMatcher,
+            TripsMatcher tripMatcher,
             RunningTripQueriesManager runningTripQueriesManager,
             TripsUtils tripsUtils,
             LogManager logManager) {
@@ -94,9 +92,8 @@ public class TripsManager {
         this.directionsManager = directionsManager;
         this.vehicleManager = vehicleManager;
         this.gcmManager = gcmManager;
-        this.simpleTripsMatcher = simpleTripsMatcher;
         this.runningTripQueriesManager = runningTripQueriesManager;
-        this.superTripsMatcher = superTripsMatcher;
+        this.tripMatcher = tripMatcher;
         this.tripsUtils = tripsUtils;
         this.logManager = logManager;
 
@@ -253,17 +250,12 @@ public class TripsManager {
         long queryCreationTimestamp = System.currentTimeMillis() / 1000;
         TripQuery query = new TripQuery(possiblePassengerRoutes.get(0), queryDescription.getStart(), queryDescription.getEnd(), queryDescription.getMaxWaitingTimeInSeconds(), queryCreationTimestamp, passenger);
 
-        // try finding regular match
-        List<SuperTripReservation> reservations = simpleTripsMatcher.findPotentialTrips(tripOfferDAO.findAllActive(), query);
-
-        // if no regular trips --> try finding super matches
-        if (reservations.isEmpty()) {
-            reservations = superTripsMatcher.findPotentialTrips(tripOfferDAO.findAllActive(), query);
-            for (SuperTripReservation reservation : reservations) {
-                logManager.d("Found a super trip: ");
-                for (TripReservation res : reservation.getReservations()) {
-                    logManager.d("Driver: " + res.getDriver().getFirstName());
-                }
+        // try finding match (regular + super)
+        List<SuperTripReservation> reservations = tripMatcher.findPotentialTrips(tripOfferDAO.findAllActive(), query);
+        for (SuperTripReservation reservation : reservations) {
+            logManager.d("Found a super trip: ");
+            for (TripReservation res : reservation.getReservations()) {
+                logManager.d("Driver: " + res.getDriver().getFirstName());
             }
         }
 
@@ -319,7 +311,7 @@ public class TripsManager {
 
             // check if the offer is still a valid match for this request (newly accepted requests may change this)
             TripQuery temporalQuery = new TripQuery( null, reservation.getSubQuery().getStartLocation(), reservation.getSubQuery().getStartLocation(), Long.MAX_VALUE, tripReservation.getQuery().getCreationTimestamp(), tripReservation.getQuery().getPassenger() );
-            Optional<SimpleTripsMatcher.PotentialMatch> potentialMatch = simpleTripsMatcher.isPotentialMatch(offer, temporalQuery);
+            Optional<SimpleTripsMatcher.PotentialMatch> potentialMatch = tripMatcher.isPotentialMatch(offer, temporalQuery);
             if (!potentialMatch.isPresent()) return Optional.absent();
 
             matches.add(potentialMatch.get());

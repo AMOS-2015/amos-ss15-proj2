@@ -56,11 +56,8 @@ public class TripsManagerTest {
     @Mocked TripsUtils tripsUtils;
     @Mocked SuperTripReservationDAO superTripReservationDAO;
     @Mocked VehicleManager vehicleManager;
-    @Mocked
-    SimpleTripsMatcher simpleTripsMatcher;
+    @Mocked TripsMatcher tripsMatcher;
     @Mocked RunningTripQueriesManager runningTripQueriesManager;
-    @Mocked
-    SuperTripsMatcher superTripsMatcher;
     @Mocked GcmManager gcmManager;
 
     private TripsManager tripsManager;
@@ -71,7 +68,7 @@ public class TripsManagerTest {
     @Before
     public void setupTripsManager() {
         tripsManager = new TripsManager( tripOfferDAO, superTripReservationDAO, superTripDAO, joinTripRequestDAO, directionsManager,
-                vehicleManager, gcmManager, simpleTripsMatcher, superTripsMatcher, runningTripQueriesManager, tripsUtils, logManager );
+                vehicleManager, gcmManager, tripsMatcher, runningTripQueriesManager, tripsUtils, logManager );
     }
 
     @Test
@@ -158,7 +155,7 @@ public class TripsManagerTest {
                     new TripOffer(0, null, 0, null, 0, 0, d4, null, TripOfferStatus.ACTIVE, 0 )
             );
 
-            simpleTripsMatcher.findPotentialTrips((List<TripOffer>) (any), (TripQuery) (any));
+            tripsMatcher.findPotentialTrips((List<TripOffer>) (any), (TripQuery) (any));
             result = Lists.newArrayList(new SuperTripReservation.Builder()
                     .addReservation(new TripReservation.Builder().setPricePerKmInCents(3).setDriver(d4).build())
                     .setQuery(query)
@@ -211,7 +208,8 @@ public class TripsManagerTest {
             tripOfferDAO.findById( anyLong );
             result = Optional.of(offer);
 
-            simpleTripsMatcher.isPotentialMatch( offer, query );
+            tripsMatcher.isPotentialMatch( offer, query );
+
             result = Optional.of( new SimpleTripsMatcher.PotentialMatch( offer, query, Lists.newArrayList(
                     new UserWayPoint(d, tripStart, true, 0, 0 ),
                     new UserWayPoint(p, passengerStart, true, 1, 1  ),
