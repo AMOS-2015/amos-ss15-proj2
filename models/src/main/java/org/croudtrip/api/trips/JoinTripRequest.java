@@ -19,6 +19,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Objects;
 
 import javax.persistence.Column;
+import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -113,6 +114,14 @@ public class JoinTripRequest {
 	@JoinColumn(name = "super_passenger_trip_id")
 	private SuperTrip superTrip;
 
+	/**
+	 * Contains all the relevant information about the sub-trip that should be done by one driver
+	 * within a super trip. If this reservation is part of a simple trips the subQuery value should
+	 * contain all the relevant information of the original query
+	 */
+	@Embedded
+	SuperTripSubQuery subQuery;
+
 	public JoinTripRequest() { }
 
 	@JsonCreator
@@ -123,7 +132,8 @@ public class JoinTripRequest {
             @JsonProperty("estimatedArrivalTimestamp") long estimatedArrivalTimestamp,
 			@JsonProperty("offer") TripOffer offer,
 			@JsonProperty("status") JoinTripStatus status,
-			@JsonProperty("superTrip") SuperTrip superTrip) {
+			@JsonProperty("superTrip") SuperTrip superTrip,
+			@JsonProperty("subQuery") SuperTripSubQuery subQuery) {
 
 		this.id = id;
 		this.totalPriceInCents = totalPriceInCents;
@@ -132,6 +142,7 @@ public class JoinTripRequest {
 		this.status = status;
         this.estimatedArrivalTimestamp = estimatedArrivalTimestamp;
 		this.superTrip = superTrip;
+		this.subQuery = subQuery;
 	}
 
 
@@ -146,7 +157,8 @@ public class JoinTripRequest {
                 oldRequest.getEstimatedArrivalTimestamp(),
 				oldRequest.getOffer(),
 				newStatus,
-				oldRequest.getSuperTrip());
+				oldRequest.getSuperTrip(),
+				oldRequest.getSubQuery());
 	}
 
 	public long getId() {
@@ -175,6 +187,8 @@ public class JoinTripRequest {
 		return superTrip;
 	}
 
+	public SuperTripSubQuery getSubQuery() { return subQuery; }
+
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
@@ -186,12 +200,13 @@ public class JoinTripRequest {
                 Objects.equal(estimatedArrivalTimestamp, that.estimatedArrivalTimestamp) &&
 				Objects.equal(offer, that.offer) &&
 				Objects.equal(status, that.status) &&
-				Objects.equal(superTrip, that.superTrip);
+				Objects.equal(superTrip, that.superTrip) &&
+				Objects.equal(subQuery, that.subQuery);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hashCode(id, totalPriceInCents, pricePerKmInCents, offer, status, superTrip);
+		return Objects.hashCode(id, totalPriceInCents, pricePerKmInCents, offer, status, superTrip, subQuery);
 	}
 
 
@@ -204,6 +219,7 @@ public class JoinTripRequest {
 		private TripOffer offer;
 		private JoinTripStatus status;
 		private SuperTrip superTrip;
+		private SuperTripSubQuery subQuery;
 
 		public Builder setId(long id) {
 			this.id = id;
@@ -240,8 +256,13 @@ public class JoinTripRequest {
 			return this;
 		}
 
+		public Builder setSubQuery(SuperTripSubQuery subQuery) {
+			this.subQuery = subQuery;
+			return this;
+		}
+
 		public JoinTripRequest build() {
-			return new JoinTripRequest(id, totalPriceInCents, pricePerKmInCents, estimatedArrivalTimestamp, offer, status, superTrip);
+			return new JoinTripRequest(id, totalPriceInCents, pricePerKmInCents, estimatedArrivalTimestamp, offer, status, superTrip, subQuery);
 		}
 
 	}

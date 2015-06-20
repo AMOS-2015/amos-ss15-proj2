@@ -316,48 +316,60 @@ public class TripsManager {
         // remove reservation (either it has now been accepted or is can be discarded)
         superTripReservationDAO.delete(tripReservation);
 
-        // find and check trip
-        // TODO check all offers that belong to a super trip
-        Optional<TripOffer> offerOptional = tripOfferDAO.findById(tripReservation.getReservations().get(0).getOfferId());
-        if (!offerOptional.isPresent()) return Optional.absent();
-        TripOffer offer = offerOptional.get();
+        // find and check all trips
+        List<TripsMatcher.PotentialMatch> matches = new ArrayList<>();
+        for( TripReservation reservation : tripReservation.getReservations() ) {
 
-        // check if the offer is still a valid match for this request (newly accepted requests may change this)
-        Optional<TripsMatcher.PotentialMatch> potentialMatch = tripsMatcher.isPotentialMatch(offer, tripReservation.getQuery());
-        if (!potentialMatch.isPresent()) return Optional.absent();
+            // find related offer in reservation
+            Optional<TripOffer> offerOptional = tripOfferDAO.findById(reservation.getOfferId());
+            if (!offerOptional.isPresent()) return Optional.absent();
+            TripOffer offer = offerOptional.get();
 
-        // find estimated arrival time in list
-        long arrivalTimestamp = 0;
-        logManager.d("Potential match has " + potentialMatch.get().userWayPoints.size() + " wps");
-        for( UserWayPoint wp : potentialMatch.get().userWayPoints ){
-            logManager.d("WP for user " + wp.getUser().getFirstName());
-            if( wp.getUser().getId() == tripReservation.getQuery().getPassenger().getId() ) {
-                arrivalTimestamp = wp.getArrivalTimestamp();
-                break;
-            }
+            // check if the offer is still a valid match for this request (newly accepted requests may change this)
+            TripQuery temporalQuery = new TripQuery( null, reservation.getSubQuery().getStartLocation(), reservation.getSubQuery().getStartLocation(), Long.MAX_VALUE, tripReservation.getQuery().getCreationTimestamp(), tripReservation.getQuery().getPassenger() );
+            Optional<TripsMatcher.PotentialMatch> potentialMatch = tripsMatcher.isPotentialMatch(offer, temporalQuery);
+            if (!potentialMatch.isPresent()) return Optional.absent();
+
+            matches.add(potentialMatch.get());
         }
 
-        // update join request
+        // send notifications to all drivers
         SuperTrip superTrip = new SuperTrip.Builder().setQuery(tripReservation.getQuery()).build();
-        JoinTripRequest joinTripRequest = new JoinTripRequest(
-                0,
-                tripReservation.getReservations().get(0).getTotalPriceInCents(),
-                tripReservation.getReservations().get(0).getPricePerKmInCents(),
-                arrivalTimestamp,
-                offer,
-                JoinTripStatus.PASSENGER_ACCEPTED,
-                superTrip);
+        for( int i = 0; i < matches.size(); ++i ) {
+            TripsMatcher.PotentialMatch match = matches.get(i);
 
-        superTripDAO.save(superTrip);
-        joinTripRequestDAO.save(joinTripRequest);
+            // find estimated arrival time in list
+            long arrivalTimestamp = 0;
+            logManager.d("Potential match has " + match.userWayPoints.size() + " wps");
+            for( UserWayPoint wp : match.userWayPoints ){
+                if( wp.getUser().getId() == tripReservation.getQuery().getPassenger().getId() ) {
+                    arrivalTimestamp = wp.getArrivalTimestamp();
+                    break;
+                }
+            }
 
-        // send push notification to driver
-        // TODO send notification to all drivers!
-        gcmManager.sendGcmMessageToUser(offerOptional.get().getDriver(), GcmConstants.GCM_MSG_JOIN_REQUEST,
-                new Pair<String, String>(GcmConstants.GCM_MSG_JOIN_REQUEST, "There is a new request to join your trip"),
-                new Pair<String, String>(GcmConstants.GCM_MSG_USER_MAIL, "" + offerOptional.get().getDriver().getEmail()),
-                new Pair<String, String>(GcmConstants.GCM_MSG_JOIN_REQUEST_ID, "" + joinTripRequest.getId()),
-                new Pair<String, String>(GcmConstants.GCM_MSG_JOIN_REQUEST_OFFER_ID, "" + offerOptional.get().getId()));
+            // update join request
+            JoinTripRequest joinTripRequest = new JoinTripRequest(
+                    0,
+                    tripReservation.getReservations().get(0).getTotalPriceInCents(),
+                    tripReservation.getReservations().get(0).getPricePerKmInCents(),
+                    arrivalTimestamp,
+                    match.offer,
+                    JoinTripStatus.PASSENGER_ACCEPTED,
+                    superTrip,
+                    tripReservation.getReservations().get(i).getSubQuery());
+
+            superTripDAO.save(superTrip);
+            joinTripRequestDAO.save(joinTripRequest);
+
+            // send push notification to driver
+            gcmManager.sendGcmMessageToUser(match.offer.getDriver(), GcmConstants.GCM_MSG_JOIN_REQUEST,
+                    new Pair<String, String>(GcmConstants.GCM_MSG_JOIN_REQUEST, "There is a new request to join your trip"),
+                    new Pair<String, String>(GcmConstants.GCM_MSG_USER_MAIL, "" + match.offer.getDriver().getEmail()),
+                    new Pair<String, String>(GcmConstants.GCM_MSG_JOIN_REQUEST_ID, "" + joinTripRequest.getId()),
+                    new Pair<String, String>(GcmConstants.GCM_MSG_JOIN_REQUEST_OFFER_ID, "" + match.offer.getId()));
+        }
+
 
         return Optional.of(superTrip);
     }
