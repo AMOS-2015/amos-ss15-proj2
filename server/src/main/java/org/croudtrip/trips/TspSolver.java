@@ -6,6 +6,7 @@ import org.croudtrip.api.account.User;
 import org.croudtrip.api.directions.RouteLocation;
 import org.croudtrip.api.trips.JoinTripRequest;
 import org.croudtrip.api.trips.JoinTripStatus;
+import org.croudtrip.api.trips.SuperTripSubQuery;
 import org.croudtrip.api.trips.TripOffer;
 import org.croudtrip.api.trips.TripQuery;
 
@@ -144,13 +145,13 @@ public class TspSolver {
 	private List<TripRequest> joinTripRequestsToTripRequests(List<JoinTripRequest> joinTripRequests) {
 		List<TripRequest> tripRequests = new ArrayList<>();
 		for (JoinTripRequest joinTripRequest : joinTripRequests) {
-			TripQuery query = joinTripRequest.getSuperTrip().getQuery();
-			TripRequest tripRequest = new TripRequest(query.getPassenger());
+			SuperTripSubQuery subQuery = joinTripRequest.getSubQuery();
+			TripRequest tripRequest = new TripRequest(joinTripRequest.getSuperTrip().getQuery().getPassenger());
 			switch (joinTripRequest.getStatus()) {
 				case DRIVER_ACCEPTED:
-					tripRequest.setStart(query.getStartLocation());
+					tripRequest.setStart(subQuery.getStartLocation());
 				case PASSENGER_IN_CAR:
-					tripRequest.setEnd(query.getDestinationLocation());
+					tripRequest.setEnd(subQuery.getDestinationLocation());
 			}
 
             // add the trip request to the final list.

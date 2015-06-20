@@ -107,7 +107,8 @@ public class TripsUtils {
                     arrivalTimestamp,
                     request.getOffer(),
                     request.getStatus(),
-                    request.getSuperTrip()
+                    request.getSuperTrip(),
+                    request.getSubQuery()
             );
             joinTripRequestDAO.update( request );
 

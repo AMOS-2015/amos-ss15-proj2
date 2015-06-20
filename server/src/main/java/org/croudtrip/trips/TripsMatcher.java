@@ -240,6 +240,8 @@ class TripsMatcher {
 			TripQuery query,
 			List<UserWayPoint> userWayPoints) {
 
+		// TODO: max waiting time is not valid for super trips
+
 		// check max waiting time for each passenger
 		for (UserWayPoint userWayPoint : userWayPoints) {
 			if (!userWayPoint.isStartOfTrip()) continue;
