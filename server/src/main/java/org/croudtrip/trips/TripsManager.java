@@ -16,6 +16,7 @@ package org.croudtrip.trips;
 
 
 import com.google.common.base.Optional;
+import com.google.common.collect.Lists;
 
 import org.croudtrip.account.VehicleManager;
 import org.croudtrip.api.account.User;
@@ -340,6 +341,7 @@ public class TripsManager {
 
         superTripDAO.save(superTrip);
         joinTripRequestDAO.save(joinTripRequest);
+        superTrip.setJoinRequests(Lists.newArrayList(joinTripRequest));
 
         // send push notification to driver
         // TODO send notification to all drivers!
@@ -448,7 +450,7 @@ public class TripsManager {
         joinTripRequestDAO.update(updatedRequest);
 
         // Send GCM to the driver to notify him that the passenger entered the car
-        gcmManager.sendPassengerEnterCarMsg( joinRequest );
+        gcmManager.sendPassengerEnterCarMsg(joinRequest);
 
         return updatedRequest;
     }

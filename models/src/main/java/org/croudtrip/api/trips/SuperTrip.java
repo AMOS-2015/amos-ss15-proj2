@@ -2,6 +2,7 @@ package org.croudtrip.api.trips;
 
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Objects;
 
@@ -54,11 +55,11 @@ public class SuperTrip {
 	private TripQuery query;
 
 	@OneToMany(mappedBy = "superTrip")
+	@JsonManagedReference
 	private List<JoinTripRequest> joinRequests;
 
 
-	public SuperTrip() {
-	}
+	public SuperTrip() { }
 
 	@JsonCreator
 	public SuperTrip(
@@ -81,6 +82,10 @@ public class SuperTrip {
 
 	public List<JoinTripRequest> getJoinRequests() {
 		return joinRequests;
+	}
+
+	public void setJoinRequests(List<JoinTripRequest> joinRequests) {
+		this.joinRequests = joinRequests;
 	}
 
 	@Override
