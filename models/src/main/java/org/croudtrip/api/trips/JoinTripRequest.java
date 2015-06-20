@@ -14,8 +14,8 @@
 
 package org.croudtrip.api.trips;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Objects;
 
@@ -113,7 +113,7 @@ public class JoinTripRequest {
 
 	@ManyToOne
 	@JoinColumn(name = "super_passenger_trip_id")
-	@JsonBackReference
+	@JsonManagedReference
 	private SuperTrip superTrip;
 
 	/**
@@ -185,9 +185,6 @@ public class JoinTripRequest {
 		return status;
 	}
 
-	/**
-	 * When deserializing this object from JSON, this field will always be NULL!!
-	 */
 	public SuperTrip getSuperTrip() {
 		return superTrip;
 	}
