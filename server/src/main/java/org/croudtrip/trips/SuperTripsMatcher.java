@@ -8,10 +8,13 @@ import org.croudtrip.api.directions.RouteLocation;
 import org.croudtrip.api.trips.SuperTripReservation;
 import org.croudtrip.api.trips.SuperTripSubQuery;
 import org.croudtrip.api.trips.TripOffer;
+import org.croudtrip.api.trips.TripOfferStatus;
 import org.croudtrip.api.trips.TripQuery;
 import org.croudtrip.api.trips.TripReservation;
 import org.croudtrip.closestpair.ClosestPair;
 import org.croudtrip.closestpair.ClosestPairResult;
+import org.croudtrip.db.JoinTripRequestDAO;
+import org.croudtrip.db.TripOfferDAO;
 import org.croudtrip.directions.DirectionsManager;
 import org.croudtrip.directions.RouteNotFoundException;
 import org.croudtrip.logs.LogManager;
@@ -24,7 +27,7 @@ import javax.inject.Inject;
 /**
  * Responsible for finding and creating super trips.
  */
-public class SuperTripsMatcher {
+class SuperTripsMatcher extends TripsMatcher {
 
     public static class PotentialSuperTripMatch {
         private final TripOffer offer;
@@ -57,18 +60,21 @@ public class SuperTripsMatcher {
     }
 
 
-    private final TripsMatcher tripsMatcher;
     private final ClosestPair closestPair;
-    private final DirectionsManager directionsManager;
-    private final LogManager logManager;
 
 
     @Inject
-    SuperTripsMatcher(TripsMatcher tripsMatcher, ClosestPair closestPair, DirectionsManager directionsManager, LogManager logManager) {
-        this.tripsMatcher = tripsMatcher;
+    SuperTripsMatcher(
+            JoinTripRequestDAO joinTripRequestDAO,
+            TripOfferDAO tripOfferDAO,
+            TripsNavigationManager tripsNavigationManager,
+            DirectionsManager directionsManager,
+            TripsUtils tripsUtils,
+            ClosestPair closestPair,
+            LogManager logManager) {
+
+        super(joinTripRequestDAO, tripOfferDAO, tripsNavigationManager, directionsManager,  tripsUtils, logManager);
         this.closestPair = closestPair;
-        this.directionsManager = directionsManager;
-        this.logManager = logManager;
     }
 
     public List<SuperTripReservation> findSuperTrips( List<TripOffer> offers, TripQuery query  ) throws RouteNotFoundException {
@@ -78,10 +84,10 @@ public class SuperTripsMatcher {
         List<PotentialSuperTripMatch> potentialSuperTripPickUpMatches = new ArrayList<>();
         List<PotentialSuperTripMatch> potentialSuperTripDropMatches = new ArrayList<>();
         for( TripOffer offer : offers ) {
-            Optional<PotentialSuperTripMatch> pickupMatch = tripsMatcher.isPotentialSuperTripMatchForOneWaypoint(offer, query, true);
+            Optional<PotentialSuperTripMatch> pickupMatch = isPotentialSuperTripMatchForOneWaypoint(offer, query, true);
             if( pickupMatch.isPresent() )   potentialSuperTripPickUpMatches.add( pickupMatch.get());
 
-            Optional<PotentialSuperTripMatch> dropMatch = tripsMatcher.isPotentialSuperTripMatchForOneWaypoint(offer, query, false);
+            Optional<PotentialSuperTripMatch> dropMatch = isPotentialSuperTripMatchForOneWaypoint(offer, query, false);
             if( dropMatch.isPresent() )   potentialSuperTripDropMatches.add( dropMatch.get());
         }
 
@@ -121,7 +127,7 @@ pickUp: for( PotentialSuperTripMatch pickUpMatch : potentialSuperTripPickUpMatch
                 .setMaxWaitingTimeInSeconds( query.getMaxWaitingTimeInSeconds() )
                 .build();
 
-        Optional<TripsMatcher.PotentialMatch> potentialMatch = tripsMatcher.isPotentialMatch(pickUpMatch.getOffer(), adaptedQuery);
+        Optional<TripsMatcher.PotentialMatch> potentialMatch = isPotentialMatch(pickUpMatch.getOffer(), adaptedQuery);
         if( potentialMatch.isPresent() ) {
             // expensive directions call but necessary, we need the adapted passenger routes to compute the total price per driver
             Route passengerpickUpRoute = directionsManager.getDirections( query.getStartLocation(), adaptedQuery.getDestinationLocation() ).get(0);
@@ -162,7 +168,7 @@ pickUp: for( PotentialSuperTripMatch pickUpMatch : potentialSuperTripPickUpMatch
                 .setMaxWaitingTimeInSeconds( Integer.MAX_VALUE ) // TODO: We are ignoring time for now
                 .build();
 
-        potentialMatch = tripsMatcher.isPotentialMatch(pickUpMatch.getOffer(), adaptedQuery);
+        potentialMatch = isPotentialMatch(pickUpMatch.getOffer(), adaptedQuery);
         if( potentialMatch.isPresent() ) {
             // expensive directions call but necessary, we need the adapted passenger routes to compute the total price per driver
             Route passengerpickUpRoute = directionsManager.getDirections( query.getStartLocation(), adaptedQuery.getStartLocation() ).get(0);
@@ -197,4 +203,51 @@ pickUp: for( PotentialSuperTripMatch pickUpMatch : potentialSuperTripPickUpMatch
 
         return Optional.absent();
     }
+
+    /**
+     * Checks if the given offer is a potential match for the given query for one particular waypoint
+     * It will be used in super trips to compute offers that are able to pick up or drop passenger.
+     * @param offer The offer that should be checked
+     * @param query The query that should be checked
+     * @return If the trip is a potential match a {@link SuperTripsMatcher.PotentialSuperTripMatch} will be returned.
+     */
+    private Optional<SuperTripsMatcher.PotentialSuperTripMatch> isPotentialSuperTripMatchForOneWaypoint( TripOffer offer, TripQuery query, boolean useStartWaypoint ) throws RouteNotFoundException {
+        // check trip status
+        if (!offer.getStatus().equals(TripOfferStatus.ACTIVE)) return Optional.absent();
+
+        // check that query has not been declined before
+        if (!assertJoinRequestNotDeclined(offer, query)) return Optional.absent();
+
+        // check current passenger count
+        int passengerCount = tripsUtils.getActivePassengerCountForOffer(offer);
+        if (passengerCount >= offer.getVehicle().getCapacity()) return Optional.absent();
+
+        // create a fake query with only one point to compute matches
+        TripQuery onePointQuery;
+        if( useStartWaypoint)
+            onePointQuery = new TripQuery.Builder().setPassenger(query.getPassenger()).setStartLocation( query.getStartLocation() ).build();
+        else
+            onePointQuery = new TripQuery.Builder().setPassenger(query.getPassenger()).setDestinationLocation(query.getDestinationLocation()).build();
+
+        // early reject based on airline;
+        if (!assertWithinAirDistance(offer, onePointQuery)) return Optional.absent();
+
+        // update driver route on new position update
+        assertUpdatedDriverRoute(offer);
+
+        // get complete new route
+        NavigationResult navigationResult = tripsNavigationManager.getNavigationResultForOffer(offer, onePointQuery);
+        if (navigationResult.getUserWayPoints().isEmpty()) return Optional.absent();
+
+        // TODO: Currently we are ignoring time completely
+        //if (!assertRouteWithinPassengerMaxWaitingTime(offer, query, navigationResult.getUserWayPoints())) return Optional.absent();
+
+        // check if passenger route is within max diversion
+        long distanceToDriverInMeters = navigationResult.getUserWayPoints().get(navigationResult.getUserWayPoints().size() - 1).getDistanceToDriverInMeters();
+        if (distanceToDriverInMeters - offer.getDriverRoute().getDistanceInMeters() > offer.getMaxDiversionInMeters()) return Optional.absent();
+
+        return Optional.of( new SuperTripsMatcher.PotentialSuperTripMatch( offer, query, useStartWaypoint ? query.getStartLocation() : query.getDestinationLocation(), navigationResult ));
+    }
+
+
 }

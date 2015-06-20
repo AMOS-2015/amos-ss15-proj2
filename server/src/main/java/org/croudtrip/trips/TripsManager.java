@@ -332,8 +332,8 @@ public class TripsManager {
 
             // find estimated arrival time in list
             long arrivalTimestamp = 0;
-            logManager.d("Potential match has " + match.userWayPoints.size() + " wps");
-            for( UserWayPoint wp : match.userWayPoints ){
+            logManager.d("Potential match has " + match.getUserWayPoints().size() + " wps");
+            for( UserWayPoint wp : match.getUserWayPoints()) {
                 if( wp.getUser().getId() == tripReservation.getQuery().getPassenger().getId() ) {
                     arrivalTimestamp = wp.getArrivalTimestamp();
                     break;
@@ -346,7 +346,7 @@ public class TripsManager {
                     tripReservation.getReservations().get(0).getTotalPriceInCents(),
                     tripReservation.getReservations().get(0).getPricePerKmInCents(),
                     arrivalTimestamp,
-                    match.offer,
+                    match.getOffer(),
                     JoinTripStatus.PASSENGER_ACCEPTED,
                     superTrip,
                     tripReservation.getReservations().get(i).getSubQuery());
@@ -356,11 +356,11 @@ public class TripsManager {
             superTrip.setJoinRequests(Lists.newArrayList(joinTripRequest));
 
             // send push notification to driver
-            gcmManager.sendGcmMessageToUser(match.offer.getDriver(), GcmConstants.GCM_MSG_JOIN_REQUEST,
+            gcmManager.sendGcmMessageToUser(match.getOffer().getDriver(), GcmConstants.GCM_MSG_JOIN_REQUEST,
                     new Pair<String, String>(GcmConstants.GCM_MSG_JOIN_REQUEST, "There is a new request to join your trip"),
-                    new Pair<String, String>(GcmConstants.GCM_MSG_USER_MAIL, "" + match.offer.getDriver().getEmail()),
+                    new Pair<String, String>(GcmConstants.GCM_MSG_USER_MAIL, "" + match.getOffer().getDriver().getEmail()),
                     new Pair<String, String>(GcmConstants.GCM_MSG_JOIN_REQUEST_ID, "" + joinTripRequest.getId()),
-                    new Pair<String, String>(GcmConstants.GCM_MSG_JOIN_REQUEST_OFFER_ID, "" + match.offer.getId()));
+                    new Pair<String, String>(GcmConstants.GCM_MSG_JOIN_REQUEST_OFFER_ID, "" + match.getOffer().getId()));
         }
 
         return Optional.of(superTrip);
