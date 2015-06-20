@@ -104,4 +104,42 @@ public class TripReservation {
 	public int hashCode() {
 		return Objects.hashCode(totalPriceInCents, pricePerKmInCents, offerId, driver);
 	}
+
+
+	public static class Builder {
+		private SuperTripSubQuery subQuery;
+		private int totalPriceInCents;
+		private int pricePerKmInCents;
+		private long offerId;
+		private User driver;
+
+		public Builder setSubQuery(SuperTripSubQuery subQuery) {
+			this.subQuery = subQuery;
+			return this;
+		}
+
+		public Builder setTotalPriceInCents(int totalPriceInCents) {
+			this.totalPriceInCents = totalPriceInCents;
+			return this;
+		}
+
+		public Builder setPricePerKmInCents(int pricePerKmInCents) {
+			this.pricePerKmInCents = pricePerKmInCents;
+			return this;
+		}
+
+		public Builder setOfferId(long offerId) {
+			this.offerId = offerId;
+			return this;
+		}
+
+		public Builder setDriver(User driver) {
+			this.driver = driver;
+			return this;
+		}
+
+		public TripReservation build() {
+			return new TripReservation(subQuery, totalPriceInCents, pricePerKmInCents, offerId, driver);
+		}
+	}
 }
