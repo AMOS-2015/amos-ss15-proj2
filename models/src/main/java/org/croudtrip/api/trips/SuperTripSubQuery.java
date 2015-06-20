@@ -20,10 +20,7 @@ import javax.persistence.ManyToOne;
  */
 @Embeddable
 public class SuperTripSubQuery {
-
     @Embedded
-    private Route passengerRoute;
-
     @AttributeOverrides({
             @AttributeOverride(name= RouteLocation.COLUMN_LAT, column = @Column(name = "sLat")),
             @AttributeOverride(name= RouteLocation.COLUMN_LNG, column = @Column(name = "sLng"))
@@ -37,47 +34,48 @@ public class SuperTripSubQuery {
     })
     private RouteLocation destinationLocation;
 
-    @ManyToOne
-    @JoinColumn(name = User.COLUMN_ID + "_passenger", nullable = false)
-    private User passenger;
-
     public SuperTripSubQuery() { }
 
     public SuperTripSubQuery( TripQuery query ) {
-        this.passengerRoute = query.getPassengerRoute();
-        this.startLocation = query.getStartLocation();
-        this.destinationLocation = query.getDestinationLocation();
-        this.passenger = query.getPassenger();
+        this( query.getStartLocation(), query.getDestinationLocation() );
     }
 
     @JsonCreator
     public SuperTripSubQuery(
-            @JsonProperty("passengerRoute") Route passengerRoute,
             @JsonProperty("startLocation") RouteLocation startLocation,
-            @JsonProperty("destinationLocation") RouteLocation destinationLocation,
-            @JsonProperty("passenger") User passenger) {
+            @JsonProperty("destinationLocation") RouteLocation destinationLocation) {
 
-        this.passengerRoute = passengerRoute;
         this.startLocation = startLocation;
         this.destinationLocation = destinationLocation;
-        this.passenger = passenger;
     }
 
-    public Route getPassengerRoute() {
-        return passengerRoute;
-    }
-
+    @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name= RouteLocation.COLUMN_LAT, column = @Column(name = "sLat")),
+            @AttributeOverride(name= RouteLocation.COLUMN_LNG, column = @Column(name = "sLng"))
+    })
     public RouteLocation getStartLocation() {
         return startLocation;
     }
 
+    private void setStartLocation(RouteLocation startLocation) {
+        this.startLocation = startLocation;
+    }
+
+    @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name= RouteLocation.COLUMN_LAT, column = @Column(name = "eLat")),
+            @AttributeOverride(name= RouteLocation.COLUMN_LNG, column = @Column(name = "eLng"))
+    })
     public RouteLocation getDestinationLocation() {
         return destinationLocation;
     }
 
-    public User getPassenger() {
-        return passenger;
+    private void setDestinationLocation(RouteLocation destinationLocation) {
+        this.destinationLocation = destinationLocation;
     }
+
+
 
     @Override
     public boolean equals(Object o) {
@@ -88,10 +86,6 @@ public class SuperTripSubQuery {
 
         if (destinationLocation != null ? !destinationLocation.equals(that.destinationLocation) : that.destinationLocation != null)
             return false;
-        if (passenger != null ? !passenger.equals(that.passenger) : that.passenger != null)
-            return false;
-        if (passengerRoute != null ? !passengerRoute.equals(that.passengerRoute) : that.passengerRoute != null)
-            return false;
         if (startLocation != null ? !startLocation.equals(that.startLocation) : that.startLocation != null)
             return false;
 
@@ -100,10 +94,9 @@ public class SuperTripSubQuery {
 
     @Override
     public int hashCode() {
-        int result = passengerRoute != null ? passengerRoute.hashCode() : 0;
+        int result = 0;
         result = 31 * result + (startLocation != null ? startLocation.hashCode() : 0);
         result = 31 * result + (destinationLocation != null ? destinationLocation.hashCode() : 0);
-        result = 31 * result + (passenger != null ? passenger.hashCode() : 0);
         return result;
     }
 
@@ -111,12 +104,6 @@ public class SuperTripSubQuery {
         private Route passengerRoute;
         private RouteLocation startLocation;
         private RouteLocation destinationLocation;
-        private User passenger;
-
-        public Builder setPassengerRoute(Route passengerRoute) {
-            this.passengerRoute = passengerRoute;
-            return this;
-        }
 
         public Builder setStartLocation(RouteLocation startLocation) {
             this.startLocation = startLocation;
@@ -128,13 +115,8 @@ public class SuperTripSubQuery {
             return this;
         }
 
-        public Builder setPassenger(User passenger) {
-            this.passenger = passenger;
-            return this;
-        }
-
         public SuperTripSubQuery build(){
-            return new SuperTripSubQuery( passengerRoute, startLocation, destinationLocation, passenger );
+            return new SuperTripSubQuery(startLocation, destinationLocation );
         }
     }
 }

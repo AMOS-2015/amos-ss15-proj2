@@ -132,10 +132,8 @@ pickUp: for( PotentialSuperTripMatch pickUpMatch : potentialSuperTripPickUpMatch
                     .setQuery(query)
                     .addReservation( new TripReservation(
                             new SuperTripSubQuery.Builder()
-                                    .setPassengerRoute( passengerpickUpRoute )
                                     .setStartLocation( query.getStartLocation() )
                                     .setDestinationLocation( adaptedQuery.getDestinationLocation() )
-                                    .setPassenger( query.getPassenger() )
                             .build(),
                             totalPickUpPriceInCents,
                             pickUpMatch.getOffer().getPricePerKmInCents(),
@@ -143,10 +141,8 @@ pickUp: for( PotentialSuperTripMatch pickUpMatch : potentialSuperTripPickUpMatch
                             pickUpMatch.getOffer().getDriver() ) )
                     .addReservation( new TripReservation(
                             new SuperTripSubQuery.Builder()
-                                    .setPassengerRoute( passengerDropRoute )
                                     .setStartLocation( adaptedQuery.getDestinationLocation() )
                                     .setDestinationLocation( query.getDestinationLocation() )
-                                    .setPassenger( adaptedQuery.getPassenger() )
                             .build(),
                             totalDropPriceInCents,
                             dropMatch.getOffer().getPricePerKmInCents(),
@@ -177,10 +173,8 @@ pickUp: for( PotentialSuperTripMatch pickUpMatch : potentialSuperTripPickUpMatch
                     .setQuery(query)
                     .addReservation( new TripReservation(
                             new SuperTripSubQuery.Builder()
-                                .setPassengerRoute( passengerpickUpRoute )
                                 .setStartLocation( query.getStartLocation() )
                                 .setDestinationLocation( adaptedQuery.getStartLocation() )
-                                .setPassenger( query.getPassenger() )
                             .build(),
                             totalPickUpPriceInCents,
                             pickUpMatch.getOffer().getPricePerKmInCents(),
@@ -188,10 +182,8 @@ pickUp: for( PotentialSuperTripMatch pickUpMatch : potentialSuperTripPickUpMatch
                             pickUpMatch.getOffer().getDriver() ) )
                     .addReservation( new TripReservation(
                             new SuperTripSubQuery.Builder()
-                                    .setPassengerRoute( passengerDropRoute )
                                     .setStartLocation( adaptedQuery.getStartLocation() )
                                     .setDestinationLocation( query.getDestinationLocation() )
-                                    .setPassenger( query.getPassenger() )
                             .build(),
                             totalDropPriceInCents,
                             dropMatch.getOffer().getPricePerKmInCents(),
