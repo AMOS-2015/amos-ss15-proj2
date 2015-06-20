@@ -253,24 +253,25 @@ public class TripsManager {
         List<Route> possiblePassengerRoutes = directionsManager.getDirections(queryDescription.getStart(), queryDescription.getEnd());
         if (possiblePassengerRoutes.isEmpty()) throw new RouteNotFoundException();
 
-        // analyse offers
+        // try finding regular match
         long queryCreationTimestamp = System.currentTimeMillis() / 1000;
         TripQuery query = new TripQuery(possiblePassengerRoutes.get(0), queryDescription.getStart(), queryDescription.getEnd(), queryDescription.getMaxWaitingTimeInSeconds(), queryCreationTimestamp, passenger);
         List<TripOffer> potentialMatches = tripsMatcher.filterPotentialMatches(tripOfferDAO.findAllActive(), query);
 
-        // find and store reservations
-        List<SuperTripReservation> reservations = findCheapestMatch(query, potentialMatches);
+        List<SuperTripReservation> reservations;
+        if (!potentialMatches.isEmpty()) {
+            // found regular match --> create reservation
+            reservations = findCheapestMatch(query, potentialMatches);
 
-        // no reservations were found -> try to find super trips
-        if( reservations.isEmpty() ) {
+        } else {
+            // try finding super matches
             reservations = superTripManager.findSuperTrips( tripOfferDAO.findAll(), query );
-            for( SuperTripReservation reservation : reservations ) {
+            for (SuperTripReservation reservation : reservations) {
                 logManager.d("Found a super trip: ");
-                for( TripReservation res : reservation.getReservations() ) {
-                    logManager.d("Driver: " + res.getDriver().getFirstName() );
+                for (TripReservation res : reservation.getReservations()) {
+                    logManager.d("Driver: " + res.getDriver().getFirstName());
                 }
             }
-
         }
 
         // store all reservations in database
@@ -281,8 +282,6 @@ public class TripsManager {
         if (reservations.isEmpty()) {
             runningQuery = runningTripQueriesManager.startRunningQuery(query);
         }
-
-        logManager.d("QUERY OFFER END");
 
         return new TripQueryResult(reservations, runningQuery);
     }
