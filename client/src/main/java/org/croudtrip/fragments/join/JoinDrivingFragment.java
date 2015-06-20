@@ -20,16 +20,20 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.nfc.NfcAdapter;
 import android.nfc.NfcManager;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewManager;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -37,8 +41,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.android.gms.maps.SupportMapFragment;
 import com.pnikosis.materialishprogress.ProgressWheel;
-import com.squareup.picasso.Picasso;
 
 import org.croudtrip.Constants;
 import org.croudtrip.R;
@@ -47,13 +51,12 @@ import org.croudtrip.api.trips.JoinTripRequest;
 import org.croudtrip.api.trips.JoinTripRequestUpdate;
 import org.croudtrip.api.trips.JoinTripRequestUpdateType;
 import org.croudtrip.fragments.SubscriptionFragment;
+import org.croudtrip.trip.MyTripPassengerDriversAdapter;
 import org.croudtrip.utils.CrashCallback;
 import org.croudtrip.utils.CrashPopup;
 import org.croudtrip.utils.DefaultTransformer;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Iterator;
@@ -69,39 +72,67 @@ import rx.functions.Action1;
 import timber.log.Timber;
 
 /**
- * Created by alex on 22.04.15.
+ * This fragment shows the passenger his current trip and several information like the related
+ * drivers, the prices, a map etc.
+ *
+ * @author Alexander Popp, Vanessa Lange
  */
 public class JoinDrivingFragment extends SubscriptionFragment {
 
-    @InjectView(R.id.btn_joint_trip_reached)        private Button btnReachedDestination; //also handles the "My driver is here" stuff
-    @InjectView(R.id.btn_joint_trip_cancel)         private Button btnCancelTrip;
-    @InjectView(R.id.btn_joint_trip_report)         private Button btnReportDriver;
+    @InjectView(R.id.btn_joint_trip_reached)
+    private Button btnReachedDestination; //also handles the "My driver is here" stuff
+    @InjectView(R.id.btn_joint_trip_cancel)
+    private Button btnCancelTrip;
+    @InjectView(R.id.btn_joint_trip_report)
+    private Button btnReportDriver;
 
-    @InjectView(R.id.join_trip_sending)         private LinearLayout llSending;
-    @InjectView(R.id.join_trip_waiting)         private LinearLayout llWaiting;
-    @InjectView(R.id.join_trip_driving)         private LinearLayout llDriving;
+    @InjectView(R.id.join_trip_sending)
+    private LinearLayout llSending;
+    @InjectView(R.id.join_trip_waiting)
+    private LinearLayout llWaiting;
+    @InjectView(R.id.join_trip_driving)
+    private LinearLayout llDriving;
 
-    @InjectView(R.id.my_driver)                 private View cvDriver;
+    @InjectView(R.id.pickup_time)
+    private TextView tvPickupTime;
+    @InjectView(R.id.tv_my_trip_driver_passengers_title)
+    private TextView tvMyDrivers;
 
-    @InjectView(R.id.pickup_time)               private TextView tvPickupTime;
-    @InjectView(R.id.card_name)                 private TextView tvCardName;
-    @InjectView(R.id.nfc_explanation)           private TextView tvNfcExplanation;
-    @InjectView(R.id.card_car)                  private TextView tvCardCar;
-    @InjectView(R.id.card_price)                private TextView tvCardPrice;
-    @InjectView(R.id.card_icon)                 private ImageView ivCardIcon;
-    @InjectView(R.id.nfc_icon)                  private ImageView ivNfcIcon;
+    @InjectView(R.id.nfc_explanation)
+    private TextView tvNfcExplanation;
+    @InjectView(R.id.nfc_icon)
+    private ImageView ivNfcIcon;
 
-    @InjectView(R.id.pb_join_trip_driving_reached_destination) private ProgressWheel progressBarDest;
-    @InjectView(R.id.pb_join_trip_driving_report) private ProgressWheel progressBarReport;
-    @InjectView(R.id.pb_join_trip_driving_cancel) private ProgressWheel progressBarCancel;
+    @InjectView(R.id.pb_join_trip_driving_reached_destination)
+    private ProgressWheel progressBarDest;
+    @InjectView(R.id.pb_join_trip_driving_report)
+    private ProgressWheel progressBarReport;
+    @InjectView(R.id.pb_join_trip_driving_cancel)
+    private ProgressWheel progressBarCancel;
+    @InjectView(R.id.pb_my_trip_map_progressBar)
+    private ProgressWheel progressBarMap;
+    @InjectView(R.id.pb_my_trip_drivers_progressBar)
+    private ProgressWheel progressBarDrivers;
 
-    @Inject TripsResource tripsResource;
+    @Inject
+    TripsResource tripsResource;
 
     private JoinTripRequest cachedRequest;
     private ArrayList<JoinTripRequestUpdateType> simpleRequestUpdateCache;
 
     private NfcAdapter nfcAdapter;
     private PendingIntent nfcPendingIntent;
+
+    // Passengers list
+    private MyTripPassengerDriversAdapter adapter;
+
+    @InjectView(R.id.rv_join_trip_driving_drivers)
+    private RecyclerView recyclerView;
+
+    private ProgressWheel mapProgressBar;
+
+
+    //***************************** Methods *****************************//
 
 
     @Override
@@ -139,13 +170,32 @@ public class JoinDrivingFragment extends SubscriptionFragment {
     }
 
     @Override
-    public void onViewCreated( View view, Bundle savedInstanceState ) {
+    public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
         llSending.setVisibility(View.GONE);
         llWaiting.setVisibility(View.GONE);
         llDriving.setVisibility(View.GONE);
-        cvDriver.setVisibility(View.GONE);
+
+        // Fill the drivers list
+        View header = view.findViewById(R.id.ll_join_trip_driving_info);
+        adapter = new MyTripPassengerDriversAdapter(header);
+
+        //mapProgressBar = (ProgressWheel) adapter.getHeader().findViewById(R.id.pb_my_trip_map_progressBar);
+
+        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getActivity());
+        recyclerView.setLayoutManager(layoutManager);
+        recyclerView.setAdapter(adapter);
+
+        // Get the route to display it on the map
+        SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager()
+                .findFragmentById(R.id.f_join_trip_driving_map);
+
+        // Remove the header from the layout. Otherwise it exists twice
+        ((ViewManager) view).removeView(header);
+
+        // TODO: do things with the map here or down further
+
 
         final SharedPreferences prefs = getActivity().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
 
@@ -168,7 +218,6 @@ public class JoinDrivingFragment extends SubscriptionFragment {
             setButtonActive(btnReachedDestination);
             setButtonActive(btnReportDriver);
 
-            cvDriver.setVisibility(View.VISIBLE);
             llDriving.setVisibility(View.VISIBLE);
 
             btnReachedDestination.setText(getResources().getString(R.string.join_trip_results_reached));
@@ -187,7 +236,6 @@ public class JoinDrivingFragment extends SubscriptionFragment {
             setButtonActive(btnReachedDestination);
             setButtonActive(btnReportDriver);
 
-            cvDriver.setVisibility(View.VISIBLE);
             llWaiting.setVisibility(View.VISIBLE);
 
             switchToNfcIfAvailable();
@@ -241,10 +289,10 @@ public class JoinDrivingFragment extends SubscriptionFragment {
         } else {
             tripsResource.getJoinRequests(false)
                     .compose(new DefaultTransformer<List<JoinTripRequest>>())
-                    .subscribe( new Action1<List<JoinTripRequest>>() {
+                    .subscribe(new Action1<List<JoinTripRequest>>() {
                         @Override
                         public void call(List<JoinTripRequest> jtr) {
-                            if(jtr == null || jtr.isEmpty()) {
+                            if (jtr == null || jtr.isEmpty()) {
                                 Timber.d("Currently there are no trips running.");
                                 return;
                             }
@@ -254,7 +302,7 @@ public class JoinDrivingFragment extends SubscriptionFragment {
                                 showJoinedTrip(jtr.get(0));
                             }
                         }
-                    }, new CrashCallback(getActivity()){
+                    }, new CrashCallback(getActivity()) {
                         @Override
                         public void call(Throwable throwable) {
                             super.call(throwable);
@@ -268,45 +316,28 @@ public class JoinDrivingFragment extends SubscriptionFragment {
     Parse and show information about the current trip, like price, driver and cost
      */
     private void showJoinedTrip(JoinTripRequest request) {
-        if( request != null ) {
-            int earningsInCents = request.getTotalPriceInCents();
-            String pEuros = (earningsInCents / 100) + "";
-            String pCents;
 
-            // Format cents correctly
-            int cents = (earningsInCents % 100);
-
-            if (cents == 0) {
-                pCents = "00";
-            } else if (cents < 10) {
-                pCents = "0" + cents;
-            } else {
-                pCents = cents + "";
-            }
-
-            String avatarURL = request.getOffer().getDriver().getAvatarUrl();
-            if (avatarURL != null) {
-                try {
-                    new URL(avatarURL);
-                    Picasso.with(getActivity()).load(avatarURL).into(ivCardIcon);
-                } catch (MalformedURLException e) {
-                    CrashPopup.show(getActivity(), e);
-                    ivCardIcon.setImageResource(R.drawable.profile);
-                }
-            }
-
-            String dateAsString = "";
-            Calendar calendar = Calendar.getInstance();
-            calendar.setTimeZone(TimeZone.getDefault());
-            calendar.setTimeInMillis(1000*request.getEstimatedArrivalTimestamp());
-            dateAsString = calendar.get(Calendar.HOUR_OF_DAY) + ":" + calendar.get(Calendar.MINUTE);
-
-
-            tvPickupTime.setText(dateAsString);
-            tvCardName.setText(request.getOffer().getDriver().getFirstName() + " " + request.getOffer().getDriver().getLastName());
-            tvCardCar.setText(request.getOffer().getVehicle().getType());
-            tvCardPrice.setText(getString(R.string.join_trip_results_price, pEuros, pCents));
+        if (request == null) {
+            return;
         }
+
+        progressBarDrivers.setVisibility(View.GONE);
+
+        // Show drivers
+        adapter.updateRequest(request);
+
+        // Show correct plural of drivers
+        int numDrivers = adapter.getNumDrivers();
+        Resources res = getResources();
+        tvMyDrivers.setText(res.getQuantityString(R.plurals.join_trip_results_my_drivers, numDrivers, numDrivers));
+
+        // Show arrival time
+        String dateAsString = "";
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeZone(TimeZone.getDefault());
+        calendar.setTimeInMillis(1000 * request.getEstimatedArrivalTimestamp());
+        dateAsString = calendar.get(Calendar.HOUR_OF_DAY) + ":" + calendar.get(Calendar.MINUTE);
+        tvPickupTime.setText(dateAsString);
     }
 
     /*
@@ -344,12 +375,12 @@ public class JoinDrivingFragment extends SubscriptionFragment {
      */
     private void updateTrip(final JoinTripRequestUpdateType updateType, final ProgressWheel progressBar) {
 
-        if(progressBar != null) {
+        if (progressBar != null) {
             progressBar.setVisibility(View.VISIBLE);
         }
 
         SharedPreferences prefs = getActivity().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
-        JoinTripRequestUpdate requestUpdate= new JoinTripRequestUpdate(updateType);
+        JoinTripRequestUpdate requestUpdate = new JoinTripRequestUpdate(updateType);
         Subscription subscription = tripsResource.updateJoinRequest(prefs.getLong(Constants.SHARED_PREF_KEY_TRIP_ID, -1), requestUpdate)
                 .compose(new DefaultTransformer<JoinTripRequest>())
                 .subscribe(new Action1<JoinTripRequest>() {
@@ -357,7 +388,7 @@ public class JoinDrivingFragment extends SubscriptionFragment {
                     public void call(JoinTripRequest joinTripRequest) {
                         Timber.d("update trip successfully called");
 
-                        if(progressBar != null) {
+                        if (progressBar != null) {
                             progressBar.setVisibility(View.GONE);
                         }
 
@@ -380,7 +411,7 @@ public class JoinDrivingFragment extends SubscriptionFragment {
                             simpleRequestUpdateCache.add(updateType);
                         }
 
-                        if(progressBar != null) {
+                        if (progressBar != null) {
                             progressBar.setVisibility(View.GONE);
                         }
                     }
@@ -463,7 +494,7 @@ public class JoinDrivingFragment extends SubscriptionFragment {
         /*
         Try to resend every failed server call. This will be tried only once.
          */
-        for (Iterator<JoinTripRequestUpdateType> iterator = simpleRequestUpdateCache.iterator(); iterator.hasNext();) {
+        for (Iterator<JoinTripRequestUpdateType> iterator = simpleRequestUpdateCache.iterator(); iterator.hasNext(); ) {
             updateTrip(iterator.next(), null);
             iterator.remove();
         }
