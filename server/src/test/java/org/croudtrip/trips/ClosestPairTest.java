@@ -10,6 +10,7 @@ import org.croudtrip.api.directions.Route;
 import org.croudtrip.api.directions.RouteLocation;
 import org.croudtrip.closestpair.ClosestPair;
 import org.croudtrip.closestpair.ClosestPairResult;
+import org.croudtrip.logs.LogManager;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,6 +28,7 @@ public class ClosestPairTest {
 
     @Mocked Route pR;
     @Mocked Route dR;
+    @Mocked LogManager logManager;
 
     private ClosestPair closestPair;
 
@@ -34,7 +36,7 @@ public class ClosestPairTest {
 
     @Before()
     public void setupClosestPair() {
-        closestPair = new ClosestPair();
+        closestPair = new ClosestPair(logManager);
     }
 
     @Test

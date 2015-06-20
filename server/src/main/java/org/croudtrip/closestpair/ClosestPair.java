@@ -4,13 +4,23 @@ import org.croudtrip.api.account.User;
 import org.croudtrip.api.directions.NavigationResult;
 import org.croudtrip.api.directions.Route;
 import org.croudtrip.api.directions.RouteLocation;
+import org.croudtrip.logs.LogManager;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.inject.Inject;
+
 /**
  */
 public class ClosestPair {
+
+    private final LogManager logManager;
+
+    @Inject
+    public ClosestPair(LogManager logManager) {
+        this.logManager = logManager;
+    }
 
     /**
      * Find the closest pair of two routes that pick up and drop one specific passenger.
@@ -24,11 +34,13 @@ public class ClosestPair {
         // this will get us a list of locations from the passenger pickup until the end of the trips
         // since we are creating a super trip there will be only one starting waypoint for this user
         List<RouteLocation> pickupLocations = pickupNavigationResult.getRoute().getPolylineWaypointsForUser(passenger, pickupNavigationResult.getUserWayPoints());
+        logManager.d("cp: found " + pickupLocations.size() + " pickup waypoints");
 
         // for the drop route only one end waypoint will exist and we will simple get all the points from the
         // beginning of the trip. So this is exactly what we want, since we don't need points if the
         // passenger is not in the car.
         List<RouteLocation> dropLocations = dropNavigationResult.getRoute().getPolylineWaypointsForUser(passenger, dropNavigationResult.getUserWayPoints());
+        logManager.d("cp: found " + dropLocations.size() + " drop waypoints");
 
         return findClosestPair( pickupLocations, dropLocations );
     }
@@ -50,6 +62,7 @@ public class ClosestPair {
             }
         }
 
+        logManager.d("cp: finished: " + minDistance);
         return new ClosestPairResult( pickUp, drop );
 
     }

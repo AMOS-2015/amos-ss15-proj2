@@ -46,8 +46,7 @@ import mockit.integration.junit4.JMockit;
 @RunWith(JMockit.class)
 public class TripsManagerTest {
 
-    @Mocked
-    SuperTripDAO superTripDAO;
+    @Mocked SuperTripDAO superTripDAO;
     @Mocked JoinTripRequestDAO joinTripRequestDAO;
     @Mocked TripOfferDAO tripOfferDAO;
     @Mocked DirectionsManager directionsManager;
@@ -57,6 +56,7 @@ public class TripsManagerTest {
     @Mocked VehicleManager vehicleManager;
     @Mocked TripsMatcher tripsMatcher;
     @Mocked RunningTripQueriesManager runningTripQueriesManager;
+    @Mocked SuperTripManager superTripManager;
     @Mocked GcmManager gcmManager;
 
     private TripsManager tripsManager;
@@ -67,7 +67,7 @@ public class TripsManagerTest {
     @Before
     public void setupTripsManager() {
         tripsManager = new TripsManager( tripOfferDAO, superTripReservationDAO, superTripDAO, joinTripRequestDAO, directionsManager,
-                vehicleManager, gcmManager, tripsMatcher, runningTripQueriesManager, tripsUtils, logManager );
+                vehicleManager, gcmManager, tripsMatcher, superTripManager, runningTripQueriesManager, tripsUtils, logManager );
     }
 
     @Test

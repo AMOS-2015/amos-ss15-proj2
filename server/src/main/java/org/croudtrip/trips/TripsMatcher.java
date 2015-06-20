@@ -3,6 +3,7 @@ package org.croudtrip.trips;
 
 import com.google.common.base.Optional;
 
+import org.croudtrip.api.directions.NavigationResult;
 import org.croudtrip.api.directions.Route;
 import org.croudtrip.api.directions.RouteLocation;
 import org.croudtrip.api.trips.JoinTripRequest;
@@ -13,6 +14,7 @@ import org.croudtrip.api.trips.UserWayPoint;
 import org.croudtrip.db.JoinTripRequestDAO;
 import org.croudtrip.db.TripOfferDAO;
 import org.croudtrip.directions.DirectionsManager;
+import org.croudtrip.directions.RouteNotFoundException;
 import org.croudtrip.logs.LogManager;
 
 import java.util.ArrayList;
@@ -115,6 +117,52 @@ class TripsMatcher {
 		return Optional.of( new PotentialMatch( offer, query, userWayPoints ));
 	}
 
+	/**
+	 * Checks if the given offer is a potential match for the given query for one particular waypoint
+	 * It will be used in super trips to compute offers that are able to pick up or drop passenger.
+	 * @param offer The offer that should be checked
+	 * @param query The query that should be checked
+	 * @param singleWaypoint the waypoint the route should follow
+	 * @return If the trip is a potential match a {@link org.croudtrip.trips.SuperTripManager.PotentialSuperTripMatch} will be returned.
+	 */
+	public Optional<SuperTripManager.PotentialSuperTripMatch> isPotentialSuperTripMatchForOneWaypoint( TripOffer offer, TripQuery query, boolean useStartWaypoint ) throws RouteNotFoundException {
+		// check trip status
+		if (!offer.getStatus().equals(TripOfferStatus.ACTIVE)) return Optional.absent();
+
+		// check that query has not been declined before
+		if (!assertJoinRequestNotDeclined(offer, query)) return Optional.absent();
+
+		// check current passenger count
+		int passengerCount = tripsUtils.getActivePassengerCountForOffer(offer);
+		if (passengerCount >= offer.getVehicle().getCapacity()) return Optional.absent();
+
+		// create a fake query with only one point to compute matches
+		TripQuery onePointQuery;
+		if( useStartWaypoint)
+			onePointQuery = new TripQuery.Builder().setPassenger(query.getPassenger()).setStartLocation( query.getStartLocation() ).build();
+		else
+			onePointQuery = new TripQuery.Builder().setPassenger(query.getPassenger()).setDestinationLocation(query.getDestinationLocation()).build();
+
+		// early reject based on airline;
+		if (!assertWithinAirDistance(offer, onePointQuery)) return Optional.absent();
+
+		// update driver route on new position update
+		assertUpdatedDriverRoute(offer);
+
+		// get complete new route
+		NavigationResult navigationResult = tripsNavigationManager.getNavigationResultForOffer(offer, onePointQuery);
+		if (navigationResult.getUserWayPoints().isEmpty()) return Optional.absent();
+
+		// TODO: Currently we are ignoring time completely
+		//if (!assertRouteWithinPassengerMaxWaitingTime(offer, query, navigationResult.getUserWayPoints())) return Optional.absent();
+
+		// check if passenger route is within max diversion
+		long distanceToDriverInMeters = navigationResult.getUserWayPoints().get(navigationResult.getUserWayPoints().size() - 1).getDistanceToDriverInMeters();
+		if (distanceToDriverInMeters - offer.getDriverRoute().getDistanceInMeters() > offer.getMaxDiversionInMeters()) return Optional.absent();
+
+		return Optional.of( new SuperTripManager.PotentialSuperTripMatch( offer, query, useStartWaypoint ? query.getStartLocation() : query.getDestinationLocation(), navigationResult ));
+	}
+
 
 	private boolean assertJoinRequestNotDeclined(TripOffer offer, TripQuery query) {
 		List<JoinTripRequest> declinedRequests = joinTripRequestDAO.findDeclinedRequests(query.getPassenger().getId());
@@ -130,9 +178,21 @@ class TripsMatcher {
 	private boolean assertWithinAirDistance(TripOffer offer, TripQuery query) {
 		List<RouteLocation> driverWayPoints = offer.getDriverRoute().getWayPoints();
 		double airlineDriverRoute = driverWayPoints.get(0).distanceFrom( driverWayPoints.get( driverWayPoints.size() - 1 ) );
-		double airlineTotalRoute = driverWayPoints.get(0).distanceFrom( query.getStartLocation() ) +
-				query.getStartLocation().distanceFrom( query.getDestinationLocation() ) +
-				query.getDestinationLocation().distanceFrom( driverWayPoints.get( driverWayPoints.size() - 1 ) );
+
+		// compute airline if both waypoints are valid and also if only one waypoint ist valid
+		double airlineTotalRoute = 0;
+		if( query.getDestinationLocation() != null && query.getStartLocation() != null) {
+			airlineTotalRoute = driverWayPoints.get(0).distanceFrom(query.getStartLocation()) +
+					query.getStartLocation().distanceFrom(query.getDestinationLocation()) +
+					query.getDestinationLocation().distanceFrom(driverWayPoints.get(driverWayPoints.size() - 1));
+		}
+		else if( query.getDestinationLocation() != null )
+			airlineTotalRoute = driverWayPoints.get(0).distanceFrom(query.getDestinationLocation()) +
+					query.getDestinationLocation().distanceFrom(driverWayPoints.get(driverWayPoints.size() - 1));
+		else {
+			airlineTotalRoute = driverWayPoints.get(0).distanceFrom(query.getStartLocation()) +
+					query.getStartLocation().distanceFrom(driverWayPoints.get(driverWayPoints.size() - 1));
+		}
 
 		logManager.d("airlines compared: driverRoute: " + airlineDriverRoute + " totalRoute: " + airlineTotalRoute + " distance: " + (airlineTotalRoute - airlineDriverRoute) );
 		if( (airlineTotalRoute - airlineDriverRoute) > offer.getMaxDiversionInMeters() * 10 ) {

@@ -67,6 +67,7 @@ public class TripsManager {
     private final VehicleManager vehicleManager;
     private final GcmManager gcmManager;
     private final TripsMatcher tripsMatcher;
+    private final SuperTripManager superTripManager;
     private final RunningTripQueriesManager runningTripQueriesManager;
     private final TripsUtils tripsUtils;
     private final LogManager logManager;
@@ -82,6 +83,7 @@ public class TripsManager {
             VehicleManager vehicleManager,
             GcmManager gcmManager,
             TripsMatcher tripsMatcher,
+            SuperTripManager superTripManager,
             RunningTripQueriesManager runningTripQueriesManager,
             TripsUtils tripsUtils,
             LogManager logManager) {
@@ -95,6 +97,7 @@ public class TripsManager {
         this.gcmManager = gcmManager;
         this.tripsMatcher = tripsMatcher;
         this.runningTripQueriesManager = runningTripQueriesManager;
+        this.superTripManager = superTripManager;
         this.tripsUtils = tripsUtils;
         this.logManager = logManager;
 
@@ -176,7 +179,6 @@ public class TripsManager {
      * @param offer the offer that should be updated.
      * @param offerUpdate the update status that should be applied to the offer.
      * @return The updated offer.
-     * @throws RouteNotFoundException is thrown, if there is no route from the starting point to the destination of the trip.
      */
     public TripOffer updateOffer(TripOffer offer, TripOfferUpdate offerUpdate) {
         RouteLocation newStart;
@@ -257,6 +259,20 @@ public class TripsManager {
 
         // find and store reservations
         List<SuperTripReservation> reservations = findCheapestMatch(query, potentialMatches);
+
+        // no reservations were found -> try to find super trips
+        if( reservations.isEmpty() ) {
+            reservations = superTripManager.findSuperTrips( tripOfferDAO.findAll(), query );
+            for( SuperTripReservation reservation : reservations ) {
+                logManager.d("Found a super trip: ");
+                for( TripReservation res : reservation.getReservations() ) {
+                    logManager.d("Driver: " + res.getDriver().getFirstName() );
+                }
+            }
+
+        }
+
+        // store all reservations in database
         for (SuperTripReservation reservation : reservations) superTripReservationDAO.save(reservation);
 
         // if no reservations start "background search"
