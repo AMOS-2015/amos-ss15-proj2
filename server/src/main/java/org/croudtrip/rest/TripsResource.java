@@ -325,7 +325,6 @@ public class TripsResource {
     public SuperTrip joinTrip(@Auth User passenger, @PathParam("reservationId") long reservationId) {
         Optional<SuperTripReservation> reservation = tripsManager.findReservation(reservationId);
         if (!reservation.isPresent()) throw RestUtils.createNotFoundException("reservation does not exist");
-
         Optional<SuperTrip> joinRequest = tripsManager.joinTrip(reservation.get());
         if (!joinRequest.isPresent()) throw RestUtils.createNotFoundException("offer does not exist");
         return joinRequest.get();

@@ -176,6 +176,10 @@ class SimpleTripsMatcher implements TripsMatcher {
 
 		// TODO: max waiting time is not valid for super trips
 
+		// ignore may waiting time if is -1. Use it, if you want to ignore max waiting times
+		if( query.getMaxWaitingTimeInSeconds() == TripQuery.IGNORE_MAX_WAITING_TIME )
+			return true;
+
 		// check max waiting time for each passenger
 		for (UserWayPoint userWayPoint : userWayPoints) {
 			if (!userWayPoint.isStartOfTrip()) continue;

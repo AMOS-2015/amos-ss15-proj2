@@ -35,6 +35,7 @@ import javax.persistence.ManyToOne;
  */
 @Embeddable
 public class TripQuery {
+	public static final long IGNORE_MAX_WAITING_TIME = -1;
 
 	@Embedded
 	private Route passengerRoute;

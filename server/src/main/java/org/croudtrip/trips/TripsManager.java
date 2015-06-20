@@ -309,13 +309,23 @@ public class TripsManager {
             if (!offerOptional.isPresent()) return Optional.absent();
             TripOffer offer = offerOptional.get();
 
+            logManager.d("Found offer: " + offer.getId());
+
             // check if the offer is still a valid match for this request (newly accepted requests may change this)
-            TripQuery temporalQuery = new TripQuery( null, reservation.getSubQuery().getStartLocation(), reservation.getSubQuery().getStartLocation(), Long.MAX_VALUE, tripReservation.getQuery().getCreationTimestamp(), tripReservation.getQuery().getPassenger() );
+            TripQuery temporalQuery = new TripQuery( null, reservation.getSubQuery().getStartLocation(), reservation.getSubQuery().getDestinationLocation(), TripQuery.IGNORE_MAX_WAITING_TIME, tripReservation.getQuery().getCreationTimestamp(), tripReservation.getQuery().getPassenger() );
             Optional<SimpleTripsMatcher.PotentialMatch> potentialMatch = tripMatcher.isPotentialMatch(offer, temporalQuery);
-            if (!potentialMatch.isPresent()) return Optional.absent();
+            if (!potentialMatch.isPresent()) {
+                logManager.d("Query is no potential match anymore for: " + offer.getId());
+                logManager.d("StartLocation: " + temporalQuery.getStartLocation().toString());
+                logManager.d("DestLocation: " + temporalQuery.getDestinationLocation().toString());
+                logManager.d("Query is no potential match anymore for: " + offer.getId() + "finish");
+                return Optional.absent();
+            }
 
             matches.add(potentialMatch.get());
         }
+
+        logManager.d("All trips are possible.");
 
         // send notifications to all drivers
         SuperTrip superTrip = new SuperTrip.Builder().setQuery(tripReservation.getQuery()).build();
