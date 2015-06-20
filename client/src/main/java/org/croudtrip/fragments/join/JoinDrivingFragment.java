@@ -31,10 +31,12 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewManager;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -92,6 +94,8 @@ public class JoinDrivingFragment extends SubscriptionFragment {
     private LinearLayout llWaiting;
     @InjectView(R.id.join_trip_driving)
     private LinearLayout llDriving;
+    @InjectView(R.id.fl_join_trip_driving_map)
+    private FrameLayout flMap;
 
     @InjectView(R.id.pickup_time)
     private TextView tvPickupTime;
@@ -114,6 +118,9 @@ public class JoinDrivingFragment extends SubscriptionFragment {
     @InjectView(R.id.pb_my_trip_drivers_progressBar)
     private ProgressWheel progressBarDrivers;
 
+    @InjectView(R.id.iv_transparent_image)
+    private ImageView transparentImageView;
+
     @Inject
     TripsResource tripsResource;
 
@@ -129,7 +136,6 @@ public class JoinDrivingFragment extends SubscriptionFragment {
     @InjectView(R.id.rv_join_trip_driving_drivers)
     private RecyclerView recyclerView;
 
-    private ProgressWheel mapProgressBar;
 
 
     //***************************** Methods *****************************//
@@ -194,6 +200,30 @@ public class JoinDrivingFragment extends SubscriptionFragment {
         // Remove the header from the layout. Otherwise it exists twice
         ((ViewManager) view).removeView(header);
 
+        // Hack to prevent the recyclerview from scrolling when touching the map
+        transparentImageView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                int action = event.getAction();
+                switch (action) {
+                    case MotionEvent.ACTION_DOWN:
+                        recyclerView.requestDisallowInterceptTouchEvent(true);
+                        return false;
+
+                    case MotionEvent.ACTION_UP:
+                        recyclerView.requestDisallowInterceptTouchEvent(false);
+                        return true;
+
+                    case MotionEvent.ACTION_MOVE:
+                        recyclerView.requestDisallowInterceptTouchEvent(true);
+                        return false;
+
+                    default:
+                        return true;
+                }
+            }
+        });
+
         // TODO: do things with the map here or down further
 
 
@@ -207,6 +237,7 @@ public class JoinDrivingFragment extends SubscriptionFragment {
             setButtonActive(btnCancelTrip);
 
             llSending.setVisibility(View.VISIBLE);
+            flMap.setVisibility(View.GONE);
 
             btnReachedDestination.setText(getResources().getString(R.string.join_trip_results_driverArrival));
 
@@ -219,6 +250,7 @@ public class JoinDrivingFragment extends SubscriptionFragment {
             setButtonActive(btnReportDriver);
 
             llDriving.setVisibility(View.VISIBLE);
+            flMap.setVisibility(View.VISIBLE);
 
             btnReachedDestination.setText(getResources().getString(R.string.join_trip_results_reached));
             btnReachedDestination.setOnClickListener(new View.OnClickListener() {
@@ -237,6 +269,7 @@ public class JoinDrivingFragment extends SubscriptionFragment {
             setButtonActive(btnReportDriver);
 
             llWaiting.setVisibility(View.VISIBLE);
+            flMap.setVisibility(View.VISIBLE);
 
             switchToNfcIfAvailable();
             btnReachedDestination.setText(getResources().getString(R.string.join_trip_results_driverArrival));
@@ -456,6 +489,7 @@ public class JoinDrivingFragment extends SubscriptionFragment {
 
         llWaiting.setVisibility(View.GONE);
         llDriving.setVisibility(View.VISIBLE);
+        flMap.setVisibility(View.VISIBLE);
         btnReachedDestination.setVisibility(View.VISIBLE);
 
         showJoinedTrip(cachedRequest);

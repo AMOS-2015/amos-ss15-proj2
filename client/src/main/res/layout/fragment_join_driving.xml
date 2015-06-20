@@ -35,6 +35,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:visibility="gone"
+            android:layout_margin="10dp"
             android:layout_centerHorizontal="true"
             android:gravity="center_horizontal">
 
@@ -146,15 +147,9 @@
                 android:textAppearance="@android:style/TextAppearance.Large"
                 android:layout_gravity="center_horizontal"
                 android:text="@string/join_trip_results_happy"
+                android:layout_margin="10dp"
                 android:gravity="center_horizontal" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="@android:style/TextAppearance.Large"
-                android:layout_gravity="center_horizontal"
-                android:gravity="center_horizontal"
-                android:text=" "/>
         </LinearLayout>
 
         <LinearLayout
@@ -166,15 +161,14 @@
 
 
             <FrameLayout
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal">
 
                 <Button
                     android:id="@+id/btn_joint_trip_reached"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_marginBottom="@dimen/default_margin"/>
+                    android:layout_height="match_parent"/>
 
                 <com.pnikosis.materialishprogress.ProgressWheel
                     android:id="@+id/pb_join_trip_driving_reached_destination"
@@ -186,49 +180,61 @@
                     android:layout_gravity = "center_vertical|center_horizontal"/>
             </FrameLayout>
 
-            <FrameLayout
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal">
+                android:orientation="horizontal"
+                android:layout_marginTop="5dp"
+                android:weightSum="2">
 
-                <Button
-                    android:id="@+id/btn_joint_trip_report"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_marginBottom="@dimen/default_margin"
-                    android:text="@string/join_trip_results_report"/>
+                <FrameLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_weight="1">
 
-                <com.pnikosis.materialishprogress.ProgressWheel
-                    android:id="@+id/pb_join_trip_driving_report"
-                    android:layout_width="25dp"
-                    android:layout_height="25dp"
-                    wheel:matProg_barColor="@color/primary_light"
-                    wheel:matProg_progressIndeterminate="true"
-                    android:visibility="gone"
-                    android:layout_gravity = "center_vertical|center_horizontal"/>
-            </FrameLayout>
+                    <Button
+                        android:id="@+id/btn_joint_trip_report"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:text="@string/join_trip_results_report"/>
 
-            <FrameLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal">
+                    <com.pnikosis.materialishprogress.ProgressWheel
+                        android:id="@+id/pb_join_trip_driving_report"
+                        android:layout_width="25dp"
+                        android:layout_height="25dp"
+                        android:layout_marginRight="2dp"
+                        android:layout_marginEnd="2dp"
+                        wheel:matProg_barColor="@color/primary_light"
+                        wheel:matProg_progressIndeterminate="true"
+                        android:visibility="gone"
+                        android:layout_gravity = "center_vertical|center_horizontal"/>
+                </FrameLayout>
 
-                <Button
-                    android:id="@+id/btn_joint_trip_cancel"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_marginBottom="@dimen/default_margin"
-                    android:text="@string/join_trip_results_cancel"/>
+                <FrameLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_weight="1">
 
-                <com.pnikosis.materialishprogress.ProgressWheel
-                    android:id="@+id/pb_join_trip_driving_cancel"
-                    android:layout_width="25dp"
-                    android:layout_height="25dp"
-                    wheel:matProg_barColor="@color/primary_light"
-                    wheel:matProg_progressIndeterminate="true"
-                    android:visibility="gone"
-                    android:layout_gravity = "center_vertical|center_horizontal"/>
-            </FrameLayout>
+                    <Button
+                        android:id="@+id/btn_joint_trip_cancel"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_marginLeft="2dp"
+                        android:layout_marginStart="2dp"
+                        android:text="@string/join_trip_results_cancel"/>
+
+                    <com.pnikosis.materialishprogress.ProgressWheel
+                        android:id="@+id/pb_join_trip_driving_cancel"
+                        android:layout_width="25dp"
+                        android:layout_height="25dp"
+                        wheel:matProg_barColor="@color/primary_light"
+                        wheel:matProg_progressIndeterminate="true"
+                        android:visibility="gone"
+                        android:layout_gravity = "center_vertical|center_horizontal"/>
+                </FrameLayout>
+            </LinearLayout>
         </LinearLayout>
 
 
@@ -237,6 +243,7 @@
             android:id="@+id/tv_my_trip_driver_passengers_title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
             style="?android:attr/listSeparatorTextViewStyle"/>
 
 
