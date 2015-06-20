@@ -73,6 +73,7 @@ public class TripsResource {
     private static final String
             PATH_OFFERS = "/offers",
             PATH_JOINS = "/joins",
+            PATH_SUPER_TRIP = "/superTrips",
             PATH_ACCEPTED_JOINS = "/accepted",
             PATH_QUERIES = "/queries",
             PATH_RESERVATIONS = "/reservations";
@@ -139,7 +140,7 @@ public class TripsResource {
     @Path(PATH_OFFERS + "/{offerId}/navigation")
     @UnitOfWork
     public NavigationResult computeNavigationResultForOffer(@PathParam("offerId") long offerId) throws RouteNotFoundException {
-        TripOffer offer = assertIsValidOfferId( offerId );
+        TripOffer offer = assertIsValidOfferId(offerId);
         return tripsNavigationManager.getNavigationResultForOffer(offer);
     }
 
@@ -332,6 +333,40 @@ public class TripsResource {
 
 
     /**
+     * Returns a single trip, assuming this trip belongs to the authenticated passenger.
+     * @param tripId the id of the trip to fetch
+     */
+    @GET
+    @UnitOfWork
+    @Path(PATH_SUPER_TRIP + "/{tripId}")
+    public SuperTrip getTrip(@Auth User passenger, @PathParam("tripId") long tripId) {
+        return assertIsValidTripId(tripId, passenger);
+    }
+
+
+    /**
+     * Returns all trips for a single passenger.
+     */
+    @GET
+    @UnitOfWork
+    @Path(PATH_SUPER_TRIP)
+    public List<SuperTrip> getAllTrips(@Auth User passenger) {
+        return tripsManager.findAllTrips(passenger);
+    }
+
+
+    /**
+     * Returns all {@link JoinTripRequest} that belong to one {@link SuperTrip}.
+     */
+    @GET
+    @UnitOfWork
+    @Path(PATH_SUPER_TRIP + "/{tripId}/joins")
+    public List<JoinTripRequest> getJoinTripRequestsForSuperTrip(@Auth User user, @PathParam("tripId") long tripId) {
+        return assertIsValidTripId(tripId, user).getJoinRequests();
+    }
+
+
+    /**
      * Returns a list of join requests for either passengers or drivers.
      * @param showOnlyPassengerAccepted if true this method will only return those join requests with a
      *                                  status of {@link JoinTripStatus#PASSENGER_ACCEPTED}.
@@ -385,7 +420,7 @@ public class TripsResource {
         if (!joinRequest.isPresent()) throw RestUtils.createNotFoundException();
 
         NavigationResult actualOfferNavigationResult = tripsNavigationManager.getNavigationResultForOffer( joinRequest.get().getOffer() );
-        NavigationResult diversionOfferNavigationResult = tripsNavigationManager.getNavigationResultForOffer( joinRequest.get().getOffer(), joinRequest.get().getSuperTrip().getQuery() );
+        NavigationResult diversionOfferNavigationResult = tripsNavigationManager.getNavigationResultForOffer(joinRequest.get().getOffer(), joinRequest.get().getSuperTrip().getQuery());
 
         return diversionOfferNavigationResult.getRoute().getDurationInSeconds() - actualOfferNavigationResult.getRoute().getDurationInSeconds();
     }
@@ -475,6 +510,14 @@ public class TripsResource {
         Optional<TripOffer> offer = tripsManager.findOffer(offerId);
         if (offer.isPresent()) return offer.get();
         else throw RestUtils.createNotFoundException();
+    }
+
+
+    private SuperTrip assertIsValidTripId(long tripId, User passenger) {
+        Optional<SuperTrip> trip = tripsManager.findTrip(tripId);
+        if (!trip.isPresent()) throw RestUtils.createNotFoundException();
+        if (passenger.getId() != trip.get().getQuery().getPassenger().getId()) throw RestUtils.createUnauthorizedException();
+        return trip.get();
     }
 
 }
