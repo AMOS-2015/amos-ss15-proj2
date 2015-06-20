@@ -65,7 +65,7 @@ public class TripsManager {
     private final DirectionsManager directionsManager;
     private final VehicleManager vehicleManager;
     private final GcmManager gcmManager;
-    private final TripsMatcher tripsMatcher;
+    private final SimpleTripsMatcher simpleTripsMatcher;
     private final SuperTripsMatcher superTripsMatcher;
     private final RunningTripQueriesManager runningTripQueriesManager;
     private final TripsUtils tripsUtils;
@@ -81,7 +81,7 @@ public class TripsManager {
             DirectionsManager directionsManager,
             VehicleManager vehicleManager,
             GcmManager gcmManager,
-            TripsMatcher tripsMatcher,
+            SimpleTripsMatcher simpleTripsMatcher,
             SuperTripsMatcher superTripsMatcher,
             RunningTripQueriesManager runningTripQueriesManager,
             TripsUtils tripsUtils,
@@ -94,7 +94,7 @@ public class TripsManager {
         this.directionsManager = directionsManager;
         this.vehicleManager = vehicleManager;
         this.gcmManager = gcmManager;
-        this.tripsMatcher = tripsMatcher;
+        this.simpleTripsMatcher = simpleTripsMatcher;
         this.runningTripQueriesManager = runningTripQueriesManager;
         this.superTripsMatcher = superTripsMatcher;
         this.tripsUtils = tripsUtils;
@@ -254,11 +254,11 @@ public class TripsManager {
         TripQuery query = new TripQuery(possiblePassengerRoutes.get(0), queryDescription.getStart(), queryDescription.getEnd(), queryDescription.getMaxWaitingTimeInSeconds(), queryCreationTimestamp, passenger);
 
         // try finding regular match
-        List<SuperTripReservation> reservations = tripsMatcher.filterPotentialMatches(tripOfferDAO.findAllActive(), query);
+        List<SuperTripReservation> reservations = simpleTripsMatcher.findPotentialTrips(tripOfferDAO.findAllActive(), query);
 
         // if no regular trips --> try finding super matches
         if (reservations.isEmpty()) {
-            reservations = superTripsMatcher.findSuperTrips(tripOfferDAO.findAllActive(), query );
+            reservations = superTripsMatcher.findPotentialTrips(tripOfferDAO.findAllActive(), query);
             for (SuperTripReservation reservation : reservations) {
                 logManager.d("Found a super trip: ");
                 for (TripReservation res : reservation.getReservations()) {
@@ -309,7 +309,7 @@ public class TripsManager {
         superTripReservationDAO.delete(tripReservation);
 
         // find and check all trips
-        List<TripsMatcher.PotentialMatch> matches = new ArrayList<>();
+        List<SimpleTripsMatcher.PotentialMatch> matches = new ArrayList<>();
         for( TripReservation reservation : tripReservation.getReservations() ) {
 
             // find related offer in reservation
@@ -319,7 +319,7 @@ public class TripsManager {
 
             // check if the offer is still a valid match for this request (newly accepted requests may change this)
             TripQuery temporalQuery = new TripQuery( null, reservation.getSubQuery().getStartLocation(), reservation.getSubQuery().getStartLocation(), Long.MAX_VALUE, tripReservation.getQuery().getCreationTimestamp(), tripReservation.getQuery().getPassenger() );
-            Optional<TripsMatcher.PotentialMatch> potentialMatch = tripsMatcher.isPotentialMatch(offer, temporalQuery);
+            Optional<SimpleTripsMatcher.PotentialMatch> potentialMatch = simpleTripsMatcher.isPotentialMatch(offer, temporalQuery);
             if (!potentialMatch.isPresent()) return Optional.absent();
 
             matches.add(potentialMatch.get());
@@ -328,7 +328,7 @@ public class TripsManager {
         // send notifications to all drivers
         SuperTrip superTrip = new SuperTrip.Builder().setQuery(tripReservation.getQuery()).build();
         for( int i = 0; i < matches.size(); ++i ) {
-            TripsMatcher.PotentialMatch match = matches.get(i);
+            SimpleTripsMatcher.PotentialMatch match = matches.get(i);
 
             // find estimated arrival time in list
             long arrivalTimestamp = 0;

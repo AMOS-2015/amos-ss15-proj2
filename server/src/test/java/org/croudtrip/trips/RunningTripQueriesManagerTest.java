@@ -24,14 +24,15 @@ import mockit.integration.junit4.JMockit;
 public class RunningTripQueriesManagerTest {
 
 	@Mocked RunningTripQueryDAO runningTripQueryDAO;
-	@Mocked TripsMatcher tripsMatcher;
+	@Mocked
+	SimpleTripsMatcher simpleTripsMatcher;
 	@Mocked GcmManager gcmManager;
 
 	private RunningTripQueriesManager manager;
 
 	@Before
 	public void setpuManager() {
-		this.manager = new RunningTripQueriesManager(runningTripQueryDAO, tripsMatcher, gcmManager);
+		this.manager = new RunningTripQueriesManager(runningTripQueryDAO, simpleTripsMatcher, gcmManager);
 	}
 
 	@Test
@@ -53,8 +54,8 @@ public class RunningTripQueriesManagerTest {
 			runningTripQueryDAO.findByStatusRunning();
 			result = Lists.newArrayList(runningQuery1, runningQuery2);
 
-			tripsMatcher.isPotentialMatch((TripOffer) any, (TripQuery) any);
-			result = Optional.of(new TripsMatcher.PotentialMatch(offer, newQuery, null));
+			simpleTripsMatcher.isPotentialMatch((TripOffer) any, (TripQuery) any);
+			result = Optional.of(new SimpleTripsMatcher.PotentialMatch(offer, newQuery, null));
 		}};
 
 		manager.checkAndUpdateRunningQueries(offer);

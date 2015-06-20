@@ -56,7 +56,8 @@ public class TripsManagerTest {
     @Mocked TripsUtils tripsUtils;
     @Mocked SuperTripReservationDAO superTripReservationDAO;
     @Mocked VehicleManager vehicleManager;
-    @Mocked TripsMatcher tripsMatcher;
+    @Mocked
+    SimpleTripsMatcher simpleTripsMatcher;
     @Mocked RunningTripQueriesManager runningTripQueriesManager;
     @Mocked
     SuperTripsMatcher superTripsMatcher;
@@ -70,7 +71,7 @@ public class TripsManagerTest {
     @Before
     public void setupTripsManager() {
         tripsManager = new TripsManager( tripOfferDAO, superTripReservationDAO, superTripDAO, joinTripRequestDAO, directionsManager,
-                vehicleManager, gcmManager, tripsMatcher, superTripsMatcher, runningTripQueriesManager, tripsUtils, logManager );
+                vehicleManager, gcmManager, simpleTripsMatcher, superTripsMatcher, runningTripQueriesManager, tripsUtils, logManager );
     }
 
     @Test
@@ -157,7 +158,7 @@ public class TripsManagerTest {
                     new TripOffer(0, null, 0, null, 0, 0, d4, null, TripOfferStatus.ACTIVE, 0 )
             );
 
-            tripsMatcher.filterPotentialMatches( (List<TripOffer>)(any), (TripQuery)(any) );
+            simpleTripsMatcher.findPotentialTrips((List<TripOffer>) (any), (TripQuery) (any));
             result = Lists.newArrayList(new SuperTripReservation.Builder()
                     .addReservation(new TripReservation.Builder().setPricePerKmInCents(3).setDriver(d4).build())
                     .setQuery(query)
@@ -176,7 +177,7 @@ public class TripsManagerTest {
 
         // running query should be null since there were results for it
         RunningTripQuery runningQuery = result.getRunningQuery();
-        Assert.assertNull( runningQuery );
+        Assert.assertNull(runningQuery);
 
         List<SuperTripReservation> reservations = result.getReservations();
         Assert.assertEquals( "Wrong reservations count", 1, reservations.size() );
@@ -210,8 +211,8 @@ public class TripsManagerTest {
             tripOfferDAO.findById( anyLong );
             result = Optional.of(offer);
 
-            tripsMatcher.isPotentialMatch( offer, query );
-            result = Optional.of( new TripsMatcher.PotentialMatch( offer, query, Lists.newArrayList(
+            simpleTripsMatcher.isPotentialMatch( offer, query );
+            result = Optional.of( new SimpleTripsMatcher.PotentialMatch( offer, query, Lists.newArrayList(
                     new UserWayPoint(d, tripStart, true, 0, 0 ),
                     new UserWayPoint(p, passengerStart, true, 1, 1  ),
                     new UserWayPoint(p, passengerEnd, false, 2, 2  ),

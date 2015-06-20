@@ -32,7 +32,7 @@ import mockit.Mocked;
 import mockit.integration.junit4.JMockit;
 
 @RunWith(JMockit.class)
-public class TripsMatcherTest {
+public class SimpleTripsMatcherTest {
 
 	// TODO test updating routes
 
@@ -65,18 +65,18 @@ public class TripsMatcherTest {
 	@Mocked TripsUtils tripsUtils;
 	@Mocked LogManager logManager;
 
-	private TripsMatcher tripsMatcher;
+	private SimpleTripsMatcher simpleTripsMatcher;
 
 	@Before
 	public void setupTripsMatcher() {
-		tripsMatcher = new TripsMatcher(joinTripRequestDAO, tripOfferDAO, tripsNavigationManager, directionsManager, tripsUtils, logManager);
+		simpleTripsMatcher = new SimpleTripsMatcher(joinTripRequestDAO, tripOfferDAO, tripsNavigationManager, directionsManager, tripsUtils, logManager);
 	}
 
 
 	@Test
 	public void testPotentialMatchStatus() {
 		TripOffer offer = new TripOffer(0, null, 0, null, 0, 0, null, null, TripOfferStatus.DISABLED, 0);
-		Assert.assertFalse(tripsMatcher.isPotentialMatch(offer, query).isPresent());
+		Assert.assertFalse(simpleTripsMatcher.isPotentialMatch(offer, query).isPresent());
 	}
 
 
@@ -92,7 +92,7 @@ public class TripsMatcherTest {
 							.build());
 		}};
 
-		Assert.assertFalse(tripsMatcher.isPotentialMatch(offer, query).isPresent());
+		Assert.assertFalse(simpleTripsMatcher.isPotentialMatch(offer, query).isPresent());
 	}
 
 
@@ -103,7 +103,7 @@ public class TripsMatcherTest {
 			result = vehicle.getCapacity();
 		}};
 
-		Assert.assertFalse(tripsMatcher.isPotentialMatch(offer, query).isPresent());
+		Assert.assertFalse(simpleTripsMatcher.isPotentialMatch(offer, query).isPresent());
 	}
 
 
@@ -116,7 +116,7 @@ public class TripsMatcherTest {
 				10,
 				System.currentTimeMillis() / 1000,
 				passenger);
-		Assert.assertFalse(tripsMatcher.isPotentialMatch(offer, query).isPresent());
+		Assert.assertFalse(simpleTripsMatcher.isPotentialMatch(offer, query).isPresent());
 	}
 
 
@@ -154,7 +154,7 @@ public class TripsMatcherTest {
 					new UserWayPoint(driver, null, false, 0, 3));
 		}};
 
-		Assert.assertFalse(tripsMatcher.isPotentialMatch(offer, query).isPresent());
+		Assert.assertFalse(simpleTripsMatcher.isPotentialMatch(offer, query).isPresent());
 	}
 
 
@@ -181,7 +181,7 @@ public class TripsMatcherTest {
 					new UserWayPoint(driver, null, false, 0, 3));
 		}};
 
-		Assert.assertFalse(tripsMatcher.isPotentialMatch(offer, query).isPresent());
+		Assert.assertFalse(simpleTripsMatcher.isPotentialMatch(offer, query).isPresent());
 	}
 
 
@@ -198,7 +198,7 @@ public class TripsMatcherTest {
 					new UserWayPoint(driver, null, false, currentTimestamp, offer.getDriverRoute().getDistanceInMeters() + offer.getMaxDiversionInMeters() + 100));
 		}};
 
-		Assert.assertFalse(tripsMatcher.isPotentialMatch(offer, query).isPresent());
+		Assert.assertFalse(simpleTripsMatcher.isPotentialMatch(offer, query).isPresent());
 	}
 
 
@@ -215,7 +215,7 @@ public class TripsMatcherTest {
 					new UserWayPoint(driver, null, false, currentTimestamp, 3));
 		}};
 
-		Assert.assertTrue(tripsMatcher.isPotentialMatch(offer, query).isPresent());
+		Assert.assertTrue(simpleTripsMatcher.isPotentialMatch(offer, query).isPresent());
 	}
 
 
@@ -227,7 +227,7 @@ public class TripsMatcherTest {
 		TripOffer offer4 = new TripOffer.Builder().setPricePerKmInCents(14).build();
 
 		List<SuperTripReservation> reservations = Deencapsulation.invoke(
-				tripsMatcher,
+				simpleTripsMatcher,
 				"findCheapestMatch",
 				query,
 				Lists.newArrayList(offer1, offer2, offer3, offer4));

@@ -22,17 +22,17 @@ import javax.inject.Inject;
 public class RunningTripQueriesManager {
 
 	private final RunningTripQueryDAO runningTripQueryDAO;
-	private final TripsMatcher tripsMatcher;
+	private final SimpleTripsMatcher simpleTripsMatcher;
 	private final GcmManager gcmManager;
 
 	@Inject
 	RunningTripQueriesManager(
 			RunningTripQueryDAO runningTripQueryDAO,
-			TripsMatcher tripsMatcher,
+			SimpleTripsMatcher simpleTripsMatcher,
 			GcmManager gcmManager) {
 
 		this.runningTripQueryDAO = runningTripQueryDAO;
-		this.tripsMatcher = tripsMatcher;
+		this.simpleTripsMatcher = simpleTripsMatcher;
 		this.gcmManager = gcmManager;
 	}
 
@@ -90,7 +90,7 @@ public class RunningTripQueriesManager {
 
 			// check if the newly offered trip matches to a running trip query
 			TripQuery query = runningQuery.getQuery();
-			Optional<TripsMatcher.PotentialMatch> potentialMatch = tripsMatcher.isPotentialMatch(offer, query);
+			Optional<SimpleTripsMatcher.PotentialMatch> potentialMatch = simpleTripsMatcher.isPotentialMatch(offer, query);
 
 			// notify passenger about potential match
 			if (potentialMatch.isPresent()) {

@@ -27,7 +27,7 @@ import javax.inject.Inject;
 /**
  * Responsible for finding and creating super trips.
  */
-class SuperTripsMatcher extends TripsMatcher {
+class SuperTripsMatcher extends SimpleTripsMatcher {
 
     public static class PotentialSuperTripMatch {
         private final TripOffer offer;
@@ -77,7 +77,8 @@ class SuperTripsMatcher extends TripsMatcher {
         this.closestPair = closestPair;
     }
 
-    public List<SuperTripReservation> findSuperTrips( List<TripOffer> offers, TripQuery query  ) throws RouteNotFoundException {
+    @Override
+    public List<SuperTripReservation> findPotentialTrips(List<TripOffer> offers, TripQuery query) {
         logManager.d("STARTED SEARCHING FOR SUPER TRIPS");
 
         // compute all offers that would be able to pickup or drop the passenger along their route
@@ -127,7 +128,7 @@ pickUp: for( PotentialSuperTripMatch pickUpMatch : potentialSuperTripPickUpMatch
                 .setMaxWaitingTimeInSeconds( query.getMaxWaitingTimeInSeconds() )
                 .build();
 
-        Optional<TripsMatcher.PotentialMatch> potentialMatch = isPotentialMatch(pickUpMatch.getOffer(), adaptedQuery);
+        Optional<SimpleTripsMatcher.PotentialMatch> potentialMatch = isPotentialMatch(pickUpMatch.getOffer(), adaptedQuery);
         if( potentialMatch.isPresent() ) {
             // expensive directions call but necessary, we need the adapted passenger routes to compute the total price per driver
             Route passengerpickUpRoute = directionsManager.getDirections( query.getStartLocation(), adaptedQuery.getDestinationLocation() ).get(0);
@@ -211,7 +212,7 @@ pickUp: for( PotentialSuperTripMatch pickUpMatch : potentialSuperTripPickUpMatch
      * @param query The query that should be checked
      * @return If the trip is a potential match a {@link SuperTripsMatcher.PotentialSuperTripMatch} will be returned.
      */
-    private Optional<SuperTripsMatcher.PotentialSuperTripMatch> isPotentialSuperTripMatchForOneWaypoint( TripOffer offer, TripQuery query, boolean useStartWaypoint ) throws RouteNotFoundException {
+    private Optional<SuperTripsMatcher.PotentialSuperTripMatch> isPotentialSuperTripMatchForOneWaypoint( TripOffer offer, TripQuery query, boolean useStartWaypoint ) {
         // check trip status
         if (!offer.getStatus().equals(TripOfferStatus.ACTIVE)) return Optional.absent();
 
@@ -236,8 +237,13 @@ pickUp: for( PotentialSuperTripMatch pickUpMatch : potentialSuperTripPickUpMatch
         assertUpdatedDriverRoute(offer);
 
         // get complete new route
-        NavigationResult navigationResult = tripsNavigationManager.getNavigationResultForOffer(offer, onePointQuery);
-        if (navigationResult.getUserWayPoints().isEmpty()) return Optional.absent();
+        NavigationResult navigationResult = null;
+        try {
+            navigationResult = tripsNavigationManager.getNavigationResultForOffer(offer, onePointQuery);
+            if (navigationResult.getUserWayPoints().isEmpty()) return Optional.absent();
+        } catch (RouteNotFoundException e) {
+            return Optional.absent();
+        }
 
         // TODO: Currently we are ignoring time completely
         //if (!assertRouteWithinPassengerMaxWaitingTime(offer, query, navigationResult.getUserWayPoints())) return Optional.absent();
