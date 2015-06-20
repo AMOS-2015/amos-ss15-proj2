@@ -341,9 +341,7 @@ public class TripsResource {
     @UnitOfWork
     @Path(PATH_SUPER_TRIP + "/{tripId}")
     public SuperTrip getTrip(@Auth User passenger, @PathParam("tripId") long tripId) {
-        SuperTrip trip = assertIsValidTripId(tripId);
-        if (passenger.getId() != trip.getQuery().getPassenger().getId()) throw RestUtils.createUnauthorizedException();
-        return trip;
+        return assertIsValidTripId(tripId, passenger);
     }
 
 
@@ -355,6 +353,17 @@ public class TripsResource {
     @Path(PATH_SUPER_TRIP)
     public List<SuperTrip> getAllTrips(@Auth User passenger) {
         return tripsManager.findAllTrips(passenger);
+    }
+
+
+    /**
+     * Returns all {@link JoinTripRequest} that belong to one {@link SuperTrip}.
+     */
+    @GET
+    @UnitOfWork
+    @Path(PATH_SUPER_TRIP + "/{tripId}/joins")
+    public List<JoinTripRequest> getJoinTripRequestsForSuperTrip(@Auth User user, @PathParam("tripId") long tripId) {
+        return assertIsValidTripId(tripId, user).getJoinRequests();
     }
 
 
@@ -505,10 +514,11 @@ public class TripsResource {
     }
 
 
-    private SuperTrip assertIsValidTripId(long tripId) {
+    private SuperTrip assertIsValidTripId(long tripId, User passenger) {
         Optional<SuperTrip> trip = tripsManager.findTrip(tripId);
-        if (trip.isPresent()) return trip.get();
-        else throw RestUtils.createNotFoundException();
+        if (!trip.isPresent()) throw RestUtils.createNotFoundException();
+        if (passenger.getId() != trip.get().getQuery().getPassenger().getId()) throw RestUtils.createUnauthorizedException();
+        return trip.get();
     }
 
 }
