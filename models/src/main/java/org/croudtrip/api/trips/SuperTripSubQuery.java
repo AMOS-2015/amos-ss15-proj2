@@ -43,6 +43,13 @@ public class SuperTripSubQuery {
 
     public SuperTripSubQuery() { }
 
+    public SuperTripSubQuery( TripQuery query ) {
+        this.passengerRoute = query.getPassengerRoute();
+        this.startLocation = query.getStartLocation();
+        this.destinationLocation = query.getDestinationLocation();
+        this.passenger = query.getPassenger();
+    }
+
     @JsonCreator
     public SuperTripSubQuery(
             @JsonProperty("passengerRoute") Route passengerRoute,
