@@ -28,6 +28,7 @@ import org.croudtrip.api.trips.JoinTripStatus;
 import org.croudtrip.api.trips.RunningTripQuery;
 import org.croudtrip.api.trips.SuperTrip;
 import org.croudtrip.api.trips.SuperTripReservation;
+import org.croudtrip.api.trips.SuperTripSubQuery;
 import org.croudtrip.api.trips.TripOffer;
 import org.croudtrip.api.trips.TripOfferDescription;
 import org.croudtrip.api.trips.TripOfferStatus;
@@ -546,6 +547,7 @@ public class TripsManager {
             reservations.add(new SuperTripReservation.Builder()
                     .setQuery(query)
                     .addReservation(new TripReservation(
+                                    new SuperTripSubQuery(query),
                                     totalPriceInCents,
                                     match.getPricePerKmInCents(),
                                     match.getId(),

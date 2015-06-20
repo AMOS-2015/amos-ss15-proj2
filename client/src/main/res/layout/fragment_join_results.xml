@@ -30,6 +30,7 @@
             android:id="@+id/tv_join_trip_results_caption"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/default_margin"
             android:layout_marginBottom="@dimen/activity_vertical_margin"
             android:textAppearance="@android:style/TextAppearance.Large"/>
 

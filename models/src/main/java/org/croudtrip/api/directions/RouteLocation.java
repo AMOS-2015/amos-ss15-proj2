@@ -56,6 +56,13 @@ public class RouteLocation {
         return  lng;
     }
 
+    private void setLat(double lat) {
+        this.lat = lat;
+    }
+
+    private void setLng(double lng) {
+        this.lng = lng;
+    }
 
     /**
      * Returns the distance from the other RouteLocation in meters

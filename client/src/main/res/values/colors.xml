@@ -36,4 +36,7 @@
     <color name="my_trip_driver_passenger">#ffffff</color>
     <color name="my_trip_driver_passenger_destination_reached">#c8e6c9</color>
 
+    <color name="my_trip_passenger_driver_default">#ffffff</color>
+    <color name="my_trip_passenger_driver_accepted">#c8e6c9</color>
+
 </resources>

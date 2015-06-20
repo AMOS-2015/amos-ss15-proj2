@@ -13,6 +13,7 @@ import org.croudtrip.api.trips.JoinTripStatus;
 import org.croudtrip.api.trips.RunningTripQuery;
 import org.croudtrip.api.trips.SuperTrip;
 import org.croudtrip.api.trips.SuperTripReservation;
+import org.croudtrip.api.trips.SuperTripSubQuery;
 import org.croudtrip.api.trips.TripOffer;
 import org.croudtrip.api.trips.TripOfferDescription;
 import org.croudtrip.api.trips.TripOfferStatus;
@@ -202,7 +203,7 @@ public class TripsManagerTest {
 
         SuperTripReservation reservation = new SuperTripReservation.Builder()
                 .setQuery(query)
-                .addReservation(new TripReservation(12345, 10, 0, d))
+                .addReservation(new TripReservation(new SuperTripSubQuery(query), 12345, 10, 0, d))
                 .build();
 
         new Expectations(){{

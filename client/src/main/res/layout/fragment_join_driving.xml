@@ -13,184 +13,254 @@
   ~    If not, see http://www.gnu.org/licenses/.
   -->
 
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:wheel="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_margin="@dimen/default_margin">
+    android:orientation="vertical"
+    android:layout_marginTop="@dimen/activity_vertical_margin"
+    android:layout_marginRight="@dimen/activity_horizontal_margin"
+    android:layout_marginLeft="@dimen/activity_horizontal_margin">
 
     <LinearLayout
-        android:id="@+id/join_trip_sending"
+        android:id="@+id/ll_join_trip_driving_info"
+        android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:visibility="gone"
-        android:layout_centerHorizontal="true"
-        android:gravity="center_horizontal">
+        android:layout_height="match_parent">
 
-        <TextView
-            android:layout_width="wrap_content"
+        <!-- "Sending request" or MAP -->
+        <!-- Sending -->
+        <LinearLayout
+            android:id="@+id/join_trip_sending"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textAppearance="@android:style/TextAppearance.Large"
-            android:layout_gravity="center_horizontal"
-            android:text="@string/join_trip_results_sending"
-            android:gravity="center_horizontal" />
+            android:visibility="gone"
+            android:layout_margin="10dp"
+            android:layout_centerHorizontal="true"
+            android:gravity="center_horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="@android:style/TextAppearance.Large"
+                android:layout_gravity="center_horizontal"
+                android:text="@string/join_trip_results_sending"
+                android:gravity="center_horizontal" />
 
         </LinearLayout>
 
-    <LinearLayout
-        android:id="@+id/join_trip_waiting"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:visibility="gone"
-        android:orientation="vertical">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="@android:style/TextAppearance.Large"
-            android:layout_gravity="center_horizontal"
-            android:text="@string/join_trip_results_pickup"
-            android:gravity="center_horizontal" />
-
-        <TextView
-            android:id="@+id/pickup_time"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="@android:style/TextAppearance.Large"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginBottom="@dimen/default_margin"
-            android:gravity="center_horizontal" />
-        
-        <ImageView
-            android:visibility="gone"
-            android:id="@+id/nfc_icon"
-            android:layout_width="wrap_content"
-            android:layout_height="80dp"
-            android:src="@drawable/nfc"
-            android:tint="@color/primary"
-            android:layout_marginBottom="@dimen/default_margin"/>
-
-        <TextView
-            android:visibility="gone"
-            android:id="@+id/nfc_explanation"
-            android:text="@string/nfc_explanation_passenger"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="@android:style/TextAppearance.DeviceDefault.Small"
-            android:layout_gravity="center_horizontal"
-            android:gravity="center_horizontal" />
-
-        
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/join_trip_driving"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:visibility="gone"
-        android:orientation="vertical">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="@android:style/TextAppearance.Large"
-            android:layout_gravity="center_horizontal"
-            android:text="@string/join_trip_results_happy"
-            android:gravity="center_horizontal" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="@android:style/TextAppearance.Large"
-            android:layout_gravity="center_horizontal"
-            android:gravity="center_horizontal"
-            android:text=" "/>
-
-    </LinearLayout>
-
-    <include
-        android:layout_above="@+id/trip_buttons"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/default_margin"
-        android:id="@+id/my_driver"
-        layout="@layout/cardview_my_trip_passenger_driver"></include>
-
-
-    <LinearLayout
-        android:id="@+id/trip_buttons"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:layout_alignParentBottom="true">
-
-
+        <!-- MAP -->
         <FrameLayout
-            android:layout_width="wrap_content"
+            android:id="@+id/fl_join_trip_driving_map"
+            android:visibility="gone"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal">
+            android:gravity="center"
+            android:background="@color/semitransparent">
 
-            <Button
-                android:id="@+id/btn_joint_trip_reached"
+            <RelativeLayout
+                android:id="@+id/map_layout"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="230dp">
+
+                <fragment
+                    android:id="@+id/f_join_trip_driving_map"
+                    android:layout_width="match_parent"
+                    android:layout_height="230dp"
+                    class="com.google.android.gms.maps.SupportMapFragment" />
+
+                <!-- Catch gestures on the map and do not scroll on recycler view -->
+                <ImageView
+                    android:id="@+id/iv_transparent_image"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@color/transparent" />
+            </RelativeLayout>
+
+            <com.pnikosis.materialishprogress.ProgressWheel
+                android:id="@+id/pb_my_trip_map_progressBar"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                wheel:matProg_barColor="@color/primary_dark"
+                wheel:matProg_progressIndeterminate="true"
+                android:layout_gravity = "center_vertical|center_horizontal"/>
+        </FrameLayout>
+
+
+        <!-- Waiting: Pick-up time etc. -->
+        <LinearLayout
+            android:id="@+id/join_trip_waiting"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="@android:style/TextAppearance.Large"
+                android:layout_gravity="center_horizontal"
+                android:text="@string/join_trip_results_pickup"
+                android:gravity="center_horizontal" />
+
+            <TextView
+                android:id="@+id/pickup_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="@android:style/TextAppearance.Large"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginBottom="@dimen/default_margin"
+                android:gravity="center_horizontal" />
+
+            <ImageView
+                android:visibility="gone"
+                android:id="@+id/nfc_icon"
+                android:layout_width="wrap_content"
+                android:layout_height="80dp"
+                android:src="@drawable/nfc"
+                android:tint="@color/primary"
                 android:layout_marginBottom="@dimen/default_margin"/>
 
-            <com.pnikosis.materialishprogress.ProgressWheel
-                android:id="@+id/pb_join_trip_driving_reached_destination"
-                android:layout_width="25dp"
-                android:layout_height="25dp"
-                wheel:matProg_barColor="@color/primary_light"
-                wheel:matProg_progressIndeterminate="true"
+            <TextView
                 android:visibility="gone"
-                android:layout_gravity = "center_vertical|center_horizontal"/>
-        </FrameLayout>
+                android:id="@+id/nfc_explanation"
+                android:text="@string/nfc_explanation_passenger"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="@android:style/TextAppearance.DeviceDefault.Small"
+                android:layout_gravity="center_horizontal"
+                android:gravity="center_horizontal" />
 
-        <FrameLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal">
-
-            <Button
-                android:id="@+id/btn_joint_trip_report"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_marginBottom="@dimen/default_margin"
-                android:text="@string/join_trip_results_report"/>
-
-            <com.pnikosis.materialishprogress.ProgressWheel
-                android:id="@+id/pb_join_trip_driving_report"
-                android:layout_width="25dp"
-                android:layout_height="25dp"
-                wheel:matProg_barColor="@color/primary_light"
-                wheel:matProg_progressIndeterminate="true"
-                android:visibility="gone"
-                android:layout_gravity = "center_vertical|center_horizontal"/>
-        </FrameLayout>
-
-        <FrameLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal">
-
-            <Button
-                android:id="@+id/btn_joint_trip_cancel"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_marginBottom="@dimen/default_margin"
-                android:text="@string/join_trip_results_cancel"/>
-
-            <com.pnikosis.materialishprogress.ProgressWheel
-                android:id="@+id/pb_join_trip_driving_cancel"
-                android:layout_width="25dp"
-                android:layout_height="25dp"
-                wheel:matProg_barColor="@color/primary_light"
-                wheel:matProg_progressIndeterminate="true"
-                android:visibility="gone"
-                android:layout_gravity = "center_vertical|center_horizontal"/>
-            </FrameLayout>
         </LinearLayout>
 
 
-</RelativeLayout>
+        <LinearLayout
+            android:id="@+id/join_trip_driving"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="@android:style/TextAppearance.Large"
+                android:layout_gravity="center_horizontal"
+                android:text="@string/join_trip_results_happy"
+                android:layout_margin="10dp"
+                android:gravity="center_horizontal" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/trip_buttons"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_alignParentBottom="true">
+
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal">
+
+                <Button
+                    android:id="@+id/btn_joint_trip_reached"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"/>
+
+                <com.pnikosis.materialishprogress.ProgressWheel
+                    android:id="@+id/pb_join_trip_driving_reached_destination"
+                    android:layout_width="25dp"
+                    android:layout_height="25dp"
+                    wheel:matProg_barColor="@color/primary_light"
+                    wheel:matProg_progressIndeterminate="true"
+                    android:visibility="gone"
+                    android:layout_gravity = "center_vertical|center_horizontal"/>
+            </FrameLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="5dp"
+                android:weightSum="2">
+
+                <FrameLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_weight="1">
+
+                    <Button
+                        android:id="@+id/btn_joint_trip_report"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:text="@string/join_trip_results_report"/>
+
+                    <com.pnikosis.materialishprogress.ProgressWheel
+                        android:id="@+id/pb_join_trip_driving_report"
+                        android:layout_width="25dp"
+                        android:layout_height="25dp"
+                        android:layout_marginRight="2dp"
+                        android:layout_marginEnd="2dp"
+                        wheel:matProg_barColor="@color/primary_light"
+                        wheel:matProg_progressIndeterminate="true"
+                        android:visibility="gone"
+                        android:layout_gravity = "center_vertical|center_horizontal"/>
+                </FrameLayout>
+
+                <FrameLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_weight="1">
+
+                    <Button
+                        android:id="@+id/btn_joint_trip_cancel"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_marginLeft="2dp"
+                        android:layout_marginStart="2dp"
+                        android:text="@string/join_trip_results_cancel"/>
+
+                    <com.pnikosis.materialishprogress.ProgressWheel
+                        android:id="@+id/pb_join_trip_driving_cancel"
+                        android:layout_width="25dp"
+                        android:layout_height="25dp"
+                        wheel:matProg_barColor="@color/primary_light"
+                        wheel:matProg_progressIndeterminate="true"
+                        android:visibility="gone"
+                        android:layout_gravity = "center_vertical|center_horizontal"/>
+                </FrameLayout>
+            </LinearLayout>
+        </LinearLayout>
+
+
+        <!-- DRIVER(S) -->
+        <TextView
+            android:id="@+id/tv_my_trip_driver_passengers_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            style="?android:attr/listSeparatorTextViewStyle"/>
+
+
+        <com.pnikosis.materialishprogress.ProgressWheel
+            android:id="@+id/pb_my_trip_drivers_progressBar"
+            android:layout_gravity = "center_vertical|center_horizontal"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            wheel:matProg_barColor="@color/primary_dark"
+            wheel:matProg_progressIndeterminate="true"/>
+    </LinearLayout>
+
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/rv_join_trip_driving_drivers"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+
+</LinearLayout>

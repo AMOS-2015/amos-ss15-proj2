@@ -99,6 +99,8 @@ public class JoinDispatchFragment extends SubscriptionFragment {
     private void replaceChildFragment(Bundle args) {
         ((MaterialNavigationDrawer) getActivity()).getCurrentSection().setNotificationsText("");
         ((MaterialNavigationDrawer) getActivity()).getCurrentSection().setTitle(getString(R.string.menu_join_trip));
+        ((MaterialNavigationDrawer) getActivity()).setTitle(R.string.menu_join_trip);
+
 
         FragmentTransaction transaction = getChildFragmentManager().beginTransaction();
         SharedPreferences prefs = getActivity().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);

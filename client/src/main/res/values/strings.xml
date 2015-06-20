@@ -73,22 +73,29 @@
         <item quantity="other">We found %d rides for you</item>
     </plurals>
     <string name="join_trip_results_costs">%s €</string>
-    <string name="join_trip_results_distance_km">Distance: %d km</string>
-    <string name="join_trip_results_distance_m">Distance: %d m</string>
-    <string name="join_trip_results_duration_min">Duration: %dmin</string>
-    <string name="join_trip_results_duration_hmin">Duration: %1$dh %2$dmin</string>
+    <string name="join_trip_results_distance_km">%d km</string>
+    <string name="join_trip_results_distance_m">%d m</string>
+    <string name="join_trip_results_duration_min">%dmin</string>
+    <string name="join_trip_results_duration_hmin">%1$dh %2$dmin</string>
     <string name="join_trip_results_error">An error occurred when sending your request to the server. Please try again.</string>
     <string name="join_trip_results_waiting">We try our best to find trips for you! Hang in there!</string>
+    <string name="join_trip_results_join">i want to join!</string>
     <string name="join_trip_results_stop">Stop searching</string>
     <string name="join_trip_results_canceled">Searching for trips stopped</string>
     <string name="join_trip_results_sending">You have contacted the driver&#8230; waiting for response</string>
-    <string name="join_trip_results_pickup">Driver picks you up at approximately</string>
-    <string name="join_trip_results_price">Price: %1$s,%2$s€</string>
+    <string name="join_trip_results_pickup">Driver picks you up at approx.</string>
     <string name="join_trip_results_happy">Have a nice trip</string>
     <string name="join_trip_results_driverArrival">My driver is here</string>
     <string name="join_trip_results_reached">I´ve reached my destination</string>
-    <string name="join_trip_results_report">Report driver - I wasn´t picked up</string>
+    <string name="join_trip_results_report">Report driver</string>
     <string name="join_trip_results_cancel">Cancel trip</string>
+    <plurals name="join_trip_results_my_drivers">
+        <item quantity="one">My Driver</item>
+        <item quantity="other">My Drivers</item>
+    </plurals>
+    <string name="join_trip_results_price">%1$s.%2$s €</string>
+    <string name="my_trip_passenger_error_no_trip">Error: You have currently no running trip.</string>
+    <string name="load_trip_passenger_failed">Loading your trip failed. Please try again.</string>
 
     <string name="join_trip_requests_no_requests">There are no join requests at the moment.</string>
     <string name="join_trip_requests_error">An error occurred when looking up you passengers. Please try again.</string>

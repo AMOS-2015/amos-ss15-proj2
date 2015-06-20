@@ -22,6 +22,7 @@ import org.croudtrip.api.account.User;
 
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
+import javax.persistence.Embedded;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
@@ -30,6 +31,14 @@ import javax.persistence.ManyToOne;
  */
 @Embeddable
 public class TripReservation {
+
+    /**
+     * Contains all the relevant information about the sub-trip that should be done by one driver
+     * within a super trip. If this reservation is part of a simple trips the subQuery value should
+     * contain all the relevant information of the original query
+     */
+    @Embedded
+    SuperTripSubQuery subQuery;
 
 	@Column(name = "priceInCents", nullable = false)
 	private int totalPriceInCents;
@@ -49,16 +58,20 @@ public class TripReservation {
 
 	@JsonCreator
 	public TripReservation(
+            @JsonProperty("subQuery") SuperTripSubQuery subQuery,
 			@JsonProperty("totalPriceInCents") int totalPriceInCents,
 			@JsonProperty("pricePerKmInCents") int pricePerKmInCents,
 			@JsonProperty("offerId") long offerId,
 			@JsonProperty("driver") User driver) {
 
+        this.subQuery = subQuery;
 		this.totalPriceInCents = totalPriceInCents;
 		this.pricePerKmInCents = pricePerKmInCents;
 		this.offerId = offerId;
 		this.driver = driver;
 	}
+
+    public SuperTripSubQuery getSubQuery() { return subQuery; }
 
 	public int getTotalPriceInCents() {
 		return totalPriceInCents;

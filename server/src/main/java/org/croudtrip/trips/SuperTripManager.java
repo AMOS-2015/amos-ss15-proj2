@@ -6,6 +6,7 @@ import org.croudtrip.api.directions.NavigationResult;
 import org.croudtrip.api.directions.Route;
 import org.croudtrip.api.directions.RouteLocation;
 import org.croudtrip.api.trips.SuperTripReservation;
+import org.croudtrip.api.trips.SuperTripSubQuery;
 import org.croudtrip.api.trips.TripOffer;
 import org.croudtrip.api.trips.TripOfferStatus;
 import org.croudtrip.api.trips.TripQuery;
@@ -129,11 +130,21 @@ pickUp: for( PotentialSuperTripMatch pickUpMatch : potentialSuperTripPickUpMatch
 
             SuperTripReservation reservation = new SuperTripReservation.Builder()
                     .setQuery(query)
-                    .addReservation( new TripReservation( totalPickUpPriceInCents,
+                    .addReservation( new TripReservation(
+                            new SuperTripSubQuery.Builder()
+                                    .setStartLocation( query.getStartLocation() )
+                                    .setDestinationLocation( adaptedQuery.getDestinationLocation() )
+                            .build(),
+                            totalPickUpPriceInCents,
                             pickUpMatch.getOffer().getPricePerKmInCents(),
                             pickUpMatch.getOffer().getId(),
                             pickUpMatch.getOffer().getDriver() ) )
-                    .addReservation( new TripReservation( totalDropPriceInCents,
+                    .addReservation( new TripReservation(
+                            new SuperTripSubQuery.Builder()
+                                    .setStartLocation( adaptedQuery.getDestinationLocation() )
+                                    .setDestinationLocation( query.getDestinationLocation() )
+                            .build(),
+                            totalDropPriceInCents,
                             dropMatch.getOffer().getPricePerKmInCents(),
                             dropMatch.getOffer().getId(),
                             dropMatch.getOffer().getDriver()) )
@@ -160,11 +171,21 @@ pickUp: for( PotentialSuperTripMatch pickUpMatch : potentialSuperTripPickUpMatch
 
             SuperTripReservation reservation = new SuperTripReservation.Builder()
                     .setQuery(query)
-                    .addReservation( new TripReservation( totalPickUpPriceInCents,
+                    .addReservation( new TripReservation(
+                            new SuperTripSubQuery.Builder()
+                                .setStartLocation( query.getStartLocation() )
+                                .setDestinationLocation( adaptedQuery.getStartLocation() )
+                            .build(),
+                            totalPickUpPriceInCents,
                             pickUpMatch.getOffer().getPricePerKmInCents(),
                             pickUpMatch.getOffer().getId(),
                             pickUpMatch.getOffer().getDriver() ) )
-                    .addReservation( new TripReservation( totalDropPriceInCents,
+                    .addReservation( new TripReservation(
+                            new SuperTripSubQuery.Builder()
+                                    .setStartLocation( adaptedQuery.getStartLocation() )
+                                    .setDestinationLocation( query.getDestinationLocation() )
+                            .build(),
+                            totalDropPriceInCents,
                             dropMatch.getOffer().getPricePerKmInCents(),
                             dropMatch.getOffer().getId(),
                             dropMatch.getOffer().getDriver()) )

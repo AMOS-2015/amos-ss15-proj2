@@ -23,6 +23,7 @@ import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -108,6 +109,7 @@ public class JoinResultsFragment extends SubscriptionFragment implements GoogleA
         recyclerView.setAdapter(adapter);
 
         ((MaterialNavigationDrawer) getActivity()).getCurrentSection().setNotificationsText("...");
+        ((MaterialNavigationDrawer) getActivity()).setTitle(R.string.menu_my_trip);
         waitingView.setVisibility(View.VISIBLE);
 
         /*
@@ -155,11 +157,9 @@ public class JoinResultsFragment extends SubscriptionFragment implements GoogleA
         });
 
         // On click of a reservation we request to join this trip.
-        adapter.setOnItemClickListener(new JoinTripResultsAdapter.OnItemClickListener() {
-
+        adapter.setOnJoinListener(new JoinTripResultsAdapter.OnJoinListener() {
             @Override
-            public void onItemClicked(View view, int position) {
-
+            public void onJoin(int position) {
                 progressBar.setVisibility(View.VISIBLE);
 
                 SuperTripReservation reservation = adapter.getItem(position);
