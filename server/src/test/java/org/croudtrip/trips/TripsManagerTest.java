@@ -308,7 +308,7 @@ public class TripsManagerTest {
         TripOffer offer = new TripOffer( 0, null, 0, null, 0, 0, null, null, TripOfferStatus.ACTIVE, 0 );
         TripOfferUpdate finishUpdate = TripOfferUpdate.createFinishUpdate();
 
-        TripOffer updatedOffer = tripsManager.updateOffer( offer, finishUpdate );
+        TripOffer updatedOffer = tripsManager.updateOffer(offer, finishUpdate);
 
         Assert.assertEquals(TripOfferStatus.FINISHED, updatedOffer.getStatus());
     }
@@ -322,4 +322,28 @@ public class TripsManagerTest {
         Assert.assertEquals(expected.getMaxDiversionInMeters(), actual.getMaxDiversionInMeters());
     }
 
+    @Test
+    public void testFindTrip() {
+        final SuperTrip trip = new SuperTrip.Builder().setId(42).build();
+        new Expectations() {{
+            superTripDAO.findById(trip.getId());
+            result = Optional.of(trip);
+        }};
+
+        SuperTrip resultTrip = superTripDAO.findById(trip.getId()).get();
+        Assert.assertEquals(trip, resultTrip);
+    }
+
+    @Test
+    public void testFindAllTrips() {
+        final User passenger = new User.Builder().setId(12).build();
+        final List<SuperTrip> trips = Lists.newArrayList(new SuperTrip.Builder().setId(42).build());
+        new Expectations() {{
+            superTripDAO.findByPassengerId(passenger.getId());
+            result = trips;
+        }};
+
+        List<SuperTrip> resultTrips = superTripDAO.findByPassengerId(passenger.getId());
+        Assert.assertEquals(trips, resultTrips);
+    }
 }

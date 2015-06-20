@@ -358,6 +358,21 @@ public class TripsManager {
         return Optional.of(superTrip);
     }
 
+    /**
+     * Returns a single {@link SuperTrip}.
+     */
+    public Optional<SuperTrip> findTrip(long tripId) {
+        return superTripDAO.findById(tripId);
+    }
+
+
+    /**
+     * Returns all {@link SuperTrip}s that belong to a passenger.
+     */
+    public List<SuperTrip> findAllTrips(User passenger) {
+        return superTripDAO.findByPassengerId(passenger.getId());
+    }
+
 
     /**
      * Returns all {@link JoinTripRequest}s, regardless of their state or user.
