@@ -6,6 +6,7 @@ import org.croudtrip.api.directions.NavigationResult;
 import org.croudtrip.api.directions.Route;
 import org.croudtrip.api.directions.RouteLocation;
 import org.croudtrip.api.trips.SuperTripReservation;
+import org.croudtrip.api.trips.SuperTripSubQuery;
 import org.croudtrip.api.trips.TripOffer;
 import org.croudtrip.api.trips.TripOfferStatus;
 import org.croudtrip.api.trips.TripQuery;
@@ -129,11 +130,25 @@ pickUp: for( PotentialSuperTripMatch pickUpMatch : potentialSuperTripPickUpMatch
 
             SuperTripReservation reservation = new SuperTripReservation.Builder()
                     .setQuery(query)
-                    .addReservation( new TripReservation( totalPickUpPriceInCents,
+                    .addReservation( new TripReservation(
+                            new SuperTripSubQuery.Builder()
+                                    .setPassengerRoute( passengerpickUpRoute )
+                                    .setStartLocation( query.getStartLocation() )
+                                    .setDestinationLocation( adaptedQuery.getDestinationLocation() )
+                                    .setPassenger( query.getPassenger() )
+                            .build(),
+                            totalPickUpPriceInCents,
                             pickUpMatch.getOffer().getPricePerKmInCents(),
                             pickUpMatch.getOffer().getId(),
                             pickUpMatch.getOffer().getDriver() ) )
-                    .addReservation( new TripReservation( totalDropPriceInCents,
+                    .addReservation( new TripReservation(
+                            new SuperTripSubQuery.Builder()
+                                    .setPassengerRoute( passengerDropRoute )
+                                    .setStartLocation( adaptedQuery.getDestinationLocation() )
+                                    .setDestinationLocation( query.getDestinationLocation() )
+                                    .setPassenger( adaptedQuery.getPassenger() )
+                            .build(),
+                            totalDropPriceInCents,
                             dropMatch.getOffer().getPricePerKmInCents(),
                             dropMatch.getOffer().getId(),
                             dropMatch.getOffer().getDriver()) )
@@ -160,11 +175,25 @@ pickUp: for( PotentialSuperTripMatch pickUpMatch : potentialSuperTripPickUpMatch
 
             SuperTripReservation reservation = new SuperTripReservation.Builder()
                     .setQuery(query)
-                    .addReservation( new TripReservation( totalPickUpPriceInCents,
+                    .addReservation( new TripReservation(
+                            new SuperTripSubQuery.Builder()
+                                .setPassengerRoute( passengerpickUpRoute )
+                                .setStartLocation( query.getStartLocation() )
+                                .setDestinationLocation( adaptedQuery.getStartLocation() )
+                                .setPassenger( query.getPassenger() )
+                            .build(),
+                            totalPickUpPriceInCents,
                             pickUpMatch.getOffer().getPricePerKmInCents(),
                             pickUpMatch.getOffer().getId(),
                             pickUpMatch.getOffer().getDriver() ) )
-                    .addReservation( new TripReservation( totalDropPriceInCents,
+                    .addReservation( new TripReservation(
+                            new SuperTripSubQuery.Builder()
+                                    .setPassengerRoute( passengerDropRoute )
+                                    .setStartLocation( adaptedQuery.getStartLocation() )
+                                    .setDestinationLocation( query.getDestinationLocation() )
+                                    .setPassenger( query.getPassenger() )
+                            .build(),
+                            totalDropPriceInCents,
                             dropMatch.getOffer().getPricePerKmInCents(),
                             dropMatch.getOffer().getId(),
                             dropMatch.getOffer().getDriver()) )

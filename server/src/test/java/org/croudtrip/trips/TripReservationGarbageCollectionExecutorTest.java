@@ -1,6 +1,7 @@
 package org.croudtrip.trips;
 
 import org.croudtrip.api.trips.SuperTripReservation;
+import org.croudtrip.api.trips.SuperTripSubQuery;
 import org.croudtrip.api.trips.TripQuery;
 import org.croudtrip.api.trips.TripReservation;
 import org.croudtrip.db.SuperTripReservationDAO;
@@ -58,9 +59,10 @@ public class TripReservationGarbageCollectionExecutorTest {
 
 
 	private SuperTripReservation createReservation(long creationTimestamp, long maxWaitingTime) {
+        TripQuery query = new TripQuery.Builder().setMaxWaitingTimeInSeconds(maxWaitingTime).setCreationTimestamp(creationTimestamp).build();
 		return new SuperTripReservation.Builder()
-				.setQuery(new TripQuery.Builder().setMaxWaitingTimeInSeconds(maxWaitingTime).setCreationTimestamp(creationTimestamp).build())
-				.addReservation(new TripReservation(0, 0, 0, null))
+				.setQuery(query)
+				.addReservation(new TripReservation( new SuperTripSubQuery(query), 0, 0, 0, null))
 				.build();
 	}
 }
