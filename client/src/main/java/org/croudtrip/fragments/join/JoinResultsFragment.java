@@ -109,6 +109,7 @@ public class JoinResultsFragment extends SubscriptionFragment implements GoogleA
         recyclerView.setAdapter(adapter);
 
         ((MaterialNavigationDrawer) getActivity()).getCurrentSection().setNotificationsText("...");
+        ((MaterialNavigationDrawer) getActivity()).setTitle(R.string.menu_my_trip);
         waitingView.setVisibility(View.VISIBLE);
 
         /*

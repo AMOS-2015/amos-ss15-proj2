@@ -169,6 +169,8 @@ public class JoinDrivingFragment extends SubscriptionFragment {
 
         ((MaterialNavigationDrawer) getActivity()).getCurrentSection().setNotificationsText("");
         ((MaterialNavigationDrawer) getActivity()).getCurrentSection().setTitle(getString(R.string.menu_my_trip));
+        ((MaterialNavigationDrawer) getActivity()).setTitle(R.string.menu_my_trip);
+
 
 
         View view = inflater.inflate(R.layout.fragment_join_driving, container, false);
