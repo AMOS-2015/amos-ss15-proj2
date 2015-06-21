@@ -78,7 +78,7 @@
             </RelativeLayout>
 
             <com.pnikosis.materialishprogress.ProgressWheel
-                android:id="@+id/pb_my_trip_map_progressBar"
+                android:id="@+id/pb_join_trip_map_progressBar"
                 android:layout_width="60dp"
                 android:layout_height="60dp"
                 wheel:matProg_barColor="@color/primary_dark"

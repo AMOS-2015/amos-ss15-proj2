@@ -21,12 +21,14 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
+import android.location.Location;
 import android.nfc.NfcAdapter;
 import android.nfc.NfcManager;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -43,16 +45,24 @@ import android.widget.Toast;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.android.gms.maps.CameraUpdate;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.PolylineOptions;
 import com.pnikosis.materialishprogress.ProgressWheel;
 
 import org.croudtrip.Constants;
 import org.croudtrip.R;
 import org.croudtrip.api.TripsResource;
+import org.croudtrip.api.directions.NavigationResult;
+import org.croudtrip.api.directions.RouteLocation;
 import org.croudtrip.api.trips.JoinTripRequest;
 import org.croudtrip.api.trips.JoinTripRequestUpdate;
 import org.croudtrip.api.trips.JoinTripRequestUpdateType;
 import org.croudtrip.fragments.SubscriptionFragment;
+import org.croudtrip.location.LocationUpdater;
 import org.croudtrip.trip.MyTripPassengerDriversAdapter;
 import org.croudtrip.utils.CrashCallback;
 import org.croudtrip.utils.CrashPopup;
@@ -114,7 +124,7 @@ public class JoinDrivingFragment extends SubscriptionFragment {
     private ProgressWheel progressBarReport;
     @InjectView(R.id.pb_join_trip_driving_cancel)
     private ProgressWheel progressBarCancel;
-    @InjectView(R.id.pb_my_trip_map_progressBar)
+    @InjectView(R.id.pb_join_trip_map_progressBar)
     private ProgressWheel progressBarMap;
     @InjectView(R.id.pb_my_trip_drivers_progressBar)
     private ProgressWheel progressBarDrivers;
@@ -125,11 +135,17 @@ public class JoinDrivingFragment extends SubscriptionFragment {
     @Inject
     TripsResource tripsResource;
 
+    @Inject
+    private LocationUpdater locationUpdater;
+
     private List<JoinTripRequest> cachedRequests;
     private ArrayList<JoinTripRequestUpdateType> simpleRequestUpdateCache;
 
     private NfcAdapter nfcAdapter;
     private PendingIntent nfcPendingIntent;
+
+    private GoogleMap googleMap;
+
 
     // Passengers list
     private MyTripPassengerDriversAdapter adapter;
@@ -198,6 +214,7 @@ public class JoinDrivingFragment extends SubscriptionFragment {
         // Get the route to display it on the map
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager()
                 .findFragmentById(R.id.f_join_trip_driving_map);
+        googleMap = mapFragment.getMap();
 
         // Remove the header from the layout. Otherwise it exists twice
         ((ViewManager) view).removeView(header);
@@ -339,6 +356,8 @@ public class JoinDrivingFragment extends SubscriptionFragment {
             return;
         }
 
+        drawRoutesOnMap(requests);
+
         // Show drivers
         for(JoinTripRequest r : requests) {
             adapter.updateRequest(r);
@@ -369,6 +388,52 @@ public class JoinDrivingFragment extends SubscriptionFragment {
             dateAsString = calendar.get(Calendar.HOUR_OF_DAY) + ":" + calendar.get(Calendar.MINUTE);
 
         tvPickupTime.setText(dateAsString);
+    }
+
+    private void drawRoutesOnMap(List<JoinTripRequest> requests) {
+        googleMap.clear();
+        for (JoinTripRequest joinTripRequest : requests) {
+            subscriptions.add(tripsResource
+                    .computeNavigationResultForOffer(joinTripRequest.getOffer().getId())
+                    .subscribe(new Action1<NavigationResult>() {
+                        @Override
+                        public void call(final NavigationResult navigationResult) {
+
+                            //Update the view with the received data
+                            if (isAdded()) {
+                                getActivity().runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        List<RouteLocation> waypoints = navigationResult.getRoute().getWayPoints();
+                                        List<LatLng> latLngList = new ArrayList<>();
+                                        for (RouteLocation waypoint : waypoints) {
+                                            latLngList.add(new LatLng(waypoint.getLat(), waypoint.getLng()));
+                                        }
+                                        googleMap.addPolyline(new PolylineOptions().addAll(latLngList));
+                                    }
+                                });
+                            }
+
+                        }
+                    }, new CrashCallback(getActivity()) {
+                        @Override
+                        public void call(Throwable throwable) {
+                            super.call(throwable);
+                        }
+                    }));
+        }
+
+        googleMap.setMyLocationEnabled(true);
+
+        Location location = locationUpdater.getLastLocation();
+        if (location == null)
+            return;
+
+        LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
+        CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(latLng, 10);
+        googleMap.animateCamera(cameraUpdate);
+
+        progressBarMap.setVisibility(View.GONE);
     }
 
     /*
