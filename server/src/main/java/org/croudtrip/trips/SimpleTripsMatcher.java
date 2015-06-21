@@ -3,6 +3,7 @@ package org.croudtrip.trips;
 
 import com.google.common.base.Optional;
 
+import org.croudtrip.api.directions.NavigationResult;
 import org.croudtrip.api.directions.Route;
 import org.croudtrip.api.directions.RouteLocation;
 import org.croudtrip.api.trips.JoinTripRequest;
@@ -16,6 +17,7 @@ import org.croudtrip.api.trips.UserWayPoint;
 import org.croudtrip.db.JoinTripRequestDAO;
 import org.croudtrip.db.TripOfferDAO;
 import org.croudtrip.directions.DirectionsManager;
+import org.croudtrip.directions.RouteNotFoundException;
 import org.croudtrip.logs.LogManager;
 
 import java.util.ArrayList;
@@ -58,10 +60,11 @@ class SimpleTripsMatcher implements TripsMatcher {
 
 	@Override
 	public List<SuperTripReservation> findPotentialTrips(List<TripOffer> offers, TripQuery query) {
-		List<TripOffer> potentialMatches = new ArrayList<>();
+		List<PotentialMatch> potentialMatches = new ArrayList<>();
 		for (TripOffer offer : offers) {
-			if (isPotentialMatch(offer, query).isPresent()) {
-				potentialMatches.add(offer);
+			Optional<PotentialMatch> potentialMatch = isPotentialMatch(offer, query);
+			if ( potentialMatch.isPresent() ) {
+				potentialMatches.add(potentialMatch.get());
 			}
 		}
 
@@ -88,7 +91,14 @@ class SimpleTripsMatcher implements TripsMatcher {
 		assertUpdatedDriverRoute(offer);
 
 		// get complete new route
-		List<UserWayPoint> userWayPoints = tripsNavigationManager.getRouteWaypointsForOffer(offer, query);
+		NavigationResult totalRouteNavigationResult = null;
+		try {
+			totalRouteNavigationResult = tripsNavigationManager.getNavigationResultForOffer(offer, query);
+		} catch (RouteNotFoundException e) {
+			logManager.e(e.toString());
+			return Optional.absent();
+		}
+		List<UserWayPoint> userWayPoints = totalRouteNavigationResult.getUserWayPoints();
 		if (userWayPoints.isEmpty()) return Optional.absent();
 
 		// check passenger max waiting time
@@ -98,7 +108,7 @@ class SimpleTripsMatcher implements TripsMatcher {
 		long distanceToDriverInMeters = userWayPoints.get(userWayPoints.size() - 1).getDistanceToDriverInMeters();
 		if (distanceToDriverInMeters - offer.getDriverRoute().getDistanceInMeters() > offer.getMaxDiversionInMeters()) return Optional.absent();
 
-		return Optional.of( new PotentialMatch( offer, query, userWayPoints ));
+		return Optional.of( new PotentialMatch( offer, query, totalRouteNavigationResult ));
 	}
 
 	protected boolean assertJoinRequestNotDeclined(TripOffer offer, TripQuery query) {
@@ -210,29 +220,29 @@ class SimpleTripsMatcher implements TripsMatcher {
 	 * @param potentialMatches the list of potential matches for this query
 	 * @return a list of reservations for this query with the cheapest price
 	 */
-	private List<SuperTripReservation> findCheapestMatch(TripQuery query, List<TripOffer> potentialMatches) {
+	private List<SuperTripReservation> findCheapestMatch(TripQuery query, List<PotentialMatch> potentialMatches) {
 		if (potentialMatches.isEmpty()) return new ArrayList<>();
 
 		// sort by price per km
-		Collections.sort(potentialMatches, new Comparator<TripOffer>() {
+		Collections.sort(potentialMatches, new Comparator<PotentialMatch>() {
 			@Override
-			public int compare(TripOffer offer1, TripOffer offer2) {
-				return Integer.valueOf(offer1.getPricePerKmInCents()).compareTo(offer2.getPricePerKmInCents());
+			public int compare(PotentialMatch pm1, PotentialMatch pm2) {
+				return Integer.valueOf(pm1.getOffer().getPricePerKmInCents()).compareTo(pm2.getOffer().getPricePerKmInCents());
 			}
 		});
 
-		List<TripOffer> matches = new ArrayList<>();
+		List<PotentialMatch> matches = new ArrayList<>();
 
 		// find prices
-		int lowestPricePerKmInCents  = potentialMatches.get(0).getPricePerKmInCents(), secondLowestPricePerKmInCents = -1;
-		for (TripOffer potentialMatch : potentialMatches) {
-			if (potentialMatch.getPricePerKmInCents() == lowestPricePerKmInCents) {
+		int lowestPricePerKmInCents  = potentialMatches.get(0).getOffer().getPricePerKmInCents(), secondLowestPricePerKmInCents = -1;
+		for (PotentialMatch potentialMatch : potentialMatches) {
+			if (potentialMatch.getOffer().getPricePerKmInCents() == lowestPricePerKmInCents) {
 				// all cheapest trips are matches
 				matches.add(potentialMatch);
 
-			} else if (potentialMatch.getPricePerKmInCents() != secondLowestPricePerKmInCents) {
+			} else if (potentialMatch.getOffer().getPricePerKmInCents() != secondLowestPricePerKmInCents) {
 				// second cheapest determines price
-				secondLowestPricePerKmInCents = potentialMatch.getPricePerKmInCents();
+				secondLowestPricePerKmInCents = potentialMatch.getOffer().getPricePerKmInCents();
 				break;
 			}
 		}
@@ -242,17 +252,20 @@ class SimpleTripsMatcher implements TripsMatcher {
 		if (secondLowestPricePerKmInCents != -1) pricePerKmInCents = secondLowestPricePerKmInCents;
 		int totalPriceInCents = (int) (pricePerKmInCents * query.getPassengerRoute().getDistanceInMeters() / 1000);
 
+
+
 		// create price reservations
 		List<SuperTripReservation> reservations = new ArrayList<>();
-		for (TripOffer match : matches) {
+		for (PotentialMatch match : matches) {
 			reservations.add(new SuperTripReservation.Builder()
 					.setQuery(query)
 					.addReservation(new TripReservation(
 									new SuperTripSubQuery(query),
 									totalPriceInCents,
-									match.getPricePerKmInCents(),
-									match.getId(),
-									match.getDriver())
+									match.getOffer().getPricePerKmInCents(),
+									match.getOffer().getId(),
+									match.getTotalRouteNavigationResult().getEstimatedTripDurationInSecondsForUser( query.getPassenger() ),
+									match.getOffer().getDriver())
 					)
 					.build());
 		}

@@ -49,6 +49,9 @@ public class TripReservation {
 	@Column(name = "offerId", nullable = false)
 	private long offerId;
 
+	@Column(name = "estimatedTripDurationInSeconds" )
+	private long estimatedTripDurationInSeconds;
+
 	@ManyToOne
 	@JoinColumn(name = User.COLUMN_ID, nullable = false)
 	private User driver;
@@ -62,12 +65,14 @@ public class TripReservation {
 			@JsonProperty("totalPriceInCents") int totalPriceInCents,
 			@JsonProperty("pricePerKmInCents") int pricePerKmInCents,
 			@JsonProperty("offerId") long offerId,
+			@JsonProperty("estimatedTripDurationInSeconds") long estimatedTripDurationInSeconds,
 			@JsonProperty("driver") User driver) {
 
         this.subQuery = subQuery;
 		this.totalPriceInCents = totalPriceInCents;
 		this.pricePerKmInCents = pricePerKmInCents;
 		this.offerId = offerId;
+		this.estimatedTripDurationInSeconds = estimatedTripDurationInSeconds;
 		this.driver = driver;
 	}
 
@@ -87,6 +92,10 @@ public class TripReservation {
 
 	public User getDriver() {
 		return driver;
+	}
+
+	public long getEstimatedTripDurationInSeconds() {
+		return estimatedTripDurationInSeconds;
 	}
 
 	@Override
@@ -111,6 +120,7 @@ public class TripReservation {
 		private int totalPriceInCents;
 		private int pricePerKmInCents;
 		private long offerId;
+		private long estimatedTripDurationInSeconds;
 		private User driver;
 
 		public Builder setSubQuery(SuperTripSubQuery subQuery) {
@@ -133,13 +143,18 @@ public class TripReservation {
 			return this;
 		}
 
+		public Builder setEstimatedTripDurationInSeconds( long estimatedTripDurationInSeconds ) {
+			this.estimatedTripDurationInSeconds = estimatedTripDurationInSeconds;
+			return this;
+		}
+
 		public Builder setDriver(User driver) {
 			this.driver = driver;
 			return this;
 		}
 
 		public TripReservation build() {
-			return new TripReservation(subQuery, totalPriceInCents, pricePerKmInCents, offerId, driver);
+			return new TripReservation(subQuery, totalPriceInCents, pricePerKmInCents, offerId, estimatedTripDurationInSeconds, driver);
 		}
 	}
 }

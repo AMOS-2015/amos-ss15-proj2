@@ -139,6 +139,9 @@ pickUp: for( PotentialSuperTripMatch pickUpMatch : potentialSuperTripPickUpMatch
             int totalPickUpPriceInCents = (int) (pickUpMatch.getOffer().getPricePerKmInCents() * passengerpickUpRoute.getDistanceInMeters() / 1000);
             int totalDropPriceInCents = (int) (dropMatch.getOffer().getPricePerKmInCents() * passengerDropRoute.getDistanceInMeters() / 1000);
 
+            long estimatedPickupDuration = potentialMatch.get().getTotalRouteNavigationResult().getEstimatedTripDurationInSecondsForUser( query.getPassenger() );
+            long estimatedDropDuration = dropMatch.getDiversionNavigationResult().getEstimatedTripDurationInSecondsForUser( query.getPassenger() );
+
             SuperTripReservation reservation = new SuperTripReservation.Builder()
                     .setQuery(query)
                     .addReservation( new TripReservation(
@@ -149,6 +152,7 @@ pickUp: for( PotentialSuperTripMatch pickUpMatch : potentialSuperTripPickUpMatch
                             totalPickUpPriceInCents,
                             pickUpMatch.getOffer().getPricePerKmInCents(),
                             pickUpMatch.getOffer().getId(),
+                            estimatedPickupDuration,
                             pickUpMatch.getOffer().getDriver() ) )
                     .addReservation( new TripReservation(
                             new SuperTripSubQuery.Builder()
@@ -158,6 +162,7 @@ pickUp: for( PotentialSuperTripMatch pickUpMatch : potentialSuperTripPickUpMatch
                             totalDropPriceInCents,
                             dropMatch.getOffer().getPricePerKmInCents(),
                             dropMatch.getOffer().getId(),
+                            estimatedDropDuration,
                             dropMatch.getOffer().getDriver()) )
                     .build();
 
@@ -169,16 +174,19 @@ pickUp: for( PotentialSuperTripMatch pickUpMatch : potentialSuperTripPickUpMatch
                 .setStartLocation( closestPairResult.getPickupLocation() )
                 .setCreationTimestamp( query.getCreationTimestamp() )
                 .setDestinationLocation(query.getDestinationLocation() )
-                .setMaxWaitingTimeInSeconds( Integer.MAX_VALUE ) // TODO: We are ignoring time for now
+                .setMaxWaitingTimeInSeconds( TripQuery.IGNORE_MAX_WAITING_TIME ) // TODO: We are ignoring time for now
                 .build();
 
-        potentialMatch = isPotentialMatch(pickUpMatch.getOffer(), adaptedQuery);
+        potentialMatch = isPotentialMatch(dropMatch.getOffer(), adaptedQuery);
         if( potentialMatch.isPresent() ) {
             // expensive directions call but necessary, we need the adapted passenger routes to compute the total price per driver
             Route passengerpickUpRoute = directionsManager.getDirections( query.getStartLocation(), adaptedQuery.getStartLocation() ).get(0);
             Route passengerDropRoute = directionsManager.getDirections( adaptedQuery.getStartLocation(), query.getDestinationLocation() ).get(0);
             int totalPickUpPriceInCents = (int) (pickUpMatch.getOffer().getPricePerKmInCents() * passengerpickUpRoute.getDistanceInMeters() / 1000);
             int totalDropPriceInCents = (int) (dropMatch.getOffer().getPricePerKmInCents() * passengerDropRoute.getDistanceInMeters() / 1000);
+
+            long estimatedPickupDuration = pickUpMatch.getDiversionNavigationResult().getEstimatedTripDurationInSecondsForUser( query.getPassenger() );
+            long estimatedDropDuration = potentialMatch.get().getTotalRouteNavigationResult().getEstimatedTripDurationInSecondsForUser( query.getPassenger() );
 
             SuperTripReservation reservation = new SuperTripReservation.Builder()
                     .setQuery(query)
@@ -190,6 +198,7 @@ pickUp: for( PotentialSuperTripMatch pickUpMatch : potentialSuperTripPickUpMatch
                             totalPickUpPriceInCents,
                             pickUpMatch.getOffer().getPricePerKmInCents(),
                             pickUpMatch.getOffer().getId(),
+                            estimatedPickupDuration,
                             pickUpMatch.getOffer().getDriver() ) )
                     .addReservation( new TripReservation(
                             new SuperTripSubQuery.Builder()
@@ -199,11 +208,14 @@ pickUp: for( PotentialSuperTripMatch pickUpMatch : potentialSuperTripPickUpMatch
                             totalDropPriceInCents,
                             dropMatch.getOffer().getPricePerKmInCents(),
                             dropMatch.getOffer().getId(),
+                            estimatedDropDuration,
                             dropMatch.getOffer().getDriver()) )
                     .build();
 
             return Optional.of( reservation );
         }
+
+        // TODO: Nothing was found, now we have recursive problem that could be solved using the trips matcher again from the beginning
 
         return Optional.absent();
     }

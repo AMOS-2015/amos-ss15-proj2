@@ -57,4 +57,34 @@ public class NavigationResult {
     public List<UserWayPoint> getUserWayPoints() {
         return userWayPoints;
     }
+
+    public long getEstimatedTripDurationInSecondsForUser( User user ) {
+
+        if( userWayPoints.isEmpty() )
+            throw new IllegalStateException("There are no UserWaypoints in this navigation result.");
+
+        UserWayPoint startWp = null;
+        UserWayPoint destinationWp = null;
+        for( UserWayPoint uwp : userWayPoints ) {
+            if( uwp.getUser().getId() == user.getId() )
+            {
+                if( uwp.isStartOfTrip() )
+                    startWp = uwp;
+                else
+                    destinationWp = uwp;
+
+            }
+        }
+
+        if( startWp == null && destinationWp == null )
+            throw new IllegalArgumentException("User is not in the waypoints list of the given waypoints");
+
+        if( startWp == null )
+            startWp = userWayPoints.get(0);
+
+        if( destinationWp == null )
+            destinationWp = userWayPoints.get( userWayPoints.size() - 1 );
+
+        return destinationWp.getArrivalTimestamp() - startWp.getArrivalTimestamp();
+    }
 }

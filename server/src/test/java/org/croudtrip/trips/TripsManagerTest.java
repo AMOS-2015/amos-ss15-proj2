@@ -6,6 +6,7 @@ import com.google.common.collect.Lists;
 import org.croudtrip.account.VehicleManager;
 import org.croudtrip.api.account.User;
 import org.croudtrip.api.account.Vehicle;
+import org.croudtrip.api.directions.NavigationResult;
 import org.croudtrip.api.directions.Route;
 import org.croudtrip.api.directions.RouteLocation;
 import org.croudtrip.api.trips.JoinTripRequest;
@@ -200,7 +201,7 @@ public class TripsManagerTest {
 
         SuperTripReservation reservation = new SuperTripReservation.Builder()
                 .setQuery(query)
-                .addReservation(new TripReservation(new SuperTripSubQuery(query), 12345, 10, 0, d))
+                .addReservation(new TripReservation(new SuperTripSubQuery(query), 12345, 10, 0,0, d))
                 .build();
 
         new NonStrictExpectations(){{
@@ -210,12 +211,12 @@ public class TripsManagerTest {
 
             tripsMatcher.isPotentialMatch( offer, query );
 
-            result = Optional.of( new SimpleTripsMatcher.PotentialMatch( offer, query, Lists.newArrayList(
+            result = Optional.of( new SimpleTripsMatcher.PotentialMatch( offer, query, new NavigationResult( null, Lists.newArrayList(
                     new UserWayPoint(d, tripStart, true, 0, 0 ),
                     new UserWayPoint(p, passengerStart, true, 1, 1  ),
                     new UserWayPoint(p, passengerEnd, false, 2, 2  ),
                     new UserWayPoint(d, tripEnd, false, 3, 3  )
-            ) ));
+            ) )));
         }};
 
         Optional<SuperTrip> tripOptional = tripsManager.joinTrip( reservation );

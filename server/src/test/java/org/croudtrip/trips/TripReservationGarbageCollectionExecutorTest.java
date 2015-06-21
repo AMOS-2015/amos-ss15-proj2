@@ -62,7 +62,7 @@ public class TripReservationGarbageCollectionExecutorTest {
         TripQuery query = new TripQuery.Builder().setMaxWaitingTimeInSeconds(maxWaitingTime).setCreationTimestamp(creationTimestamp).build();
 		return new SuperTripReservation.Builder()
 				.setQuery(query)
-				.addReservation(new TripReservation( new SuperTripSubQuery(query), 0, 0, 0, null))
+				.addReservation(new TripReservation( new SuperTripSubQuery(query), 0, 0, 0, 0, null))
 				.build();
 	}
 }

@@ -3,6 +3,8 @@ package org.croudtrip.trips;
 
 import com.google.common.base.Optional;
 
+import org.croudtrip.api.directions.NavigationResult;
+import org.croudtrip.api.directions.Route;
 import org.croudtrip.api.trips.SuperTripReservation;
 import org.croudtrip.api.trips.TripOffer;
 import org.croudtrip.api.trips.TripQuery;
@@ -19,12 +21,12 @@ interface TripsMatcher {
 
 		private final TripOffer offer;
 		private final TripQuery query;
-		private final List<UserWayPoint> userWayPoints;
+		private final NavigationResult totalRouteNavigationResult;
 
-		public PotentialMatch( TripOffer offer, TripQuery query, List<UserWayPoint> userWayPoints ) {
+		public PotentialMatch( TripOffer offer, TripQuery query, NavigationResult totalRouteNavigationResult ) {
 			this.offer = offer;
 			this.query = query;
-			this.userWayPoints = userWayPoints;
+			this.totalRouteNavigationResult = totalRouteNavigationResult;
 		}
 
 		public TripOffer getOffer() {
@@ -36,7 +38,15 @@ interface TripsMatcher {
 		}
 
 		public List<UserWayPoint> getUserWayPoints() {
-			return userWayPoints;
+			return totalRouteNavigationResult.getUserWayPoints();
+		}
+
+		public Route getTotalRoute() {
+			return totalRouteNavigationResult.getRoute();
+		}
+
+		public NavigationResult getTotalRouteNavigationResult() {
+			return totalRouteNavigationResult;
 		}
 	}
 

@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
 
 import org.croudtrip.api.account.User;
 import org.croudtrip.api.account.Vehicle;
+import org.croudtrip.api.directions.NavigationResult;
 import org.croudtrip.api.directions.Route;
 import org.croudtrip.api.directions.RouteLocation;
 import org.croudtrip.api.trips.JoinTripRequest;
@@ -18,6 +19,7 @@ import org.croudtrip.api.trips.UserWayPoint;
 import org.croudtrip.db.JoinTripRequestDAO;
 import org.croudtrip.db.TripOfferDAO;
 import org.croudtrip.directions.DirectionsManager;
+import org.croudtrip.directions.RouteNotFoundException;
 import org.croudtrip.logs.LogManager;
 import org.junit.Assert;
 import org.junit.Before;
@@ -143,15 +145,15 @@ public class SimpleTripsMatcherTest {
 
 	@Test
 	@SuppressWarnings("unchecked")
-	public void testPotentialMatchMaxWaitingTimeQuery() {
+	public void testPotentialMatchMaxWaitingTimeQuery() throws RouteNotFoundException {
 		// tests that max waiting time of query is honored
 		new Expectations() {{
-			tripsNavigationManager.getRouteWaypointsForOffer(offer, query);
-			result = Lists.newArrayList(
+			tripsNavigationManager.getNavigationResultForOffer(offer, query);
+			result = new NavigationResult( null, Lists.newArrayList(
 					new UserWayPoint(driver, null, true, 0, 0),
 					new UserWayPoint(passenger, null, true, query.getCreationTimestamp() + query.getMaxWaitingTimeInSeconds() + 100, 1),
 					new UserWayPoint(passenger, null, false, 0, 2),
-					new UserWayPoint(driver, null, false, 0, 3));
+					new UserWayPoint(driver, null, false, 0, 3)));
 		}};
 
 		Assert.assertFalse(simpleTripsMatcher.isPotentialMatch(offer, query).isPresent());
@@ -160,7 +162,7 @@ public class SimpleTripsMatcherTest {
 
 	@Test
 	@SuppressWarnings("unchecked")
-	public void testPotentialMatchMaxWaitingTimeJoinRequests() {
+	public void testPotentialMatchMaxWaitingTimeJoinRequests() throws RouteNotFoundException {
 		// tests that max waiting time of already existing join requests is honored
 		final User anotherPassenger = new User.Builder().setId(2).build();
 
@@ -171,14 +173,14 @@ public class SimpleTripsMatcherTest {
 					.setSuperTrip(new SuperTrip.Builder().setQuery(query).build())
 					.build());
 
-			tripsNavigationManager.getRouteWaypointsForOffer(offer, query);
-			result = Lists.newArrayList(
+			tripsNavigationManager.getNavigationResultForOffer(offer, query);
+			result = new NavigationResult( null, Lists.newArrayList(
 					new UserWayPoint(driver, null, true, 0, 0),
 					new UserWayPoint(passenger, null, true, 0, 0),
 					new UserWayPoint(passenger, null, false, 0, 0),
 					new UserWayPoint(anotherPassenger, null, true, query.getCreationTimestamp() + query.getMaxWaitingTimeInSeconds() + 100, 0),
 					new UserWayPoint(anotherPassenger, null, false, 0, 0),
-					new UserWayPoint(driver, null, false, 0, 3));
+					new UserWayPoint(driver, null, false, 0, 3)));
 		}};
 
 		Assert.assertFalse(simpleTripsMatcher.isPotentialMatch(offer, query).isPresent());
@@ -187,15 +189,15 @@ public class SimpleTripsMatcherTest {
 
 	@Test
 	@SuppressWarnings("unchecked")
-	public void testPotentialMatchMaxDiversion() {
+	public void testPotentialMatchMaxDiversion() throws RouteNotFoundException {
 		final long currentTimestamp = System.currentTimeMillis() / 1000;
 		new Expectations() {{
-			tripsNavigationManager.getRouteWaypointsForOffer(offer, query);
-			result = Lists.newArrayList(
+			tripsNavigationManager.getNavigationResultForOffer(offer, query);
+			result = new NavigationResult( null, Lists.newArrayList(
 					new UserWayPoint(driver, null, true, currentTimestamp, 0),
 					new UserWayPoint(passenger, null, true, currentTimestamp, 0),
 					new UserWayPoint(passenger, null, false, currentTimestamp, 0),
-					new UserWayPoint(driver, null, false, currentTimestamp, offer.getDriverRoute().getDistanceInMeters() + offer.getMaxDiversionInMeters() + 100));
+					new UserWayPoint(driver, null, false, currentTimestamp, offer.getDriverRoute().getDistanceInMeters() + offer.getMaxDiversionInMeters() + 100)));
 		}};
 
 		Assert.assertFalse(simpleTripsMatcher.isPotentialMatch(offer, query).isPresent());
@@ -204,15 +206,15 @@ public class SimpleTripsMatcherTest {
 
 	@Test
 	@SuppressWarnings("unchecked")
-	public void testPotentialMatchSuccess() {
+	public void testPotentialMatchSuccess() throws RouteNotFoundException {
 		final long currentTimestamp = System.currentTimeMillis() / 1000;
 		new Expectations() {{
-			tripsNavigationManager.getRouteWaypointsForOffer(offer, query);
-			result = Lists.newArrayList(
+			tripsNavigationManager.getNavigationResultForOffer(offer, query);
+			result = new NavigationResult( null, Lists.newArrayList(
 					new UserWayPoint(driver, null, true, currentTimestamp, 0),
 					new UserWayPoint(passenger, null, true, currentTimestamp + 1, 1),
 					new UserWayPoint(passenger, null, false, currentTimestamp + query.getMaxWaitingTimeInSeconds() / 2, 2),
-					new UserWayPoint(driver, null, false, currentTimestamp, 3));
+					new UserWayPoint(driver, null, false, currentTimestamp, 3)));
 		}};
 
 		Assert.assertTrue(simpleTripsMatcher.isPotentialMatch(offer, query).isPresent());
@@ -226,11 +228,24 @@ public class SimpleTripsMatcherTest {
 		TripOffer offer3 = new TripOffer.Builder().setPricePerKmInCents(13).build();
 		TripOffer offer4 = new TripOffer.Builder().setPricePerKmInCents(14).build();
 
+		final long currentTimestamp = System.currentTimeMillis() / 1000;
+		NavigationResult navRes = new NavigationResult( null, Lists.newArrayList(
+				new UserWayPoint(driver, null, true, currentTimestamp, 0),
+				new UserWayPoint(passenger, null, true, currentTimestamp + 1, 1),
+				new UserWayPoint(passenger, null, false, currentTimestamp + query.getMaxWaitingTimeInSeconds() / 2, 2),
+				new UserWayPoint(driver, null, false, currentTimestamp, 3)));
+
+		TripsMatcher.PotentialMatch pm1 = new TripsMatcher.PotentialMatch( offer1, query, navRes );
+		TripsMatcher.PotentialMatch pm2 = new TripsMatcher.PotentialMatch( offer2, query, navRes );
+		TripsMatcher.PotentialMatch pm3 = new TripsMatcher.PotentialMatch( offer3, query, navRes );
+		TripsMatcher.PotentialMatch pm4 = new TripsMatcher.PotentialMatch( offer4, query, navRes );
+
+
 		List<SuperTripReservation> reservations = Deencapsulation.invoke(
 				simpleTripsMatcher,
 				"findCheapestMatch",
 				query,
-				Lists.newArrayList(offer1, offer2, offer3, offer4));
+				Lists.newArrayList(pm1, pm2, pm3, pm4));
 
 		Assert.assertEquals(2, reservations.size());
 		long totalPrice = offer3.getPricePerKmInCents() * query.getPassengerRoute().getDistanceInMeters() / 1000;
