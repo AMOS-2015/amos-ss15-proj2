@@ -102,7 +102,7 @@ public class JoinTripResultsAdapter extends RecyclerView.Adapter<JoinTripResults
             //Show the price of this driver only if he/she is not the only one
             String price = "";
             if (superTripReservation.getReservations().size() > 1) {
-                price = getFormattedPriceInEuro(reservation.getTotalPriceInCents());
+                    price = getFormattedPriceInEuro(reservation.getTotalPriceInCents());
             }
             ((TextView) driverView.findViewById(R.id.driver_price)).setText(price);
 
