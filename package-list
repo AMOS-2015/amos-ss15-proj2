@@ -5,6 +5,7 @@ org.croudtrip.api.gcm
 org.croudtrip.api.trips
 org.croudtrip.app
 org.croudtrip.auth
+org.croudtrip.closestpair
 org.croudtrip.db
 org.croudtrip.directions
 org.croudtrip.gcm
