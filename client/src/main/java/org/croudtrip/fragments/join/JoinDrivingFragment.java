@@ -29,7 +29,6 @@ import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -170,6 +169,9 @@ public class JoinDrivingFragment extends SubscriptionFragment {
 
         LocalBroadcastManager.getInstance(getActivity()).registerReceiver(nfcScannedReceiver,
                 new IntentFilter(Constants.EVENT_NFC_TAG_SCANNED));
+
+        LocalBroadcastManager.getInstance(getActivity()).registerReceiver(secondaryDriverAcceptedReceiver,
+                new IntentFilter(Constants.EVENT_SECONDARY_DRIVER_ACCEPTED));
 
         nfcAdapter = NfcAdapter.getDefaultAdapter(getActivity());
         if (nfcAdapter != null) {
@@ -590,8 +592,12 @@ public class JoinDrivingFragment extends SubscriptionFragment {
     @Override
     public void onPause() {
         super.onPause();
+
         LocalBroadcastManager.getInstance(getActivity().getApplicationContext())
                 .unregisterReceiver(joinRequestExpiredReceiver);
+
+        LocalBroadcastManager.getInstance(getActivity().getApplicationContext())
+                .unregisterReceiver(secondaryDriverAcceptedReceiver);
 
         /*
         Try to resend every failed server call. This will be tried only once.
@@ -610,6 +616,7 @@ public class JoinDrivingFragment extends SubscriptionFragment {
         //Since the NFC scan pauses the fragment we must unregister this receiver in onDestroy,
         //otherwise we could not catch this Intent
         LocalBroadcastManager.getInstance(getActivity().getApplicationContext()).unregisterReceiver(nfcScannedReceiver);
+
     }
 
 
@@ -635,6 +642,14 @@ public class JoinDrivingFragment extends SubscriptionFragment {
                 //disable listening to the "scanned NFC" event
                 LocalBroadcastManager.getInstance(getActivity().getApplicationContext()).unregisterReceiver(nfcScannedReceiver);
             }
+        }
+    };
+
+    private BroadcastReceiver secondaryDriverAcceptedReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Timber.d("A secondary driver has accepted");
+            loadRequest();
         }
     };
 

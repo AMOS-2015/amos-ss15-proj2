@@ -346,6 +346,10 @@ public class GcmIntentService extends RoboIntentService {
                                         Intent startingIntent = new Intent(Constants.EVENT_CHANGE_JOIN_UI);
                                         startingIntent.putExtras(extras);
                                         LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(startingIntent);
+                                    }else{
+                                        Intent startingIntent = new Intent(Constants.EVENT_SECONDARY_DRIVER_ACCEPTED);
+                                        startingIntent.putExtras(extras);
+                                        LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(startingIntent);
                                     }
                                 } else {
                                     // create notification for the user only if the first driver accepts
