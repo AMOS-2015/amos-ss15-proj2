@@ -127,19 +127,19 @@ public class JoinTripRequestsAdapter extends RecyclerView.Adapter<JoinTripReques
             addresses = geocoder.getFromLocation(location.getLat(), location.getLng(), 1);
 
             String city = addresses.get(0).getLocality();
-            String featureName = addresses.get(0).getFeatureName();
+            String street = addresses.get(0).getThoroughfare();
 
-            if (city == null && featureName == null) {
+            if (city == null && street == null) {
                 // no data -> hide TextView
                 holder.tvPassengerLocation.setVisibility(View.GONE);
 
-            } else if (city != null && featureName != null && !featureName.equals(city)) {
+            } else if (city != null && street != null) {
                 // both data
-                holder.tvPassengerLocation.setText(city + ", " + featureName);
+                holder.tvPassengerLocation.setText(city + ", " + street);
 
             } else {
-                // either only city of featureName (or both the same)
-                String loc = (city != null) ? city : featureName;
+                // either only city of street
+                String loc = (city != null) ? city : street;
                 holder.tvPassengerLocation.setText(loc);
             }
 
