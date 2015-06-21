@@ -38,5 +38,6 @@
 
     <color name="my_trip_passenger_driver_default">#ffffff</color>
     <color name="my_trip_passenger_driver_accepted">#c8e6c9</color>
+    <color name="my_trip_passenger_driver_declined">#cc8585</color>
 
 </resources>

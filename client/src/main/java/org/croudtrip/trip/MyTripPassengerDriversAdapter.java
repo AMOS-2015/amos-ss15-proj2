@@ -123,6 +123,9 @@ public class MyTripPassengerDriversAdapter extends RecyclerView.Adapter<Recycler
                     || joinRequest.getStatus() == JoinTripStatus.PASSENGER_AT_DESTINATION) {
 
                 color = R.color.my_trip_passenger_driver_accepted;
+
+            } else if(joinRequest.getStatus() == JoinTripStatus.DRIVER_DECLINED){
+                color = R.color.my_trip_passenger_driver_declined;
             } else {
                 color = R.color.my_trip_passenger_driver_default;
             }
