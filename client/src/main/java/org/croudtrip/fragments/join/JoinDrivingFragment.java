@@ -404,6 +404,7 @@ public class JoinDrivingFragment extends SubscriptionFragment {
         colorPosition = 0;
         googleMap.clear();
         for (final JoinTripRequest joinTripRequest : requests) {
+            Log.d("alex", "id: "+ joinTripRequest.getOffer().getId());
             subscriptions.add(tripsResource
                     .computeNavigationResultForOffer(joinTripRequest.getOffer().getId())
                     .subscribe(new Action1<NavigationResult>() {
@@ -415,13 +416,18 @@ public class JoinDrivingFragment extends SubscriptionFragment {
                                 getActivity().runOnUiThread(new Runnable() {
                                     @Override
                                     public void run() {
-                                        List<RouteLocation> polyline = navigationResult.getRoute().getPolylineWaypointsForUser(joinTripRequest.getOffer().getDriver(), navigationResult.getUserWayPoints());
-                                        List<LatLng> polylinePoints = new ArrayList<LatLng>();
-                                        for(RouteLocation loc : polyline) {
-                                            polylinePoints.add(new LatLng(loc.getLat(), loc.getLng()));
+                                        try {
+                                            List<RouteLocation> polyline = navigationResult.getRoute().getPolylineWaypointsForUser(joinTripRequest.getSuperTrip().getQuery().getPassenger(), navigationResult.getUserWayPoints());
+                                            //List<RouteLocation> polyline = navigationResult.getRoute().getPolylineWaypointsForUser(joinTripRequest.getOffer().getDriver(), navigationResult.getUserWayPoints());
+                                            List<LatLng> polylinePoints = new ArrayList<LatLng>();
+                                            for(RouteLocation loc : polyline) {
+                                                polylinePoints.add(new LatLng(loc.getLat(), loc.getLng()));
+                                            }
+                                            googleMap.addPolyline(new PolylineOptions().addAll(polylinePoints).color(colors.get(colorPosition % colors.size())));
+                                            colorPosition++;
+                                        } catch (IllegalArgumentException ex) {
+                                            CrashPopup.show(getActivity(), ex);
                                         }
-                                        googleMap.addPolyline(new PolylineOptions().addAll(polylinePoints).color(colors.get(colorPosition % colors.size())));
-                                        colorPosition++;
                                     }
                                 });
                             }
