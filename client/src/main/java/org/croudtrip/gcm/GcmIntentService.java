@@ -33,6 +33,7 @@ import org.croudtrip.Constants;
 import org.croudtrip.R;
 import org.croudtrip.activities.MainActivity;
 import org.croudtrip.api.TripsResource;
+import org.croudtrip.api.directions.RouteLocation;
 import org.croudtrip.api.gcm.GcmConstants;
 import org.croudtrip.api.trips.JoinTripRequest;
 import org.croudtrip.api.trips.RunningTripQuery;
@@ -247,11 +248,19 @@ public class GcmIntentService extends RoboIntentService {
                             @Override
                             public void call(JoinTripRequest joinTripRequest) {
 
-                                final SharedPreferences prefs = getApplicationContext().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
-                                SharedPreferences.Editor editor = prefs.edit();
-                                editor.putBoolean(Constants.SHARED_PREF_KEY_SEARCHING, true);
-                                editor.putBoolean(Constants.SHARED_PREF_KEY_WAITING, false);
-                                editor.apply();
+                                //Check the two starting positions. If they are the same, this was the declined message from the first driver
+                                RouteLocation r1 = joinTripRequest.getSuperTrip().getQuery().getStartLocation();
+                                RouteLocation r2 = joinTripRequest.getSubQuery().getStartLocation();
+                                boolean firstDriver = r1.equals(r2);
+
+                                //save the canceled waiting status only if the first driver canceled
+                                if (firstDriver) {
+                                    final SharedPreferences prefs = getApplicationContext().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
+                                    SharedPreferences.Editor editor = prefs.edit();
+                                    editor.putBoolean(Constants.SHARED_PREF_KEY_SEARCHING, true);
+                                    editor.putBoolean(Constants.SHARED_PREF_KEY_WAITING, false);
+                                    editor.apply();
+                                }
 
                                 Bundle extras = new Bundle();
                                 TripQuery query = joinTripRequest.getSuperTrip().getQuery();
@@ -262,10 +271,13 @@ public class GcmIntentService extends RoboIntentService {
                                 extras.putInt(JoinDispatchFragment.KEY_MAX_WAITING_TIME, (int) query.getMaxWaitingTimeInSeconds());
 
                                 if(LifecycleHandler.isApplicationInForeground()) {
-                                    Toast.makeText(getApplicationContext(), getString(R.string.join_request_declined_msg), Toast.LENGTH_SHORT).show();
-                                    Intent startingIntent = new Intent(Constants.EVENT_CHANGE_JOIN_UI);
-                                    startingIntent.putExtras(extras);
-                                    LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(startingIntent);
+                                    //go back to search UI only if the first driver canceled
+                                    if (firstDriver) {
+                                        Toast.makeText(getApplicationContext(), getString(R.string.join_request_declined_msg), Toast.LENGTH_SHORT).show();
+                                        Intent startingIntent = new Intent(Constants.EVENT_CHANGE_JOIN_UI);
+                                        startingIntent.putExtras(extras);
+                                        LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(startingIntent);
+                                    }
                                 } else {
                                     // create notification for the user
                                     Intent startingIntent = new Intent(getApplicationContext(), MainActivity.class);
@@ -302,13 +314,22 @@ public class GcmIntentService extends RoboIntentService {
                             @Override
                             public void call(JoinTripRequest joinTripRequest) {
 
-                                final SharedPreferences prefs = getApplicationContext().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
-                                SharedPreferences.Editor editor = prefs.edit();
-                                editor.putBoolean(Constants.SHARED_PREF_KEY_ACCEPTED, true);
-                                editor.putBoolean(Constants.SHARED_PREF_KEY_WAITING, false);
-                                editor.putBoolean(Constants.SHARED_PREF_KEY_SEARCHING, false);
-                                editor.putLong(Constants.SHARED_PREF_KEY_TRIP_ID, joinTripRequest.getId());
-                                editor.apply();
+                                //Check the two starting positions. If they are the same, this was the declined message from the first driver
+                                RouteLocation r1 = joinTripRequest.getSuperTrip().getQuery().getStartLocation();
+                                RouteLocation r2 = joinTripRequest.getSubQuery().getStartLocation();
+                                boolean firstDriver = r1.equals(r2);
+
+                                //save the accepted status only if the first driver accepted
+                                if (firstDriver) {
+                                    final SharedPreferences prefs = getApplicationContext().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
+                                    SharedPreferences.Editor editor = prefs.edit();
+                                    editor.putBoolean(Constants.SHARED_PREF_KEY_ACCEPTED, true);
+                                    editor.putBoolean(Constants.SHARED_PREF_KEY_WAITING, false);
+                                    editor.putBoolean(Constants.SHARED_PREF_KEY_SEARCHING, false);
+                                    editor.putLong(Constants.SHARED_PREF_KEY_TRIP_ID, joinTripRequest.getId());
+                                    editor.apply();
+                                }
+
 
                                 Bundle extras = new Bundle();
                                 ObjectMapper mapper = new ObjectMapper();
@@ -319,12 +340,15 @@ public class GcmIntentService extends RoboIntentService {
                                     e.printStackTrace();
                                 }
 
+
                                 if(LifecycleHandler.isApplicationInForeground()) {
-                                    Intent startingIntent = new Intent(Constants.EVENT_CHANGE_JOIN_UI);
-                                    startingIntent.putExtras(extras);
-                                    LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(startingIntent);
+                                    if (firstDriver) {
+                                        Intent startingIntent = new Intent(Constants.EVENT_CHANGE_JOIN_UI);
+                                        startingIntent.putExtras(extras);
+                                        LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(startingIntent);
+                                    }
                                 } else {
-                                    // create notification for the user
+                                    // create notification for the user only if the first driver accepts
                                     Intent startingIntent = new Intent(getApplicationContext(), MainActivity.class);
                                     startingIntent.putExtras(extras);
                                     PendingIntent contentIntent = PendingIntent.getActivity(getApplicationContext(), 0, startingIntent, PendingIntent.FLAG_UPDATE_CURRENT);
@@ -332,7 +356,6 @@ public class GcmIntentService extends RoboIntentService {
                                                     joinTripRequest.getOffer().getDriver().getFirstName()),
                                             GcmConstants.GCM_NOTIFICATION_REQUEST_ACCEPTED_ID, contentIntent);
                                 }
-
                             }
                         },
                         new Action1<Throwable>() {

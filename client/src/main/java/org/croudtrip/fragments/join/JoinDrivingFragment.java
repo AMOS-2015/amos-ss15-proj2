@@ -404,7 +404,6 @@ public class JoinDrivingFragment extends SubscriptionFragment {
         colorPosition = 0;
         googleMap.clear();
         for (final JoinTripRequest joinTripRequest : requests) {
-            Log.d("alex", "id: "+ joinTripRequest.getOffer().getId());
             subscriptions.add(tripsResource
                     .computeNavigationResultForOffer(joinTripRequest.getOffer().getId())
                     .subscribe(new Action1<NavigationResult>() {
