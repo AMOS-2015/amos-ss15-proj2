@@ -21,14 +21,12 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
-import android.location.Location;
 import android.nfc.NfcAdapter;
 import android.nfc.NfcManager;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -43,27 +41,17 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.android.gms.maps.CameraUpdate;
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.maps.model.PolylineOptions;
 import com.pnikosis.materialishprogress.ProgressWheel;
 
 import org.croudtrip.Constants;
 import org.croudtrip.R;
 import org.croudtrip.api.TripsResource;
-import org.croudtrip.api.directions.NavigationResult;
-import org.croudtrip.api.directions.RouteLocation;
 import org.croudtrip.api.trips.JoinTripRequest;
 import org.croudtrip.api.trips.JoinTripRequestUpdate;
 import org.croudtrip.api.trips.JoinTripRequestUpdateType;
-import org.croudtrip.api.trips.TripOffer;
-import org.croudtrip.api.trips.UserWayPoint;
 import org.croudtrip.fragments.SubscriptionFragment;
 import org.croudtrip.trip.MyTripPassengerDriversAdapter;
 import org.croudtrip.utils.CrashCallback;
@@ -80,10 +68,8 @@ import java.util.TimeZone;
 import javax.inject.Inject;
 
 import it.neokree.materialnavigationdrawer.MaterialNavigationDrawer;
-import retrofit.Callback;
-import retrofit.RetrofitError;
-import retrofit.client.Response;
 import roboguice.inject.InjectView;
+import rx.Subscriber;
 import rx.Subscription;
 import rx.functions.Action1;
 import timber.log.Timber;
@@ -139,7 +125,7 @@ public class JoinDrivingFragment extends SubscriptionFragment {
     @Inject
     TripsResource tripsResource;
 
-    private JoinTripRequest cachedRequest;
+    private List<JoinTripRequest> cachedRequests;
     private ArrayList<JoinTripRequestUpdateType> simpleRequestUpdateCache;
 
     private NfcAdapter nfcAdapter;
@@ -150,9 +136,6 @@ public class JoinDrivingFragment extends SubscriptionFragment {
 
     @InjectView(R.id.rv_join_trip_driving_drivers)
     private RecyclerView recyclerView;
-
-    private GoogleMap googleMap;
-
 
 
 
@@ -215,7 +198,6 @@ public class JoinDrivingFragment extends SubscriptionFragment {
         // Get the route to display it on the map
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager()
                 .findFragmentById(R.id.f_join_trip_driving_map);
-        googleMap = mapFragment.getMap();
 
         // Remove the header from the layout. Otherwise it exists twice
         ((ViewManager) view).removeView(header);
@@ -245,7 +227,6 @@ public class JoinDrivingFragment extends SubscriptionFragment {
         });
 
         // TODO: do things with the map here or down further
-
 
 
         final SharedPreferences prefs = getActivity().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
@@ -328,70 +309,54 @@ public class JoinDrivingFragment extends SubscriptionFragment {
         Get the current request either from the arguments (trip got downloaded somewhere else, so we dont have to
         do it again here)´or directly from the server
          */
-        if (getArguments() != null) {
-            JoinTripRequest request = null;
+        // TODO: cache list of requests
+        if (false && getArguments() != null) {
+            List<JoinTripRequest> requests = null;
             ObjectMapper mapper = new ObjectMapper();
             try {
-                request = mapper.readValue(getArguments().getString(JoinDispatchFragment.KEY_JOIN_TRIP_REQUEST_RESULT), JoinTripRequest.class);
+                requests = mapper.readValue(getArguments().getString(JoinDispatchFragment.KEY_JOIN_TRIP_REQUEST_RESULT), new TypeReference<List<JoinTripRequest>>(){});
             } catch (IOException e) {
                 CrashPopup.show(getActivity(), e);
                 Timber.e("Could not parse JoinTripRequest");
                 e.printStackTrace();
             }
-            showJoinedTrip(request);
-            cachedRequest = request;
+            showJoinedTrip(requests);
+            cachedRequests = requests;
         } else {
-            tripsResource.getJoinRequests(false)
+            subscriptions.add(tripsResource.getJoinRequests(false)
                     .compose(new DefaultTransformer<List<JoinTripRequest>>())
-                    .subscribe(new Action1<List<JoinTripRequest>>() {
-                        @Override
-                        public void call(List<JoinTripRequest> jtr) {
-                            if (jtr == null || jtr.isEmpty()) {
-                                Timber.d("Currently there are no trips running.");
-                                return;
-                            }
-
-                            //Update the view with the received data
-                            if (isAdded()) {
-                                showJoinedTrip(jtr.get(0));
-                            }
-                        }
-                    }, new CrashCallback(getActivity()) {
-                        @Override
-                        public void call(Throwable throwable) {
-                            super.call(throwable);
-                            Timber.e(throwable.getMessage());
-                        }
-                    });
+                    .subscribe(new LoadRequestSubscriber()));
         }
     }
-
 
     /*
     Parse and show information about the current trip, like price, driver and cost
      */
-    private void showJoinedTrip(JoinTripRequest request) {
+    private void showJoinedTrip(List<JoinTripRequest> requests) {
 
-        if (request == null) {
+        if (requests == null || requests.isEmpty()) {
+            Timber.e("List<JoinTripRequest> is empty or doesn't exist");
             return;
         }
 
-        drawRoutesOnMap(request);
-        progressBarDrivers.setVisibility(View.GONE);
-
         // Show drivers
-        adapter.updateRequest(request);
+        for(JoinTripRequest r : requests) {
+            adapter.updateRequest(r);
+        }
+
+        progressBarDrivers.setVisibility(View.GONE);
 
         // Show correct plural of drivers
         int numDrivers = adapter.getNumDrivers();
         Resources res = getResources();
         tvMyDrivers.setText(res.getQuantityString(R.plurals.join_trip_results_my_drivers, numDrivers, numDrivers));
 
+        // TODO: for first/next driver
         // Show arrival time
         String dateAsString = "";
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeZone(TimeZone.getDefault());
-        calendar.setTimeInMillis(1000 * (request.getEstimatedArrivalTimestamp()-18540));
+        calendar.setTimeInMillis(1000 * (requests.get(0).getEstimatedArrivalTimestamp()-18540));
 
         //Display remaining time in the format hh:mm
         if ((calendar.get(Calendar.HOUR_OF_DAY) < 10) && (calendar.get((Calendar.MINUTE)) < 10))
@@ -404,58 +369,6 @@ public class JoinDrivingFragment extends SubscriptionFragment {
             dateAsString = calendar.get(Calendar.HOUR_OF_DAY) + ":" + calendar.get(Calendar.MINUTE);
 
         tvPickupTime.setText(dateAsString);
-    }
-
-    private void drawRoutesOnMap(JoinTripRequest request /*TripOffer offer, NavigationResult navigationResult*/) {
-
-        tripsResource.getJoinTripRequestsForSuperTrip(request.getId(), new Callback<List<JoinTripRequest>>() {
-            @Override
-            public void success(List<JoinTripRequest> joinTripRequests, Response response) {
-                Log.d("alex", "succes");
-                //joinTripRequests.get(0).getOffer().
-            }
-
-            @Override
-            public void failure(RetrofitError error) {
-                Log.d("alex", "error " + error.getMessage());
-            }
-        });
-
-        /*googleMap.clear();
-
-
-        List<RouteLocation> polyline = navigationResult.getRoute().getPolylineWaypointsForUser(offer.getDriver(), navigationResult.getUserWayPoints());
-        List<LatLng> polylinePoints = new ArrayList<LatLng>();
-        for( RouteLocation loc : polyline )
-            polylinePoints.add( new LatLng( loc.getLat(), loc.getLng() ) );
-
-        Timber.d("polyline: " + polyline);
-        // Show route information on the map
-        googleMap.addPolyline(new PolylineOptions().addAll( polylinePoints ) );
-        googleMap.setMyLocationEnabled(true);
-
-        for( UserWayPoint userWp : navigationResult.getUserWayPoints() ){
-            if( !userWp.getUser().equals(offer.getDriver()) ){
-                googleMap.addMarker(
-                        new MarkerOptions()
-                                .position( new LatLng( userWp.getLocation().getLat(), userWp.getLocation().getLng()))
-                                .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_marker))
-                                .anchor(0.5f, 0.5f)
-                                .flat(true)
-                );
-            }
-        }
-
-        // Move camera to current position
-        Location location = locationUpdater.getLastLocation();
-        if (location == null)
-            return;
-
-        LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
-        CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(latLng, 10);
-        googleMap.animateCamera(cameraUpdate);
-
-        mapProgressBar.setVisibility(View.GONE);*/
     }
 
     /*
@@ -577,7 +490,7 @@ public class JoinDrivingFragment extends SubscriptionFragment {
         flMap.setVisibility(View.VISIBLE);
         btnReachedDestination.setVisibility(View.VISIBLE);
 
-        showJoinedTrip(cachedRequest);
+        showJoinedTrip(cachedRequests);
     }
 
     @Override
@@ -654,4 +567,61 @@ public class JoinDrivingFragment extends SubscriptionFragment {
             }
         }
     };
+
+
+    //*************************** Inner classes ********************************//
+
+    /**
+     * This Subscriber loads the current JoinTripRequest (SuperTripRequest)
+     */
+    private class LoadRequestSubscriber extends Subscriber<List<JoinTripRequest>> {
+
+        @Override
+        public void onNext(final List<JoinTripRequest> requests) {
+
+            if (requests == null || requests.isEmpty()) {
+                Timber.d("Currently there are no trips running.");
+                return;
+            }
+
+            subscriptions.add(tripsResource
+                    .getJoinTripRequestsForSuperTrip(requests.get(0).getSuperTrip().getId())
+                    .subscribe(new Action1<List<JoinTripRequest>>() {
+                        @Override
+                        public void call(final List<JoinTripRequest> joinTripRequests) {
+
+                            Timber.d("Got List of JoinTripRequests");
+                            cachedRequests = joinTripRequests;
+
+                            //Update the view with the received data
+                            //if (isAdded()) {
+                            getActivity().runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    showJoinedTrip(joinTripRequests);
+                                }
+                            });
+                            //}
+
+                        }
+                    }, new CrashCallback(getActivity()) {
+                        @Override
+                        public void call(Throwable throwable) {
+                            super.call(throwable);
+                            Timber.e("No List<JoinTripRequest> available: " + throwable.getMessage());
+                        }
+                    }));
+        }
+
+
+        @Override
+        public void onCompleted() {}
+
+        @Override
+        public void onError(Throwable throwable) {
+            progressBarDrivers.setVisibility(View.GONE);
+            Timber.e(throwable.getMessage());
+            Toast.makeText(getActivity(), getString(R.string.join_trip_results_error), Toast.LENGTH_LONG).show();
+        }
+    }
 }
