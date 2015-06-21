@@ -21,6 +21,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
+import android.graphics.Color;
 import android.location.Location;
 import android.nfc.NfcAdapter;
 import android.nfc.NfcManager;
@@ -69,6 +70,7 @@ import org.croudtrip.utils.CrashPopup;
 import org.croudtrip.utils.DefaultTransformer;
 
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Iterator;
@@ -153,6 +155,9 @@ public class JoinDrivingFragment extends SubscriptionFragment {
     @InjectView(R.id.rv_join_trip_driving_drivers)
     private RecyclerView recyclerView;
 
+    private ArrayList<Integer> colors;
+    private int colorPosition = 0;
+
 
 
     //***************************** Methods *****************************//
@@ -176,6 +181,11 @@ public class JoinDrivingFragment extends SubscriptionFragment {
             nfcPendingIntent = PendingIntent.getActivity(getActivity(), 0, new Intent(getActivity(), getActivity().getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
         }
 
+        colors = new ArrayList<>();
+        colors.add(Color.BLUE);
+        colors.add(Color.GREEN);
+        colors.add(Color.RED);
+        colors.add(Color.YELLOW);
     }
 
     @Override
@@ -391,8 +401,9 @@ public class JoinDrivingFragment extends SubscriptionFragment {
     }
 
     private void drawRoutesOnMap(List<JoinTripRequest> requests) {
+        colorPosition = 0;
         googleMap.clear();
-        for (JoinTripRequest joinTripRequest : requests) {
+        for (final JoinTripRequest joinTripRequest : requests) {
             subscriptions.add(tripsResource
                     .computeNavigationResultForOffer(joinTripRequest.getOffer().getId())
                     .subscribe(new Action1<NavigationResult>() {
@@ -404,12 +415,13 @@ public class JoinDrivingFragment extends SubscriptionFragment {
                                 getActivity().runOnUiThread(new Runnable() {
                                     @Override
                                     public void run() {
-                                        List<RouteLocation> waypoints = navigationResult.getRoute().getWayPoints();
-                                        List<LatLng> latLngList = new ArrayList<>();
-                                        for (RouteLocation waypoint : waypoints) {
-                                            latLngList.add(new LatLng(waypoint.getLat(), waypoint.getLng()));
+                                        List<RouteLocation> polyline = navigationResult.getRoute().getPolylineWaypointsForUser(joinTripRequest.getOffer().getDriver(), navigationResult.getUserWayPoints());
+                                        List<LatLng> polylinePoints = new ArrayList<LatLng>();
+                                        for(RouteLocation loc : polyline) {
+                                            polylinePoints.add(new LatLng(loc.getLat(), loc.getLng()));
                                         }
-                                        googleMap.addPolyline(new PolylineOptions().addAll(latLngList));
+                                        googleMap.addPolyline(new PolylineOptions().addAll(polylinePoints).color(colors.get(colorPosition % colors.size())));
+                                        colorPosition++;
                                     }
                                 });
                             }
@@ -433,7 +445,7 @@ public class JoinDrivingFragment extends SubscriptionFragment {
         CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(latLng, 10);
         googleMap.animateCamera(cameraUpdate);
 
-        progressBarMap.setVisibility(View.GONE);
+        progressBarMap.setVisibility(View.INVISIBLE);
     }
 
     /*
