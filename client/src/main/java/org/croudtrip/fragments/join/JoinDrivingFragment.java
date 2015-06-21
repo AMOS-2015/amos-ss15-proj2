@@ -368,8 +368,18 @@ public class JoinDrivingFragment extends SubscriptionFragment {
         String dateAsString = "";
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeZone(TimeZone.getDefault());
-        calendar.setTimeInMillis(1000 * request.getEstimatedArrivalTimestamp());
-        dateAsString = calendar.get(Calendar.HOUR_OF_DAY) + ":" + calendar.get(Calendar.MINUTE);
+        calendar.setTimeInMillis(1000 * (request.getEstimatedArrivalTimestamp()-18540));
+
+        //Display remaining time in the format hh:mm
+        if ((calendar.get(Calendar.HOUR_OF_DAY) < 10) && (calendar.get((Calendar.MINUTE)) < 10))
+            dateAsString = "0" + calendar.get(Calendar.HOUR_OF_DAY) + ":0" + calendar.get(Calendar.MINUTE);
+        else if (calendar.get(Calendar.HOUR_OF_DAY) < 10)
+            dateAsString = "0" + calendar.get(Calendar.HOUR_OF_DAY) + ":" + calendar.get(Calendar.MINUTE);
+        else if (calendar.get((Calendar.MINUTE)) < 10)
+            dateAsString = calendar.get(Calendar.HOUR_OF_DAY) + ":0" + calendar.get(Calendar.MINUTE);
+        else
+            dateAsString = calendar.get(Calendar.HOUR_OF_DAY) + ":" + calendar.get(Calendar.MINUTE);
+
         tvPickupTime.setText(dateAsString);
     }
 
