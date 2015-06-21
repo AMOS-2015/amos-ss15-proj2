@@ -41,6 +41,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.pnikosis.materialishprogress.ProgressWheel;
@@ -68,6 +69,7 @@ import javax.inject.Inject;
 
 import it.neokree.materialnavigationdrawer.MaterialNavigationDrawer;
 import roboguice.inject.InjectView;
+import rx.Subscriber;
 import rx.Subscription;
 import rx.functions.Action1;
 import timber.log.Timber;
@@ -123,7 +125,7 @@ public class JoinDrivingFragment extends SubscriptionFragment {
     @Inject
     TripsResource tripsResource;
 
-    private JoinTripRequest cachedRequest;
+    private List<JoinTripRequest> cachedRequests;
     private ArrayList<JoinTripRequestUpdateType> simpleRequestUpdateCache;
 
     private NfcAdapter nfcAdapter;
@@ -307,68 +309,54 @@ public class JoinDrivingFragment extends SubscriptionFragment {
         Get the current request either from the arguments (trip got downloaded somewhere else, so we dont have to
         do it again here)´or directly from the server
          */
-        if (getArguments() != null) {
-            JoinTripRequest request = null;
+        // TODO: cache list of requests
+        if (false && getArguments() != null) {
+            List<JoinTripRequest> requests = null;
             ObjectMapper mapper = new ObjectMapper();
             try {
-                request = mapper.readValue(getArguments().getString(JoinDispatchFragment.KEY_JOIN_TRIP_REQUEST_RESULT), JoinTripRequest.class);
+                requests = mapper.readValue(getArguments().getString(JoinDispatchFragment.KEY_JOIN_TRIP_REQUEST_RESULT), new TypeReference<List<JoinTripRequest>>(){});
             } catch (IOException e) {
                 CrashPopup.show(getActivity(), e);
                 Timber.e("Could not parse JoinTripRequest");
                 e.printStackTrace();
             }
-            showJoinedTrip(request);
-            cachedRequest = request;
+            showJoinedTrip(requests);
+            cachedRequests = requests;
         } else {
-            tripsResource.getJoinRequests(false)
+            subscriptions.add(tripsResource.getJoinRequests(false)
                     .compose(new DefaultTransformer<List<JoinTripRequest>>())
-                    .subscribe(new Action1<List<JoinTripRequest>>() {
-                        @Override
-                        public void call(List<JoinTripRequest> jtr) {
-                            if (jtr == null || jtr.isEmpty()) {
-                                Timber.d("Currently there are no trips running.");
-                                return;
-                            }
-
-                            //Update the view with the received data
-                            if (isAdded()) {
-                                showJoinedTrip(jtr.get(0));
-                            }
-                        }
-                    }, new CrashCallback(getActivity()) {
-                        @Override
-                        public void call(Throwable throwable) {
-                            super.call(throwable);
-                            Timber.e(throwable.getMessage());
-                        }
-                    });
+                    .subscribe(new LoadRequestSubscriber()));
         }
     }
 
     /*
     Parse and show information about the current trip, like price, driver and cost
      */
-    private void showJoinedTrip(JoinTripRequest request) {
+    private void showJoinedTrip(List<JoinTripRequest> requests) {
 
-        if (request == null) {
+        if (requests == null || requests.isEmpty()) {
+            Timber.e("List<JoinTripRequest> is empty or doesn't exist");
             return;
         }
 
-        progressBarDrivers.setVisibility(View.GONE);
-
         // Show drivers
-        adapter.updateRequest(request);
+        for(JoinTripRequest r : requests) {
+            adapter.updateRequest(r);
+        }
+
+        progressBarDrivers.setVisibility(View.GONE);
 
         // Show correct plural of drivers
         int numDrivers = adapter.getNumDrivers();
         Resources res = getResources();
         tvMyDrivers.setText(res.getQuantityString(R.plurals.join_trip_results_my_drivers, numDrivers, numDrivers));
 
+        // TODO: for first/next driver
         // Show arrival time
         String dateAsString = "";
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeZone(TimeZone.getDefault());
-        calendar.setTimeInMillis(1000 * (request.getEstimatedArrivalTimestamp()-18540));
+        calendar.setTimeInMillis(1000 * (requests.get(0).getEstimatedArrivalTimestamp()-18540));
 
         //Display remaining time in the format hh:mm
         if ((calendar.get(Calendar.HOUR_OF_DAY) < 10) && (calendar.get((Calendar.MINUTE)) < 10))
@@ -502,7 +490,7 @@ public class JoinDrivingFragment extends SubscriptionFragment {
         flMap.setVisibility(View.VISIBLE);
         btnReachedDestination.setVisibility(View.VISIBLE);
 
-        showJoinedTrip(cachedRequest);
+        showJoinedTrip(cachedRequests);
     }
 
     @Override
@@ -579,4 +567,61 @@ public class JoinDrivingFragment extends SubscriptionFragment {
             }
         }
     };
+
+
+    //*************************** Inner classes ********************************//
+
+    /**
+     * This Subscriber loads the current JoinTripRequest (SuperTripRequest)
+     */
+    private class LoadRequestSubscriber extends Subscriber<List<JoinTripRequest>> {
+
+        @Override
+        public void onNext(final List<JoinTripRequest> requests) {
+
+            if (requests == null || requests.isEmpty()) {
+                Timber.d("Currently there are no trips running.");
+                return;
+            }
+
+            subscriptions.add(tripsResource
+                    .getJoinTripRequestsForSuperTrip(requests.get(0).getSuperTrip().getId())
+                    .subscribe(new Action1<List<JoinTripRequest>>() {
+                        @Override
+                        public void call(final List<JoinTripRequest> joinTripRequests) {
+
+                            Timber.d("Got List of JoinTripRequests");
+                            cachedRequests = joinTripRequests;
+
+                            //Update the view with the received data
+                            //if (isAdded()) {
+                            getActivity().runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    showJoinedTrip(joinTripRequests);
+                                }
+                            });
+                            //}
+
+                        }
+                    }, new CrashCallback(getActivity()) {
+                        @Override
+                        public void call(Throwable throwable) {
+                            super.call(throwable);
+                            Timber.e("No List<JoinTripRequest> available: " + throwable.getMessage());
+                        }
+                    }));
+        }
+
+
+        @Override
+        public void onCompleted() {}
+
+        @Override
+        public void onError(Throwable throwable) {
+            progressBarDrivers.setVisibility(View.GONE);
+            Timber.e(throwable.getMessage());
+            Toast.makeText(getActivity(), getString(R.string.join_trip_results_error), Toast.LENGTH_LONG).show();
+        }
+    }
 }

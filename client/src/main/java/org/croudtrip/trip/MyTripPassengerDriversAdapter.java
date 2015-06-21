@@ -35,6 +35,8 @@ import org.croudtrip.api.trips.TripOffer;
 import java.util.ArrayList;
 import java.util.List;
 
+import timber.log.Timber;
+
 /**
  * This adapter manages all drivers for a super trip in a list such that the passenger can scroll
  * through them in his "My Trip" view.
@@ -267,6 +269,7 @@ public class MyTripPassengerDriversAdapter extends RecyclerView.Adapter<Recycler
     public void updateRequest(JoinTripRequest request) {
 
         if (request == null) {
+            Timber.e("Request is null");
             return;
         }
 
