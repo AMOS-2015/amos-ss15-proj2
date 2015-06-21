@@ -345,8 +345,8 @@ public class TripsManager {
             // update join request
             JoinTripRequest joinTripRequest = new JoinTripRequest(
                     0,
-                    tripReservation.getReservations().get(0).getTotalPriceInCents(),
-                    tripReservation.getReservations().get(0).getPricePerKmInCents(),
+                    tripReservation.getReservations().get(i).getTotalPriceInCents(),
+                    tripReservation.getReservations().get(i).getPricePerKmInCents(),
                     arrivalTimestamp,
                     match.getOffer(),
                     JoinTripStatus.PASSENGER_ACCEPTED,
