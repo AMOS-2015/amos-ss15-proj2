@@ -44,8 +44,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -69,8 +67,6 @@ import org.croudtrip.utils.CrashCallback;
 import org.croudtrip.utils.CrashPopup;
 import org.croudtrip.utils.DefaultTransformer;
 
-import java.io.IOException;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Iterator;
@@ -140,7 +136,6 @@ public class JoinDrivingFragment extends SubscriptionFragment {
     @Inject
     private LocationUpdater locationUpdater;
 
-    private List<JoinTripRequest> cachedRequests;
     private ArrayList<JoinTripRequestUpdateType> simpleRequestUpdateCache;
 
     private NfcAdapter nfcAdapter;
@@ -253,13 +248,11 @@ public class JoinDrivingFragment extends SubscriptionFragment {
             }
         });
 
-        // TODO: do things with the map here or down further
-
 
         final SharedPreferences prefs = getActivity().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
 
         if (prefs.getBoolean(Constants.SHARED_PREF_KEY_WAITING, false)) {
-            //passenger is currently waiting for the drivers approval
+            // WAITING for ACCEPT: passenger is currently waiting for the drivers approval
 
             setButtonInactive(btnReportDriver);
             setButtonInactive(btnReachedDestination);
@@ -272,7 +265,7 @@ public class JoinDrivingFragment extends SubscriptionFragment {
 
 
         } else if (prefs.getBoolean(Constants.SHARED_PREF_KEY_DRIVING, false)) {
-            //passenger is currently on a trip already in the car
+            // IN THE CAR: passenger is currently on a trip already in the car
 
             setButtonInactive(btnCancelTrip);
             setButtonActive(btnReachedDestination);
@@ -291,7 +284,7 @@ public class JoinDrivingFragment extends SubscriptionFragment {
                 }
             });
         } else {
-            //passenger is currently waiting for his driver but already accepted
+            // WAITING for DRIVER: passenger is currently waiting for his driver but already accepted
 
             setButtonActive(btnCancelTrip);
             setButtonActive(btnReachedDestination);
@@ -331,29 +324,17 @@ public class JoinDrivingFragment extends SubscriptionFragment {
             }
         });
 
+        loadRequest();
+    }
 
-        /*
-        Get the current request either from the arguments (trip got downloaded somewhere else, so we dont have to
-        do it again here)´or directly from the server
-         */
-        // TODO: cache list of requests
-        if (false && getArguments() != null) {
-            List<JoinTripRequest> requests = null;
-            ObjectMapper mapper = new ObjectMapper();
-            try {
-                requests = mapper.readValue(getArguments().getString(JoinDispatchFragment.KEY_JOIN_TRIP_REQUEST_RESULT), new TypeReference<List<JoinTripRequest>>(){});
-            } catch (IOException e) {
-                CrashPopup.show(getActivity(), e);
-                Timber.e("Could not parse JoinTripRequest");
-                e.printStackTrace();
-            }
-            showJoinedTrip(requests);
-            cachedRequests = requests;
-        } else {
-            subscriptions.add(tripsResource.getJoinRequests(false)
-                    .compose(new DefaultTransformer<List<JoinTripRequest>>())
-                    .subscribe(new LoadRequestSubscriber()));
-        }
+
+    /**
+     * Downloads the current(super-)trip from the server
+     */
+    private void loadRequest(){
+        subscriptions.add(tripsResource.getJoinRequests(false)
+                .compose(new DefaultTransformer<List<JoinTripRequest>>())
+                .subscribe(new LoadRequestSubscriber()));
     }
 
     /*
@@ -366,7 +347,9 @@ public class JoinDrivingFragment extends SubscriptionFragment {
             return;
         }
 
-        drawRoutesOnMap(requests);
+        if(flMap.getVisibility() == View.VISIBLE) {
+            drawRoutesOnMap(requests);
+        }
 
         // Show drivers
         for(JoinTripRequest r : requests) {
@@ -404,7 +387,6 @@ public class JoinDrivingFragment extends SubscriptionFragment {
         colorPosition = 0;
         googleMap.clear();
         for (final JoinTripRequest joinTripRequest : requests) {
-            Log.d("alex", "id: "+ joinTripRequest.getOffer().getId());
             subscriptions.add(tripsResource
                     .computeNavigationResultForOffer(joinTripRequest.getOffer().getId())
                     .subscribe(new Action1<NavigationResult>() {
@@ -417,14 +399,21 @@ public class JoinDrivingFragment extends SubscriptionFragment {
                                     @Override
                                     public void run() {
                                         try {
-                                            List<RouteLocation> polyline = navigationResult.getRoute().getPolylineWaypointsForUser(joinTripRequest.getSuperTrip().getQuery().getPassenger(), navigationResult.getUserWayPoints());
-                                            //List<RouteLocation> polyline = navigationResult.getRoute().getPolylineWaypointsForUser(joinTripRequest.getOffer().getDriver(), navigationResult.getUserWayPoints());
+                                            List<RouteLocation> polyline = navigationResult.getRoute()
+                                                    .getPolylineWaypointsForUser(
+                                                            joinTripRequest.getSuperTrip().getQuery().getPassenger(),
+                                                            navigationResult.getUserWayPoints());
+
                                             List<LatLng> polylinePoints = new ArrayList<LatLng>();
                                             for(RouteLocation loc : polyline) {
                                                 polylinePoints.add(new LatLng(loc.getLat(), loc.getLng()));
                                             }
-                                            googleMap.addPolyline(new PolylineOptions().addAll(polylinePoints).color(colors.get(colorPosition % colors.size())));
+
+                                            googleMap.addPolyline(new PolylineOptions()
+                                                    .addAll(polylinePoints).color(colors.get(colorPosition % colors.size())));
+
                                             colorPosition++;
+
                                         } catch (IllegalArgumentException ex) {
                                             CrashPopup.show(getActivity(), ex);
                                         }
@@ -572,8 +561,6 @@ public class JoinDrivingFragment extends SubscriptionFragment {
         llDriving.setVisibility(View.VISIBLE);
         flMap.setVisibility(View.VISIBLE);
         btnReachedDestination.setVisibility(View.VISIBLE);
-
-        showJoinedTrip(cachedRequests);
     }
 
     @Override
@@ -674,7 +661,6 @@ public class JoinDrivingFragment extends SubscriptionFragment {
                         public void call(final List<JoinTripRequest> joinTripRequests) {
 
                             Timber.d("Got List of JoinTripRequests");
-                            cachedRequests = joinTripRequests;
 
                             //Update the view with the received data
                             //if (isAdded()) {
