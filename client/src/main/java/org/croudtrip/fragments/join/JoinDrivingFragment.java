@@ -170,8 +170,10 @@ public class JoinDrivingFragment extends SubscriptionFragment {
         LocalBroadcastManager.getInstance(getActivity()).registerReceiver(nfcScannedReceiver,
                 new IntentFilter(Constants.EVENT_NFC_TAG_SCANNED));
 
-        LocalBroadcastManager.getInstance(getActivity()).registerReceiver(secondaryDriverAcceptedReceiver,
-                new IntentFilter(Constants.EVENT_SECONDARY_DRIVER_ACCEPTED));
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(Constants.EVENT_SECONDARY_DRIVER_ACCEPTED);
+        filter.addAction(Constants.EVENT_SECONDARY_DRIVER_DECLINED);
+        LocalBroadcastManager.getInstance(getActivity()).registerReceiver(secondaryDriverAcceptedDeclinedReceiver, filter);
 
         nfcAdapter = NfcAdapter.getDefaultAdapter(getActivity());
         if (nfcAdapter != null) {
@@ -597,7 +599,7 @@ public class JoinDrivingFragment extends SubscriptionFragment {
                 .unregisterReceiver(joinRequestExpiredReceiver);
 
         LocalBroadcastManager.getInstance(getActivity().getApplicationContext())
-                .unregisterReceiver(secondaryDriverAcceptedReceiver);
+                .unregisterReceiver(secondaryDriverAcceptedDeclinedReceiver);
 
         /*
         Try to resend every failed server call. This will be tried only once.
@@ -645,10 +647,10 @@ public class JoinDrivingFragment extends SubscriptionFragment {
         }
     };
 
-    private BroadcastReceiver secondaryDriverAcceptedReceiver = new BroadcastReceiver() {
+    private BroadcastReceiver secondaryDriverAcceptedDeclinedReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            Timber.d("A secondary driver has accepted");
+            Timber.d("A secondary driver has accepted or declined");
             loadRequest();
         }
     };
