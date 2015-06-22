@@ -181,6 +181,9 @@ public class User {
         this.lastModified = lastModified;
     }
 
+    public void setAvatarUrl(String avatarUrl) {
+        this.avatarUrl = avatarUrl;
+    }
 
     @Override
     public boolean equals(Object other) {

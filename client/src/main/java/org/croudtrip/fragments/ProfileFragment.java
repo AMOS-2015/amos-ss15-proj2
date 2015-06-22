@@ -16,6 +16,7 @@ package org.croudtrip.fragments;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
@@ -32,6 +33,7 @@ import android.widget.TextView;
 
 import com.getbase.floatingactionbutton.FloatingActionButton;
 import com.pnikosis.materialishprogress.ProgressWheel;
+import com.squareup.picasso.Picasso;
 
 import org.croudtrip.R;
 import org.croudtrip.account.AccountManager;
@@ -44,6 +46,7 @@ import org.croudtrip.utils.DefaultTransformer;
 import org.croudtrip.utils.VehiclesListAdapter;
 
 import java.io.InputStream;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Calendar;
 import java.util.List;
@@ -77,6 +80,8 @@ public class ProfileFragment extends SubscriptionFragment {
     @InjectView(R.id.pb_profile)
     private ProgressWheel progressBar;
 
+    //@InjectView(R.id.tv_profile_image) private ImageView profileImage;
+    private ImageView profileImage;
     @Inject
     private VehicleResource vehicleResource;
 
@@ -100,7 +105,7 @@ public class ProfileFragment extends SubscriptionFragment {
         final Fragment _this = this;
         final View view = inflater.inflate(R.layout.fragment_profile, container, false);
         Button addNewVehicle = (Button) view.findViewById(R.id.add_new_vehicle);
-
+        profileImage = (ImageView) view.findViewById(R.id.tv_profile_image);
         // Restore user from SharedPref file
         User user = AccountManager.getLoggedInUser(this.getActivity().getApplicationContext());
 
@@ -158,15 +163,18 @@ public class ProfileFragment extends SubscriptionFragment {
 
 
             // download avatar
-            final String avatarUrl = user.getAvatarUrl();
+            String avatarUrl = user.getAvatarUrl();
             if (avatarUrl != null) {
+                Timber.i(avatarUrl);
+                Picasso.with(getActivity()).load(avatarUrl).error(R.drawable.background_drawer).into(profileImage);
+                /*
                 Subscription subscription = Observable
                         .defer(new Func0<Observable<Bitmap>>() {
                             @Override
                             public Observable<Bitmap> call() {
                                 try {
                                     URL url = new URL(avatarUrl);
-                                    HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
+                                    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
                                     connection.setDoInput(true);
                                     connection.connect();
                                     InputStream input = connection.getInputStream();
@@ -189,6 +197,11 @@ public class ProfileFragment extends SubscriptionFragment {
                         }, new CrashCallback(getActivity()));
 
                 subscriptions.add(subscription);
+                */
+            }
+            else
+            {
+                Timber.i("Avatar url is null");
             }
         }
 
@@ -199,6 +212,8 @@ public class ProfileFragment extends SubscriptionFragment {
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        User user = AccountManager.getLoggedInUser(this.getActivity().getApplicationContext());
 
         // Use a linear layout manager to use the RecyclerView
         layoutManager = new LinearLayoutManager(getActivity());
@@ -239,8 +254,7 @@ public class ProfileFragment extends SubscriptionFragment {
 
         subscriptions.add(subscription);
 
-
-    }
+        }
 
 
     private void setTextViewContent(TextView tv, String content) {

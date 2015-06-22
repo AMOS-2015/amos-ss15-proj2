@@ -17,10 +17,13 @@ package org.croudtrip.fragments;
 import android.app.Dialog;
 import android.content.Intent;
 import android.content.res.Resources;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.ColorDrawable;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.Html;
 import android.text.TextWatcher;
@@ -39,9 +42,11 @@ import android.widget.Toast;
 
 import com.getbase.floatingactionbutton.FloatingActionButton;
 import com.pnikosis.materialishprogress.ProgressWheel;
+import com.squareup.picasso.Picasso;
 
 import org.croudtrip.R;
 import org.croudtrip.account.AccountManager;
+import org.croudtrip.api.AvatarsUploadResource;
 import org.croudtrip.api.UsersResource;
 import org.croudtrip.api.account.User;
 import org.croudtrip.api.account.UserDescription;
@@ -49,7 +54,9 @@ import org.croudtrip.utils.CrashCallback;
 import org.croudtrip.utils.CrashPopup;
 import org.croudtrip.utils.DefaultTransformer;
 
+import java.io.File;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Calendar;
 import java.util.Date;
@@ -57,6 +64,9 @@ import java.util.Date;
 import javax.inject.Inject;
 import javax.net.ssl.HttpsURLConnection;
 
+import retrofit.RetrofitError;
+import retrofit.client.Response;
+import retrofit.mime.TypedFile;
 import roboguice.inject.InjectView;
 import rx.Observable;
 import rx.functions.Action1;
@@ -74,6 +84,8 @@ public class EditProfileFragment extends SubscriptionFragment {
 
     @Inject
     private UsersResource usersResource;
+    @Inject
+    private AvatarsUploadResource avatarsUploadResource;
 
     @InjectView(R.id.pb_edit_profile)
     private ProgressWheel progressBar;
@@ -141,13 +153,17 @@ public class EditProfileFragment extends SubscriptionFragment {
             if (user.getAvatarUrl() != null) {
                 profileImageUrl = user.getAvatarUrl();
                 tempUrl = user.getAvatarUrl();
+                Picasso.with(getActivity()).load(profileImageUrl).error(R.drawable.background_drawer).into(profilePicture);
+                Timber.i("Profile image was downloaded and set");
+                /*
                 Observable
                         .defer(new Func0<Observable<Bitmap>>() {
                             @Override
                             public Observable<Bitmap> call() {
                                 try {
                                     URL url = new URL(user.getAvatarUrl());
-                                    HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
+                                    Timber.i("The avatar url is: " + user.getAvatarUrl());
+                                    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
                                     connection.setDoInput(true);
                                     connection.connect();
                                     InputStream input = connection.getInputStream();
@@ -168,8 +184,9 @@ public class EditProfileFragment extends SubscriptionFragment {
                                 }
                             }
                         }, new CrashCallback(getActivity()));
-            } else {
+                        */
             }
+
             //Fill EditText fields
             if (user.getFirstName() != null) {
                 firstNameEdit.setText(user.getFirstName());
@@ -254,27 +271,7 @@ public class EditProfileFragment extends SubscriptionFragment {
                 newFirstName = firstNameEdit.getText().toString();
             }
         });
-        /*
-        firstNameEdit.setOnKeyListener(new View.OnKeyListener() {
-            public boolean onKey(View v, int keyCode, KeyEvent event) {
-                if ((event.getAction() == KeyEvent.ACTION_DOWN) &&
-                        (keyCode == KeyEvent.KEYCODE_ENTER)) {
-                    newFirstName = firstNameEdit.getText().toString();
-                    return true;
-                }
-                return false;
-            }
-        });
 
-        firstNameEdit.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                if(!hasFocus){
-                    newFirstName = firstNameEdit.getText().toString();
-                }
-            }
-        });
-        */
 
         lastNameEdit.addTextChangedListener(new TextWatcher() {
             @Override
@@ -290,27 +287,7 @@ public class EditProfileFragment extends SubscriptionFragment {
                 newLastName = lastNameEdit.getText().toString();
             }
         });
-        /*
-        lastNameEdit.setOnKeyListener(new View.OnKeyListener() {
-            public boolean onKey(View v, int keyCode, KeyEvent event) {
-                if ((event.getAction() == KeyEvent.ACTION_DOWN) &&
-                        (keyCode == KeyEvent.KEYCODE_ENTER)) {
-                    newLastName = lastNameEdit.getText().toString();
-                    return true;
-                }
-                return false;
-            }
-        });
 
-        lastNameEdit.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                if(!hasFocus){
-                    newLastName = lastNameEdit.getText().toString();
-                }
-            }
-        });
-        */
 
         phoneNumberEdit.addTextChangedListener(new TextWatcher() {
             @Override
@@ -327,27 +304,6 @@ public class EditProfileFragment extends SubscriptionFragment {
             }
         });
 
-        /*
-        //Phone Number
-        phoneNumberEdit.setOnKeyListener(new View.OnKeyListener() {
-            public boolean onKey(View v, int keyCode, KeyEvent event) {
-                if ((event.getAction() == KeyEvent.ACTION_DOWN) &&
-                        (keyCode == KeyEvent.KEYCODE_ENTER)) {
-                    newNumber = phoneNumberEdit.getText().toString();
-                    return true;
-                }
-                return false;
-            }
-        });
-        phoneNumberEdit.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                if(!hasFocus){
-                    newNumber = phoneNumberEdit.getText().toString();
-                }
-            }
-        });
-        */
 
         //Address
         addressEdit.addTextChangedListener(new TextWatcher() {
@@ -365,26 +321,7 @@ public class EditProfileFragment extends SubscriptionFragment {
             }
         });
 
-        /*
-        addressEdit.setOnKeyListener(new View.OnKeyListener() {
-            public boolean onKey(View v, int keyCode, KeyEvent event) {
-                if ((event.getAction() == KeyEvent.ACTION_DOWN) &&
-                        (keyCode == KeyEvent.KEYCODE_ENTER)) {
-                    newAddress = addressEdit.getText().toString();
-                    return true;
-                }
-                return false;
-            }
-        });
-        addressEdit.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                if (!hasFocus) {
-                    newAddress = addressEdit.getText().toString();
-                }
-            }
-        });
-        */
+
         genderRadio.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(RadioGroup group, int checkedId) {
@@ -438,9 +375,49 @@ public class EditProfileFragment extends SubscriptionFragment {
         return view;
     }
 
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+    //Handle the selected image and upload it to the server
+    public void onActivityResult(int requestCode, int resultCode, final Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (data != null) {
+            //Get the image path from the intent result
+            String selectedImagePath = null;
+            Uri selectedImageUri = data.getData();
+            Cursor cursor = getActivity().getContentResolver().query(
+                    selectedImageUri, null, null, null, null);
+            if (cursor == null) {
+                selectedImagePath = selectedImageUri.getPath();
+            } else {
+                cursor.moveToFirst();
+                int idx = cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA);
+                selectedImagePath = cursor.getString(idx);
+            }
+            //Create the typedFile and upload the image to the server using the Retrofit interface
+            Timber.d("Image path is: "+selectedImagePath);
+            File image = new File (selectedImagePath);
+            TypedFile typedFile = new TypedFile("multipart/form-data", image);
+            avatarsUploadResource.uploadFile(typedFile)
+            .compose(new DefaultTransformer<User>())
+                    .subscribe(new Action1<User>() {
+                                   @Override
+                                   public void call(User user) {
+                                       profileImageUrl = user.getAvatarUrl();
+                                       //Add s after http, for some reason fetching the image with http does not work
+                                       profileImageUrl = profileImageUrl.substring(0, 4) + "s" + profileImageUrl.substring(4, profileImageUrl.length());
+                                       Timber.i(user.getAvatarUrl());
+                                       Uri profileImageUri = data.getData();
+                                       profilePicture.setImageURI(profileImageUri);
+                                       Timber.i("Successfully uploaded a new picture ");
+                                        }
+                               },
+                            new CrashCallback(getActivity()) {
+                                @Override
+                                public void call(Throwable throwable) {
+                                    super.call(throwable);
+                                    Response response = ((RetrofitError) throwable).getResponse();
+                                    // Show an error message
+                                    Timber.e("Upload failed with error:\n" + throwable.getMessage());
+                                }
+                            });
             //Fill the ImageView
             //profileImageUri = data.getData();
             //profilePicture.setImageURI(profileImageUri);
@@ -504,7 +481,7 @@ public class EditProfileFragment extends SubscriptionFragment {
         );
 
         AccountManager.saveUser(getActivity().getApplicationContext(), user, null);
-        UserDescription userDescription = new UserDescription(email, newFirstName, newLastName, password, newNumber, newGenderIsMale, newBirthDay, newAddress, "some url");
+        UserDescription userDescription = new UserDescription(email, newFirstName, newLastName, password, newNumber, newGenderIsMale, newBirthDay, newAddress, profileImageUrl);
         updateUser(userDescription);
     }
 
