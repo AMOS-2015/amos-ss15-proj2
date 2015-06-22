@@ -383,6 +383,22 @@ public class TripsManager {
         return superTripDAO.findByPassengerId(passenger.getId());
     }
 
+    /**
+     * Returns all active (not cancelled by the passenger, passenger has not reached his destination)
+     * {@link SuperTrip}s that belong to a passenger.
+     */
+    public List<SuperTrip> findAllActiveTrips(User passenger) {
+        List<SuperTrip> superTrips = superTripDAO.findByPassengerId(passenger.getId());
+        List<SuperTrip> activeSuperTrips = new ArrayList<>();
+
+        for( SuperTrip superTrip : superTrips ) {
+            if( superTrip.isActive() )
+                activeSuperTrips.add( superTrip );
+        }
+
+        return activeSuperTrips;
+    }
+
 
     /**
      * Returns all {@link JoinTripRequest}s, regardless of their state or user.

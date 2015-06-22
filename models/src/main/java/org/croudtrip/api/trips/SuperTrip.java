@@ -102,6 +102,32 @@ public class SuperTrip {
 		this.joinRequests = joinRequests;
 	}
 
+
+    /**
+     * Checks if the super trip is active. Active means that the passenger has not cancelled his trip
+     * (any of the underlying joinTripRequests has status {@link org.croudtrip.api.trips.JoinTripStatus#PASSENGER_CANCELLED})
+     * or has not reached his destination (all underlying joinTripRequest have
+     * status {@link org.croudtrip.api.trips.JoinTripStatus#PASSENGER_AT_DESTINATION}).
+     * <br>
+     * If you call this method on the client you will always receive false, because of missing deserialization of joinTripRequests.
+     * @return true, if the trip is active, false if not.
+     */
+    public boolean isActive() {
+        if( joinRequests == null )
+            return false;
+
+        int finishedRequests = 0;
+        for( JoinTripRequest request : joinRequests ) {
+            if( request.getStatus() == JoinTripStatus.PASSENGER_CANCELLED )
+                return false;
+
+            if( request.getStatus() == JoinTripStatus.PASSENGER_AT_DESTINATION )
+                ++finishedRequests;
+        }
+
+        return !(finishedRequests == joinRequests.size());
+    }
+
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
@@ -117,7 +143,7 @@ public class SuperTrip {
 		return Objects.hashCode(id, query, joinRequests);
 	}
 
-	public static class Builder {
+    public static class Builder {
 
 		private long id;
 		private TripQuery query;

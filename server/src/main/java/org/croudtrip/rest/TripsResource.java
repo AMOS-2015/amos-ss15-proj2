@@ -354,6 +354,18 @@ public class TripsResource {
         return tripsManager.findAllTrips(passenger);
     }
 
+    /**
+     * Returns all active (not cancelled by the passenger, passenger has not reached his destination)
+     * {@link SuperTrip}s that belong to a passenger.
+     * Ideally the count of active SuperTrips should be not greater than 1.
+     */
+    @GET
+    @UnitOfWork
+    @Path(PATH_SUPER_TRIP + "/active")
+    public List<SuperTrip> getAllActiveSuperTrips( @Auth User passenger ) {
+        return tripsManager.findAllActiveTrips( passenger );
+    }
+
 
     /**
      * Returns all {@link JoinTripRequest} that belong to one {@link SuperTrip}.
