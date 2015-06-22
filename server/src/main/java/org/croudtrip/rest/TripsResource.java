@@ -362,7 +362,7 @@ public class TripsResource {
     @GET
     @UnitOfWork
     @Path(PATH_SUPER_TRIP + "/active")
-    public List<SuperTrip> getAllActiveSuperTrips( @Auth User passenger ) {
+    public List<SuperTrip> getAllActiveTrips( @Auth User passenger ) {
         return tripsManager.findAllActiveTrips( passenger );
     }
 
