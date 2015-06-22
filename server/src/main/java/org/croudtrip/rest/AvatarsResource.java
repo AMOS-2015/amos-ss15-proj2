@@ -80,6 +80,7 @@ public class AvatarsResource {
 
         if (fileName.endsWith(".png")) mediaType = mediaType + "png";
         else if (fileName.endsWith(".jpg")) mediaType = mediaType + "jpg";
+        else if (fileName.endsWith(".jpeg")) mediaType = mediaType + "jpeg";
         else if (fileName.endsWith(".gif")) mediaType = mediaType + "gif";
         else throw RestUtils.createJsonFormattedException("only png, jpg and gif supported", 400);
 
@@ -108,7 +109,7 @@ public class AvatarsResource {
 
     @GET
     @Path("/{avatarId}")
-    @Produces({"image/png", "image/gif", "image/jpg"})
+    @Produces({"image/png", "image/gif", "image/jpg", "image/jpeg"})
     @UnitOfWork
     public Response getProfile(@PathParam("avatarId") long avatarId) {
         final Optional<Avatar> avatar = avatarManager.findAvatarById(avatarId);
