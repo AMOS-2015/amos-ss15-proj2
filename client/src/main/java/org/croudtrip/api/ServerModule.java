@@ -59,6 +59,12 @@ public class ServerModule implements Module {
 		return provideRestAdapter(context).create(UsersResource.class);
 	}
 
+	@Provides
+	@Inject
+	public AvatarsUploadResource provideAvatarsUploadResouce (Context context) {
+		return provideRestAdapter(context).create(AvatarsUploadResource.class);
+	}
+
     @Provides
     @Inject
     public VehicleResource provideVehiclesResource(Context context) {
