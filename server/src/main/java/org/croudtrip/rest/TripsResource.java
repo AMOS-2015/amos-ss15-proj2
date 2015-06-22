@@ -498,6 +498,12 @@ public class TripsResource {
         throw RestUtils.createJsonFormattedException("unknown update type " + update.getType(), 400);
     }
 
+    public SuperTrip cancelSuperTrip( @Auth User passenger, @PathParam("joinRequestId") long superTripId ) {
+        SuperTrip superTrip = assertIsValidTripId( superTripId, passenger );
+
+        return tripsManager.updateSuperTripPassengerCancel(superTrip);
+    }
+
 
     private void assertUserIsPassenger(JoinTripRequest request, User user) {
         if (user.getId() != request.getSuperTrip().getQuery().getPassenger().getId()) {

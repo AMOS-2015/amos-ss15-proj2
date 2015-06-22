@@ -523,6 +523,20 @@ public class TripsManager {
         return joinRequest;
     }
 
+    /**
+     * Updates a super trip if the passenger cancels the super trip
+     * @param superTrip the super trip from the server's database that should be cancelled
+     * @return The updated super trip
+     */
+    public SuperTrip updateSuperTripPassengerCancel( SuperTrip superTrip ) {
 
+        for( JoinTripRequest request : superTrip.getJoinRequests() ){
+            updateJoinRequestPassengerCancel( request );
+        }
+
+        superTripDAO.update( superTrip );
+
+        return superTrip;
+    }
 }
 
