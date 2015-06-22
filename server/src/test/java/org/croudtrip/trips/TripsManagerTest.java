@@ -286,7 +286,7 @@ public class TripsManagerTest {
 
     @Test
     public void testUpdateJoinRequestPassengerCancel() {
-        final JoinTripRequest request = new JoinTripRequest.Builder().build();
+        final JoinTripRequest request = new JoinTripRequest.Builder().setStatus(JoinTripStatus.DRIVER_ACCEPTED).build();
 
         tripsManager.updateJoinRequestPassengerCancel(request);
 

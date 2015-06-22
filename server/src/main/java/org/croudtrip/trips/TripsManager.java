@@ -526,12 +526,14 @@ public class TripsManager {
      * @return the updated join request.
      */
     public JoinTripRequest updateJoinRequestPassengerCancel(JoinTripRequest joinRequest) {
+        JoinTripStatus oldStatus = joinRequest.getStatus();
         JoinTripRequest updatedRequest = new JoinTripRequest(joinRequest, JoinTripStatus.PASSENGER_CANCELLED);
         joinTripRequestDAO.update(updatedRequest);
         gcmManager.sendPassengerCancelledTripMsg(joinRequest);
 
-        // Update all the passenger's arrival time
-        tripsUtils.updateArrivalTimesForOffer( joinRequest.getOffer() );
+        // Update all the passenger's arrival time only if the passenger was already accepted by the driver
+        if( oldStatus != null && oldStatus.equals( JoinTripStatus.DRIVER_ACCEPTED ) )
+            tripsUtils.updateArrivalTimesForOffer( joinRequest.getOffer() );
 
         // check background search
         runningTripQueriesManager.checkAndUpdateRunningQueries(joinRequest.getOffer());
