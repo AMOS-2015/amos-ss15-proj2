@@ -112,6 +112,7 @@ public class SuperTrip {
      * If you call this method on the client you will always receive false, because of missing deserialization of joinTripRequests.
      * @return true, if the trip is active, false if not.
      */
+    @JsonIgnore
     public boolean isActive() {
         if( joinRequests == null )
             return false;
