@@ -394,7 +394,7 @@ public class JoinDrivingFragment extends SubscriptionFragment {
         String dateAsString = "";
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeZone(TimeZone.getDefault());
-        calendar.setTimeInMillis(1000 * (requests.get(0).getEstimatedArrivalTimestamp()-18540));
+        calendar.setTimeInMillis(1000 * (requests.get(0).getEstimatedArrivalTimestamp()));
 
         //Display remaining time in the format hh:mm
         if ((calendar.get(Calendar.HOUR_OF_DAY) < 10) && (calendar.get((Calendar.MINUTE)) < 10))
