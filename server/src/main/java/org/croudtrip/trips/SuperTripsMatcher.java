@@ -79,30 +79,53 @@ class SuperTripsMatcher extends SimpleTripsMatcher {
 
     @Override
     public List<SuperTripReservation> findPotentialTrips(List<TripOffer> offers, TripQuery query) {
+        // count how many direction calls are done per trip query
+        directionsManager.resetDirectionCalls();
+
         List<SuperTripReservation> simpleReservations = super.findPotentialTrips(offers, query);
         if (!simpleReservations.isEmpty()) return simpleReservations;
 
         logManager.d("STARTED SEARCHING FOR SUPER TRIPS");
 
         // compute all offers that would be able to pickup or drop the passenger along their route
-        List<PotentialSuperTripMatch> potentialSuperTripPickUpMatches = new ArrayList<>();
-        List<PotentialSuperTripMatch> potentialSuperTripDropMatches = new ArrayList<>();
+        List<TripOffer> potentialSuperTripPickUpMatches = new ArrayList<>();
+        List<TripOffer> potentialSuperTripDropMatches = new ArrayList<>();
         for( TripOffer offer : offers ) {
-            Optional<PotentialSuperTripMatch> pickupMatch = isPotentialSuperTripMatchForOneWaypoint(offer, query, true);
-            if( pickupMatch.isPresent() )   potentialSuperTripPickUpMatches.add( pickupMatch.get());
+            boolean pickupMatch = isRoughPotentialSuperTripMatchForOneWaypoint(offer, query, true);
+            if( pickupMatch )   potentialSuperTripPickUpMatches.add( offer );
 
-            Optional<PotentialSuperTripMatch> dropMatch = isPotentialSuperTripMatchForOneWaypoint(offer, query, false);
-            if( dropMatch.isPresent() )   potentialSuperTripDropMatches.add( dropMatch.get());
+            boolean dropMatch = isRoughPotentialSuperTripMatchForOneWaypoint(offer, query, false);
+            if( dropMatch )   potentialSuperTripDropMatches.add( offer );
         }
 
-        logManager.d("found " + potentialSuperTripPickUpMatches.size() + " pickUp matches." );
-        logManager.d("found " + potentialSuperTripDropMatches.size() + " drop matches." );
+        logManager.d("found " + potentialSuperTripPickUpMatches.size() + " rough pickUp matches." );
+        logManager.d("found " + potentialSuperTripDropMatches.size() + " rough drop matches." );
 
 
         // compute the closest pair of those trip offers. As soon as we find a matching pair, we return the super trip
         List<SuperTripReservation> reservations = new ArrayList<>();
-pickUp: for( PotentialSuperTripMatch pickUpMatch : potentialSuperTripPickUpMatches ) {
-            for( PotentialSuperTripMatch dropMatch : potentialSuperTripDropMatches ) {
+pickUp: for( TripOffer pickUpOffer : potentialSuperTripPickUpMatches ) {
+
+            // now do the real check if the trip offer is a potential match
+            Optional<PotentialSuperTripMatch> tripMatchOptional = isPotentialSuperTripMatchForOneWaypoint( pickUpOffer, query, true );
+            if( !tripMatchOptional.isPresent() )
+                continue;
+
+            PotentialSuperTripMatch pickUpMatch = tripMatchOptional.get();
+
+            for( TripOffer dropOffer : potentialSuperTripDropMatches ) {
+                // don't match the same offer to itself
+                if( dropOffer.getId() == pickUpOffer.getId() )
+                    continue;
+
+                // now do the real check if the trip offer is a potential match
+                tripMatchOptional = isPotentialSuperTripMatchForOneWaypoint( dropOffer, query, false );
+                if( !tripMatchOptional.isPresent() )
+                    continue;
+
+                PotentialSuperTripMatch dropMatch = tripMatchOptional.get();
+
+                // find the closest pair for both routes
                 ClosestPairResult closestPairResult = closestPair.findClosestPair(query.getPassenger(), pickUpMatch.getDiversionNavigationResult(), dropMatch.getDiversionNavigationResult());
                 if( closestPairResult.getDropLocation() == null || closestPairResult.getPickupLocation() == null )
                     continue;
@@ -118,7 +141,34 @@ pickUp: for( PotentialSuperTripMatch pickUpMatch : potentialSuperTripPickUpMatch
 
         logManager.d("STOPPED SEARCHING FOR SUPER TRIPS");
 
+        logManager.d("Needed Direction Calls: " + directionsManager.getDirectionCalls());
+        directionsManager.resetDirectionCalls();
+
         return reservations;
+    }
+
+    private boolean isRoughPotentialSuperTripMatchForOneWaypoint(TripOffer offer, TripQuery query, boolean useStartWaypoint) {
+        // check trip status
+        if (!offer.getStatus().equals(TripOfferStatus.ACTIVE)) return false;
+
+        // check that query has not been declined before
+        if (!assertJoinRequestNotDeclined(offer, query)) return false;
+
+        // check current passenger count
+        int passengerCount = tripsUtils.getActivePassengerCountForOffer(offer);
+        if (passengerCount >= offer.getVehicle().getCapacity()) return false;
+
+        // create a fake query with only one point to compute matches
+        TripQuery onePointQuery;
+        if( useStartWaypoint)
+            onePointQuery = new TripQuery.Builder().setPassenger(query.getPassenger()).setStartLocation( query.getStartLocation() ).build();
+        else
+            onePointQuery = new TripQuery.Builder().setPassenger(query.getPassenger()).setDestinationLocation(query.getDestinationLocation()).build();
+
+        // early reject based on airline;
+        if (!assertWithinAirDistance(offer, onePointQuery)) return false;
+
+        return true;
     }
 
     private Optional<SuperTripReservation> isValidReservation(PotentialSuperTripMatch pickUpMatch, PotentialSuperTripMatch dropMatch, TripQuery query, ClosestPairResult closestPairResult) {
@@ -228,15 +278,11 @@ pickUp: for( PotentialSuperTripMatch pickUpMatch : potentialSuperTripPickUpMatch
      * @return If the trip is a potential match a {@link SuperTripsMatcher.PotentialSuperTripMatch} will be returned.
      */
     private Optional<SuperTripsMatcher.PotentialSuperTripMatch> isPotentialSuperTripMatchForOneWaypoint( TripOffer offer, TripQuery query, boolean useStartWaypoint ) {
-        // check trip status
-        if (!offer.getStatus().equals(TripOfferStatus.ACTIVE)) return Optional.absent();
+        if( !isRoughPotentialSuperTripMatchForOneWaypoint( offer, query, useStartWaypoint ) )
+            return Optional.absent();
 
-        // check that query has not been declined before
-        if (!assertJoinRequestNotDeclined(offer, query)) return Optional.absent();
-
-        // check current passenger count
-        int passengerCount = tripsUtils.getActivePassengerCountForOffer(offer);
-        if (passengerCount >= offer.getVehicle().getCapacity()) return Optional.absent();
+        // update driver route on new position update
+        assertUpdatedDriverRoute(offer);
 
         // create a fake query with only one point to compute matches
         TripQuery onePointQuery;
@@ -244,12 +290,6 @@ pickUp: for( PotentialSuperTripMatch pickUpMatch : potentialSuperTripPickUpMatch
             onePointQuery = new TripQuery.Builder().setPassenger(query.getPassenger()).setStartLocation( query.getStartLocation() ).build();
         else
             onePointQuery = new TripQuery.Builder().setPassenger(query.getPassenger()).setDestinationLocation(query.getDestinationLocation()).build();
-
-        // early reject based on airline;
-        if (!assertWithinAirDistance(offer, onePointQuery)) return Optional.absent();
-
-        // update driver route on new position update
-        assertUpdatedDriverRoute(offer);
 
         // get complete new route
         NavigationResult navigationResult = null;

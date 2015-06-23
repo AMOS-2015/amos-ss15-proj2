@@ -35,13 +35,14 @@ public class DirectionsManager {
 
 	private final GeoApiContext geoApiContext;
     private final LogManager logManager;
+    private int directionCalls;
 
 	@Inject
 	DirectionsManager(GeoApiContext geoApiContext, LogManager logManager) {
 		this.geoApiContext = geoApiContext;
         this.logManager = logManager;
+        this.directionCalls = 0;
 	}
-
 
 	public List<Route> getDirections(RouteLocation startLocation, RouteLocation endLocation) {
 		return getDirections(startLocation, endLocation, new ArrayList<RouteLocation>());
@@ -51,7 +52,7 @@ public class DirectionsManager {
         LatLng origin = new LatLng(startLocation.getLat(), startLocation.getLng());
         LatLng destination = new LatLng(endLocation.getLat(), endLocation.getLng());
 
-        logManager.d("Directions Request with " + waypoints.size() + " wps.");
+        logManager.d("DIRECTIONS REQUEST (" + waypoints.size() + " wps)");
 
         List<LatLng> llWaypoints = new ArrayList<LatLng>();
 
@@ -91,6 +92,7 @@ public class DirectionsManager {
                     .destination(destination)
                     .waypoints(stringWaypoints)
                     .await();
+            directionCalls++;
 
             for (DirectionsRoute googleRoute : googleRoutes) {
                     result.add(createRoute(allWaypoints, googleRoute));
@@ -129,14 +131,6 @@ public class DirectionsManager {
 
 		Polyline polyline = PolylineEncoder.encode( points, waypointIndices );
 
-        logManager.d("PolylineLength: " + polyline.getPolyline().length());
-        logManager.d("WaypointIndices: " + waypointIndices.size() + " : stringIndices: " + polyline.getPolylineStringIndices().size());
-
-        StringBuilder debugString = new StringBuilder();
-        for( Integer i : polyline.getPolylineStringIndices() )
-            debugString.append(i + "#");
-        logManager.d("StringIndices: " + debugString.toString());
-
 		String warnings;
 		if (googleRoute.warnings.length > 0) {
 			boolean firstIter = true;
@@ -165,4 +159,11 @@ public class DirectionsManager {
                 polyline.getPolylineStringIndices());
 	}
 
+    public int getDirectionCalls() {
+        return directionCalls;
+    }
+
+    public void resetDirectionCalls() {
+        this.directionCalls = 0;
+    }
 }
