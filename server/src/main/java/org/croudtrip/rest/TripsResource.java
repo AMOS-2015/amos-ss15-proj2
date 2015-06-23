@@ -520,6 +520,7 @@ public class TripsResource {
             JoinTripStatus status = request.getStatus();
             if (status.equals(JoinTripStatus.PASSENGER_IN_CAR) || status.equals(JoinTripStatus.PASSENGER_AT_DESTINATION))
                 throw RestUtils.createJsonFormattedException("cannot cancel when in car or at destination", 409);
+
             assertUserIsPassenger(request, passenger);
         }
 

@@ -529,6 +529,12 @@ public class TripsManager {
         JoinTripStatus oldStatus = joinRequest.getStatus();
         JoinTripRequest updatedRequest = new JoinTripRequest(joinRequest, JoinTripStatus.PASSENGER_CANCELLED);
         joinTripRequestDAO.update(updatedRequest);
+
+        // if the passenger has already finished or cancelled the trip, don't interact with the driver anymore
+        if( joinRequest.getOffer().getStatus().equals( TripOfferStatus.CANCELLED )
+                || joinRequest.getOffer().getStatus().equals( TripOfferStatus.FINISHED ) )
+            return joinRequest;
+
         gcmManager.sendPassengerCancelledTripMsg(joinRequest);
 
         // Update all the passenger's arrival time only if the passenger was already accepted by the driver
@@ -549,6 +555,7 @@ public class TripsManager {
     public SuperTrip updateSuperTripPassengerCancel( SuperTrip superTrip ) {
 
         for( JoinTripRequest request : superTrip.getJoinRequests() ){
+
             updateJoinRequestPassengerCancel( request );
         }
 
