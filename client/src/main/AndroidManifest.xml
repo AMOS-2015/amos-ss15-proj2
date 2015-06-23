@@ -36,6 +36,7 @@
     <uses-feature android:name="android.hardware.nfc" android:required="false" />
 
     <application
+        android:largeHeap="true"
         android:name=".MainApplication"
         android:allowBackup="true"
         android:icon="@mipmap/app_icon"
