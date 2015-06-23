@@ -87,6 +87,7 @@
     <string name="join_trip_results_happy">Have a nice trip</string>
     <string name="join_trip_results_driverArrival">My driver is here</string>
     <string name="join_trip_results_reached">I´ve reached my destination</string>
+    <string name="join_trip_results_left_Car">Left the car</string>
     <string name="join_trip_results_report">Report driver</string>
     <string name="join_trip_results_cancel">Cancel trip</string>
     <plurals name="join_trip_results_my_drivers">

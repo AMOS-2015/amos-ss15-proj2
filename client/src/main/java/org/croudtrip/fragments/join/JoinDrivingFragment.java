@@ -278,10 +278,11 @@ public class JoinDrivingFragment extends SubscriptionFragment {
             llDriving.setVisibility(View.VISIBLE);
             flMap.setVisibility(View.VISIBLE);
 
-            btnReachedDestination.setText(getResources().getString(R.string.join_trip_results_reached));
+            btnReachedDestination.setText(getResources().getString(R.string.join_trip_results_left_Car));
             btnReachedDestination.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    // TODO: leaving the first car doesn't mean finishing the trip
                     //Handle here all the stuff that happens when the trip is successfully completed (user hits "I have reached my destination")
                     updateTrip(JoinTripRequestUpdateType.LEAVE_CAR, progressBarDest);
                     sendUserBackToSearch();
