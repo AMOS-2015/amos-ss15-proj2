@@ -559,7 +559,7 @@ public class JoinDrivingFragment extends SubscriptionFragment {
         ivNfcIcon.setVisibility(View.GONE);
         tvNfcExplanation.setVisibility(View.GONE);
 
-        btnReachedDestination.setText(getResources().getString(R.string.join_trip_results_reached));
+        btnReachedDestination.setText(getResources().getString(R.string.join_trip_results_left_Car));
         setButtonInactive(btnCancelTrip);
 
         llWaiting.setVisibility(View.GONE);
