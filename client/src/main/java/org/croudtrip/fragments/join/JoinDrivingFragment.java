@@ -325,7 +325,28 @@ public class JoinDrivingFragment extends SubscriptionFragment {
             public void onClick(View v) {
                 //Handle here all the stuff that happens when the user cancels the trip
                 Toast.makeText(getActivity(), getResources().getString(R.string.my_trip_driver_cancel_trip), Toast.LENGTH_SHORT).show();
-                updateTrip(JoinTripRequestUpdateType.CANCEL, progressBarCancel);
+                //updateTrip(JoinTripRequestUpdateType.CANCEL, progressBarCancel);
+                // just a quick cancel of all active super trips
+                // TODO: Adjust the stuff that is written to the shared preferences, since it is not that simple anymore for super trips
+                progressBarCancel.setVisibility(View.VISIBLE);
+                tripsResource.cancelActiveSuperTrips().compose( new DefaultTransformer<Object>() )
+                        .subscribe( new Action1<Object>() {
+                                        @Override
+                                        public void call(Object o) {
+                                            progressBarCancel.setVisibility(View.GONE);
+                                            sendUserBackToSearch();
+                                        }
+                                    }, new CrashCallback(getActivity()) {
+                                        @Override
+                                        public void call(Throwable throwable) {
+                                            super.call(throwable);
+
+                                            Timber.e(throwable.getMessage());
+
+                                            progressBarCancel.setVisibility(View.GONE);
+                                        }
+                                    }
+                        );
             }
         });
 
