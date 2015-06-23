@@ -46,6 +46,7 @@ import com.squareup.picasso.Picasso;
 
 import org.croudtrip.R;
 import org.croudtrip.account.AccountManager;
+import org.croudtrip.activities.MainActivity;
 import org.croudtrip.api.AvatarsUploadResource;
 import org.croudtrip.api.UsersResource;
 import org.croudtrip.api.account.User;
@@ -64,6 +65,8 @@ import java.util.Date;
 import javax.inject.Inject;
 import javax.net.ssl.HttpsURLConnection;
 
+import it.neokree.materialnavigationdrawer.MaterialNavigationDrawer;
+import it.neokree.materialnavigationdrawer.elements.MaterialAccount;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
 import retrofit.mime.TypedFile;
@@ -483,8 +486,45 @@ public class EditProfileFragment extends SubscriptionFragment {
         AccountManager.saveUser(getActivity().getApplicationContext(), user, null);
         UserDescription userDescription = new UserDescription(email, newFirstName, newLastName, password, newNumber, newGenderIsMale, newBirthDay, newAddress, profileImageUrl);
         updateUser(userDescription);
+        changeNavigationDrawerImage(profileImageUrl);
+
     }
 
+    //This method changes the navigation drawer profile picture after downloading the new picture from the server
+    public void changeNavigationDrawerImage(final String avatarUrl) {
+        final MaterialNavigationDrawer drawer = ((MaterialNavigationDrawer) getActivity());
+        if (avatarUrl != null) {
+            //Download the new profile picture
+            Observable.defer(new Func0<Observable<Bitmap>>() {
+                @Override
+                public Observable<Bitmap> call() {
+                    try {
+                        URL url = new URL(avatarUrl);
+                        HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
+                        connection.setDoInput(true);
+                        connection.connect();
+                        InputStream input = connection.getInputStream();
+                        return Observable.just(BitmapFactory.decodeStream(input));
+                    } catch (Exception e) {
+                        return Observable.error(e);
+                    }
+                }
+            }).compose(new DefaultTransformer<Bitmap>())
+                    .subscribe(new Action1<Bitmap>() {
+                        @Override
+                        public void call(Bitmap avatar) {
+                            //Set the profile picture if download was successful
+                            drawer.getCurrentAccount().setPhoto(avatar);
+                            drawer.notifyAccountDataChanged();
+                        }
+                    }, new CrashCallback(getActivity()) {
+                        @Override
+                        public void call(Throwable throwable) {
+                            Timber.e(throwable, "failed to download avatar");
+                        }
+                    });
+        }
+    }
     public void showYearPicker() {
 
         final Dialog yearDialog = new Dialog(getActivity());

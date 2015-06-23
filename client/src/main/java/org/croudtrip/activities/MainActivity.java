@@ -257,7 +257,7 @@ public class MainActivity extends AbstractRoboDrawerActivity {
     }
 
 
-    private void showUserInfoInNavigationDrawer(){
+    public void showUserInfoInNavigationDrawer(){
 
         // Get logged-in user and his data
         User user = AccountManager.getLoggedInUser(getApplicationContext());
@@ -265,11 +265,10 @@ public class MainActivity extends AbstractRoboDrawerActivity {
         String lastName = (user == null || user.getLastName() == null) ? "" : user.getLastName();
         String email = (user == null || user.getEmail() == null) ? "" : user.getEmail();
         final String avatarUrl = (user == null || user.getAvatarUrl() == null) ? null : user.getAvatarUrl();
-
+        Timber.i("Nav drawer avatarUrl is: " + avatarUrl);
         final MaterialAccount account = new MaterialAccount(this.getResources(),
                 firstName+ " " + lastName, email, R.drawable.profile, R.drawable.background_drawer);
         this.addAccount(account);
-
         // Download his avatar
         if (avatarUrl != null) {
             Observable.defer(new Func0<Observable<Bitmap>>() {
