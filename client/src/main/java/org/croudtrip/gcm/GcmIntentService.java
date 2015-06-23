@@ -37,8 +37,11 @@ import org.croudtrip.api.directions.RouteLocation;
 import org.croudtrip.api.gcm.GcmConstants;
 import org.croudtrip.api.trips.JoinTripRequest;
 import org.croudtrip.api.trips.RunningTripQuery;
+import org.croudtrip.api.trips.SuperTrip;
 import org.croudtrip.api.trips.TripQuery;
 import org.croudtrip.fragments.join.JoinDispatchFragment;
+import org.croudtrip.utils.CrashCallback;
+import org.croudtrip.utils.DefaultTransformer;
 import org.croudtrip.utils.LifecycleHandler;
 
 import javax.inject.Inject;
@@ -260,7 +263,26 @@ public class GcmIntentService extends RoboIntentService {
                                     editor.putBoolean(Constants.SHARED_PREF_KEY_SEARCHING, true);
                                     editor.putBoolean(Constants.SHARED_PREF_KEY_WAITING, false);
                                     editor.apply();
+
+                                    tripsResource.cancelSuperTrip(joinTripRequest.getSuperTrip().getId())
+                                            .observeOn( Schedulers.io() )
+                                            .subscribeOn(AndroidSchedulers.mainThread())
+                                            .subscribe(new Action1<SuperTrip>() {
+                                                           @Override
+                                                           public void call(SuperTrip superTrip) {
+                                                               Timber.d("Cancelled your super trip");
+                                                           }
+                                                       },
+                                                    new Action1<Throwable>() {
+                                                        @Override
+                                                        public void call(Throwable throwable) {
+                                                            Timber.e("Could not cancel your trip: " + throwable.getMessage());
+                                                        }
+                                                    });
+
+
                                 }
+
 
                                 Bundle extras = new Bundle();
                                 TripQuery query = joinTripRequest.getSuperTrip().getQuery();
@@ -273,7 +295,7 @@ public class GcmIntentService extends RoboIntentService {
                                 if(LifecycleHandler.isApplicationInForeground()) {
                                     //go back to search UI only if the first driver canceled
                                     if (firstDriver) {
-                                        Toast.makeText(getApplicationContext(), getString(R.string.join_request_declined_msg), Toast.LENGTH_SHORT).show();
+                                        //Toast.makeText(getApplicationContext(), getString(R.string.join_request_declined_msg), Toast.LENGTH_SHORT).show();
                                         Intent startingIntent = new Intent(Constants.EVENT_CHANGE_JOIN_UI);
                                         startingIntent.putExtras(extras);
                                         LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(startingIntent);

@@ -512,8 +512,8 @@ public class TripsResource {
 
     @PUT
     @UnitOfWork
-    @Path(PATH_SUPER_TRIP + "/{tripId}")
-    public SuperTrip cancelSuperTrip( @Auth User passenger, @PathParam("joinRequestId") long superTripId ) {
+    @Path(PATH_SUPER_TRIP + "/{superTripId}")
+    public SuperTrip cancelSuperTrip( @Auth User passenger, @PathParam("superTripId") long superTripId ) {
         SuperTrip superTrip = assertIsValidTripId( superTripId, passenger );
 
         for( JoinTripRequest request : superTrip.getJoinRequests() ) {
@@ -523,6 +523,7 @@ public class TripsResource {
 
             assertUserIsPassenger(request, passenger);
         }
+
 
         return tripsManager.updateSuperTripPassengerCancel(superTrip);
     }
