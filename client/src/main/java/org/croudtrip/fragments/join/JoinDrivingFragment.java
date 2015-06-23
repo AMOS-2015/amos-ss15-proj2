@@ -59,6 +59,7 @@ import org.croudtrip.api.directions.RouteLocation;
 import org.croudtrip.api.trips.JoinTripRequest;
 import org.croudtrip.api.trips.JoinTripRequestUpdate;
 import org.croudtrip.api.trips.JoinTripRequestUpdateType;
+import org.croudtrip.api.trips.SuperTrip;
 import org.croudtrip.fragments.SubscriptionFragment;
 import org.croudtrip.location.LocationUpdater;
 import org.croudtrip.trip.MyTripPassengerDriversAdapter;
@@ -358,8 +359,8 @@ public class JoinDrivingFragment extends SubscriptionFragment {
      * Downloads the current(super-)trip from the server
      */
     private void loadRequest(){
-        subscriptions.add(tripsResource.getJoinRequests(false)
-                .compose(new DefaultTransformer<List<JoinTripRequest>>())
+        subscriptions.add(tripsResource.getAllActiveTrips()
+                .compose(new DefaultTransformer<List<SuperTrip>>())
                 .subscribe(new LoadRequestSubscriber()));
     }
 
@@ -683,18 +684,18 @@ public class JoinDrivingFragment extends SubscriptionFragment {
     /**
      * This Subscriber loads the current JoinTripRequest (SuperTripRequest)
      */
-    private class LoadRequestSubscriber extends Subscriber<List<JoinTripRequest>> {
+    private class LoadRequestSubscriber extends Subscriber<List<SuperTrip>> {
 
         @Override
-        public void onNext(final List<JoinTripRequest> requests) {
+        public void onNext(final List<SuperTrip> trips) {
 
-            if (requests == null || requests.isEmpty()) {
+            if (trips == null || trips.isEmpty()) {
                 Timber.d("Currently there are no trips running.");
                 return;
             }
 
             subscriptions.add(tripsResource
-                    .getJoinTripRequestsForSuperTrip(requests.get(0).getSuperTrip().getId())
+                    .getJoinTripRequestsForSuperTrip(trips.get(0).getId())
                     .subscribe(new Action1<List<JoinTripRequest>>() {
                         @Override
                         public void call(final List<JoinTripRequest> joinTripRequests) {
