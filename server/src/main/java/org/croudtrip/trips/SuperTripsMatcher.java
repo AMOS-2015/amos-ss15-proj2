@@ -29,6 +29,8 @@ import javax.inject.Inject;
  */
 class SuperTripsMatcher extends SimpleTripsMatcher {
 
+    private static final int MAX_DEPTH = 3;
+
     public static class PotentialSuperTripMatch {
         private final TripOffer offer;
         private final TripQuery query;
@@ -59,6 +61,29 @@ class SuperTripsMatcher extends SimpleTripsMatcher {
         }
     }
 
+    private static class PotentialRecursiveSuperTrip {
+        private PotentialSuperTripMatch pickUpMatch;
+        private PotentialSuperTripMatch dropMatch;
+        private ClosestPairResult closestPairResult;
+
+        public PotentialRecursiveSuperTrip(PotentialSuperTripMatch pickUpMatch, PotentialSuperTripMatch dropMatch, ClosestPairResult closestPairResult) {
+            this.pickUpMatch = pickUpMatch;
+            this.dropMatch = dropMatch;
+            this.closestPairResult = closestPairResult;
+        }
+
+        public PotentialSuperTripMatch getPickUpMatch() {
+            return pickUpMatch;
+        }
+
+        public PotentialSuperTripMatch getDropMatch() {
+            return dropMatch;
+        }
+
+        public ClosestPairResult getClosestPairResult() {
+            return closestPairResult;
+        }
+    }
 
     private final ClosestPair closestPair;
 
@@ -79,8 +104,12 @@ class SuperTripsMatcher extends SimpleTripsMatcher {
 
     @Override
     public List<SuperTripReservation> findPotentialTrips(List<TripOffer> offers, TripQuery query) {
-        // count how many direction calls are done per trip query
-        directionsManager.resetDirectionCalls();
+        return findPotentialTrips(offers, query, 0);
+    }
+
+    private List<SuperTripReservation> findPotentialTrips(List<TripOffer> offers, TripQuery query, int currentDepth) {
+        if( currentDepth > MAX_DEPTH )
+            return new ArrayList<>();
 
         List<SuperTripReservation> simpleReservations = super.findPotentialTrips(offers, query);
         if (!simpleReservations.isEmpty()) return simpleReservations;
@@ -104,7 +133,8 @@ class SuperTripsMatcher extends SimpleTripsMatcher {
 
         // compute the closest pair of those trip offers. As soon as we find a matching pair, we return the super trip
         List<SuperTripReservation> reservations = new ArrayList<>();
-pickUp: for( TripOffer pickUpOffer : potentialSuperTripPickUpMatches ) {
+        List<PotentialRecursiveSuperTrip> potentialRecursiveSuperTrips = new ArrayList<>();
+        pickUp: for( TripOffer pickUpOffer : potentialSuperTripPickUpMatches ) {
 
             // now do the real check if the trip offer is a potential match
             Optional<PotentialSuperTripMatch> tripMatchOptional = isPotentialSuperTripMatchForOneWaypoint( pickUpOffer, query, true );
@@ -136,13 +166,103 @@ pickUp: for( TripOffer pickUpOffer : potentialSuperTripPickUpMatches ) {
                     reservations.add( reservation.get() );
                     break pickUp;
                 }
+
+                // no reservation has been found, but we can try to find a recursive super trip for this match later on.
+                potentialRecursiveSuperTrips.add( new PotentialRecursiveSuperTrip( pickUpMatch, dropMatch, closestPairResult ) );
             }
         }
 
-        logManager.d("STOPPED SEARCHING FOR SUPER TRIPS");
+        // if we have not found a regular super trip, we may find one using recursive search
+        if( reservations.isEmpty() && currentDepth < MAX_DEPTH ) {
+            for( PotentialRecursiveSuperTrip recursiveSuperTrip : potentialRecursiveSuperTrips ){
 
-        logManager.d("Needed Direction Calls: " + directionsManager.getDirectionCalls());
-        directionsManager.resetDirectionCalls();
+                // adjust passenger route from pickup to drop location
+                Route passengerRoute = directionsManager.getDirections( recursiveSuperTrip.getClosestPairResult().getPickupLocation(), recursiveSuperTrip.getClosestPairResult().getDropLocation() ).get(0);
+
+                TripQuery adaptedQuery = new TripQuery.Builder().setPassengerRoute( passengerRoute )
+                        .setPassenger( query.getPassenger() )
+                        .setStartLocation( recursiveSuperTrip.getClosestPairResult().getPickupLocation() )
+                        .setDestinationLocation( recursiveSuperTrip.getClosestPairResult().getDropLocation() )
+                        .setCreationTimestamp( query.getCreationTimestamp() ) /* TODO: Just set this value to the arrival timestamp of the driver at the pickup location*/
+                        .setMaxWaitingTimeInSeconds( TripQuery.IGNORE_MAX_WAITING_TIME ) /* TODO: Adjust the correct max waiting time */
+                        .build();
+
+                List<SuperTripReservation> recursiveReservations = findPotentialTrips( offers, adaptedQuery, currentDepth + 1 );
+
+                if( recursiveReservations.isEmpty() ) continue;
+
+                // pickup query
+                TripQuery pickupQuery = new TripQuery.Builder().setPassengerRoute( null )
+                        .setPassenger( query.getPassenger() )
+                        .setStartLocation(query.getStartLocation())
+                        .setDestinationLocation(recursiveSuperTrip.getClosestPairResult().getPickupLocation())
+                        .setCreationTimestamp( query.getCreationTimestamp() )
+                        .setMaxWaitingTimeInSeconds(query.getMaxWaitingTimeInSeconds())
+                        .build();
+
+                NavigationResult pickupNavigationResult = null;
+                try {
+                    pickupNavigationResult = tripsNavigationManager.getNavigationResultForOffer( recursiveSuperTrip.getPickUpMatch().getOffer(), pickupQuery );
+                } catch (RouteNotFoundException e) {
+                    e.printStackTrace();
+                    continue;
+                }
+
+                for( SuperTripReservation res : recursiveReservations ) {
+
+                    SuperTripReservation.Builder reservationBuilder = new SuperTripReservation.Builder()
+                            .setQuery(query)
+                            .addReservation(new TripReservation(
+                                    new SuperTripSubQuery.Builder()
+                                            .setStartLocation(query.getStartLocation())
+                                            .setDestinationLocation(recursiveSuperTrip.getClosestPairResult().getPickupLocation())
+                                            .build(),
+                                    (int)( recursiveSuperTrip.getPickUpMatch().getOffer().getPricePerKmInCents() * (pickupNavigationResult.getEstimatedTripDistanceInMetersForUser(query.getPassenger())/1000) ),
+                                    recursiveSuperTrip.getPickUpMatch().getOffer().getPricePerKmInCents(),
+                                    recursiveSuperTrip.getPickUpMatch().getOffer().getId(),
+                                    pickupNavigationResult.getEstimatedTripDurationInSecondsForUser( query.getPassenger() ),
+                                    recursiveSuperTrip.pickUpMatch.getOffer().getDriver()));
+
+                    for( TripReservation tripReservation : res.getReservations() ){
+                        reservationBuilder.addReservation( tripReservation );
+                    }
+
+                    // pickup query
+                    TripQuery dropQuery = new TripQuery.Builder().setPassengerRoute( null )
+                            .setPassenger( query.getPassenger() )
+                            .setStartLocation( recursiveSuperTrip.getClosestPairResult().getDropLocation())
+                            .setDestinationLocation(query.getDestinationLocation())
+                            .setCreationTimestamp( query.getCreationTimestamp() ) /*TODO: Insert estimated arrival time at this point here */
+                            .setMaxWaitingTimeInSeconds(query.getMaxWaitingTimeInSeconds())
+                            .build();
+
+                    NavigationResult dropNavigationResult = null;
+                    try {
+                        dropNavigationResult = tripsNavigationManager.getNavigationResultForOffer( recursiveSuperTrip.getDropMatch().getOffer(), dropQuery );
+                    } catch (RouteNotFoundException e) {
+                        e.printStackTrace();
+                        continue;
+                    }
+                    reservationBuilder.addReservation(new TripReservation(
+                            new SuperTripSubQuery.Builder()
+                                    .setStartLocation(adaptedQuery.getDestinationLocation())
+                                    .setDestinationLocation(query.getDestinationLocation())
+                                    .build(),
+                            (int)( recursiveSuperTrip.getPickUpMatch().getOffer().getPricePerKmInCents() * (dropNavigationResult.getEstimatedTripDistanceInMetersForUser(query.getPassenger())/1000) ),
+                            recursiveSuperTrip.dropMatch.getOffer().getPricePerKmInCents(),
+                            recursiveSuperTrip.dropMatch.getOffer().getId(),
+                            pickupNavigationResult.getEstimatedTripDurationInSecondsForUser( query.getPassenger() ),
+                            recursiveSuperTrip.dropMatch.getOffer().getDriver()));
+
+                    reservations.add( reservationBuilder.build());
+                }
+
+            }
+
+
+        }
+
+        logManager.d("STOPPED SEARCHING FOR SUPER TRIPS");
 
         return reservations;
     }
@@ -198,7 +318,7 @@ pickUp: for( TripOffer pickUpOffer : potentialSuperTripPickUpMatches ) {
                             new SuperTripSubQuery.Builder()
                                     .setStartLocation( query.getStartLocation() )
                                     .setDestinationLocation( adaptedQuery.getDestinationLocation() )
-                            .build(),
+                                    .build(),
                             totalPickUpPriceInCents,
                             pickUpMatch.getOffer().getPricePerKmInCents(),
                             pickUpMatch.getOffer().getId(),
@@ -208,7 +328,7 @@ pickUp: for( TripOffer pickUpOffer : potentialSuperTripPickUpMatches ) {
                             new SuperTripSubQuery.Builder()
                                     .setStartLocation( adaptedQuery.getDestinationLocation() )
                                     .setDestinationLocation( query.getDestinationLocation() )
-                            .build(),
+                                    .build(),
                             totalDropPriceInCents,
                             dropMatch.getOffer().getPricePerKmInCents(),
                             dropMatch.getOffer().getId(),
@@ -242,9 +362,9 @@ pickUp: for( TripOffer pickUpOffer : potentialSuperTripPickUpMatches ) {
                     .setQuery(query)
                     .addReservation( new TripReservation(
                             new SuperTripSubQuery.Builder()
-                                .setStartLocation( query.getStartLocation() )
-                                .setDestinationLocation( adaptedQuery.getStartLocation() )
-                            .build(),
+                                    .setStartLocation( query.getStartLocation() )
+                                    .setDestinationLocation( adaptedQuery.getStartLocation() )
+                                    .build(),
                             totalPickUpPriceInCents,
                             pickUpMatch.getOffer().getPricePerKmInCents(),
                             pickUpMatch.getOffer().getId(),
@@ -254,7 +374,7 @@ pickUp: for( TripOffer pickUpOffer : potentialSuperTripPickUpMatches ) {
                             new SuperTripSubQuery.Builder()
                                     .setStartLocation( adaptedQuery.getStartLocation() )
                                     .setDestinationLocation( query.getDestinationLocation() )
-                            .build(),
+                                    .build(),
                             totalDropPriceInCents,
                             dropMatch.getOffer().getPricePerKmInCents(),
                             dropMatch.getOffer().getId(),
