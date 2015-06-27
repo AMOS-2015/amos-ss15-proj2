@@ -29,6 +29,7 @@ import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -76,6 +77,9 @@ import java.util.TimeZone;
 import javax.inject.Inject;
 
 import it.neokree.materialnavigationdrawer.MaterialNavigationDrawer;
+import retrofit.Callback;
+import retrofit.RetrofitError;
+import retrofit.client.Response;
 import roboguice.inject.InjectView;
 import rx.Subscriber;
 import rx.Subscription;
@@ -286,7 +290,6 @@ public class JoinDrivingFragment extends SubscriptionFragment {
                     // TODO: leaving the first car doesn't mean finishing the trip
                     //Handle here all the stuff that happens when the trip is successfully completed (user hits "I have reached my destination")
                     updateTrip(JoinTripRequestUpdateType.LEAVE_CAR, progressBarDest);
-                    sendUserBackToSearch();
                 }
             });
         } else {
@@ -308,10 +311,9 @@ public class JoinDrivingFragment extends SubscriptionFragment {
 
                     if (prefs.getBoolean(Constants.SHARED_PREF_KEY_DRIVING, false)) {
                         updateTrip(JoinTripRequestUpdateType.LEAVE_CAR, progressBarDest);
-                        sendUserBackToSearch();
                     } else {
                         // If the user enters the car and leaves the car without this method called twice we need this distinction
-                        enterCar();
+                        updateTrip(JoinTripRequestUpdateType.ENTER_CAR, progressBarDest);
                     }
 
                 }
@@ -509,7 +511,8 @@ public class JoinDrivingFragment extends SubscriptionFragment {
             progressBar.setVisibility(View.VISIBLE);
         }
 
-        SharedPreferences prefs = getActivity().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
+        final SharedPreferences prefs = getActivity().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
+
         JoinTripRequestUpdate requestUpdate = new JoinTripRequestUpdate(updateType);
         Subscription subscription = tripsResource.updateJoinRequest(prefs.getLong(Constants.SHARED_PREF_KEY_TRIP_ID, -1), requestUpdate)
                 .compose(new DefaultTransformer<JoinTripRequest>())
@@ -524,6 +527,39 @@ public class JoinDrivingFragment extends SubscriptionFragment {
 
                         if (updateType.equals(JoinTripRequestUpdateType.CANCEL)) {
                             sendUserBackToSearch();
+                            return;
+                        } else if (updateType.equals(JoinTripRequestUpdateType.LEAVE_CAR)) {
+                            tripsResource.getAllActiveTrips(new Callback<List<SuperTrip>>() {
+                                @Override
+                                public void success(List<SuperTrip> superTrips, Response response) {
+                                    if (superTrips.size() == 0) {
+                                        sendUserBackToSearch();
+                                    } else {
+                                        //TODO
+                                    }
+                                }
+
+                                @Override
+                                public void failure(RetrofitError error) {
+                                    Log.d("alex", "error: " + error.getMessage());
+                                }
+                            });
+                        } else if (updateType.equals(JoinTripRequestUpdateType.ENTER_CAR)) {
+                            SharedPreferences prefs = getActivity().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
+                            SharedPreferences.Editor editor = prefs.edit();
+                            editor.putBoolean(Constants.SHARED_PREF_KEY_DRIVING, true);
+                            editor.apply();
+
+                            ivNfcIcon.setVisibility(View.GONE);
+                            tvNfcExplanation.setVisibility(View.GONE);
+
+                            btnReachedDestination.setText(getResources().getString(R.string.join_trip_results_left_Car));
+                            setButtonInactive(btnCancelTrip);
+
+                            llWaiting.setVisibility(View.GONE);
+                            llDriving.setVisibility(View.VISIBLE);
+                            flMap.setVisibility(View.VISIBLE);
+                            btnReachedDestination.setVisibility(View.VISIBLE);
                         }
                     }
                 }, new CrashCallback(getActivity()) {
@@ -567,28 +603,6 @@ public class JoinDrivingFragment extends SubscriptionFragment {
         button.setBackgroundColor(getResources().getColor(R.color.inactive));
     }
 
-
-    /*
-    The passenger enters the car. Show the correct UI, save the status and send a notification to the server
-     */
-    private void enterCar() {
-        SharedPreferences prefs = getActivity().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.putBoolean(Constants.SHARED_PREF_KEY_DRIVING, true);
-        editor.apply();
-        updateTrip(JoinTripRequestUpdateType.ENTER_CAR, progressBarDest);
-
-        ivNfcIcon.setVisibility(View.GONE);
-        tvNfcExplanation.setVisibility(View.GONE);
-
-        btnReachedDestination.setText(getResources().getString(R.string.join_trip_results_left_Car));
-        setButtonInactive(btnCancelTrip);
-
-        llWaiting.setVisibility(View.GONE);
-        llDriving.setVisibility(View.VISIBLE);
-        flMap.setVisibility(View.VISIBLE);
-        btnReachedDestination.setVisibility(View.VISIBLE);
-    }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -662,7 +676,7 @@ public class JoinDrivingFragment extends SubscriptionFragment {
             //Check again if the passenger has the correct status for an nfc scan
             SharedPreferences prefs = context.getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
             if (!prefs.getBoolean(Constants.SHARED_PREF_KEY_WAITING, false) && !prefs.getBoolean(Constants.SHARED_PREF_KEY_DRIVING, false)) {
-                enterCar();
+                updateTrip(JoinTripRequestUpdateType.ENTER_CAR, progressBarDest);
 
                 //disable listening to the "scanned NFC" event
                 LocalBroadcastManager.getInstance(getActivity().getApplicationContext()).unregisterReceiver(nfcScannedReceiver);
