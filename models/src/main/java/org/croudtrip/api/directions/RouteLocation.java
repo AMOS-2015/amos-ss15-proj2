@@ -90,7 +90,8 @@ public class RouteLocation {
     public boolean equals(Object other) {
         if (other == null || !(other instanceof RouteLocation)) return false;
         RouteLocation location = (RouteLocation) other;
-        return Objects.equal(lat, location.lat) && Objects.equal(lng, location.lng);
+        double epsilon = 0.0001;
+        return Math.abs(lat-location.lat) < epsilon && Math.abs(lng-location.lng) < epsilon;
     }
 
     @Override
@@ -100,7 +101,7 @@ public class RouteLocation {
 
     @Override
     public String toString() {
-        return "lat: " + lat + " ; " + " long: " + lng;
+        return "(" + String.format("%.5f", lat) + " , " + String.format("%.5f", lng) + ")";
     }
 
 }

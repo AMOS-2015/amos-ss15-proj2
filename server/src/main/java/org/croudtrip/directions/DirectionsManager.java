@@ -27,6 +27,7 @@ import org.croudtrip.api.directions.RouteLocation;
 import org.croudtrip.logs.LogManager;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -36,6 +37,40 @@ public class DirectionsManager {
 	private final GeoApiContext geoApiContext;
     private final LogManager logManager;
     private int directionCalls;
+
+    private static HashMap<CachingRouteKey, List<Route>> cachedRoutes = new HashMap<>();
+
+    private static class CachingRouteKey{
+        private List<RouteLocation> waypoints;
+        private long creationTimestamp;
+
+        public CachingRouteKey(RouteLocation startLocaction, RouteLocation destinationLocation, List<RouteLocation> waypoints) {
+            this.waypoints = new ArrayList<>();
+            this.waypoints.add(startLocaction);
+            this.waypoints.addAll( waypoints );
+            this.waypoints.add(destinationLocation);
+            this.creationTimestamp = System.currentTimeMillis();
+        }
+
+        public long getCreationTimestamp() {
+            return creationTimestamp;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            CachingRouteKey that = (CachingRouteKey) o;
+
+            return waypoints.equals(that.waypoints) && Math.abs(creationTimestamp - that.creationTimestamp) < 60*1000;
+        }
+
+        @Override
+        public int hashCode() {
+            return waypoints.hashCode();
+        }
+    }
 
 	@Inject
 	DirectionsManager(GeoApiContext geoApiContext, LogManager logManager) {
@@ -49,10 +84,16 @@ public class DirectionsManager {
 	}
 
     public List<Route> getDirections(RouteLocation startLocation, RouteLocation endLocation, List<RouteLocation> waypoints) {
+        CachingRouteKey cachingRouteKey = new CachingRouteKey( startLocation, endLocation, waypoints );
+        if( cachedRoutes.containsKey( cachingRouteKey ) ){
+            logManager.d("DIRECTIONS REQUEST " + startLocation + " to " + endLocation + " --> USED CACHED RESULT");
+            return cachedRoutes.get( cachingRouteKey );
+        }
+
         LatLng origin = new LatLng(startLocation.getLat(), startLocation.getLng());
         LatLng destination = new LatLng(endLocation.getLat(), endLocation.getLng());
 
-        logManager.d("DIRECTIONS REQUEST (" + waypoints.size() + " wps)");
+        logManager.d("DIRECTIONS REQUEST " + startLocation + " to " + endLocation + " (" + waypoints.size() + " wps)");
 
         List<LatLng> llWaypoints = new ArrayList<LatLng>();
 
@@ -97,6 +138,9 @@ public class DirectionsManager {
             for (DirectionsRoute googleRoute : googleRoutes) {
                     result.add(createRoute(allWaypoints, googleRoute));
                 }
+
+            cachedRoutes.put( cachingRouteKey, result );
+
             return result;
 		} catch (Exception e) {
 			throw new RuntimeException(e);
