@@ -165,6 +165,7 @@ public class JoinDrivingFragment extends SubscriptionFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        //Register local broadcasts
         LocalBroadcastManager.getInstance(getActivity()).registerReceiver(joinRequestExpiredReceiver,
                 new IntentFilter(Constants.EVENT_JOIN_REQUEST_EXPIRED));
 
@@ -176,11 +177,13 @@ public class JoinDrivingFragment extends SubscriptionFragment {
         filter.addAction(Constants.EVENT_SECONDARY_DRIVER_DECLINED);
         LocalBroadcastManager.getInstance(getActivity()).registerReceiver(secondaryDriverAcceptedDeclinedReceiver, filter);
 
+        //Register nfc adapter
         nfcAdapter = NfcAdapter.getDefaultAdapter(getActivity());
         if (nfcAdapter != null) {
             nfcPendingIntent = PendingIntent.getActivity(getActivity(), 0, new Intent(getActivity(), getActivity().getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
         }
 
+        //Initialize colors for different routes on the map
         colors = new ArrayList<>();
         colors.add(Color.BLUE);
         colors.add(Color.GREEN);
@@ -196,8 +199,6 @@ public class JoinDrivingFragment extends SubscriptionFragment {
         ((MaterialNavigationDrawer) getActivity()).getCurrentSection().setNotificationsText("");
         ((MaterialNavigationDrawer) getActivity()).getCurrentSection().setTitle(getString(R.string.menu_my_trip));
         ((MaterialNavigationDrawer) getActivity()).setTitle(R.string.menu_my_trip);
-
-
 
         View view = inflater.inflate(R.layout.fragment_join_driving, container, false);
         return view;
@@ -283,7 +284,6 @@ public class JoinDrivingFragment extends SubscriptionFragment {
             btnReachedDestination.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    // TODO: leaving the first car doesn't mean finishing the trip
                     //Handle here all the stuff that happens when the trip is successfully completed (user hits "I have reached my destination")
                     updateTrip(JoinTripRequestUpdateType.LEAVE_CAR, progressBarDest);
                 }
@@ -503,12 +503,14 @@ public class JoinDrivingFragment extends SubscriptionFragment {
      */
     private void updateTrip(final JoinTripRequestUpdateType updateType, final ProgressWheel progressBar) {
 
+        //show loading indicator
         if (progressBar != null) {
             progressBar.setVisibility(View.VISIBLE);
         }
 
         final SharedPreferences prefs = getActivity().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
 
+        //send update trip request to server
         JoinTripRequestUpdate requestUpdate = new JoinTripRequestUpdate(updateType);
         Subscription subscription = tripsResource.updateJoinRequest(prefs.getLong(Constants.SHARED_PREF_KEY_TRIP_ID, -1), requestUpdate)
                 .compose(new DefaultTransformer<JoinTripRequest>())
@@ -517,26 +519,39 @@ public class JoinDrivingFragment extends SubscriptionFragment {
                     public void call(JoinTripRequest joinTripRequest) {
                         Timber.d("update trip successfully called");
 
+                        //hide loading indicator
                         if (progressBar != null) {
                             progressBar.setVisibility(View.GONE);
                         }
 
                         if (updateType.equals(JoinTripRequestUpdateType.CANCEL)) {
+                            //if a user cancelled everything related to the status can be erased locally
+                            // + redirection to the search screen
                             sendUserBackToSearch();
                             return;
                         } else if (updateType.equals(JoinTripRequestUpdateType.LEAVE_CAR)) {
+
+                            //Check if this was the last part of a supertrip
                             tripsResource.getAllActiveTrips(new Callback<List<SuperTrip>>() {
                                 @Override
                                 public void success(List<SuperTrip> superTrips, Response response) {
+
                                     if (superTrips.size() == 0) {
+                                        //no trips active anymore means that the passenger has reached the destination...
                                         sendUserBackToSearch();
                                     } else {
+                                        //..otherwise he must be able to enter the next car
+
+                                        //remove status "driving" locally
                                         final SharedPreferences prefs = getActivity().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
                                         SharedPreferences.Editor editor = prefs.edit();
                                         editor.putBoolean(Constants.SHARED_PREF_KEY_DRIVING, false);
                                         editor.apply();
 
+                                        //show correct ui elements
                                         switchToNfcIfAvailable();
+
+                                        //change description and functionality of button back to "driver is here"
                                         btnReachedDestination.setText(getResources().getString(R.string.join_trip_results_driverArrival));
                                         btnReachedDestination.setOnClickListener(new View.OnClickListener() {
                                             @Override
@@ -553,22 +568,30 @@ public class JoinDrivingFragment extends SubscriptionFragment {
                                 }
                             });
                         } else if (updateType.equals(JoinTripRequestUpdateType.ENTER_CAR)) {
+                            //the user is now in the car -> switch to driving status
+
+                            //save status "driving" locally
                             SharedPreferences prefs = getActivity().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
                             SharedPreferences.Editor editor = prefs.edit();
                             editor.putBoolean(Constants.SHARED_PREF_KEY_DRIVING, true);
                             editor.apply();
 
+                            //hide nfc related ui elements
                             ivNfcIcon.setVisibility(View.GONE);
                             tvNfcExplanation.setVisibility(View.GONE);
 
+                            //change description of button from "enter car" to "leave car"
                             btnReachedDestination.setText(getResources().getString(R.string.join_trip_results_left_Car));
+                            btnReachedDestination.setVisibility(View.VISIBLE);
+
+                            //passenger can not cancel while he is in the car -> disable button
                             setButtonInactive(btnCancelTrip);
 
+                            //display or hide the correct view groups
                             llWaiting.setVisibility(View.GONE);
                             llDriving.setVisibility(View.VISIBLE);
                             flMap.setVisibility(View.VISIBLE);
-                            btnReachedDestination.setVisibility(View.VISIBLE);
-                        }
+                                                    }
                     }
                 }, new CrashCallback(getActivity()) {
 
@@ -578,6 +601,7 @@ public class JoinDrivingFragment extends SubscriptionFragment {
 
                         Timber.e(throwable.getMessage());
 
+                        //hide loading indicator
                         if (progressBar != null) {
                             progressBar.setVisibility(View.GONE);
                         }
