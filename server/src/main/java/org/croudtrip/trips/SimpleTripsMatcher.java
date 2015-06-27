@@ -2,6 +2,9 @@ package org.croudtrip.trips;
 
 
 import com.google.common.base.Optional;
+import com.google.maps.GeoApiContext;
+import com.google.maps.GeocodingApi;
+import com.google.maps.model.LatLng;
 
 import org.croudtrip.api.directions.NavigationResult;
 import org.croudtrip.api.directions.Route;
@@ -23,6 +26,7 @@ import org.croudtrip.logs.LogManager;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -75,17 +79,30 @@ class SimpleTripsMatcher implements TripsMatcher {
 	@Override
 	public Optional<PotentialMatch> isPotentialMatch(TripOffer offer, TripQuery query) {
 		// check trip status
-		if (!offer.getStatus().equals(TripOfferStatus.ACTIVE)) return Optional.absent();
+		if (!offer.getStatus().equals(TripOfferStatus.ACTIVE)){
+			return Optional.absent();
+		}
 
 		// check that query has not been declined before
-		if (!assertJoinRequestNotDeclined(offer, query)) return Optional.absent();
+		if (!assertJoinRequestNotDeclined(offer, query)){
+			logManager.d("Offer " + offer.getId() + " is no potential match to query because passenger has been already declined.");
+			return Optional.absent();
+		}
 
 		// check current passenger count
 		int passengerCount = tripsUtils.getActivePassengerCountForOffer(offer);
-		if (passengerCount >= offer.getVehicle().getCapacity()) return Optional.absent();
+		if (passengerCount >= offer.getVehicle().getCapacity()){
+			logManager.d("Offer " + offer.getId() + " is no potential match to query because the offer is full");
+			return Optional.absent();
+		}
 
 		// early reject based on airline;
-		if (!assertWithinAirDistance(offer, query)) return Optional.absent();
+		if (!assertWithinAirDistance(offer, query)){
+			logManager.d("Offer " + offer.getId() + " is no potential match to query due to its airline comparison");
+			return Optional.absent();
+		}
+
+		// TODO: Early reject based on time
 
 		// update driver route on new position update
 		assertUpdatedDriverRoute(offer);
@@ -102,11 +119,17 @@ class SimpleTripsMatcher implements TripsMatcher {
 		if (userWayPoints.isEmpty()) return Optional.absent();
 
 		// check passenger max waiting time
-		if (!assertRouteWithinPassengerMaxWaitingTime(offer, query, userWayPoints)) return Optional.absent();
+		if (!assertRouteWithinPassengerMaxWaitingTime(offer, query, userWayPoints)){
+			logManager.d("Offer " + offer.getId() + " is no potential match to query due to the waiting times");
+			return Optional.absent();
+		}
 
 		// check if passenger route is within max diversion
 		long distanceToDriverInMeters = userWayPoints.get(userWayPoints.size() - 1).getDistanceToDriverInMeters();
-		if (distanceToDriverInMeters - offer.getDriverRoute().getDistanceInMeters() > offer.getMaxDiversionInMeters()) return Optional.absent();
+		if (distanceToDriverInMeters - offer.getDriverRoute().getDistanceInMeters() > offer.getMaxDiversionInMeters()){
+			logManager.d("Offer " + offer.getId() + " is no potential match to query due to the maximum diversions of the passenger");
+			return Optional.absent();
+		}
 
 		return Optional.of( new PotentialMatch( offer, query, totalRouteNavigationResult ));
 	}
@@ -184,11 +207,11 @@ class SimpleTripsMatcher implements TripsMatcher {
 			TripQuery query,
 			List<UserWayPoint> userWayPoints) {
 
-		// TODO: max waiting time is not valid for super trips
-
 		// ignore may waiting time if is -1. Use it, if you want to ignore max waiting times
-		if( query.getMaxWaitingTimeInSeconds() == TripQuery.IGNORE_MAX_WAITING_TIME )
+		if( query.getMaxWaitingTimeInSeconds() == TripQuery.IGNORE_MAX_WAITING_TIME ) {
+			logManager.d("Ignore Max waiting time");
 			return true;
+		}
 
 		// check max waiting time for each passenger
 		for (UserWayPoint userWayPoint : userWayPoints) {
@@ -196,17 +219,27 @@ class SimpleTripsMatcher implements TripsMatcher {
 			if (userWayPoint.getUser().equals(offer.getDriver())) continue;
 
 			long passengerMaxWaitingTimestamp = 0;
+			long passengerAtStartingPoint = 0;
 			if (userWayPoint.getUser().equals(query.getPassenger())) {
 				passengerMaxWaitingTimestamp = query.getCreationTimestamp() + query.getMaxWaitingTimeInSeconds();
+				passengerAtStartingPoint = query.getCreationTimestamp();
 			} else {
 				for (JoinTripRequest joinTripRequest : joinTripRequestDAO.findByOfferId(offer.getId())) {
 					TripQuery foundQuery = joinTripRequest.getSuperTrip().getQuery();
 					if (userWayPoint.getUser().equals(foundQuery.getPassenger())) {
 						passengerMaxWaitingTimestamp = foundQuery.getCreationTimestamp() + foundQuery.getMaxWaitingTimeInSeconds();
+						passengerAtStartingPoint = foundQuery.getCreationTimestamp();
 						break;
 					}
 				}
 			}
+
+			logManager.d("Passenger would have to wait " + (userWayPoint.getArrivalTimestamp() - passengerAtStartingPoint) + "s. His max waiting time is: " + query.getMaxWaitingTimeInSeconds() + " -- driver will arrive at:" + new Date(userWayPoint.getArrivalTimestamp() * 1000).toLocaleString() + ", passenger will start his trip at: " + new Date(query.getCreationTimestamp() * 1000).toLocaleString());
+
+			// driver may not come before passenger is at his starting position (a small bias for the case that driver and passenger are at the same place)
+			if( userWayPoint.getArrivalTimestamp() - passengerAtStartingPoint < -20 ) return false;
+
+			// passenger may not wait longer than his max waiting time
 			if (userWayPoint.getArrivalTimestamp() > passengerMaxWaitingTimestamp) return false;
 		}
 		return true;

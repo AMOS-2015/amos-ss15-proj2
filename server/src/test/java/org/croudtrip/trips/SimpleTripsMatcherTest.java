@@ -167,12 +167,6 @@ public class SimpleTripsMatcherTest {
 		final User anotherPassenger = new User.Builder().setId(2).build();
 
 		new Expectations() {{
-			joinTripRequestDAO.findByOfferId(offer.getId());
-			result = Lists.newArrayList(new JoinTripRequest.Builder()
-					.setOffer(offer)
-					.setSuperTrip(new SuperTrip.Builder().setQuery(query).build())
-					.build());
-
 			tripsNavigationManager.getNavigationResultForOffer(offer, query);
 			result = new NavigationResult( null, Lists.newArrayList(
 					new UserWayPoint(driver, null, true, 0, 0),
