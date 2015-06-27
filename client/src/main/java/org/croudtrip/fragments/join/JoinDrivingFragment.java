@@ -140,7 +140,6 @@ public class JoinDrivingFragment extends SubscriptionFragment {
     @Inject
     private LocationUpdater locationUpdater;
 
-    private ArrayList<JoinTripRequestUpdateType> simpleRequestUpdateCache;
 
     private NfcAdapter nfcAdapter;
     private PendingIntent nfcPendingIntent;
@@ -165,9 +164,6 @@ public class JoinDrivingFragment extends SubscriptionFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        //Simple cache to store failed requests
-        simpleRequestUpdateCache = new ArrayList<>();
 
         LocalBroadcastManager.getInstance(getActivity()).registerReceiver(joinRequestExpiredReceiver,
                 new IntentFilter(Constants.EVENT_JOIN_REQUEST_EXPIRED));
@@ -535,13 +531,25 @@ public class JoinDrivingFragment extends SubscriptionFragment {
                                     if (superTrips.size() == 0) {
                                         sendUserBackToSearch();
                                     } else {
-                                        //TODO
+                                        final SharedPreferences prefs = getActivity().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
+                                        SharedPreferences.Editor editor = prefs.edit();
+                                        editor.putBoolean(Constants.SHARED_PREF_KEY_DRIVING, false);
+                                        editor.apply();
+
+                                        switchToNfcIfAvailable();
+                                        btnReachedDestination.setText(getResources().getString(R.string.join_trip_results_driverArrival));
+                                        btnReachedDestination.setOnClickListener(new View.OnClickListener() {
+                                            @Override
+                                            public void onClick(View v) {
+                                                updateTrip(JoinTripRequestUpdateType.LEAVE_CAR, progressBarDest);
+                                            }
+                                        });
                                     }
                                 }
 
                                 @Override
                                 public void failure(RetrofitError error) {
-                                    Log.d("alex", "error: " + error.getMessage());
+                                    CrashPopup.show(getActivity(), error);
                                 }
                             });
                         } else if (updateType.equals(JoinTripRequestUpdateType.ENTER_CAR)) {
@@ -569,13 +577,6 @@ public class JoinDrivingFragment extends SubscriptionFragment {
                         super.call(throwable);
 
                         Timber.e(throwable.getMessage());
-
-                        /*
-                        Add this JoinTripRequestUpdateType to a simple cache to try it again some other time
-                        */
-                        if (simpleRequestUpdateCache != null) {
-                            simpleRequestUpdateCache.add(updateType);
-                        }
 
                         if (progressBar != null) {
                             progressBar.setVisibility(View.GONE);
@@ -637,14 +638,6 @@ public class JoinDrivingFragment extends SubscriptionFragment {
 
         LocalBroadcastManager.getInstance(getActivity().getApplicationContext())
                 .unregisterReceiver(secondaryDriverAcceptedDeclinedReceiver);
-
-        /*
-        Try to resend every failed server call. This will be tried only once.
-         */
-        for (Iterator<JoinTripRequestUpdateType> iterator = simpleRequestUpdateCache.iterator(); iterator.hasNext(); ) {
-            updateTrip(iterator.next(), null);
-            iterator.remove();
-        }
     }
 
 
