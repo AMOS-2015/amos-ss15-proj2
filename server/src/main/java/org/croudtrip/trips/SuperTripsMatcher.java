@@ -62,9 +62,9 @@ class SuperTripsMatcher extends SimpleTripsMatcher {
     }
 
     private static class PotentialRecursiveSuperTrip {
-        private PotentialSuperTripMatch pickUpMatch;
-        private PotentialSuperTripMatch dropMatch;
-        private ClosestPairResult closestPairResult;
+        private final PotentialSuperTripMatch pickUpMatch;
+        private final PotentialSuperTripMatch dropMatch;
+        private final ClosestPairResult closestPairResult;
 
         public PotentialRecursiveSuperTrip(PotentialSuperTripMatch pickUpMatch, PotentialSuperTripMatch dropMatch, ClosestPairResult closestPairResult) {
             this.pickUpMatch = pickUpMatch;
@@ -148,6 +148,7 @@ class SuperTripsMatcher extends SimpleTripsMatcher {
                 if( dropOffer.getId() == pickUpOffer.getId() )
                     continue;
 
+
                 // now do the real check if the trip offer is a potential match
                 tripMatchOptional = isPotentialSuperTripMatchForOneWaypoint( dropOffer, query, false );
                 if( !tripMatchOptional.isPresent() )
@@ -159,6 +160,8 @@ class SuperTripsMatcher extends SimpleTripsMatcher {
                 ClosestPairResult closestPairResult = closestPair.findClosestPair(query.getPassenger(), pickUpMatch.getDiversionNavigationResult(), dropMatch.getDiversionNavigationResult());
                 if( closestPairResult.getDropLocation() == null || closestPairResult.getPickupLocation() == null )
                     continue;
+
+                // TODO: If closest pair distance is greater thant the max diversion of the driver we don't have to check if it is a valid reserveration since it simply cannot be.
 
                 // check if one of the drivers may take the diversion to drive to the connection point
                 Optional<SuperTripReservation> reservation = isValidReservation( pickUpMatch, dropMatch, query, closestPairResult );
@@ -179,18 +182,6 @@ class SuperTripsMatcher extends SimpleTripsMatcher {
                 // adjust passenger route from pickup to drop location
                 Route passengerRoute = directionsManager.getDirections( recursiveSuperTrip.getClosestPairResult().getPickupLocation(), recursiveSuperTrip.getClosestPairResult().getDropLocation() ).get(0);
 
-                TripQuery adaptedQuery = new TripQuery.Builder().setPassengerRoute( passengerRoute )
-                        .setPassenger( query.getPassenger() )
-                        .setStartLocation( recursiveSuperTrip.getClosestPairResult().getPickupLocation() )
-                        .setDestinationLocation( recursiveSuperTrip.getClosestPairResult().getDropLocation() )
-                        .setCreationTimestamp( query.getCreationTimestamp() ) /* TODO: Just set this value to the arrival timestamp of the driver at the pickup location*/
-                        .setMaxWaitingTimeInSeconds( TripQuery.IGNORE_MAX_WAITING_TIME ) /* TODO: Adjust the correct max waiting time */
-                        .build();
-
-                List<SuperTripReservation> recursiveReservations = findPotentialTrips( offers, adaptedQuery, currentDepth + 1 );
-
-                if( recursiveReservations.isEmpty() ) continue;
-
                 // pickup query
                 TripQuery pickupQuery = new TripQuery.Builder().setPassengerRoute( null )
                         .setPassenger( query.getPassenger() )
@@ -200,13 +191,31 @@ class SuperTripsMatcher extends SimpleTripsMatcher {
                         .setMaxWaitingTimeInSeconds(query.getMaxWaitingTimeInSeconds())
                         .build();
 
-                NavigationResult pickupNavigationResult = null;
+                // compute route from passenger start point to passenger destination
+                NavigationResult pickupNavigationResult;
                 try {
                     pickupNavigationResult = tripsNavigationManager.getNavigationResultForOffer( recursiveSuperTrip.getPickUpMatch().getOffer(), pickupQuery );
                 } catch (RouteNotFoundException e) {
                     e.printStackTrace();
                     continue;
                 }
+
+                //
+                long tripDurationInSeconds = pickupNavigationResult.getEstimatedTripDurationInSecondsForUser(pickupQuery.getPassenger());
+
+                // compute results from closest pickup point to closes drop point
+                TripQuery adaptedQuery = new TripQuery.Builder().setPassengerRoute( passengerRoute )
+                        .setPassenger( query.getPassenger() )
+                        .setStartLocation( recursiveSuperTrip.getClosestPairResult().getPickupLocation() )
+                        .setDestinationLocation( recursiveSuperTrip.getClosestPairResult().getDropLocation() )
+                        .setCreationTimestamp( query.getCreationTimestamp() + tripDurationInSeconds ) /* Just set this value to the arrival timestamp of the driver at the pickup location*/
+                        .setMaxWaitingTimeInSeconds(query.getMaxWaitingTimeInSeconds())
+                        .build();
+
+                List<SuperTripReservation> recursiveReservations = findPotentialTrips( offers, adaptedQuery, currentDepth + 1 );
+
+                // if no recursive solution was found we can stop further searching
+                if( recursiveReservations.isEmpty() ) continue;
 
                 for( SuperTripReservation res : recursiveReservations ) {
 
@@ -225,18 +234,19 @@ class SuperTripsMatcher extends SimpleTripsMatcher {
 
                     for( TripReservation tripReservation : res.getReservations() ){
                         reservationBuilder.addReservation( tripReservation );
+                        tripDurationInSeconds += tripReservation.getEstimatedTripDurationInSeconds();
                     }
 
-                    // pickup query
+                    // drop query
                     TripQuery dropQuery = new TripQuery.Builder().setPassengerRoute( null )
                             .setPassenger( query.getPassenger() )
                             .setStartLocation( recursiveSuperTrip.getClosestPairResult().getDropLocation())
                             .setDestinationLocation(query.getDestinationLocation())
-                            .setCreationTimestamp( query.getCreationTimestamp() ) /*TODO: Insert estimated arrival time at this point here */
+                            .setCreationTimestamp( query.getCreationTimestamp() + tripDurationInSeconds ) /*estimated arrival time at closest drop point*/
                             .setMaxWaitingTimeInSeconds(query.getMaxWaitingTimeInSeconds())
                             .build();
 
-                    NavigationResult dropNavigationResult = null;
+                    NavigationResult dropNavigationResult;
                     try {
                         dropNavigationResult = tripsNavigationManager.getNavigationResultForOffer( recursiveSuperTrip.getDropMatch().getOffer(), dropQuery );
                     } catch (RouteNotFoundException e) {
@@ -286,108 +296,97 @@ class SuperTripsMatcher extends SimpleTripsMatcher {
             onePointQuery = new TripQuery.Builder().setPassenger(query.getPassenger()).setDestinationLocation(query.getDestinationLocation()).build();
 
         // early reject based on airline;
-        if (!assertWithinAirDistance(offer, onePointQuery)) return false;
-
-        return true;
+        return assertWithinAirDistance(offer, onePointQuery);
     }
 
     private Optional<SuperTripReservation> isValidReservation(PotentialSuperTripMatch pickUpMatch, PotentialSuperTripMatch dropMatch, TripQuery query, ClosestPairResult closestPairResult) {
 
-        // first check, if the pickUp-driver can drop the passenger at the closest point of the drop-Driver
-        TripQuery adaptedQuery =  new TripQuery.Builder().setPassenger( query.getPassenger() )
-                .setStartLocation( query.getStartLocation() )
-                .setCreationTimestamp( query.getCreationTimestamp() )
-                .setDestinationLocation(closestPairResult.getDropLocation())
+        Optional<SuperTripReservation> reservationOptional = isValidReservationForConnectionPoint( query, closestPairResult.getDropLocation(), pickUpMatch, dropMatch );
+        if( reservationOptional.isPresent() )
+            return reservationOptional;
+
+        return isValidReservationForConnectionPoint(query, closestPairResult.getPickupLocation(), pickUpMatch, dropMatch);
+    }
+
+    private Optional<SuperTripReservation> isValidReservationForConnectionPoint(TripQuery query, RouteLocation connectionPoint, PotentialSuperTripMatch pickUpMatch, PotentialSuperTripMatch dropMatch) {
+
+        // compute the time, when the first driver will be at his connection point and check if it's a valid match
+        TripQuery adaptedQuery =  new TripQuery.Builder().setPassenger(query.getPassenger())
+                .setStartLocation(query.getStartLocation())
+                .setDestinationLocation(connectionPoint)
+                .setCreationTimestamp(query.getCreationTimestamp())
+                .setMaxWaitingTimeInSeconds(query.getMaxWaitingTimeInSeconds())
+                .build();
+        Optional<PotentialMatch> potentialMatch = isPotentialMatch(pickUpMatch.getOffer(), adaptedQuery);
+
+        if( !potentialMatch.isPresent() )
+            return Optional.absent();
+
+        long estimatedPickupDuration = potentialMatch.get().getTotalRouteNavigationResult().getEstimatedTripDurationInSecondsForUser( query.getPassenger() );
+
+        // compute the time, when the second driver will be at the connection point and check if it's in range and a valid match
+        adaptedQuery =  new TripQuery.Builder().setPassenger(query.getPassenger())
+                .setStartLocation(connectionPoint)
+                .setDestinationLocation(query.getDestinationLocation())
+                .setCreationTimestamp( query.getCreationTimestamp() + estimatedPickupDuration )
                 .setMaxWaitingTimeInSeconds( query.getMaxWaitingTimeInSeconds() )
                 .build();
 
-        Optional<SimpleTripsMatcher.PotentialMatch> potentialMatch = isPotentialMatch(pickUpMatch.getOffer(), adaptedQuery);
-        if( potentialMatch.isPresent() ) {
-            // expensive directions call but necessary, we need the adapted passenger routes to compute the total price per driver
-            Route passengerpickUpRoute = directionsManager.getDirections( query.getStartLocation(), adaptedQuery.getDestinationLocation() ).get(0);
-            Route passengerDropRoute = directionsManager.getDirections( adaptedQuery.getDestinationLocation(), query.getDestinationLocation() ).get(0);
-            int totalPickUpPriceInCents = (int) (pickUpMatch.getOffer().getPricePerKmInCents() * passengerpickUpRoute.getDistanceInMeters() / 1000);
-            int totalDropPriceInCents = (int) (dropMatch.getOffer().getPricePerKmInCents() * passengerDropRoute.getDistanceInMeters() / 1000);
-
-            long estimatedPickupDuration = potentialMatch.get().getTotalRouteNavigationResult().getEstimatedTripDurationInSecondsForUser( query.getPassenger() );
-            long estimatedDropDuration = dropMatch.getDiversionNavigationResult().getEstimatedTripDurationInSecondsForUser( query.getPassenger() );
-
-            SuperTripReservation reservation = new SuperTripReservation.Builder()
-                    .setQuery(query)
-                    .addReservation( new TripReservation(
-                            new SuperTripSubQuery.Builder()
-                                    .setStartLocation( query.getStartLocation() )
-                                    .setDestinationLocation( adaptedQuery.getDestinationLocation() )
-                                    .build(),
-                            totalPickUpPriceInCents,
-                            pickUpMatch.getOffer().getPricePerKmInCents(),
-                            pickUpMatch.getOffer().getId(),
-                            estimatedPickupDuration,
-                            pickUpMatch.getOffer().getDriver() ) )
-                    .addReservation( new TripReservation(
-                            new SuperTripSubQuery.Builder()
-                                    .setStartLocation( adaptedQuery.getDestinationLocation() )
-                                    .setDestinationLocation( query.getDestinationLocation() )
-                                    .build(),
-                            totalDropPriceInCents,
-                            dropMatch.getOffer().getPricePerKmInCents(),
-                            dropMatch.getOffer().getId(),
-                            estimatedDropDuration,
-                            dropMatch.getOffer().getDriver()) )
-                    .build();
-
-            return Optional.of( reservation );
-        }
-
-        // check if the dop driver can take the diversion to the waypoint of the pickup driver
-        adaptedQuery =  new TripQuery.Builder().setPassenger( query.getPassenger() )
-                .setStartLocation( closestPairResult.getPickupLocation() )
-                .setCreationTimestamp( query.getCreationTimestamp() )
-                .setDestinationLocation(query.getDestinationLocation() )
-                .setMaxWaitingTimeInSeconds( TripQuery.IGNORE_MAX_WAITING_TIME ) // TODO: We are ignoring time for now
-                .build();
-
         potentialMatch = isPotentialMatch(dropMatch.getOffer(), adaptedQuery);
-        if( potentialMatch.isPresent() ) {
-            // expensive directions call but necessary, we need the adapted passenger routes to compute the total price per driver
-            Route passengerpickUpRoute = directionsManager.getDirections( query.getStartLocation(), adaptedQuery.getStartLocation() ).get(0);
-            Route passengerDropRoute = directionsManager.getDirections( adaptedQuery.getStartLocation(), query.getDestinationLocation() ).get(0);
-            int totalPickUpPriceInCents = (int) (pickUpMatch.getOffer().getPricePerKmInCents() * passengerpickUpRoute.getDistanceInMeters() / 1000);
-            int totalDropPriceInCents = (int) (dropMatch.getOffer().getPricePerKmInCents() * passengerDropRoute.getDistanceInMeters() / 1000);
+        if( !potentialMatch.isPresent() )
+            return Optional.absent();
 
-            long estimatedPickupDuration = pickUpMatch.getDiversionNavigationResult().getEstimatedTripDurationInSecondsForUser( query.getPassenger() );
-            long estimatedDropDuration = potentialMatch.get().getTotalRouteNavigationResult().getEstimatedTripDurationInSecondsForUser( query.getPassenger() );
+        long estimatedDropDuration = potentialMatch.get().getTotalRouteNavigationResult().getEstimatedTripDurationInSecondsForUser(query.getPassenger());
 
-            SuperTripReservation reservation = new SuperTripReservation.Builder()
-                    .setQuery(query)
-                    .addReservation( new TripReservation(
-                            new SuperTripSubQuery.Builder()
-                                    .setStartLocation( query.getStartLocation() )
-                                    .setDestinationLocation( adaptedQuery.getStartLocation() )
-                                    .build(),
-                            totalPickUpPriceInCents,
-                            pickUpMatch.getOffer().getPricePerKmInCents(),
-                            pickUpMatch.getOffer().getId(),
-                            estimatedPickupDuration,
-                            pickUpMatch.getOffer().getDriver() ) )
-                    .addReservation( new TripReservation(
-                            new SuperTripSubQuery.Builder()
-                                    .setStartLocation( adaptedQuery.getStartLocation() )
-                                    .setDestinationLocation( query.getDestinationLocation() )
-                                    .build(),
-                            totalDropPriceInCents,
-                            dropMatch.getOffer().getPricePerKmInCents(),
-                            dropMatch.getOffer().getId(),
-                            estimatedDropDuration,
-                            dropMatch.getOffer().getDriver()) )
-                    .build();
+        // expensive directions call but necessary, we need the adapted passenger routes to compute the total price per driver
+        Route passengerPickUpRoute = directionsManager.getDirections(query.getStartLocation(), adaptedQuery.getStartLocation()).get(0);
+        Route passengerDropRoute = directionsManager.getDirections(adaptedQuery.getStartLocation(), query.getDestinationLocation()).get(0);
+        int totalPickUpPriceInCents = (int) (pickUpMatch.getOffer().getPricePerKmInCents() * passengerPickUpRoute.getDistanceInMeters() / 1000);
+        int totalDropPriceInCents = (int) (dropMatch.getOffer().getPricePerKmInCents() * passengerDropRoute.getDistanceInMeters() / 1000);
 
-            return Optional.of( reservation );
-        }
+        return Optional.of(
+                createSuperTripReservation( query,
+                        connectionPoint,
+                        pickUpMatch.getOffer(),
+                        dropMatch.getOffer(),
+                        totalPickUpPriceInCents,
+                        estimatedPickupDuration,
+                        totalDropPriceInCents,
+                        estimatedDropDuration)
+        );
+    }
 
-        // TODO: Nothing was found, now we have recursive problem that could be solved using the trips matcher again from the beginning
-
-        return Optional.absent();
+    private SuperTripReservation createSuperTripReservation(TripQuery query,
+                                                            RouteLocation connectionPoint,
+                                                            TripOffer pickUpOffer,
+                                                            TripOffer dropOffer,
+                                                            int totalPickUpPriceInCents,
+                                                            long estimatedPickupDuration,
+                                                            int totalDropPriceInCents,
+                                                            long estimatedDropDuration) {
+        return new SuperTripReservation.Builder()
+                .setQuery(query)
+                .addReservation(new TripReservation(
+                        new SuperTripSubQuery.Builder()
+                                .setStartLocation(query.getStartLocation())
+                                .setDestinationLocation(connectionPoint)
+                                .build(),
+                        totalPickUpPriceInCents,
+                        pickUpOffer.getPricePerKmInCents(),
+                        pickUpOffer.getId(),
+                        estimatedPickupDuration,
+                        pickUpOffer.getDriver()))
+                .addReservation(new TripReservation(
+                        new SuperTripSubQuery.Builder()
+                                .setStartLocation(connectionPoint)
+                                .setDestinationLocation(query.getDestinationLocation())
+                                .build(),
+                        totalDropPriceInCents,
+                        dropOffer.getPricePerKmInCents(),
+                        dropOffer.getId(),
+                        estimatedDropDuration,
+                        dropOffer.getDriver()))
+                .build();
     }
 
     /**
@@ -412,7 +411,7 @@ class SuperTripsMatcher extends SimpleTripsMatcher {
             onePointQuery = new TripQuery.Builder().setPassenger(query.getPassenger()).setDestinationLocation(query.getDestinationLocation()).build();
 
         // get complete new route
-        NavigationResult navigationResult = null;
+        NavigationResult navigationResult;
         try {
             navigationResult = tripsNavigationManager.getNavigationResultForOffer(offer, onePointQuery);
             if (navigationResult.getUserWayPoints().isEmpty()) return Optional.absent();
@@ -420,8 +419,9 @@ class SuperTripsMatcher extends SimpleTripsMatcher {
             return Optional.absent();
         }
 
-        // TODO: Currently we are ignoring time completely
-        //if (!assertRouteWithinPassengerMaxWaitingTime(offer, query, navigationResult.getUserWayPoints())) return Optional.absent();
+        // check if the user is picked up in time
+        if( useStartWaypoint)
+            if (!assertRouteWithinPassengerMaxWaitingTime(offer, query, navigationResult.getUserWayPoints())) return Optional.absent();
 
         // check if passenger route is within max diversion
         long distanceToDriverInMeters = navigationResult.getUserWayPoints().get(navigationResult.getUserWayPoints().size() - 1).getDistanceToDriverInMeters();
