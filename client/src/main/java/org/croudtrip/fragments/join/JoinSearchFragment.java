@@ -375,6 +375,11 @@ public class JoinSearchFragment extends SubscriptionFragment implements GoogleAp
                 MaterialNavigationDrawer drawer = (MaterialNavigationDrawer) getActivity();
                 drawer.setFragment(new DispatchOfferTripFragment(), getString(R.string.menu_offer_trip));
                 MaterialSection section = drawer.getSectionByTitle(getString(R.string.menu_offer_trip));
+
+                if (section == null) {
+                    drawer.getSectionByTitle(getString(R.string.menu_my_trip));
+                }
+
                 drawer.setSection(section);
             }
         });
