@@ -62,6 +62,7 @@ import org.croudtrip.api.directions.RouteLocation;
 import org.croudtrip.api.trips.JoinTripRequest;
 import org.croudtrip.api.trips.JoinTripRequestUpdate;
 import org.croudtrip.api.trips.JoinTripRequestUpdateType;
+import org.croudtrip.api.trips.JoinTripStatus;
 import org.croudtrip.api.trips.SuperTrip;
 import org.croudtrip.api.trips.UserWayPoint;
 import org.croudtrip.fragments.SubscriptionFragment;
@@ -287,7 +288,12 @@ public class JoinDrivingFragment extends SubscriptionFragment {
                 @Override
                 public void onClick(View v) {
                     //Handle here all the stuff that happens when the trip is successfully completed (user hits "I have reached my destination")
-                    updateTrip(JoinTripRequestUpdateType.LEAVE_CAR, progressBarDest);
+                    if (prefs.getBoolean(Constants.SHARED_PREF_KEY_DRIVING, false)) {
+                        updateTrip(JoinTripRequestUpdateType.LEAVE_CAR, progressBarDest);
+                    } else {
+                        // If the user enters the car and leaves the car without this method called twice we need this distinction
+                        updateTrip(JoinTripRequestUpdateType.ENTER_CAR, progressBarDest);
+                    }
                 }
             });
         } else {
@@ -337,12 +343,13 @@ public class JoinDrivingFragment extends SubscriptionFragment {
                                             progressBarCancel.setVisibility(View.GONE);
                                             sendUserBackToSearch();
                                         }
-                                    }, new CrashCallback(getActivity(), "failed to cancel trip", new Action1<Throwable>() {
+                                    }, new Action1<Throwable>() {
                                         @Override
                                         public void call(Throwable throwable) {
+                                            Toast.makeText(getActivity(), R.string.join_trip_results_error, Toast.LENGTH_SHORT).show();
                                             progressBarCancel.setVisibility(View.GONE);
                                         }
-                                    }));
+                                    });
             }
         });
 
@@ -526,8 +533,6 @@ public class JoinDrivingFragment extends SubscriptionFragment {
             progressBar.setVisibility(View.VISIBLE);
         }
 
-        Log.d("alex"," UPDATE -> " + updateType.toString());
-
         final SharedPreferences prefs = getActivity().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
 
         //send update trip request to server
@@ -562,22 +567,51 @@ public class JoinDrivingFragment extends SubscriptionFragment {
                                     } else {
                                         //..otherwise he must be able to enter the next car
 
-                                        //remove status "driving" locally
-                                        final SharedPreferences prefs = getActivity().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
-                                        SharedPreferences.Editor editor = prefs.edit();
-                                        editor.putBoolean(Constants.SHARED_PREF_KEY_DRIVING, false);
-                                        editor.putLong(Constants.SHARED_PREF_KEY_TRIP_ID,  superTrips.get(0).getJoinRequests().get(0).getId()); //will break
-                                        editor.apply();
-
-                                        //show correct ui elements
-                                        switchToNfcIfAvailable();
-
-                                        //change description and functionality of button back to "driver is here"
-                                        btnReachedDestination.setText(getResources().getString(R.string.join_trip_results_driverArrival));
-                                        btnReachedDestination.setOnClickListener(new View.OnClickListener() {
+                                        //get JoinTripRequest for the remaining SuperTrip
+                                        tripsResource.getJoinTripRequestsForSuperTrip(superTrips.get(0).getId(), new Callback<List<JoinTripRequest>>() {
                                             @Override
-                                            public void onClick(View v) {
-                                                updateTrip(JoinTripRequestUpdateType.ENTER_CAR, progressBarDest);
+                                            public void success(List<JoinTripRequest> joinTripRequests, Response response) {
+                                                //get the next JoinTripRequest
+                                                JoinTripRequest nextRequest = null;
+
+                                                //the next request which was accepted by passenger+driver but the passenger did not enter the
+                                                //car yet is the next part of the SuperTrip
+                                                for (JoinTripRequest request : joinTripRequests) {
+                                                    if (request.getStatus().equals(JoinTripStatus.DRIVER_ACCEPTED)) {
+                                                        nextRequest = request;
+                                                        break;
+                                                    }
+                                                }
+
+                                                //No correct JoinTripRequest is found
+                                                if (nextRequest == null) {
+                                                    showErrorMessage(progressBar);
+                                                    return;
+                                                }
+
+                                                //remove status "driving" locally
+                                                final SharedPreferences prefs = getActivity().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
+                                                SharedPreferences.Editor editor = prefs.edit();
+                                                editor.putBoolean(Constants.SHARED_PREF_KEY_DRIVING, false);
+                                                editor.putLong(Constants.SHARED_PREF_KEY_TRIP_ID,  nextRequest.getId()); //will break
+                                                editor.apply();
+
+                                                //show correct ui elements
+                                                switchToNfcIfAvailable();
+
+                                                //change description and functionality of button back to "driver is here"
+                                                btnReachedDestination.setText(getResources().getString(R.string.join_trip_results_driverArrival));
+                                                btnReachedDestination.setOnClickListener(new View.OnClickListener() {
+                                                    @Override
+                                                    public void onClick(View v) {
+                                                        updateTrip(JoinTripRequestUpdateType.ENTER_CAR, progressBarDest);
+                                                    }
+                                                });
+                                            }
+
+                                            @Override
+                                            public void failure(RetrofitError error) {
+                                                showErrorMessage(progressBar);
                                             }
                                         });
                                     }
@@ -585,7 +619,7 @@ public class JoinDrivingFragment extends SubscriptionFragment {
 
                                 @Override
                                 public void failure(RetrofitError error) {
-                                    CrashPopup.show(getActivity(), error);
+                                    showErrorMessage(progressBar);
                                 }
                             });
                         } else if (updateType.equals(JoinTripRequestUpdateType.ENTER_CAR)) {
@@ -604,6 +638,12 @@ public class JoinDrivingFragment extends SubscriptionFragment {
                             //change description of button from "enter car" to "leave car"
                             btnReachedDestination.setText(getResources().getString(R.string.join_trip_results_left_Car));
                             btnReachedDestination.setVisibility(View.VISIBLE);
+                            btnReachedDestination.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    updateTrip(JoinTripRequestUpdateType.LEAVE_CAR, progressBarDest);
+                                }
+                            });
 
                             //passenger can not cancel while he is in the car -> disable button
                             setButtonInactive(btnCancelTrip);
@@ -612,17 +652,24 @@ public class JoinDrivingFragment extends SubscriptionFragment {
                             llWaiting.setVisibility(View.GONE);
                             llDriving.setVisibility(View.VISIBLE);
                             flMap.setVisibility(View.VISIBLE);
-                                                    }
-                    }
-                }, new CrashCallback(getActivity(), "failed to update join request", new Action1<Throwable>() {
-                    @Override
-                    public void call(Throwable throwable) {
-                        if (progressBar != null) {
-                            progressBar.setVisibility(View.GONE);
                         }
                     }
-                }));
+                }, new Action1<Throwable>() {
+                    @Override
+                    public void call(Throwable throwable) {
+                        CrashPopup.show(getActivity(), throwable);
+                        showErrorMessage(progressBar);
+                    }
+                });
         subscriptions.add(subscription);
+    }
+
+    private void showErrorMessage(ProgressWheel progressBar) {
+        Toast.makeText(getActivity(), R.string.join_trip_results_error, Toast.LENGTH_SHORT).show();
+
+        if (progressBar != null) {
+            progressBar.setVisibility(View.GONE);
+        }
     }
 
     /*
