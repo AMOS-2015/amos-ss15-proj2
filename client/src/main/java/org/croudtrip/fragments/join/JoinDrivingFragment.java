@@ -48,7 +48,9 @@ import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.pnikosis.materialishprogress.ProgressWheel;
 
@@ -61,6 +63,7 @@ import org.croudtrip.api.trips.JoinTripRequest;
 import org.croudtrip.api.trips.JoinTripRequestUpdate;
 import org.croudtrip.api.trips.JoinTripRequestUpdateType;
 import org.croudtrip.api.trips.SuperTrip;
+import org.croudtrip.api.trips.UserWayPoint;
 import org.croudtrip.fragments.SubscriptionFragment;
 import org.croudtrip.location.LocationUpdater;
 import org.croudtrip.trip.MyTripPassengerDriversAdapter;
@@ -70,7 +73,6 @@ import org.croudtrip.utils.DefaultTransformer;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Iterator;
 import java.util.List;
 import java.util.TimeZone;
 
@@ -411,6 +413,7 @@ public class JoinDrivingFragment extends SubscriptionFragment {
     private void drawRoutesOnMap(List<JoinTripRequest> requests) {
         colorPosition = 0;
         googleMap.clear();
+
         for (final JoinTripRequest joinTripRequest : requests) {
             subscriptions.add(tripsResource
                     .computeNavigationResultForOffer(joinTripRequest.getOffer().getId())
@@ -424,20 +427,45 @@ public class JoinDrivingFragment extends SubscriptionFragment {
                                     @Override
                                     public void run() {
                                         try {
+                                            List<UserWayPoint> wayPoints = navigationResult.getUserWayPoints();
                                             List<RouteLocation> polyline = navigationResult.getRoute()
                                                     .getPolylineWaypointsForUser(
                                                             joinTripRequest.getSuperTrip().getQuery().getPassenger(),
-                                                            navigationResult.getUserWayPoints());
+                                                            wayPoints);
 
                                             List<LatLng> polylinePoints = new ArrayList<LatLng>();
-                                            for(RouteLocation loc : polyline) {
-                                                polylinePoints.add(new LatLng(loc.getLat(), loc.getLng()));
+                                            LatLng first = null;
+                                            LatLng last = null;
+                                            for (RouteLocation loc : polyline) {
+
+                                                last = new LatLng(loc.getLat(), loc.getLng());
+                                                if (first == null) {
+                                                    first = last;
+                                                }
+
+                                                polylinePoints.add(last);
                                             }
 
+                                            // Correct line color (alternating)
                                             googleMap.addPolyline(new PolylineOptions()
                                                     .addAll(polylinePoints).color(colors.get(colorPosition % colors.size())));
-
                                             colorPosition++;
+
+                                            // Show dots at different driver pick-up/drop-offs
+                                            googleMap.addMarker(
+                                                    new MarkerOptions()
+                                                            .position(first)
+                                                            .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_marker))
+                                                            .anchor(0.5f, 0.5f)
+                                                            .flat(true)
+                                            );
+                                            googleMap.addMarker(
+                                                    new MarkerOptions()
+                                                            .position(last)
+                                                            .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_marker))
+                                                            .anchor(0.5f, 0.5f)
+                                                            .flat(true)
+                                            );
 
                                         } catch (IllegalArgumentException ex) {
                                             CrashPopup.show(getActivity(), ex);
