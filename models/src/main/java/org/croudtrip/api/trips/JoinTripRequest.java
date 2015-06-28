@@ -31,6 +31,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.PrePersist;
+import javax.persistence.PreUpdate;
 import javax.persistence.Table;
 
 /**
@@ -115,6 +117,21 @@ public class JoinTripRequest {
 	@JoinColumn(name = "super_passenger_trip_id")
 	@JsonManagedReference
 	private SuperTrip superTrip;
+
+    @Column(name="index_column")
+    Integer listIndex;
+
+    private void computeListIndex(){
+        /*for( JoinTripRequest jtr : superTrip.getJoinRequests()  ){
+            System.out.println( jtr );
+            System.out.println( "vs. this:");
+            System.out.println( this );
+            System.out.println();
+        }*/
+
+        listIndex = superTrip.getJoinRequests().indexOf(this);
+        //System.out.println("INDEX:" + listIndex);
+    }
 
 	/**
 	 * Contains all the relevant information about the sub-trip that should be done by one driver
@@ -211,8 +228,22 @@ public class JoinTripRequest {
 		return Objects.hashCode(id, totalPriceInCents, pricePerKmInCents, offer, status, superTrip, subQuery);
 	}
 
+    @Override
+    public String toString() {
+        return "JoinTripRequest{" +
+                "id=" + id +
+                ", totalPriceInCents=" + totalPriceInCents +
+                ", pricePerKmInCents=" + pricePerKmInCents +
+                ", offer=" + offer +
+                ", status=" + status +
+                ", estimatedArrivalTimestamp=" + estimatedArrivalTimestamp +
+                ", superTrip=" + superTrip +
+                ", listIndex=" + listIndex +
+                ", subQuery=" + subQuery +
+                '}';
+    }
 
-	public static class Builder {
+    public static class Builder {
 
 		private long id;
 		private int totalPriceInCents;

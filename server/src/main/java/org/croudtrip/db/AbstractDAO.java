@@ -31,12 +31,12 @@ abstract class AbstractDAO<T> extends io.dropwizard.hibernate.AbstractDAO<T> {
 	}
 
 
-	public final void save(T value) {
+	public void save(T value) {
 		currentSession().save(value);
 	}
 
 
-	public final void update(T value) {
+	public void update(T value) {
 		currentSession().merge(value);
 	}
 

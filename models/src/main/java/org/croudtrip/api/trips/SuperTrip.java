@@ -20,6 +20,8 @@ import javax.persistence.Id;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
+import javax.persistence.OrderBy;
+import javax.persistence.OrderColumn;
 import javax.persistence.Table;
 
 /**
@@ -57,6 +59,7 @@ public class SuperTrip {
 	private TripQuery query;
 
 	@OneToMany(mappedBy = "superTrip", fetch = FetchType.EAGER)
+    @OrderBy("index_column")
 	@JsonBackReference
 	private List<JoinTripRequest> joinRequests;
 
@@ -101,6 +104,13 @@ public class SuperTrip {
 	public void setJoinRequests(List<JoinTripRequest> joinRequests) {
 		this.joinRequests = joinRequests;
 	}
+
+    public void addJoinRequest( JoinTripRequest joinTripRequest) {
+        if( this.joinRequests == null )
+            this.joinRequests = new ArrayList<>();
+
+        this.joinRequests.add( joinTripRequest );
+    }
 
 
     /**

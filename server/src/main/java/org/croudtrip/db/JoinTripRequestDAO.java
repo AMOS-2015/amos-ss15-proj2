@@ -18,6 +18,8 @@ package org.croudtrip.db;
 import org.croudtrip.api.trips.JoinTripRequest;
 import org.hibernate.SessionFactory;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -63,4 +65,35 @@ public class JoinTripRequestDAO extends AbstractDAO<JoinTripRequest> {
                 .setParameter(JoinTripRequest.QUERY_PARAM_OFFER_ID, offerId));
     }
 
+    @Override
+    public final void update( JoinTripRequest request ){
+        try {
+            Method method = request.getClass().getDeclaredMethod("computeListIndex");
+            method.setAccessible(true);
+            method.invoke(request);
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+        super.update(request);
+    }
+
+    @Override
+    public final void save( JoinTripRequest request ){
+        try {
+            Method method = request.getClass().getDeclaredMethod("computeListIndex");
+            method.setAccessible(true);
+            method.invoke(request);
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+        super.save(request);
+    }
 }

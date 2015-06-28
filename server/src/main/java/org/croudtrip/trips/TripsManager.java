@@ -328,7 +328,9 @@ public class TripsManager {
         logManager.d("All trips are possible.");
 
         // send notifications to all drivers
+        List<JoinTripRequest> jtRequests = new ArrayList<>();
         SuperTrip superTrip = new SuperTrip.Builder().setQuery(tripReservation.getQuery()).build();
+        superTripDAO.save(superTrip);
         for( int i = 0; i < matches.size(); ++i ) {
             SimpleTripsMatcher.PotentialMatch match = matches.get(i);
 
@@ -353,9 +355,10 @@ public class TripsManager {
                     superTrip,
                     tripReservation.getReservations().get(i).getSubQuery());
 
-            superTripDAO.save(superTrip);
+            superTrip.addJoinRequest(joinTripRequest);
             joinTripRequestDAO.save(joinTripRequest);
-            superTrip.setJoinRequests(Lists.newArrayList(joinTripRequest));
+            superTripDAO.update(superTrip);
+
 
             // send push notification to driver
             gcmManager.sendGcmMessageToUser(match.getOffer().getDriver(), GcmConstants.GCM_MSG_JOIN_REQUEST,
@@ -364,6 +367,7 @@ public class TripsManager {
                     new Pair<String, String>(GcmConstants.GCM_MSG_JOIN_REQUEST_ID, "" + joinTripRequest.getId()),
                     new Pair<String, String>(GcmConstants.GCM_MSG_JOIN_REQUEST_OFFER_ID, "" + match.getOffer().getId()));
         }
+
 
         return Optional.of(superTrip);
     }
