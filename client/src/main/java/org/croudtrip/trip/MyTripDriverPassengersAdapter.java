@@ -24,6 +24,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
@@ -50,15 +51,17 @@ import timber.log.Timber;
  * @author Vanessa Lange
  */
 public class MyTripDriverPassengersAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
-        implements OnDiversionUpdateListener{
+        implements OnDiversionUpdateListener {
 
     //************************** Variables ***************************//
 
     private View header;    // map and earnings are in the header view
+    private LinearLayout space;
 
     private static final int TYPE_HEADER = 0;           // header element
     private static final int TYPE_ITEM = 1;             // normal passenger element
     private static final int TYPE_PENDING_ITEM = 2;     // pending passenger element
+    private static final int TYPE_SPACE_ITEM = 3;       // space element to separate normal from pending passengers
 
     private List<JoinTripRequest> passengers;
     private List<JoinMatch> pendingPassengers;
@@ -81,7 +84,7 @@ public class MyTripDriverPassengersAdapter extends RecyclerView.Adapter<Recycler
 
     //**************************** Methods *****************************//
 
-    public View getHeader(){
+    public View getHeader() {
         return header;
     }
 
@@ -96,9 +99,13 @@ public class MyTripDriverPassengersAdapter extends RecyclerView.Adapter<Recycler
         } else if (viewType == TYPE_HEADER) {
             return new HeaderViewHolder(header);
 
-        }else if (viewType == TYPE_PENDING_ITEM) {
+        } else if (viewType == TYPE_PENDING_ITEM) {
             return new PendingItemViewHolder(LayoutInflater.from(parent.getContext())
                     .inflate(R.layout.cardview_join_trip_requests, parent, false));
+
+        } else if (viewType == TYPE_SPACE_ITEM) {
+            return new SpaceViewHolder(LayoutInflater.from(parent.getContext())
+                    .inflate(R.layout.space, parent, false));
         }
 
         throw new RuntimeException("There is no type that matches the type " + viewType);
@@ -111,7 +118,7 @@ public class MyTripDriverPassengersAdapter extends RecyclerView.Adapter<Recycler
         if (h instanceof ItemViewHolder) {
             ItemViewHolder holder = (ItemViewHolder) h;
 
-            JoinTripRequest joinRequest = passengers.get(position - 1 - pendingPassengers.size());
+            JoinTripRequest joinRequest = passengers.get(position - 1 - pendingPassengers.size() - getSpaceCount());
             TripQuery query = joinRequest.getSuperTrip().getQuery();
 
             // Passenger name
@@ -150,7 +157,11 @@ public class MyTripDriverPassengersAdapter extends RecyclerView.Adapter<Recycler
             MyTripDriverPassengersAdapter.HeaderViewHolder holder = (MyTripDriverPassengersAdapter.HeaderViewHolder) h;
             holder.view = header;
 
-        }else if (h instanceof MyTripDriverPassengersAdapter.PendingItemViewHolder) {
+        } else if (h instanceof MyTripDriverPassengersAdapter.SpaceViewHolder) {
+            MyTripDriverPassengersAdapter.SpaceViewHolder holder = (MyTripDriverPassengersAdapter.SpaceViewHolder) h;
+            holder.space = space;
+
+        } else if (h instanceof MyTripDriverPassengersAdapter.PendingItemViewHolder) {
             PendingItemViewHolder holder = (PendingItemViewHolder) h;
 
             JoinMatch joinMatch = pendingPassengers.get(position - 1);  // -1 because of header
@@ -185,6 +196,7 @@ public class MyTripDriverPassengersAdapter extends RecyclerView.Adapter<Recycler
             }
         }
     }
+
 
     private void showPassengerLocation(TextView tvLocation, RouteLocation location) {
 
@@ -283,34 +295,34 @@ public class MyTripDriverPassengersAdapter extends RecyclerView.Adapter<Recycler
         notifyDataSetChanged();
     }
 
+    private int getSpaceCount(){
+        int spaceCount = 0;
+
+        if(pendingPassengers.size() > 0 && passengers.size() > 0){
+            spaceCount = 1;
+        }
+
+        return spaceCount;
+    }
 
     @Override
     public int getItemCount() {
-        return passengers.size() + pendingPassengers.size() + 1;   // 1 for header
+        return passengers.size() + getPendingPassengersCount() + 1 + getSpaceCount();   // 1 for header
     }
 
-    public int getPassengersCount(){
+    public int getPassengersCount() {
         return passengers.size();
     }
 
-    public int getPendingPassengersCount(){
+    public int getPendingPassengersCount() {
         return pendingPassengers.size();
     }
 
 
-    private JoinTripRequest getPassenger(int position) {
-
-        if (position < 0 || position >= passengers.size()) {
-            return null;
-        }
-
-        return passengers.get(position);
-    }
-
     /**
      * Returns the JoinTripRequest at the specific position
      *
-     * @param position the position in the adapter of the JoinTripRequest to return
+     * @param position the nth pending passenger
      * @return the JoinTripRequest at the specific position
      */
     public JoinTripRequest getPendingPassenger(int position) {
@@ -372,7 +384,7 @@ public class MyTripDriverPassengersAdapter extends RecyclerView.Adapter<Recycler
             JoinTripRequest r = pendingPassengers.get(i).joinRequest;
 
             if (r.getId() == additionalPendingPassenger.getId()) {
-                if(r.equals(additionalPendingPassenger)){
+                if (r.equals(additionalPendingPassenger)) {
                     // Nothing changed, no need to update
                     return;
                 }
@@ -396,6 +408,7 @@ public class MyTripDriverPassengersAdapter extends RecyclerView.Adapter<Recycler
 
     /**
      * Removes the JoinTripRequest with the same requestID from the adapter.
+     *
      * @param requestID
      */
     public void removePendingPassenger(long requestID) {
@@ -473,7 +486,7 @@ public class MyTripDriverPassengersAdapter extends RecyclerView.Adapter<Recycler
 
             if (r.getId() == request.getId()) {
 
-                if(r.equals(request)){
+                if (r.equals(request)) {
                     // Nothing changed, no need to update
                     return;
                 }
@@ -529,6 +542,15 @@ public class MyTripDriverPassengersAdapter extends RecyclerView.Adapter<Recycler
         return position - 1 >= 0 && position - 1 < pendingPassengers.size();
     }
 
+    public boolean isPositionSpace(int position) {
+
+        if (pendingPassengers.size() == 0 || passengers.size() == 0) {
+            return false;
+        }
+
+        return position - 1 == pendingPassengers.size();    // - 1 because of header
+    }
+
 
     @Override
     public int getItemViewType(int position) {
@@ -536,8 +558,11 @@ public class MyTripDriverPassengersAdapter extends RecyclerView.Adapter<Recycler
         if (isPositionHeader(position)) {
             return TYPE_HEADER;
 
-        }else if(isPositionPendingPassenger(position)){
+        } else if (isPositionPendingPassenger(position)) {
             return TYPE_PENDING_ITEM;
+
+        } else if (isPositionSpace(position)) {
+            return TYPE_SPACE_ITEM;
         }
 
         return TYPE_ITEM;
@@ -592,9 +617,23 @@ public class MyTripDriverPassengersAdapter extends RecyclerView.Adapter<Recycler
         }
     }
 
+    /**
+     * Provides a reference to the space view
+     */
+    class SpaceViewHolder extends RecyclerView.ViewHolder {
+
+        protected LinearLayout space;
+
+        public SpaceViewHolder(View view) {
+            super(view);
+            this.space = (LinearLayout) view.findViewById(R.id.space);
+        }
+    }
+
 
     public interface OnRequestAcceptDeclineListener {
         void onJoinRequestDecline(View view, int position);
+
         void onJoinRequestAccept(View view, int position);
     }
 
@@ -633,7 +672,6 @@ public class MyTripDriverPassengersAdapter extends RecyclerView.Adapter<Recycler
             acceptButton.setOnClickListener(this);
             declineButton.setOnClickListener(this);
         }
-
 
 
         @Override
