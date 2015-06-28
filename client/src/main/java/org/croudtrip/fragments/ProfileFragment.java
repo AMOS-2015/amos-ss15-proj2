@@ -14,9 +14,6 @@
 
 package org.croudtrip.fragments;
 
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
@@ -40,28 +37,21 @@ import org.croudtrip.account.AccountManager;
 import org.croudtrip.api.VehicleResource;
 import org.croudtrip.api.account.User;
 import org.croudtrip.api.account.Vehicle;
-import org.croudtrip.utils.CrashCallback;
 import org.croudtrip.utils.DataHolder;
 import org.croudtrip.utils.DefaultTransformer;
 import org.croudtrip.utils.VehiclesListAdapter;
 
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.Calendar;
 import java.util.List;
 
 import javax.inject.Inject;
-import javax.net.ssl.HttpsURLConnection;
 
 import it.neokree.materialnavigationdrawer.MaterialNavigationDrawer;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
 import roboguice.inject.InjectView;
-import rx.Observable;
 import rx.Subscription;
 import rx.functions.Action1;
-import rx.functions.Func0;
 import timber.log.Timber;
 
 /**
@@ -235,11 +225,11 @@ public class ProfileFragment extends SubscriptionFragment {
                         if (vehicles.size() == 1) {
                             DataHolder.getInstance().setIsLast(true);
                         }
-                        
+
                         progressBar.setVisibility(View.GONE);
 
                     }
-                }, new CrashCallback(getActivity()) {
+                }, new Action1<Throwable>() {
                     @Override
                     public void call(Throwable throwable) {
                         Response response = ((RetrofitError) throwable).getResponse();

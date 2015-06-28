@@ -170,13 +170,7 @@ public class MainActivity extends AbstractRoboDrawerActivity {
                         public void call(Void aVoid) {
                             Timber.d("Registered at GCM.");
                         }
-                    }, new CrashCallback(this) {
-                        @Override
-                        public void call(Throwable throwable) {
-                            super.call(throwable);
-                            Timber.e("Could not register at GCM services: " + throwable.getMessage() );
-                        }
-                    });
+                    }, new CrashCallback(this, "failed to register for GCM"));
             subscriptions.add(subscription);
         }
 
@@ -293,7 +287,7 @@ public class MainActivity extends AbstractRoboDrawerActivity {
                             account.setPhoto(avatar);
                             notifyAccountDataChanged();
                         }
-                    }, new CrashCallback(this) {
+                    }, new Action1<Throwable>() {
                         @Override
                         public void call(Throwable throwable) {
                             Timber.e(throwable, "failed to download avatar");

@@ -23,10 +23,15 @@ import com.google.inject.Provides;
 import org.croudtrip.R;
 import org.croudtrip.account.AccountManager;
 
+import java.io.IOException;
+import java.net.HttpURLConnection;
+
 import javax.inject.Inject;
 
 import retrofit.RequestInterceptor;
 import retrofit.RestAdapter;
+import retrofit.client.Request;
+import retrofit.client.UrlConnectionClient;
 import retrofit.converter.JacksonConverter;
 
 public class ServerModule implements Module {
@@ -48,6 +53,7 @@ public class ServerModule implements Module {
 						AccountManager.addAuthorizationHeader(context, request);
 					}
 				})
+				.setClient(new LongTimeoutUrlConnectionClient())
 				.setConverter(new JacksonConverter())
 				.build();
 	}
@@ -87,6 +93,22 @@ public class ServerModule implements Module {
 	@Inject
 	public GcmRegistrationResource provideGcmRegistrationResource(Context context) {
 		return provideRestAdapter(context).create(GcmRegistrationResource.class);
+	}
+
+
+	/**
+	 * Increases default HTTP timeout length.
+	 */
+	public static class LongTimeoutUrlConnectionClient extends UrlConnectionClient {
+
+		@Override
+		protected HttpURLConnection openConnection(Request request) throws IOException {
+			HttpURLConnection connection = super.openConnection(request);
+			connection.setConnectTimeout(10 * 1000); // 10 seconds
+			connection.setReadTimeout(90 * 1000); // 90 seconds
+			return connection;
+		}
+
 	}
 
 }

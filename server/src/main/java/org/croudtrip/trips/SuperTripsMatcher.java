@@ -212,7 +212,12 @@ class SuperTripsMatcher extends SimpleTripsMatcher {
                         .setMaxWaitingTimeInSeconds(query.getMaxWaitingTimeInSeconds())
                         .build();
 
+                // temporarily remove found offers from offers list
+                offers.remove(recursiveSuperTrip.pickUpMatch.getOffer());
+                offers.remove(recursiveSuperTrip.dropMatch.getOffer());
                 List<SuperTripReservation> recursiveReservations = findPotentialTrips( offers, adaptedQuery, currentDepth + 1 );
+                offers.add(recursiveSuperTrip.pickUpMatch.getOffer());
+                offers.add(recursiveSuperTrip.dropMatch.getOffer());
 
                 // if no recursive solution was found we can stop further searching
                 if( recursiveReservations.isEmpty() ) continue;
@@ -277,7 +282,7 @@ class SuperTripsMatcher extends SimpleTripsMatcher {
         return reservations;
     }
 
-    private boolean isRoughPotentialSuperTripMatchForOneWaypoint(TripOffer offer, TripQuery query, boolean useStartWaypoint) {
+    protected boolean isRoughPotentialSuperTripMatchForOneWaypoint(TripOffer offer, TripQuery query, boolean useStartWaypoint) {
         // check trip status
         if (!offer.getStatus().equals(TripOfferStatus.ACTIVE)) return false;
 
@@ -299,7 +304,7 @@ class SuperTripsMatcher extends SimpleTripsMatcher {
         return assertWithinAirDistance(offer, onePointQuery);
     }
 
-    private Optional<SuperTripReservation> isValidReservation(PotentialSuperTripMatch pickUpMatch, PotentialSuperTripMatch dropMatch, TripQuery query, ClosestPairResult closestPairResult) {
+    protected Optional<SuperTripReservation> isValidReservation(PotentialSuperTripMatch pickUpMatch, PotentialSuperTripMatch dropMatch, TripQuery query, ClosestPairResult closestPairResult) {
 
         Optional<SuperTripReservation> reservationOptional = isValidReservationForConnectionPoint( query, closestPairResult.getDropLocation(), pickUpMatch, dropMatch );
         if( reservationOptional.isPresent() )
@@ -356,36 +361,40 @@ class SuperTripsMatcher extends SimpleTripsMatcher {
         );
     }
 
-    private SuperTripReservation createSuperTripReservation(TripQuery query,
-                                                            RouteLocation connectionPoint,
-                                                            TripOffer pickUpOffer,
-                                                            TripOffer dropOffer,
-                                                            int totalPickUpPriceInCents,
-                                                            long estimatedPickupDuration,
-                                                            int totalDropPriceInCents,
-                                                            long estimatedDropDuration) {
+    private SuperTripReservation createSuperTripReservation(
+            TripQuery query,
+            RouteLocation connectionPoint,
+            TripOffer pickUpOffer,
+            TripOffer dropOffer,
+            int totalPickUpPriceInCents,
+            long estimatedPickupDuration,
+            int totalDropPriceInCents,
+            long estimatedDropDuration) {
+
         return new SuperTripReservation.Builder()
                 .setQuery(query)
-                .addReservation(new TripReservation(
-                        new SuperTripSubQuery.Builder()
+                .addReservation(new TripReservation.Builder()
+                        .setSubQuery(new SuperTripSubQuery.Builder()
                                 .setStartLocation(query.getStartLocation())
                                 .setDestinationLocation(connectionPoint)
-                                .build(),
-                        totalPickUpPriceInCents,
-                        pickUpOffer.getPricePerKmInCents(),
-                        pickUpOffer.getId(),
-                        estimatedPickupDuration,
-                        pickUpOffer.getDriver()))
-                .addReservation(new TripReservation(
-                        new SuperTripSubQuery.Builder()
+                                .build())
+                        .setTotalPriceInCents(totalPickUpPriceInCents)
+                        .setPricePerKmInCents(pickUpOffer.getPricePerKmInCents())
+                        .setOfferId(pickUpOffer.getId())
+                        .setEstimatedTripDurationInSeconds(estimatedPickupDuration)
+                        .setDriver(pickUpOffer.getDriver())
+                        .build())
+                .addReservation(new TripReservation.Builder()
+                        .setSubQuery(new SuperTripSubQuery.Builder()
                                 .setStartLocation(connectionPoint)
                                 .setDestinationLocation(query.getDestinationLocation())
-                                .build(),
-                        totalDropPriceInCents,
-                        dropOffer.getPricePerKmInCents(),
-                        dropOffer.getId(),
-                        estimatedDropDuration,
-                        dropOffer.getDriver()))
+                                .build())
+                        .setTotalPriceInCents(totalDropPriceInCents)
+                        .setPricePerKmInCents(dropOffer.getPricePerKmInCents())
+                        .setOfferId(dropOffer.getId())
+                        .setEstimatedTripDurationInSeconds(estimatedDropDuration)
+                        .setDriver(dropOffer.getDriver())
+                        .build())
                 .build();
     }
 
@@ -396,7 +405,7 @@ class SuperTripsMatcher extends SimpleTripsMatcher {
      * @param query The query that should be checked
      * @return If the trip is a potential match a {@link SuperTripsMatcher.PotentialSuperTripMatch} will be returned.
      */
-    private Optional<SuperTripsMatcher.PotentialSuperTripMatch> isPotentialSuperTripMatchForOneWaypoint( TripOffer offer, TripQuery query, boolean useStartWaypoint ) {
+    protected Optional<SuperTripsMatcher.PotentialSuperTripMatch> isPotentialSuperTripMatchForOneWaypoint( TripOffer offer, TripQuery query, boolean useStartWaypoint ) {
         if( !isRoughPotentialSuperTripMatchForOneWaypoint( offer, query, useStartWaypoint ) )
             return Optional.absent();
 

@@ -23,7 +23,6 @@ import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -48,6 +47,7 @@ import org.croudtrip.api.trips.TripQueryDescription;
 import org.croudtrip.api.trips.TripQueryResult;
 import org.croudtrip.fragments.SubscriptionFragment;
 import org.croudtrip.trip.JoinTripResultsAdapter;
+import org.croudtrip.utils.CrashCallback;
 import org.croudtrip.utils.DefaultTransformer;
 
 import java.util.List;
@@ -60,7 +60,6 @@ import retrofit.RetrofitError;
 import retrofit.client.Response;
 import roboguice.inject.InjectView;
 import rx.Subscription;
-import rx.functions.Action0;
 import rx.functions.Action1;
 import timber.log.Timber;
 
@@ -168,8 +167,6 @@ public class JoinResultsFragment extends SubscriptionFragment implements GoogleA
                 Subscription subscription = tripsResource.joinTrip(reservation.getId())
                         .compose(new DefaultTransformer<SuperTrip>())
                         .subscribe(new Action1<SuperTrip>() {
-                            // SUCCESS
-
                             @Override
                             public void call(SuperTrip joinRequest) {
                                 Toast.makeText(getActivity(), R.string.join_request_sent,
@@ -186,19 +183,15 @@ public class JoinResultsFragment extends SubscriptionFragment implements GoogleA
                                 progressBar.setVisibility(View.GONE);
                             }
 
-                        }, new Action1<Throwable>() {
-                            // ERROR
-
+                        }, new CrashCallback(JoinResultsFragment.this.getActivity(), "failed to join trip", new Action1 < Throwable > () {
                             @Override
                             public void call(Throwable throwable) {
-                                Timber.e("Error when trying to join a trip: " + throwable.getMessage());
-                                Toast.makeText(getActivity(), R.string.join_request_sending_error, Toast.LENGTH_SHORT).show();
                                 progressBar.setVisibility(View.GONE);
                                 // TODO: Refresh this fragment. Current reservation could already
                                 // have been removed on the server (we don't know when the error happened).
 
                             }
-                        });
+                        }));
                 subscriptions.add(subscription);
             }
         });
@@ -264,9 +257,7 @@ public class JoinResultsFragment extends SubscriptionFragment implements GoogleA
                         }
                     }
 
-                }, new Action1<Throwable>() {
-                    // ERROR
-
+                }, new CrashCallback(this.getActivity(), "failed to join trip", new Action1<Throwable>() {
                     @Override
                     public void call(Throwable throwable) {
                         Timber.e("Error when trying to join a trip: " + throwable.getMessage());
@@ -280,14 +271,7 @@ public class JoinResultsFragment extends SubscriptionFragment implements GoogleA
                         Intent startingIntent = new Intent(Constants.EVENT_CHANGE_JOIN_UI);
                         LocalBroadcastManager.getInstance(getActivity()).sendBroadcast(startingIntent);
                     }
-                }, new Action0() {
-                    // DONE
-
-                    @Override
-                    public void call() {
-                        //progressBar.setVisibility(View.GONE);
-                    }
-                });
+                }));
 
         subscriptions.add(subscription);
     }

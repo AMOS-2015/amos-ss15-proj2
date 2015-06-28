@@ -2,9 +2,6 @@ package org.croudtrip.trips;
 
 
 import com.google.common.base.Optional;
-import com.google.maps.GeoApiContext;
-import com.google.maps.GeocodingApi;
-import com.google.maps.model.LatLng;
 
 import org.croudtrip.api.directions.NavigationResult;
 import org.croudtrip.api.directions.Route;
@@ -219,25 +216,25 @@ class SimpleTripsMatcher implements TripsMatcher {
 			if (userWayPoint.getUser().equals(offer.getDriver())) continue;
 
 			long passengerMaxWaitingTimestamp = 0;
-			long passengerAtStartingPoint = 0;
+			long passengerStartTimestamp = 0;
 			if (userWayPoint.getUser().equals(query.getPassenger())) {
 				passengerMaxWaitingTimestamp = query.getCreationTimestamp() + query.getMaxWaitingTimeInSeconds();
-				passengerAtStartingPoint = query.getCreationTimestamp();
+				passengerStartTimestamp = query.getCreationTimestamp();
 			} else {
 				for (JoinTripRequest joinTripRequest : joinTripRequestDAO.findByOfferId(offer.getId())) {
 					TripQuery foundQuery = joinTripRequest.getSuperTrip().getQuery();
 					if (userWayPoint.getUser().equals(foundQuery.getPassenger())) {
 						passengerMaxWaitingTimestamp = foundQuery.getCreationTimestamp() + foundQuery.getMaxWaitingTimeInSeconds();
-						passengerAtStartingPoint = foundQuery.getCreationTimestamp();
+						passengerStartTimestamp = foundQuery.getCreationTimestamp();
 						break;
 					}
 				}
 			}
 
-			logManager.d("Passenger would have to wait " + (userWayPoint.getArrivalTimestamp() - passengerAtStartingPoint) + "s. His max waiting time is: " + query.getMaxWaitingTimeInSeconds() + " -- driver will arrive at:" + new Date(userWayPoint.getArrivalTimestamp() * 1000).toLocaleString() + ", passenger will start his trip at: " + new Date(query.getCreationTimestamp() * 1000).toLocaleString());
+			logManager.d("Passenger would have to wait " + (userWayPoint.getArrivalTimestamp() - passengerStartTimestamp) + "s. His max waiting time is: " + query.getMaxWaitingTimeInSeconds() + " -- driver will arrive at:" + new Date(userWayPoint.getArrivalTimestamp() * 1000).toLocaleString() + ", passenger will start his trip at: " + new Date(query.getCreationTimestamp() * 1000).toLocaleString());
 
 			// driver may not come before passenger is at his starting position (a small bias for the case that driver and passenger are at the same place)
-			if( userWayPoint.getArrivalTimestamp() - passengerAtStartingPoint < -20 ) return false;
+			if( userWayPoint.getArrivalTimestamp() - passengerStartTimestamp < -20 ) return false;
 
 			// passenger may not wait longer than his max waiting time
 			if (userWayPoint.getArrivalTimestamp() > passengerMaxWaitingTimestamp) return false;

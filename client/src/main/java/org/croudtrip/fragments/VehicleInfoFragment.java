@@ -181,17 +181,12 @@ public class VehicleInfoFragment extends SubscriptionFragment {
                                     public void call(TripOffer offer) {
                                     }
 
-                                }, new CrashCallback(getActivity()) {
-
+                                }, new CrashCallback(getActivity(), "failed to remove vehicle", new Action1<Throwable>() {
                                     @Override
                                     public void call(Throwable throwable) {
-                                        super.call(throwable);
                                         progressBar.setVisibility(View.GONE);
                                     }
-                                })
-                );
-
-
+                                })));
             }
         });
         capacityPickerButton.setOnClickListener(new View.OnClickListener() {
@@ -354,13 +349,12 @@ public class VehicleInfoFragment extends SubscriptionFragment {
                         progressBar.setVisibility(View.GONE);
                     }
 
-                }, new CrashCallback(getActivity()) {
+                }, new CrashCallback(getActivity(), "failed to get vehicle", new Action1<Throwable>() {
                     @Override
                     public void call(Throwable throwable) {
-                        super.call(throwable);
                         progressBar.setVisibility(View.GONE);
                     }
-                });
+                }));
         subscriptions.add(subscription);
     }
 
@@ -384,13 +378,12 @@ public class VehicleInfoFragment extends SubscriptionFragment {
                         progressBar.setVisibility(View.GONE);
                     }
 
-                }, new CrashCallback(getActivity()) {
+                }, new CrashCallback(getActivity(), "failed to add vehicle", new Action1<Throwable>() {
                     @Override
                     public void call(Throwable throwable) {
-                        super.call(throwable);
                         progressBar.setVisibility(View.GONE);
                     }
-                });
+                }));
 
         subscriptions.add(subscription);
     }
@@ -413,13 +406,12 @@ public class VehicleInfoFragment extends SubscriptionFragment {
                         progressBar.setVisibility(View.GONE);
                     }
 
-                }, new CrashCallback(getActivity()) {
+                }, new CrashCallback(getActivity(), "failed to remove vehicle", new Action1<Throwable>() {
                     @Override
                     public void call(Throwable throwable) {
-                        super.call(throwable);
                         progressBar.setVisibility(View.GONE);
                     }
-                });
+                }));
 
         subscriptions.add(subscription);
     }
@@ -439,13 +431,12 @@ public class VehicleInfoFragment extends SubscriptionFragment {
                         progressBar.setVisibility(View.GONE);
                     }
 
-                }, new CrashCallback(getActivity()) {
+                }, new CrashCallback(getActivity(), "failed to update vehicle", new Action1<Throwable>() {
                     @Override
                     public void call(Throwable throwable) {
-                        super.call(throwable);
                         progressBar.setVisibility(View.GONE);
                     }
-                });
+                }));
 
         subscriptions.add(subscription);
     }
