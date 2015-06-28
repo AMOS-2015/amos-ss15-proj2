@@ -277,7 +277,7 @@ class SuperTripsMatcher extends SimpleTripsMatcher {
         return reservations;
     }
 
-    private boolean isRoughPotentialSuperTripMatchForOneWaypoint(TripOffer offer, TripQuery query, boolean useStartWaypoint) {
+    protected boolean isRoughPotentialSuperTripMatchForOneWaypoint(TripOffer offer, TripQuery query, boolean useStartWaypoint) {
         // check trip status
         if (!offer.getStatus().equals(TripOfferStatus.ACTIVE)) return false;
 
