@@ -212,7 +212,12 @@ class SuperTripsMatcher extends SimpleTripsMatcher {
                         .setMaxWaitingTimeInSeconds(query.getMaxWaitingTimeInSeconds())
                         .build();
 
+                // temporarily remove found offers from offers list
+                offers.remove(recursiveSuperTrip.pickUpMatch.getOffer());
+                offers.remove(recursiveSuperTrip.dropMatch.getOffer());
                 List<SuperTripReservation> recursiveReservations = findPotentialTrips( offers, adaptedQuery, currentDepth + 1 );
+                offers.add(recursiveSuperTrip.pickUpMatch.getOffer());
+                offers.add(recursiveSuperTrip.dropMatch.getOffer());
 
                 // if no recursive solution was found we can stop further searching
                 if( recursiveReservations.isEmpty() ) continue;
