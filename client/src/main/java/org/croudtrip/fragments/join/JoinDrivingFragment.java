@@ -548,7 +548,7 @@ public class JoinDrivingFragment extends SubscriptionFragment {
                                         final SharedPreferences prefs = getActivity().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
                                         SharedPreferences.Editor editor = prefs.edit();
                                         editor.putBoolean(Constants.SHARED_PREF_KEY_DRIVING, false);
-                                        //editor.putLong(Constants.SHARED_PREF_KEY_TRIP_ID, superTrips.get(0).getId());
+                                        editor.putLong(Constants.SHARED_PREF_KEY_TRIP_ID,  superTrips.get(0).getJoinRequests().get(0).getId()); //will break
                                         editor.apply();
 
                                         //show correct ui elements
