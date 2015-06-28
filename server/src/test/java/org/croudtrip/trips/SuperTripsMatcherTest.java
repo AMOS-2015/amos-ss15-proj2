@@ -1,17 +1,22 @@
 package org.croudtrip.trips;
 
+import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
 
 import junit.framework.TestCase;
 
 import org.croudtrip.api.account.User;
 import org.croudtrip.api.account.Vehicle;
+import org.croudtrip.api.directions.NavigationResult;
+import org.croudtrip.api.directions.Route;
 import org.croudtrip.api.directions.RouteLocation;
 import org.croudtrip.api.trips.SuperTripReservation;
 import org.croudtrip.api.trips.TripOffer;
 import org.croudtrip.api.trips.TripOfferStatus;
 import org.croudtrip.api.trips.TripQuery;
+import org.croudtrip.api.trips.UserWayPoint;
 import org.croudtrip.closestpair.ClosestPair;
+import org.croudtrip.closestpair.ClosestPairResult;
 import org.croudtrip.db.JoinTripRequestDAO;
 import org.croudtrip.db.TripOfferDAO;
 import org.croudtrip.directions.DirectionsManager;
@@ -72,30 +77,99 @@ public class SuperTripsMatcherTest extends TestCase {
 
 
 	@Test
-	public void testIsRoughPotentialSuperTripMatchForOneWaypointSuccess() {
-		final TripOffer offer = new TripOffer.Builder().setStatus(TripOfferStatus.ACTIVE)
-				.setVehicle(new Vehicle.Builder().setCapacity(4).build())
-				.build();
-
-		final TripQuery query = new TripQuery.Builder()
-				.setPassenger(new User.Builder().setId(42).build())
-				.setStartLocation(new RouteLocation(42, 42))
-				.build();
+	@SuppressWarnings("unchecked")
+	public void testSimpleTwoOffersTrip() throws Exception {
+		final User passenger = new User.Builder().build();
+		final TripQuery query = createQuery(passenger);
+		final TripOffer offer1 = createOffer(42);
+		final TripOffer offer2 = createOffer(43);
 
 		new Expectations() {{
-			simpleTripsMatcher.assertJoinRequestNotDeclined(offer, query);
+			simpleTripsMatcher.findPotentialTrips((List<TripOffer>) any, (TripQuery) any); result = Lists.newArrayList();
+			simpleTripsMatcher.assertJoinRequestNotDeclined((TripOffer) any, query); result = true;
+			tripsUtils.getActivePassengerCountForOffer((TripOffer) any); result = 2;
+			simpleTripsMatcher.assertWithinAirDistance(offer1, (TripQuery) any); result = true;
+			simpleTripsMatcher.assertWithinAirDistance(offer2, (TripQuery) any); result = true;
+
+			tripsNavigationManager.getNavigationResultForOffer((TripOffer) any, (TripQuery) any);
+			result = new NavigationResult.Builder()
+					.addUserWayPoint(new UserWayPoint.Builder().setDistanceToDriverInMeters(0).build())
+					.addUserWayPoint(new UserWayPoint.Builder().setDistanceToDriverInMeters(0).build())
+					.build();
+			simpleTripsMatcher.assertRouteWithinPassengerMaxWaitingTime((TripOffer) any, (TripQuery) any, (List<UserWayPoint>) any);
 			result = true;
 
-			tripsUtils.getActivePassengerCountForOffer(offer);
-			result = 2;
+			closestPair.findClosestPair((User) any, (NavigationResult) any, (NavigationResult) any);
+			result = new ClosestPairResult(new RouteLocation(0, 0), new RouteLocation(0, 0));
 
-			simpleTripsMatcher.assertWithinAirDistance(offer, (TripQuery) any);
-			result = true;
+			simpleTripsMatcher.isPotentialMatch((TripOffer) any, (TripQuery) any);
+			result = Optional.of(new TripsMatcher.PotentialMatch(
+					offer1,
+					query,
+					new NavigationResult.Builder()
+							.addUserWayPoint(new UserWayPoint.Builder().setUser(passenger).build())
+							.addUserWayPoint(new UserWayPoint.Builder().setUser(passenger).build())
+							.build()));
+
+			directionsManager.getDirections((RouteLocation) any, (RouteLocation) any);
+			result = Lists.newArrayList(new Route.Builder().build());
 		}};
 
-		tripsUtils.getActivePassengerCountForOffer(offer);
+
+		List<SuperTripReservation> reservations = superTripsMatcher.findPotentialTrips(Lists.newArrayList(offer1, offer2), query);
+		Assert.assertEquals(1, reservations.size());
+	}
+
+
+	@Test
+	public void testIsRoughPotentialSuperTripMatchForOneWaypointSuccess() {
+		final TripOffer offer = createOffer(42);
+		final TripQuery query = createQuery(new User.Builder().setId(42).build());
+
+		new Expectations() {{
+			simpleTripsMatcher.assertJoinRequestNotDeclined(offer, query); result = true;
+			tripsUtils.getActivePassengerCountForOffer(offer); result = 2;
+			simpleTripsMatcher.assertWithinAirDistance(offer, (TripQuery) any); result = true;
+		}};
+
 		boolean isMatch = superTripsMatcher.isRoughPotentialSuperTripMatchForOneWaypoint(offer, query, true);
 		Assert.assertEquals(true, isMatch);
+	}
+
+
+	@Test
+	public void testIsRoughPotentialSuperTripMatchForOneWaypointFailure() {
+		final TripOffer offer = createOffer(42);
+		final TripQuery query = createQuery(new User.Builder().setId(42).build());
+
+		new Expectations() {{
+			simpleTripsMatcher.assertJoinRequestNotDeclined(offer, query); result = true;
+			tripsUtils.getActivePassengerCountForOffer(offer); result = 2;
+			simpleTripsMatcher.assertWithinAirDistance(offer, (TripQuery) any); result = false;
+		}};
+
+		boolean isMatch = superTripsMatcher.isRoughPotentialSuperTripMatchForOneWaypoint(offer, query, true);
+		Assert.assertEquals(false, isMatch);
+	}
+
+
+	private TripOffer createOffer(long id) {
+		return new TripOffer.Builder()
+				.setId(id)
+				.setStatus(TripOfferStatus.ACTIVE)
+				.setVehicle(new Vehicle.Builder().setCapacity(4).build())
+				.setMaxDiversionInMeters(1000)
+				.setDriverRoute(new Route.Builder().distanceInMeters(1000).build())
+				.build();
+	}
+
+
+	private TripQuery createQuery(User passenger) {
+		return new TripQuery.Builder()
+				.setPassenger(passenger)
+				.setStartLocation(new RouteLocation(42, 42))
+				.setStartLocation(new RouteLocation(43, 43))
+				.build();
 	}
 
 }

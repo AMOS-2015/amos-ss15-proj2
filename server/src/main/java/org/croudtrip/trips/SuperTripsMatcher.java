@@ -299,7 +299,7 @@ class SuperTripsMatcher extends SimpleTripsMatcher {
         return assertWithinAirDistance(offer, onePointQuery);
     }
 
-    private Optional<SuperTripReservation> isValidReservation(PotentialSuperTripMatch pickUpMatch, PotentialSuperTripMatch dropMatch, TripQuery query, ClosestPairResult closestPairResult) {
+    protected Optional<SuperTripReservation> isValidReservation(PotentialSuperTripMatch pickUpMatch, PotentialSuperTripMatch dropMatch, TripQuery query, ClosestPairResult closestPairResult) {
 
         Optional<SuperTripReservation> reservationOptional = isValidReservationForConnectionPoint( query, closestPairResult.getDropLocation(), pickUpMatch, dropMatch );
         if( reservationOptional.isPresent() )
@@ -400,7 +400,7 @@ class SuperTripsMatcher extends SimpleTripsMatcher {
      * @param query The query that should be checked
      * @return If the trip is a potential match a {@link SuperTripsMatcher.PotentialSuperTripMatch} will be returned.
      */
-    private Optional<SuperTripsMatcher.PotentialSuperTripMatch> isPotentialSuperTripMatchForOneWaypoint( TripOffer offer, TripQuery query, boolean useStartWaypoint ) {
+    protected Optional<SuperTripsMatcher.PotentialSuperTripMatch> isPotentialSuperTripMatchForOneWaypoint( TripOffer offer, TripQuery query, boolean useStartWaypoint ) {
         if( !isRoughPotentialSuperTripMatchForOneWaypoint( offer, query, useStartWaypoint ) )
             return Optional.absent();
 
