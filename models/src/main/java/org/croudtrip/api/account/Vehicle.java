@@ -143,4 +143,48 @@ public class Vehicle {
 		return Objects.hashCode(id, licensePlate, color, type, capacity, owner);
 	}
 
+
+	public static class Builder {
+
+		private long id;
+		private String licensePlate;
+		private String color;
+		private String type;
+		private int capacity;
+		private User owner;
+
+		public Builder setId(long id) {
+			this.id = id;
+			return this;
+		}
+
+		public Builder setLicensePlate(String licensePlate) {
+			this.licensePlate = licensePlate;
+			return this;
+		}
+
+		public Builder setColor(String color) {
+			this.color = color;
+			return this;
+		}
+
+		public Builder setType(String type) {
+			this.type = type;
+			return this;
+		}
+
+		public Builder setCapacity(int capacity) {
+			this.capacity = capacity;
+			return this;
+		}
+
+		public Builder setOwner(User owner) {
+			this.owner = owner;
+			return this;
+		}
+
+		public Vehicle build() {
+			return new Vehicle(id, licensePlate, color, type, capacity, owner);
+		}
+	}
 }
