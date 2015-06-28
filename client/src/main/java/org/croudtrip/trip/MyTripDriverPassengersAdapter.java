@@ -169,9 +169,6 @@ public class MyTripDriverPassengersAdapter extends RecyclerView.Adapter<Recycler
                 holder.ivAvatar.setImageResource(R.drawable.profile);
             }
 
-            // Passenger location
-            showPassengerLocation(holder.tvPassengerLocation, query.getPassengerRoute().getWayPoints().get(0));
-
             // Earnings for driver
             showEarning(holder.tvEarnings, joinMatch.joinRequest.getTotalPriceInCents());
 
@@ -611,7 +608,6 @@ public class MyTripDriverPassengersAdapter extends RecyclerView.Adapter<Recycler
     class PendingItemViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         protected TextView tvPassengerName;
-        protected TextView tvPassengerLocation;
         protected TextView tvEarnings;
         protected TextView tvDiversion;
         protected ImageView ivAvatar;
@@ -621,8 +617,6 @@ public class MyTripDriverPassengersAdapter extends RecyclerView.Adapter<Recycler
             super(view);
             this.tvPassengerName = (TextView)
                     view.findViewById(R.id.tv_join_trip_requests_passenger_name);
-            this.tvPassengerLocation = (TextView)
-                    view.findViewById(R.id.tv_join_trip_requests_passenger_location);
             this.tvEarnings = (TextView)
                     view.findViewById(R.id.tv_join_trip_requests_earnings);
             this.tvDiversion = (TextView)

@@ -14,8 +14,6 @@
 
 package org.croudtrip.trip;
 
-import android.location.Address;
-import android.location.Geocoder;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -28,15 +26,12 @@ import com.squareup.picasso.Picasso;
 
 import org.croudtrip.R;
 import org.croudtrip.api.account.User;
-import org.croudtrip.api.directions.RouteLocation;
 import org.croudtrip.api.trips.JoinTripRequest;
 import org.croudtrip.api.trips.TripQuery;
 import org.croudtrip.fragments.join.JoinTripRequestsFragment;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 import timber.log.Timber;
 
@@ -95,9 +90,6 @@ public class JoinTripRequestsAdapter extends RecyclerView.Adapter<JoinTripReques
             holder.ivAvatar.setImageResource(R.drawable.profile);
         }
 
-        // Passenger location
-        showPassengerLocation(holder, query.getPassengerRoute().getWayPoints().get(0));
-
         // Earnings for driver
         showEarning(holder, joinMatch.joinRequest.getTotalPriceInCents());
 
@@ -114,40 +106,6 @@ public class JoinTripRequestsAdapter extends RecyclerView.Adapter<JoinTripReques
         }
     }
 
-    private void showPassengerLocation(ViewHolder holder, RouteLocation location) {
-
-        holder.tvPassengerLocation.setVisibility(View.VISIBLE);
-
-        // Receive addresses for Latitude/Longitude
-        Geocoder geocoder;
-        List<Address> addresses;
-        geocoder = new Geocoder(fragment.getActivity(), Locale.getDefault());
-
-        try {
-            addresses = geocoder.getFromLocation(location.getLat(), location.getLng(), 1);
-
-            String city = addresses.get(0).getLocality();
-            String street = addresses.get(0).getThoroughfare();
-
-            if (city == null && street == null) {
-                // no data -> hide TextView
-                holder.tvPassengerLocation.setVisibility(View.GONE);
-
-            } else if (city != null && street != null) {
-                // both data
-                holder.tvPassengerLocation.setText(city + ", " + street);
-
-            } else {
-                // either only city of street
-                String loc = (city != null) ? city : street;
-                holder.tvPassengerLocation.setText(loc);
-            }
-
-        } catch (IOException e) {
-            e.printStackTrace();
-            holder.tvPassengerLocation.setVisibility(View.GONE);
-        }
-    }
 
     private void showEarning(ViewHolder holder, int earningsInCents) {
 
@@ -294,7 +252,6 @@ public class JoinTripRequestsAdapter extends RecyclerView.Adapter<JoinTripReques
     class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         protected TextView tvPassengerName;
-        protected TextView tvPassengerLocation;
         protected TextView tvEarnings;
         protected TextView tvDiversion;
         protected ImageView ivAvatar;
@@ -304,8 +261,6 @@ public class JoinTripRequestsAdapter extends RecyclerView.Adapter<JoinTripReques
             super(view);
             this.tvPassengerName = (TextView)
                     view.findViewById(R.id.tv_join_trip_requests_passenger_name);
-            this.tvPassengerLocation = (TextView)
-                    view.findViewById(R.id.tv_join_trip_requests_passenger_location);
             this.tvEarnings = (TextView)
                     view.findViewById(R.id.tv_join_trip_requests_earnings);
             this.tvDiversion = (TextView)
