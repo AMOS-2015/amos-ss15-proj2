@@ -53,6 +53,8 @@ import org.croudtrip.api.TripsResource;
 import org.croudtrip.api.directions.NavigationResult;
 import org.croudtrip.api.directions.RouteLocation;
 import org.croudtrip.api.trips.JoinTripRequest;
+import org.croudtrip.api.trips.JoinTripRequestUpdate;
+import org.croudtrip.api.trips.JoinTripRequestUpdateType;
 import org.croudtrip.api.trips.JoinTripStatus;
 import org.croudtrip.api.trips.TripOffer;
 import org.croudtrip.api.trips.TripOfferDescription;
@@ -64,6 +66,7 @@ import org.croudtrip.trip.MyTripDriverPassengersAdapter;
 import org.croudtrip.trip.OnDiversionUpdateListener;
 import org.croudtrip.utils.CrashCallback;
 import org.croudtrip.utils.DefaultTransformer;
+import org.croudtrip.utils.SwipeListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -73,9 +76,12 @@ import javax.inject.Inject;
 
 import it.neokree.materialnavigationdrawer.MaterialNavigationDrawer;
 import it.neokree.materialnavigationdrawer.elements.MaterialSection;
+import retrofit.RetrofitError;
+import retrofit.client.Response;
 import roboguice.inject.InjectView;
 import rx.Observable;
 import rx.Subscriber;
+import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
 import rx.functions.Func1;
@@ -106,6 +112,7 @@ public class MyTripDriverFragment extends SubscriptionFragment {
 
     // Passengers list
     private MyTripDriverPassengersAdapter adapter;
+    private SwipeListener touchListener;
 
     @InjectView(R.id.rv_my_trip_driver_passengers)
     private RecyclerView recyclerView;
@@ -162,6 +169,9 @@ public class MyTripDriverFragment extends SubscriptionFragment {
         // Fill the passengers list
         View header = view.findViewById(R.id.ll_my_trip_driver_info);
         adapter = new MyTripDriverPassengersAdapter(this, header);
+        AcceptDeclineRequestListener acceptDeclineListener = new AcceptDeclineRequestListener();
+        this.touchListener = new SwipeListener(recyclerView, acceptDeclineListener);
+        adapter.setOnRequestAcceptDeclineListener(acceptDeclineListener);
 
         mapProgressBar = (ProgressWheel) adapter.getHeader().findViewById(R.id.pb_my_trip_map_progressBar);
         passengersProgressBar = (ProgressWheel) adapter.getHeader().findViewById(R.id.pb_my_trip_passengers_progressBar);
@@ -171,6 +181,8 @@ public class MyTripDriverFragment extends SubscriptionFragment {
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getActivity());
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setAdapter(adapter);
+        recyclerView.setOnTouchListener(touchListener);
+        recyclerView.setOnScrollListener(touchListener.makeScrollListener());
 
         setupCancelButton(header);
         setupFinishButton(header);
@@ -362,7 +374,7 @@ public class MyTripDriverFragment extends SubscriptionFragment {
 
 
     public void informAboutDiversion(final JoinTripRequest joinRequest, final OnDiversionUpdateListener listener,
-                                     final TextView textView){
+                                     final TextView textView) {
 
         // Ask the server for the diversion
         subscriptions.add(tripsResource
@@ -593,7 +605,7 @@ public class MyTripDriverFragment extends SubscriptionFragment {
                 if (status == JoinTripStatus.PASSENGER_ACCEPTED) {
                     adapter.updatePendingPassenger(joinTripRequest);
 
-                }else{
+                } else {
                     // Passenger should not appear in pending requests list
                     adapter.removePendingPassenger(joinTripRequest.getId());
                 }
@@ -646,4 +658,202 @@ public class MyTripDriverFragment extends SubscriptionFragment {
             Toast.makeText(getActivity(), getString(R.string.load_passengers_failed), Toast.LENGTH_LONG).show();
         }
     }
+
+
+    private class AcceptDeclineRequestListener implements SwipeListener.DismissCallbacks,
+            MyTripDriverPassengersAdapter.OnRequestAcceptDeclineListener {
+
+        /**
+         * Listener to listen for any driver decisions to accept or decline
+         * a pending JoinTripRequest. As soon as such a decision is received, the server
+         * is contacted.
+         *
+         * @param accept   if this method should handle "accept" (true) or "decline" (false)
+         * @param position the position of the clicked JoinTripRequest in the adapter
+         */
+        private synchronized void handleAcceptDecline(final boolean accept, final int position) {
+
+            Timber.d("Swiped position: " + position);
+
+            String task;
+            if (accept) {
+                task = "Accepting";
+            } else {
+                task = "Declining";
+            }
+
+            final JoinTripRequest request = adapter.getPendingPassenger(position - 1);  // -1 because of header
+            Timber.i(task + " Request with ID " + request.getId());
+
+            // UI
+            // TODO progressBar.setVisibility(View.VISIBLE);
+
+            // Don't allow other user clicks while the task is performed
+            //adapter.setOnRequestAcceptDeclineListener(null);
+            recyclerView.setOnTouchListener(null);
+
+            //Get a list of current Join trip requests from the server
+            //and make sure that the request is still active (hasn't expired)
+            Subscription Jsubscription = tripsResource.getJoinRequests(true)
+                    .compose(new DefaultTransformer<List<JoinTripRequest>>())
+                    .subscribe(new Action1<List<JoinTripRequest>>() {
+                        @Override
+                        public void call(List<JoinTripRequest> requests) {
+
+                            if (requests.size() > 0) {
+
+                                for (int i = 0; i < requests.size(); i++) {
+                                    if (request.getId() == requests.get(i).getId()) {
+                                        //Inform server only if the request is still active (not expired)
+                                        JoinTripRequestUpdate requestUpdate;
+                                        if (accept)
+                                            requestUpdate = new JoinTripRequestUpdate(JoinTripRequestUpdateType.ACCEPT_PASSENGER);
+                                        else
+                                            requestUpdate = new JoinTripRequestUpdate(JoinTripRequestUpdateType.DECLINE_PASSENGER);
+                                        Subscription subscription = tripsResource.updateJoinRequest(request.getId(), requestUpdate)
+                                                .compose(new DefaultTransformer<JoinTripRequest>())
+                                                .subscribe(new AcceptDeclineRequestSubscriber(accept));
+                                        subscriptions.add(subscription);
+
+                                        // UI
+                                        // TODO progressBar.setVisibility(View.VISIBLE);
+                                        Timber.i("request has not expired");
+
+                                        //Break from the loop when the request is found in the list
+                                        break;
+                                    }
+
+                                    //If the request wasn't found in the list, show a toast to the driver
+                                    // and remove the card from the list
+                                    if (i == requests.size() - 1) {
+                                        Timber.d("Request has expired");
+                                        Toast.makeText(getActivity(), getResources().getString(R.string.offer_trip_request_expired), Toast.LENGTH_SHORT).show();
+
+                                        //Enable clicking the list items again and remove the progress bar
+                                        recyclerView.setOnTouchListener(touchListener);
+                                        // TODO progressBar.setVisibility(View.GONE);
+
+                                        adapter.removePendingPassenger(request.getId());
+                                        int numRequests = adapter.getItemCount();
+                                    }
+                                }
+
+                            } else {
+                                //If the expired request was the last one in the list, size() will be 0
+                                //This snippet takes care of this case
+                                Timber.d("No requests found (Request has expired)");
+                                Toast.makeText(getActivity(), getResources().getString(R.string.offer_trip_request_expired), Toast.LENGTH_SHORT).show();
+
+                                //Enable clicking the list items again and remove the progress bar
+                                recyclerView.setOnTouchListener(touchListener);
+                                // TODO progressBar.setVisibility(View.GONE);
+
+                                adapter.removePendingPassenger(request.getId());
+                                int numRequests = adapter.getItemCount();
+                            }
+
+                        }
+                    }, new CrashCallback(getActivity()) {
+                        @Override
+                        public void call(Throwable throwable) {
+                            super.call(throwable);
+                            Response response = ((RetrofitError) throwable).getResponse();
+                            if (response != null && response.getStatus() == 401) {  // Not Authorized
+                            } else {
+                                Timber.e("error" + throwable.getMessage());
+                            }
+                            Timber.e("Couldn't get data" + throwable.getMessage());
+                        }
+                    });
+
+            subscriptions.add(Jsubscription);
+        }
+
+        @Override
+        public void onJoinRequestDecline(View view, int position) {
+            handleAcceptDecline(false, position);
+        }
+
+        @Override
+        public void onJoinRequestAccept(View view, int position) {
+            handleAcceptDecline(true, position);
+        }
+
+        @Override
+        public boolean canDismiss(int position) {
+            return adapter.isPositionPendingPassenger(position);
+        }
+
+        @Override
+        public void onSwipeLeft(RecyclerView recyclerView, int[] dismissedItems) {
+            // Decline only the first item and ignore the rest
+            if (dismissedItems != null && dismissedItems.length > 0) {
+                handleAcceptDecline(false, dismissedItems[0]);
+            }
+
+        }
+
+        @Override
+        public void onSwipeRight(RecyclerView recyclerView, int[] dismissedItems) {
+            // Accept only the first item and ignore the rest
+            if (dismissedItems != null && dismissedItems.length > 0) {
+                handleAcceptDecline(true, dismissedItems[0]);
+            }
+        }
+    }
+
+
+    /**
+     * A simple Subscriber that removes the previously accepted/declined request
+     * from the adapter
+     */
+    private class AcceptDeclineRequestSubscriber extends Subscriber<JoinTripRequest> {
+
+        private boolean accept;
+
+        protected AcceptDeclineRequestSubscriber(boolean accept) {
+            super();
+            this.accept = accept;
+        }
+
+        @Override
+        public void onNext(JoinTripRequest joinTripRequest) {
+            // SUCCESS
+            Timber.i("Successfully informed the server about a request with ID " + joinTripRequest.getId());
+
+            // Everything worked out, so remove the request from the adapter
+            adapter.removePendingPassenger(joinTripRequest.getId());
+        }
+
+        @Override
+        public void onError(Throwable e) {
+            // ERROR
+            String task;
+
+            if (accept) {
+                task = "accepting";
+            } else {
+                task = "declining";
+            }
+
+            Timber.e("Error when " + task + " a JoinTripRequest: " + e.getMessage());
+            onDone();
+        }
+
+        @Override
+        public void onCompleted() {
+            onDone();
+        }
+
+        private void onDone() {
+
+            // Allow clicks on trips again
+            //adapter.setOnRequestAcceptDeclineListener(new AcceptDeclineRequestListener());
+            recyclerView.setOnTouchListener(touchListener);
+
+            // UI
+            // TODO progressBar.setVisibility(View.GONE);
+        }
+    }
+
 }

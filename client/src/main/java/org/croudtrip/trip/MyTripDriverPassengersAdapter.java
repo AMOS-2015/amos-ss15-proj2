@@ -528,6 +528,10 @@ public class MyTripDriverPassengersAdapter extends RecyclerView.Adapter<Recycler
         return position == 0;
     }
 
+    public boolean isPositionPendingPassenger(int position) {
+        return position - 1 >= 0 && position - 1 < pendingPassengers.size();
+    }
+
 
     @Override
     public int getItemViewType(int position) {
@@ -535,7 +539,7 @@ public class MyTripDriverPassengersAdapter extends RecyclerView.Adapter<Recycler
         if (isPositionHeader(position)) {
             return TYPE_HEADER;
 
-        }else if(position - 1 < pendingPassengers.size()){
+        }else if(isPositionPendingPassenger(position)){
             return TYPE_PENDING_ITEM;
         }
 
@@ -594,8 +598,11 @@ public class MyTripDriverPassengersAdapter extends RecyclerView.Adapter<Recycler
 
     public interface OnRequestAcceptDeclineListener {
         void onJoinRequestDecline(View view, int position);
-
         void onJoinRequestAccept(View view, int position);
+    }
+
+    public void setOnRequestAcceptDeclineListener(OnRequestAcceptDeclineListener listener) {
+        this.listener = listener;
     }
 
     /**
