@@ -116,4 +116,26 @@ public class NavigationResult {
 
         return destinationWp.getDistanceToDriverInMeters() - startWp.getDistanceToDriverInMeters();
     }
+
+
+    public static class Builder {
+
+        private Route route;
+        private List<UserWayPoint> userWayPoints = new ArrayList<>();
+
+        public Builder setRoute(Route route) {
+            this.route = route;
+            return this;
+        }
+
+        public Builder addUserWayPoint(UserWayPoint wayPoint) {
+            this.userWayPoints.add(wayPoint);
+            return this;
+        }
+
+        public NavigationResult build() {
+            return new NavigationResult(route, userWayPoints);
+        }
+    }
+    
 }
