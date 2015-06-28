@@ -508,6 +508,8 @@ public class JoinDrivingFragment extends SubscriptionFragment {
             progressBar.setVisibility(View.VISIBLE);
         }
 
+        Log.d("alex"," UPDATE -> " + updateType.toString());
+
         final SharedPreferences prefs = getActivity().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
 
         //send update trip request to server
@@ -546,6 +548,7 @@ public class JoinDrivingFragment extends SubscriptionFragment {
                                         final SharedPreferences prefs = getActivity().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
                                         SharedPreferences.Editor editor = prefs.edit();
                                         editor.putBoolean(Constants.SHARED_PREF_KEY_DRIVING, false);
+                                        //editor.putLong(Constants.SHARED_PREF_KEY_TRIP_ID, superTrips.get(0).getId());
                                         editor.apply();
 
                                         //show correct ui elements
@@ -556,7 +559,7 @@ public class JoinDrivingFragment extends SubscriptionFragment {
                                         btnReachedDestination.setOnClickListener(new View.OnClickListener() {
                                             @Override
                                             public void onClick(View v) {
-                                                updateTrip(JoinTripRequestUpdateType.LEAVE_CAR, progressBarDest);
+                                                updateTrip(JoinTripRequestUpdateType.ENTER_CAR, progressBarDest);
                                             }
                                         });
                                     }
@@ -597,9 +600,9 @@ public class JoinDrivingFragment extends SubscriptionFragment {
 
                     @Override
                     public void call(Throwable throwable) {
-                        super.call(throwable);
+                        //super.call(throwable); do not show popup anymore
 
-                        Timber.e(throwable.getMessage());
+                        Toast.makeText(getActivity(), R.string.join_trip_results_error, Toast.LENGTH_SHORT).show();
 
                         //hide loading indicator
                         if (progressBar != null) {
