@@ -27,6 +27,7 @@ import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -282,13 +283,14 @@ public class MyTripDriverFragment extends SubscriptionFragment {
                                         removeRunningTripOfferState();
                                     }
 
-                                }, new CrashCallback(getActivity(), "failed to cancel offer with id " + offerID, new Action1<Throwable>() {
+                                }, new Action1<Throwable>() {
                                     @Override
                                     public void call(Throwable throwable) {
+                                        Toast.makeText(getActivity(), R.string.join_trip_results_error, Toast.LENGTH_SHORT).show();
                                         cancelButton.setEnabled(true);
                                         cancelProgressBar.setVisibility(View.GONE);
                                     }
-                                })));
+                                }));
             }
         });
     }
@@ -318,10 +320,7 @@ public class MyTripDriverFragment extends SubscriptionFragment {
                                 }, new Action1<Throwable>() {
                                     @Override
                                     public void call(Throwable throwable) {
-                                        Timber.i("Error when finishing trip with ID " + offerID + ": "
-                                                + throwable.getMessage());
-                                        Toast.makeText(getActivity(), "Error: " + throwable.getMessage(),
-                                                Toast.LENGTH_LONG).show();
+                                        Toast.makeText(getActivity(), R.string.join_trip_results_error, Toast.LENGTH_SHORT).show();
                                         finishButton.setEnabled(true);
                                         finishProgressBar.setVisibility(View.GONE);
                                     }
@@ -747,7 +746,16 @@ public class MyTripDriverFragment extends SubscriptionFragment {
                             }
 
                         }
-                    }, new CrashCallback(getActivity(), "failed to get join requests"));
+                    }, new Action1<Throwable>() {
+
+                        @Override
+                        public void call(Throwable throwable) {
+                            Toast.makeText(getActivity(), R.string.join_trip_results_error, Toast.LENGTH_SHORT).show();
+                            generalProgressBar.setVisibility(View.GONE);
+                            recyclerView.setOnTouchListener(touchListener);
+
+                        }
+                    });
             subscriptions.add(Jsubscription);
         }
 
