@@ -34,6 +34,7 @@ import android.view.ViewGroup;
 import android.view.ViewManager;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdate;
@@ -44,7 +45,6 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
-import com.google.maps.android.PolyUtil;
 import com.pnikosis.materialishprogress.ProgressWheel;
 
 import org.croudtrip.Constants;
@@ -61,6 +61,8 @@ import org.croudtrip.api.trips.UserWayPoint;
 import org.croudtrip.fragments.SubscriptionFragment;
 import org.croudtrip.location.LocationUpdater;
 import org.croudtrip.trip.MyTripDriverPassengersAdapter;
+import org.croudtrip.trip.OnDiversionUpdateListener;
+import org.croudtrip.utils.CrashCallback;
 import org.croudtrip.utils.DefaultTransformer;
 
 import java.util.ArrayList;
@@ -148,7 +150,7 @@ public class MyTripDriverFragment extends SubscriptionFragment {
 
         nfcAdapter = NfcAdapter.getDefaultAdapter(getActivity());
         NdefRecord ndefRecord = new NdefRecord(NdefRecord.TNF_WELL_KNOWN, NdefRecord.RTD_TEXT, new byte[0], null);
-        ndefMessage = new NdefMessage(new NdefRecord[] { ndefRecord });
+        ndefMessage = new NdefMessage(new NdefRecord[]{ndefRecord});
 
         return inflater.inflate(R.layout.fragment_my_trip_driver, container, false);
     }
@@ -159,7 +161,7 @@ public class MyTripDriverFragment extends SubscriptionFragment {
 
         // Fill the passengers list
         View header = view.findViewById(R.id.ll_my_trip_driver_info);
-        adapter = new MyTripDriverPassengersAdapter(header);
+        adapter = new MyTripDriverPassengersAdapter(this, header);
 
         mapProgressBar = (ProgressWheel) adapter.getHeader().findViewById(R.id.pb_my_trip_map_progressBar);
         passengersProgressBar = (ProgressWheel) adapter.getHeader().findViewById(R.id.pb_my_trip_passengers_progressBar);
@@ -278,8 +280,8 @@ public class MyTripDriverFragment extends SubscriptionFragment {
                                         cancelProgressBar.setVisibility(View.GONE);
                                     }
                                 }));
-                    }
-                });
+            }
+        });
     }
 
     private void setupFinishButton(View header) {
@@ -359,6 +361,25 @@ public class MyTripDriverFragment extends SubscriptionFragment {
     }
 
 
+    public void informAboutDiversion(final JoinTripRequest joinRequest, final OnDiversionUpdateListener listener,
+                                     final TextView textView){
+
+        // Ask the server for the diversion
+        subscriptions.add(tripsResource
+                        .getDiversionInSecondsForJoinRequest(joinRequest.getId())
+                        .compose(new DefaultTransformer<Long>())
+                        .subscribe(new Action1<Long>() {
+                            @Override
+                            public void call(Long diversionInSeconds) {
+                                int diversionInMinutes = (int) (diversionInSeconds / 60);
+                                listener.onDiversionUpdate(joinRequest, textView, diversionInMinutes);
+                            }
+
+                        }, new CrashCallback(getActivity()))
+        );
+    }
+
+
     private void removeRunningTripOfferState() {
         SharedPreferences prefs = getActivity().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES,
                 Context.MODE_PRIVATE);
@@ -394,20 +415,20 @@ public class MyTripDriverFragment extends SubscriptionFragment {
         // the android maps libraries since the models also exist on the server.
         List<RouteLocation> polyline = navigationResult.getRoute().getPolylineWaypointsForUser(offer.getDriver(), navigationResult.getUserWayPoints());
         List<LatLng> polylinePoints = new ArrayList<LatLng>();
-        for( RouteLocation loc : polyline )
-            polylinePoints.add( new LatLng( loc.getLat(), loc.getLng() ) );
+        for (RouteLocation loc : polyline)
+            polylinePoints.add(new LatLng(loc.getLat(), loc.getLng()));
 
-        Timber.d("polyline: " + polyline);
+        //Timber.d("polyline: " + polyline);
         // Show route information on the map
-        googleMap.addPolyline(new PolylineOptions().addAll( polylinePoints ) );
+        googleMap.addPolyline(new PolylineOptions().addAll(polylinePoints));
         googleMap.setMyLocationEnabled(true);
 
-        for( UserWayPoint userWp : navigationResult.getUserWayPoints() ){
-            if( !userWp.getUser().equals(offer.getDriver()) ){
+        for (UserWayPoint userWp : navigationResult.getUserWayPoints()) {
+            if (!userWp.getUser().equals(offer.getDriver())) {
                 googleMap.addMarker(
                         new MarkerOptions()
-                                .position( new LatLng( userWp.getLocation().getLat(), userWp.getLocation().getLng()))
-                                .icon(BitmapDescriptorFactory.fromResource( R.drawable.ic_marker ))
+                                .position(new LatLng(userWp.getLocation().getLat(), userWp.getLocation().getLng()))
+                                .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_marker))
                                 .anchor(0.5f, 0.5f)
                                 .flat(true)
                 );
@@ -518,7 +539,7 @@ public class MyTripDriverFragment extends SubscriptionFragment {
                                            throw new NoSuchElementException("No route available");
                                        }
 
-                                       generateRouteOnMap( offer, navigationResult );
+                                       generateRouteOnMap(offer, navigationResult);
                                    }
 
                                }, new Action1<Throwable>() {
@@ -533,7 +554,8 @@ public class MyTripDriverFragment extends SubscriptionFragment {
 
 
         @Override
-        public void onCompleted() {}
+        public void onCompleted() {
+        }
 
         @Override
         public void onError(Throwable throwable) {
@@ -568,6 +590,13 @@ public class MyTripDriverFragment extends SubscriptionFragment {
                 }
 
                 JoinTripStatus status = joinTripRequest.getStatus();
+                if (status == JoinTripStatus.PASSENGER_ACCEPTED) {
+                    adapter.updatePendingPassenger(joinTripRequest);
+
+                }else{
+                    // Passenger should not appear in pending requests list
+                    adapter.removePendingPassenger(joinTripRequest.getId());
+                }
 
                 if (status != JoinTripStatus.DRIVER_DECLINED
                         && status != JoinTripStatus.PASSENGER_ACCEPTED) {
@@ -575,14 +604,14 @@ public class MyTripDriverFragment extends SubscriptionFragment {
                     if (status == JoinTripStatus.PASSENGER_CANCELLED
                             || status == JoinTripStatus.DRIVER_CANCELLED) {
                         // Remove any cancelled passengers from the adapter
-                        adapter.removeRequest(joinTripRequest.getId());
+                        adapter.removePassenger(joinTripRequest.getId());
 
                     } else if (status == JoinTripStatus.DRIVER_ACCEPTED
                             || status == JoinTripStatus.PASSENGER_IN_CAR
-                            || status == JoinTripStatus.PASSENGER_AT_DESTINATION){
+                            || status == JoinTripStatus.PASSENGER_AT_DESTINATION) {
 
                         // Simply update (or implicitly add) this passenger request
-                        adapter.updateRequest(joinTripRequest);
+                        adapter.updatePassenger(joinTripRequest);
 
                         if (status == JoinTripStatus.DRIVER_ACCEPTED
                                 || status == JoinTripStatus.PASSENGER_IN_CAR) {
@@ -590,7 +619,7 @@ public class MyTripDriverFragment extends SubscriptionFragment {
                             Timber.d("Finishing trip not allowed: there is still an important passenger: " + status);
                             allowFinish = false;
 
-                            if(status == JoinTripStatus.PASSENGER_IN_CAR){
+                            if (status == JoinTripStatus.PASSENGER_IN_CAR) {
                                 allowCancel = false;
                                 Timber.d("Cancelling trip not allowed: there is still a passenger in the car");
                             }

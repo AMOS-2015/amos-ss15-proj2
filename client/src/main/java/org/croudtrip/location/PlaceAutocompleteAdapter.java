@@ -93,7 +93,7 @@ public class PlaceAutocompleteAdapter
     /**
      * Sets the GoogleApiClient to use for autocomplete queries.
      * Autocomplete queries are suspended when the client is set to null.
-     * Ensure that the client has successfully connected, contains the {@link Places#GEO_DATA_API}
+     * Ensure that the client has successfully connected, containsPassenger the {@link Places#GEO_DATA_API}
      * API and is available for queries, otherwise API access will be disabled when it is set here.
      */
     public void setGoogleApiClient(GoogleApiClient googleApiClient) {
