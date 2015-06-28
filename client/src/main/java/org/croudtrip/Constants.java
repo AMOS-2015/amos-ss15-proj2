@@ -43,5 +43,6 @@ public class Constants {
     public final static String EVENT_PASSENGER_ENTERED_CAR = "passenger_entered_car";
     public final static String EVENT_PASSENGER_REACHED_DESTINATION = "passenger_reached_destination";
     public final static String EVENT_NFC_TAG_SCANNED = "nfc_tag_scanned";
+    public final static String EVENT_NEW_JOIN_REQUEST = "new_join_request";
 
 }

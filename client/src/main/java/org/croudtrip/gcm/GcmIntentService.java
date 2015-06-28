@@ -23,7 +23,6 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
-import android.widget.Toast;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -40,8 +39,6 @@ import org.croudtrip.api.trips.RunningTripQuery;
 import org.croudtrip.api.trips.SuperTrip;
 import org.croudtrip.api.trips.TripQuery;
 import org.croudtrip.fragments.join.JoinDispatchFragment;
-import org.croudtrip.utils.CrashCallback;
-import org.croudtrip.utils.DefaultTransformer;
 import org.croudtrip.utils.LifecycleHandler;
 
 import javax.inject.Inject;
@@ -59,7 +56,8 @@ import timber.log.Timber;
  */
 public class GcmIntentService extends RoboIntentService {
 
-    @Inject TripsResource tripsResource;
+    @Inject
+    TripsResource tripsResource;
 
     public GcmIntentService() {
         super("GcmIntentService");
@@ -79,8 +77,7 @@ public class GcmIntentService extends RoboIntentService {
         Timber.d(gcmMessageType);
 
 
-        switch(gcmMessageType)
-        {
+        switch (gcmMessageType) {
 
             case GcmConstants.GCM_MSG_REQUEST_EXPIRED:
                 handleJoinRequestExpired();
@@ -169,7 +166,7 @@ public class GcmIntentService extends RoboIntentService {
     }
 
     private void handlePassengerAtDestination() {
-        if( LifecycleHandler.isApplicationInForeground() ) {
+        if (LifecycleHandler.isApplicationInForeground()) {
             // send broadcast while the app is running to reload the application
             Intent startingIntent = new Intent(Constants.EVENT_PASSENGER_REACHED_DESTINATION);
             LocalBroadcastManager.getInstance(this).sendBroadcast(startingIntent);
@@ -177,18 +174,18 @@ public class GcmIntentService extends RoboIntentService {
     }
 
     private void handlePassengerEnteredCar() {
-        if( LifecycleHandler.isApplicationInForeground() ) {
+        if (LifecycleHandler.isApplicationInForeground()) {
             // send broadcast while the app is running to reload the application
             Intent startingIntent = new Intent(Constants.EVENT_PASSENGER_ENTERED_CAR);
             LocalBroadcastManager.getInstance(this).sendBroadcast(startingIntent);
         }
     }
 
-    private void handleFoundMatches( Intent intent ) {
+    private void handleFoundMatches(Intent intent) {
         Timber.d("FOUND_MATCHES");
 
         // extract join request and offer from message
-        long queryId = Long.parseLong( intent.getExtras().getString(GcmConstants.GCM_MSG_FOUND_MATCHES_QUERY_ID) );
+        long queryId = Long.parseLong(intent.getExtras().getString(GcmConstants.GCM_MSG_FOUND_MATCHES_QUERY_ID));
 
         // download the join trip request
         tripsResource.getQuery(queryId)
@@ -213,7 +210,7 @@ public class GcmIntentService extends RoboIntentService {
                                 extras.putDouble(JoinDispatchFragment.KEY_DESTINATION_LONGITUDE, query.getQuery().getDestinationLocation().getLng());
                                 extras.putInt(JoinDispatchFragment.KEY_MAX_WAITING_TIME, (int) query.getQuery().getMaxWaitingTimeInSeconds());
 
-                                if(LifecycleHandler.isApplicationInForeground()) {
+                                if (LifecycleHandler.isApplicationInForeground()) {
                                     Intent startingIntent = new Intent(Constants.EVENT_CHANGE_JOIN_UI);
                                     startingIntent.putExtras(extras);
                                     LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(startingIntent);
@@ -223,7 +220,7 @@ public class GcmIntentService extends RoboIntentService {
                                     startingIntent.putExtras(extras);
                                     PendingIntent contentIntent = PendingIntent.getActivity(getApplicationContext(), 0, startingIntent, PendingIntent.FLAG_UPDATE_CURRENT);
                                     createNotification(getString(R.string.found_matches_title), getString(R.string.found_matches_msg),
-                                            GcmConstants.GCM_NOTIFICATION_FOUND_MATCHES_ID , contentIntent);
+                                            GcmConstants.GCM_NOTIFICATION_FOUND_MATCHES_ID, contentIntent);
                                 }
                             }
                         },
@@ -239,12 +236,12 @@ public class GcmIntentService extends RoboIntentService {
         Timber.d("REQUEST_DECLINED");
 
         // extract join request and offer from message
-        long joinTripRequestId = Long.parseLong( intent.getExtras().getString(GcmConstants.GCM_MSG_JOIN_REQUEST_ID) );
-        long offerId = Long.parseLong( intent.getExtras().getString(GcmConstants.GCM_MSG_JOIN_REQUEST_OFFER_ID) );
+        long joinTripRequestId = Long.parseLong(intent.getExtras().getString(GcmConstants.GCM_MSG_JOIN_REQUEST_ID));
+        long offerId = Long.parseLong(intent.getExtras().getString(GcmConstants.GCM_MSG_JOIN_REQUEST_OFFER_ID));
 
         // download the join trip request
         tripsResource.getJoinRequest(joinTripRequestId)
-                .observeOn( Schedulers.io() )
+                .observeOn(Schedulers.io())
                 .subscribeOn(AndroidSchedulers.mainThread())
                 .subscribe(
                         new Action1<JoinTripRequest>() {
@@ -265,7 +262,7 @@ public class GcmIntentService extends RoboIntentService {
                                     editor.apply();
 
                                     tripsResource.cancelSuperTrip(joinTripRequest.getSuperTrip().getId())
-                                            .observeOn( Schedulers.io() )
+                                            .observeOn(Schedulers.io())
                                             .subscribeOn(AndroidSchedulers.mainThread())
                                             .subscribe(new Action1<SuperTrip>() {
                                                            @Override
@@ -292,14 +289,14 @@ public class GcmIntentService extends RoboIntentService {
                                 extras.putDouble(JoinDispatchFragment.KEY_DESTINATION_LONGITUDE, query.getDestinationLocation().getLng());
                                 extras.putInt(JoinDispatchFragment.KEY_MAX_WAITING_TIME, (int) query.getMaxWaitingTimeInSeconds());
 
-                                if(LifecycleHandler.isApplicationInForeground()) {
+                                if (LifecycleHandler.isApplicationInForeground()) {
                                     //go back to search UI only if the first driver canceled
                                     if (firstDriver) {
                                         //Toast.makeText(getApplicationContext(), getString(R.string.join_request_declined_msg), Toast.LENGTH_SHORT).show();
                                         Intent startingIntent = new Intent(Constants.EVENT_CHANGE_JOIN_UI);
                                         startingIntent.putExtras(extras);
                                         LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(startingIntent);
-                                    }else{
+                                    } else {
                                         Intent startingIntent = new Intent(Constants.EVENT_SECONDARY_DRIVER_DECLINED);
                                         startingIntent.putExtras(extras);
                                         LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(startingIntent);
@@ -324,7 +321,7 @@ public class GcmIntentService extends RoboIntentService {
                         });
     }
 
-    private void handleRequestAccepted( Intent intent ) {
+    private void handleRequestAccepted(Intent intent) {
         Timber.d("REQUEST_ACCEPTED");
 
         // extract join request and offer from message
@@ -367,12 +364,12 @@ public class GcmIntentService extends RoboIntentService {
                                 }
 
 
-                                if(LifecycleHandler.isApplicationInForeground()) {
+                                if (LifecycleHandler.isApplicationInForeground()) {
                                     if (firstDriver) {
                                         Intent startingIntent = new Intent(Constants.EVENT_CHANGE_JOIN_UI);
                                         startingIntent.putExtras(extras);
                                         LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(startingIntent);
-                                    }else{
+                                    } else {
                                         Intent startingIntent = new Intent(Constants.EVENT_SECONDARY_DRIVER_ACCEPTED);
                                         startingIntent.putExtras(extras);
                                         LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(startingIntent);
@@ -399,33 +396,40 @@ public class GcmIntentService extends RoboIntentService {
     private void handleJoinRequest(Intent intent) {
         Timber.d("JOIN_REQUEST");
 
-        // extract join request and offer from message
-        long joinTripRequestId = Long.parseLong( intent.getExtras().getString(GcmConstants.GCM_MSG_JOIN_REQUEST_ID) );
+        if (LifecycleHandler.isApplicationInForeground()) {
+            // Have screen update itself
+            Intent startingIntent = new Intent(Constants.EVENT_NEW_JOIN_REQUEST);
+            LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(startingIntent);
 
-        // download the join trip request
-        tripsResource.getJoinRequest(joinTripRequestId).observeOn(Schedulers.io())
-                .subscribeOn(AndroidSchedulers.mainThread())
-                .subscribe(
-                        new Action1<JoinTripRequest>() {
-                            @Override
-                            public void call(JoinTripRequest joinTripRequest) {
-                                // create notification for the user
+        } else {
+            // Show notification
+            // extract join request and offer from message
+            long joinTripRequestId = Long.parseLong(intent.getExtras().getString(GcmConstants.GCM_MSG_JOIN_REQUEST_ID));
 
-                                Intent startingIntent = new Intent(getApplicationContext(), MainActivity.class);
-                                startingIntent.setAction(MainActivity.ACTION_SHOW_JOIN_TRIP_REQUESTS);
+            // download the join trip request
+            tripsResource.getJoinRequest(joinTripRequestId).observeOn(Schedulers.io())
+                    .subscribeOn(AndroidSchedulers.mainThread())
+                    .subscribe(
+                            new Action1<JoinTripRequest>() {
+                                @Override
+                                public void call(JoinTripRequest joinTripRequest) {
+                                    // create notification for the user
+                                    Intent startingIntent = new Intent(getApplicationContext(), MainActivity.class);
+                                    startingIntent.setAction(MainActivity.ACTION_SHOW_JOIN_TRIP_REQUESTS);
 
-                                PendingIntent contentIntent = PendingIntent.getActivity(getApplicationContext(), 0, startingIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-                                createNotification(getString(R.string.join_request_title), getString(R.string.joint_request_msg,
-                                                joinTripRequest.getSuperTrip().getQuery().getPassenger().getFirstName()),
-                                        GcmConstants.GCM_NOTIFICATION_JOIN_REQUEST_ID, contentIntent);
-                            }
-                        },
-                        new Action1<Throwable>() {
-                            @Override
-                            public void call(Throwable throwable) {
-                                Timber.e("Something went wrong when downloading join request: " + throwable.getMessage());
-                            }
-                        });
+                                    PendingIntent contentIntent = PendingIntent.getActivity(getApplicationContext(), 0, startingIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+                                    createNotification(getString(R.string.join_request_title), getString(R.string.joint_request_msg,
+                                                    joinTripRequest.getSuperTrip().getQuery().getPassenger().getFirstName()),
+                                            GcmConstants.GCM_NOTIFICATION_JOIN_REQUEST_ID, contentIntent);
+                                }
+                            },
+                            new Action1<Throwable>() {
+                                @Override
+                                public void call(Throwable throwable) {
+                                    Timber.e("Something went wrong when downloading join request: " + throwable.getMessage());
+                                }
+                            });
+        }
     }
 
     private void handleTripCanceledByDriver() {
@@ -444,12 +448,11 @@ public class GcmIntentService extends RoboIntentService {
     private void handleTripCanceledByPassenger() {
         Timber.d("Trip Canceled by passenger");
 
-        if( LifecycleHandler.isApplicationInForeground() ) {
+        if (LifecycleHandler.isApplicationInForeground()) {
             // send broadcast while the app is running to reload the application
             Intent startingIntent = new Intent(Constants.EVENT_PASSENGER_CANCELLED_TRIP);
             LocalBroadcastManager.getInstance(this).sendBroadcast(startingIntent);
-        }
-        else {
+        } else {
             // create notification if the application is not in foreground
             Intent startingIntent = new Intent(getApplicationContext(), MainActivity.class);
             startingIntent.setAction(MainActivity.ACTION_SHOW_JOIN_TRIP_REQUESTS);
@@ -462,14 +465,14 @@ public class GcmIntentService extends RoboIntentService {
     }
 
 
-    private void createNotification( String title, String message, int notificationId ) {
+    private void createNotification(String title, String message, int notificationId) {
         createNotification(title, message, notificationId, null);
     }
 
-    private void createNotification( String title, String message, int notificationId, PendingIntent contentIntent ) {
+    private void createNotification(String title, String message, int notificationId, PendingIntent contentIntent) {
         NotificationManager notificationManager = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
 
-        Notification notification  =
+        Notification notification =
                 new NotificationCompat.Builder(this)
                         .setSmallIcon(R.drawable.ic_directions_car_white)
                         .setContentTitle(title)
@@ -483,14 +486,13 @@ public class GcmIntentService extends RoboIntentService {
         notificationManager.notify(notificationId, notification);
     }
 
-    public void handleJoinRequestExpired () {
+    public void handleJoinRequestExpired() {
         Timber.d("Request Expired");
         if (LifecycleHandler.isApplicationInForeground()) {
             Timber.d("Request Expired and Broadcast was sent to LocalBroadcastManager");
             Intent startingIntent = new Intent(Constants.EVENT_JOIN_REQUEST_EXPIRED);
             LocalBroadcastManager.getInstance(this).sendBroadcast(startingIntent);
-        }
-        else
+        } else
             Timber.d("Request Expired but Broadcast was not sent to LocalBroadcastManager, application not in Foreground");
     }
 

@@ -250,6 +250,7 @@ public class MyTripDriverFragment extends SubscriptionFragment {
         filter.addAction(Constants.EVENT_PASSENGER_CANCELLED_TRIP);
         filter.addAction(Constants.EVENT_PASSENGER_REACHED_DESTINATION);
         filter.addAction(Constants.EVENT_PASSENGER_ENTERED_CAR);
+        filter.addAction(Constants.EVENT_NEW_JOIN_REQUEST);
         LocalBroadcastManager.getInstance(getActivity().getApplicationContext())
                 .registerReceiver(passengersChangeReceiver, filter);
     }
