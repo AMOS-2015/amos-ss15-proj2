@@ -41,7 +41,6 @@ import org.croudtrip.R;
 import org.croudtrip.account.AccountManager;
 import org.croudtrip.api.TripsResource;
 import org.croudtrip.api.account.User;
-import org.croudtrip.fragments.join.JoinTripRequestsFragment;
 import org.croudtrip.fragments.ProfileFragment;
 import org.croudtrip.fragments.SettingsFragment;
 import org.croudtrip.fragments.join.JoinDispatchFragment;
@@ -334,17 +333,7 @@ public class MainActivity extends AbstractRoboDrawerActivity {
                 dispatchOfferTripFragment));
 
 
-        // (2) PENDING JOIN REQUESTS
-        // TODO: code also down below?
-        if( action.equalsIgnoreCase(ACTION_SHOW_JOIN_TRIP_REQUESTS)
-                || prefs.getBoolean(Constants.SHARED_PREF_KEY_RUNNING_TRIP_OFFER, false)) {
-            this.addSection(newSection("My Trip Requests",
-                    R.drawable.distance,
-                    new JoinTripRequestsFragment()));
-        }
-
-
-        // (3) PROFILE
+        // (2) PROFILE
         if(AccountManager.isUserLoggedIn(this)) {
             // Only logged-in users can view their profile
             this.addSection(newSection(getString(R.string.menu_profile),
@@ -353,7 +342,7 @@ public class MainActivity extends AbstractRoboDrawerActivity {
         }
 
 
-        // (4) SETTINGS
+        // (3) SETTINGS
         this.addBottomSection(newSection(getString(R.string.menu_settings),
                 R.drawable.ic_settings,
                 new SettingsFragment()));
@@ -372,7 +361,7 @@ public class MainActivity extends AbstractRoboDrawerActivity {
             requestFrag.setArguments(bundle);
 
         }else if( action.equalsIgnoreCase(ACTION_SHOW_JOIN_TRIP_REQUESTS) ) {
-            this.setDefaultSectionLoaded(2);    // (2) PENDING JOIN REQUESTS
+            this.setDefaultSectionLoaded(1);    // Offer trip (My trip)
         }
     }
 }
