@@ -337,17 +337,12 @@ public class JoinDrivingFragment extends SubscriptionFragment {
                                             progressBarCancel.setVisibility(View.GONE);
                                             sendUserBackToSearch();
                                         }
-                                    }, new CrashCallback(getActivity()) {
+                                    }, new CrashCallback(getActivity(), "failed to cancel trip", new Action1<Throwable>() {
                                         @Override
                                         public void call(Throwable throwable) {
-                                            super.call(throwable);
-
-                                            Timber.e(throwable.getMessage());
-
                                             progressBarCancel.setVisibility(View.GONE);
                                         }
-                                    }
-                        );
+                                    }));
             }
         });
 
@@ -475,12 +470,7 @@ public class JoinDrivingFragment extends SubscriptionFragment {
                             }
 
                         }
-                    }, new CrashCallback(getActivity()) {
-                        @Override
-                        public void call(Throwable throwable) {
-                            super.call(throwable);
-                        }
-                    }));
+                    }, new CrashCallback(getActivity(), "failed to get navigation")));
         }
 
         googleMap.setMyLocationEnabled(true);
@@ -624,22 +614,14 @@ public class JoinDrivingFragment extends SubscriptionFragment {
                             flMap.setVisibility(View.VISIBLE);
                                                     }
                     }
-                }, new CrashCallback(getActivity()) {
-
+                }, new CrashCallback(getActivity(), "failed to update join request", new Action1<Throwable>() {
                     @Override
                     public void call(Throwable throwable) {
-                        //super.call(throwable); do not show popup anymore
-
-                        Toast.makeText(getActivity(), R.string.join_trip_results_error, Toast.LENGTH_SHORT).show();
-
-                        //hide loading indicator
                         if (progressBar != null) {
                             progressBar.setVisibility(View.GONE);
                         }
                     }
-
-                });
-
+                }));
         subscriptions.add(subscription);
     }
 
@@ -775,13 +757,7 @@ public class JoinDrivingFragment extends SubscriptionFragment {
                             //}
 
                         }
-                    }, new CrashCallback(getActivity()) {
-                        @Override
-                        public void call(Throwable throwable) {
-                            super.call(throwable);
-                            Timber.e("No List<JoinTripRequest> available: " + throwable.getMessage());
-                        }
-                    }));
+                    }, new CrashCallback(getActivity(), "failed to get join requests")));
         }
 
 

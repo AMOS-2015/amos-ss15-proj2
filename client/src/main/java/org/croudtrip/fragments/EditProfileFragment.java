@@ -46,7 +46,6 @@ import com.squareup.picasso.Picasso;
 
 import org.croudtrip.R;
 import org.croudtrip.account.AccountManager;
-import org.croudtrip.activities.MainActivity;
 import org.croudtrip.api.AvatarsUploadResource;
 import org.croudtrip.api.UsersResource;
 import org.croudtrip.api.account.User;
@@ -57,7 +56,6 @@ import org.croudtrip.utils.DefaultTransformer;
 
 import java.io.File;
 import java.io.InputStream;
-import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Calendar;
 import java.util.Date;
@@ -66,9 +64,6 @@ import javax.inject.Inject;
 import javax.net.ssl.HttpsURLConnection;
 
 import it.neokree.materialnavigationdrawer.MaterialNavigationDrawer;
-import it.neokree.materialnavigationdrawer.elements.MaterialAccount;
-import retrofit.RetrofitError;
-import retrofit.client.Response;
 import retrofit.mime.TypedFile;
 import roboguice.inject.InjectView;
 import rx.Observable;
@@ -412,15 +407,7 @@ public class EditProfileFragment extends SubscriptionFragment {
                                        Timber.i("Successfully uploaded a new picture ");
                                         }
                                },
-                            new CrashCallback(getActivity()) {
-                                @Override
-                                public void call(Throwable throwable) {
-                                    super.call(throwable);
-                                    Response response = ((RetrofitError) throwable).getResponse();
-                                    // Show an error message
-                                    Timber.e("Upload failed with error:\n" + throwable.getMessage());
-                                }
-                            });
+                            new CrashCallback(getActivity(), "failed to upload avatar"));
             //Fill the ImageView
             //profileImageUri = data.getData();
             //profilePicture.setImageURI(profileImageUri);
@@ -517,7 +504,7 @@ public class EditProfileFragment extends SubscriptionFragment {
                             drawer.getCurrentAccount().setPhoto(avatar);
                             drawer.notifyAccountDataChanged();
                         }
-                    }, new CrashCallback(getActivity()) {
+                    }, new Action1<Throwable>() {
                         @Override
                         public void call(Throwable throwable) {
                             Timber.e(throwable, "failed to download avatar");
@@ -602,16 +589,13 @@ public class EditProfileFragment extends SubscriptionFragment {
                                 EditProfileFragment.this.getActivity().onBackPressed();
                             }
 
-                        }, new CrashCallback(getActivity()) {
+                        }, new CrashCallback(getActivity(), "failed to update user", new Action1<Throwable>() {
                             @Override
                             public void call(Throwable throwable) {
-                                super.call(throwable);
-
                                 progressBar.setVisibility(View.GONE);
                                 CrashPopup.show(getActivity(), throwable);
                             }
-                        })
-        );
+                        })));
     }
 
     public void onDestroy() {

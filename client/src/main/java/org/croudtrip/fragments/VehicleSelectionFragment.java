@@ -22,7 +22,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-
 import org.croudtrip.R;
 import org.croudtrip.api.VehicleResource;
 import org.croudtrip.api.account.Vehicle;
@@ -34,12 +33,9 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-import retrofit.RetrofitError;
-import retrofit.client.Response;
 import roboguice.inject.InjectView;
 import rx.Subscription;
 import rx.functions.Action1;
-import timber.log.Timber;
 
 /**
  * This fragment allows the user to enter the vehicle information and uploads this information to the server
@@ -91,20 +87,7 @@ public class VehicleSelectionFragment extends SubscriptionFragment {
                             adapter.addElements(vehicles);
                         }
                     }
-                }, new CrashCallback(getActivity()) {
-                    @Override
-                    public void call(Throwable throwable) {
-                        super.call(throwable);
-
-                        Response response = ((RetrofitError) throwable).getResponse();
-                        if (response != null && response.getStatus() == 401) {  // Not Authorized
-                        } else {
-                            Timber.e("error" + throwable.getMessage());
-                        }
-                        Timber.e("Couldn't get data" + throwable.getMessage());
-                    }
-                });
-
+                }, new CrashCallback(getActivity(), "failed to get vehicles"));
         subscriptions.add(subscription);
 
 

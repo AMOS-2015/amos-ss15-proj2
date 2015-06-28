@@ -284,12 +284,9 @@ public class LoginActivity extends RoboActionBarActivity {
                     }
 
                 },
-                new CrashCallback(this) {
-
+                new CrashCallback(this, "failed to register user", new Action1<Throwable>() {
                     @Override
                     public void call(Throwable throwable) {
-                        super.call(throwable);
-
                         // UI: Re-enable register button and hide progress bar
                         registerButton.setEnabled(true);
                         registerProgressBar.setVisibility(View.GONE);
@@ -307,7 +304,7 @@ public class LoginActivity extends RoboActionBarActivity {
                         Toast.makeText(LoginActivity.this, message, Toast.LENGTH_LONG).show();
                         Timber.e("Registration failed with error:\n" + throwable.getMessage());
                     }
-                });
+                }));
     }
 
 
@@ -353,7 +350,7 @@ public class LoginActivity extends RoboActionBarActivity {
                         loginAndRedirect(user, password);
                     }
 
-                }, new CrashCallback(this) {
+                }, new CrashCallback(this, "failed to get user") {
 
                     @Override
                     public void call(Throwable throwable) {

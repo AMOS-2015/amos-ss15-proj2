@@ -76,8 +76,6 @@ import javax.inject.Inject;
 
 import it.neokree.materialnavigationdrawer.MaterialNavigationDrawer;
 import it.neokree.materialnavigationdrawer.elements.MaterialSection;
-import retrofit.RetrofitError;
-import retrofit.client.Response;
 import roboguice.inject.InjectView;
 import rx.Observable;
 import rx.Subscriber;
@@ -284,17 +282,13 @@ public class MyTripDriverFragment extends SubscriptionFragment {
                                         removeRunningTripOfferState();
                                     }
 
-                                }, new Action1<Throwable>() {
+                                }, new CrashCallback(getActivity(), "failed to cancel offer with id " + offerID, new Action1<Throwable>() {
                                     @Override
                                     public void call(Throwable throwable) {
-                                        Timber.i("Error when cancelling trip with ID " + offerID + ": "
-                                                + throwable.getMessage());
-                                        Toast.makeText(getActivity(), "Error: " + throwable.getMessage(),
-                                                Toast.LENGTH_LONG).show();
                                         cancelButton.setEnabled(true);
                                         cancelProgressBar.setVisibility(View.GONE);
                                     }
-                                }));
+                                })));
             }
         });
     }
@@ -390,8 +384,7 @@ public class MyTripDriverFragment extends SubscriptionFragment {
                                 listener.onDiversionUpdate(joinRequest, textView, diversionInMinutes);
                             }
 
-                        }, new CrashCallback(getActivity()))
-        );
+                        }, new CrashCallback(getActivity(), "failed to get diversion")));
     }
 
 
@@ -754,19 +747,7 @@ public class MyTripDriverFragment extends SubscriptionFragment {
                             }
 
                         }
-                    }, new CrashCallback(getActivity()) {
-                        @Override
-                        public void call(Throwable throwable) {
-                            super.call(throwable);
-                            Response response = ((RetrofitError) throwable).getResponse();
-                            if (response != null && response.getStatus() == 401) {  // Not Authorized
-                            } else {
-                                Timber.e("error" + throwable.getMessage());
-                            }
-                            Timber.e("Couldn't get data" + throwable.getMessage());
-                        }
-                    });
-
+                    }, new CrashCallback(getActivity(), "failed to get join requests"));
             subscriptions.add(Jsubscription);
         }
 
