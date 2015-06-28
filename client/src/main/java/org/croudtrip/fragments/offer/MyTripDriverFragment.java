@@ -121,6 +121,7 @@ public class MyTripDriverFragment extends SubscriptionFragment {
     private ProgressWheel passengersProgressBar;
     private ProgressWheel finishProgressBar;
     private ProgressWheel cancelProgressBar;
+    private ProgressWheel generalProgressBar;
 
     @InjectView(R.id.iv_transparent_image)
     private ImageView transparentImageView;
@@ -177,6 +178,7 @@ public class MyTripDriverFragment extends SubscriptionFragment {
         passengersProgressBar = (ProgressWheel) adapter.getHeader().findViewById(R.id.pb_my_trip_passengers_progressBar);
         finishProgressBar = (ProgressWheel) adapter.getHeader().findViewById(R.id.pb_my_trip_finish);
         cancelProgressBar = (ProgressWheel) adapter.getHeader().findViewById(R.id.pb_my_trip_cancel);
+        generalProgressBar = (ProgressWheel) view.findViewById(R.id.pb_my_trip_progressBar);
 
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getActivity());
         recyclerView.setLayoutManager(layoutManager);
@@ -686,7 +688,7 @@ public class MyTripDriverFragment extends SubscriptionFragment {
             Timber.i(task + " Request with ID " + request.getId());
 
             // UI
-            // TODO progressBar.setVisibility(View.VISIBLE);
+            generalProgressBar.setVisibility(View.VISIBLE);
 
             // Don't allow other user clicks while the task is performed
             //adapter.setOnRequestAcceptDeclineListener(null);
@@ -704,22 +706,21 @@ public class MyTripDriverFragment extends SubscriptionFragment {
 
                                 for (int i = 0; i < requests.size(); i++) {
                                     if (request.getId() == requests.get(i).getId()) {
+
                                         //Inform server only if the request is still active (not expired)
                                         JoinTripRequestUpdate requestUpdate;
-                                        if (accept)
+
+                                        if (accept) {
                                             requestUpdate = new JoinTripRequestUpdate(JoinTripRequestUpdateType.ACCEPT_PASSENGER);
-                                        else
+                                        }else {
                                             requestUpdate = new JoinTripRequestUpdate(JoinTripRequestUpdateType.DECLINE_PASSENGER);
-                                        Subscription subscription = tripsResource.updateJoinRequest(request.getId(), requestUpdate)
+                                        }
+
+                                        subscriptions.add(tripsResource.updateJoinRequest(request.getId(), requestUpdate)
                                                 .compose(new DefaultTransformer<JoinTripRequest>())
-                                                .subscribe(new AcceptDeclineRequestSubscriber(accept));
-                                        subscriptions.add(subscription);
+                                                .subscribe(new AcceptDeclineRequestSubscriber(accept)));
 
-                                        // UI
-                                        // TODO progressBar.setVisibility(View.VISIBLE);
-                                        Timber.i("request has not expired");
-
-                                        //Break from the loop when the request is found in the list
+                                        Timber.i("Request has not expired");
                                         break;
                                     }
 
@@ -731,10 +732,9 @@ public class MyTripDriverFragment extends SubscriptionFragment {
 
                                         //Enable clicking the list items again and remove the progress bar
                                         recyclerView.setOnTouchListener(touchListener);
-                                        // TODO progressBar.setVisibility(View.GONE);
+                                        generalProgressBar.setVisibility(View.GONE);
 
                                         adapter.removePendingPassenger(request.getId());
-                                        int numRequests = adapter.getItemCount();
                                     }
                                 }
 
@@ -746,7 +746,7 @@ public class MyTripDriverFragment extends SubscriptionFragment {
 
                                 //Enable clicking the list items again and remove the progress bar
                                 recyclerView.setOnTouchListener(touchListener);
-                                // TODO progressBar.setVisibility(View.GONE);
+                                generalProgressBar.setVisibility(View.GONE);
 
                                 adapter.removePendingPassenger(request.getId());
                                 int numRequests = adapter.getItemCount();
@@ -823,6 +823,10 @@ public class MyTripDriverFragment extends SubscriptionFragment {
 
             // Everything worked out, so remove the request from the adapter
             adapter.removePendingPassenger(joinTripRequest.getId());
+
+            if(accept) {
+                loadOffer();
+            }
         }
 
         @Override
@@ -852,7 +856,7 @@ public class MyTripDriverFragment extends SubscriptionFragment {
             recyclerView.setOnTouchListener(touchListener);
 
             // UI
-            // TODO progressBar.setVisibility(View.GONE);
+            generalProgressBar.setVisibility(View.GONE);
         }
     }
 

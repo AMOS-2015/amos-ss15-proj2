@@ -111,7 +111,7 @@
                     android:layout_gravity = "center_vertical|center_horizontal"/>
             </FrameLayout>
         </LinearLayout>
-        
+
 
 
 
@@ -154,10 +154,23 @@
     </LinearLayout>
 
 
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/rv_my_trip_driver_passengers"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/rv_my_trip_driver_passengers"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
 
+        <com.pnikosis.materialishprogress.ProgressWheel
+            android:id="@+id/pb_my_trip_progressBar"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:visibility="gone"
+            wheel:matProg_barColor="@color/primary_dark"
+            wheel:matProg_progressIndeterminate="true"
+            android:layout_gravity = "center_vertical|center_horizontal"/>
+
+    </FrameLayout>
 </LinearLayout>
