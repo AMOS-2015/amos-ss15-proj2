@@ -356,36 +356,40 @@ class SuperTripsMatcher extends SimpleTripsMatcher {
         );
     }
 
-    private SuperTripReservation createSuperTripReservation(TripQuery query,
-                                                            RouteLocation connectionPoint,
-                                                            TripOffer pickUpOffer,
-                                                            TripOffer dropOffer,
-                                                            int totalPickUpPriceInCents,
-                                                            long estimatedPickupDuration,
-                                                            int totalDropPriceInCents,
-                                                            long estimatedDropDuration) {
+    private SuperTripReservation createSuperTripReservation(
+            TripQuery query,
+            RouteLocation connectionPoint,
+            TripOffer pickUpOffer,
+            TripOffer dropOffer,
+            int totalPickUpPriceInCents,
+            long estimatedPickupDuration,
+            int totalDropPriceInCents,
+            long estimatedDropDuration) {
+
         return new SuperTripReservation.Builder()
                 .setQuery(query)
-                .addReservation(new TripReservation(
-                        new SuperTripSubQuery.Builder()
+                .addReservation(new TripReservation.Builder()
+                        .setSubQuery(new SuperTripSubQuery.Builder()
                                 .setStartLocation(query.getStartLocation())
                                 .setDestinationLocation(connectionPoint)
-                                .build(),
-                        totalPickUpPriceInCents,
-                        pickUpOffer.getPricePerKmInCents(),
-                        pickUpOffer.getId(),
-                        estimatedPickupDuration,
-                        pickUpOffer.getDriver()))
-                .addReservation(new TripReservation(
-                        new SuperTripSubQuery.Builder()
+                                .build())
+                        .setTotalPriceInCents(totalPickUpPriceInCents)
+                        .setPricePerKmInCents(pickUpOffer.getPricePerKmInCents())
+                        .setOfferId(pickUpOffer.getId())
+                        .setEstimatedTripDurationInSeconds(estimatedPickupDuration)
+                        .setDriver(pickUpOffer.getDriver())
+                        .build())
+                .addReservation(new TripReservation.Builder()
+                        .setSubQuery(new SuperTripSubQuery.Builder()
                                 .setStartLocation(connectionPoint)
                                 .setDestinationLocation(query.getDestinationLocation())
-                                .build(),
-                        totalDropPriceInCents,
-                        dropOffer.getPricePerKmInCents(),
-                        dropOffer.getId(),
-                        estimatedDropDuration,
-                        dropOffer.getDriver()))
+                                .build())
+                        .setTotalPriceInCents(totalDropPriceInCents)
+                        .setPricePerKmInCents(dropOffer.getPricePerKmInCents())
+                        .setOfferId(dropOffer.getId())
+                        .setEstimatedTripDurationInSeconds(estimatedDropDuration)
+                        .setDriver(dropOffer.getDriver())
+                        .build())
                 .build();
     }
 
