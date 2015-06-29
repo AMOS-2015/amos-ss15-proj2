@@ -117,6 +117,7 @@ public class VehicleInfoFragment extends SubscriptionFragment {
         if (vehicleId != -1 && vehicleId != -2)
             deleteVehicle.setVisibility(View.VISIBLE);
 
+        Timber.i(vehicleId+"");
         this.user = AccountManager.getLoggedInUser(this.getActivity().getApplicationContext());
         if (user != null)
             userId = user.getId();
@@ -371,10 +372,9 @@ public class VehicleInfoFragment extends SubscriptionFragment {
                     public void call(Vehicle vehicle) {
                         Toast.makeText(getActivity(), "New vehicle added!", Toast.LENGTH_SHORT).show();
                         Timber.v("New vehicle added!");
-
+                        VehicleInfoFragment.this.getActivity().onBackPressed();
                         if (VehicleManager.getDefaultVehicleId(getActivity()) == -3)
                             VehicleManager.saveDefaultVehicle(getActivity(), vehicle.getId());
-
                         progressBar.setVisibility(View.GONE);
                     }
 
@@ -397,8 +397,8 @@ public class VehicleInfoFragment extends SubscriptionFragment {
 
                     @Override
                     public void call(Response response) {
+                        VehicleInfoFragment.this.getActivity().onBackPressed();
                         Toast.makeText(getActivity(), "Vehicle removed!", Toast.LENGTH_SHORT).show();
-
                         //Set default to -3 if the user deletes the last available car
                         if (DataHolder.getInstance().getIsLast() == true)
                             VehicleManager.saveDefaultVehicle(getActivity(), -3);
@@ -426,6 +426,7 @@ public class VehicleInfoFragment extends SubscriptionFragment {
 
                     @Override
                     public void call(Vehicle vehicle) {
+                        VehicleInfoFragment.this.getActivity().onBackPressed();
                         Toast.makeText(getActivity(), "Updated vehicle info", Toast.LENGTH_SHORT).show();
                         Timber.v("Updated vehicle info");
                         progressBar.setVisibility(View.GONE);
