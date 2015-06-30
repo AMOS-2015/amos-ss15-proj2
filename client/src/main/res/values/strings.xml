@@ -166,8 +166,8 @@
     <string name="join_request_accepted_msg">Congratulations! %1$s is taking you to your destination.</string>
     <string name="join_request_declined_msg">Your request was declined by the driver.</string>
     <string name="join_request_declined_title">Declined request!</string>
-    <string name="found_matches_title">Found Matches!</string>
-    <string name="found_matches_msg">Found new Matches for your recent query.</string>
+    <string name="found_matches_title">New Message</string>
+    <string name="found_matches_msg">There are new trips available!</string>
     <string name="navigation_error_no_offer">Error: You have currently no running offer.</string>
     <string name="error_position_update_title">No position update possible</string>
     <string name="error_position_update_message">Sorry, seems like we lost you. Once your connection is restored more passengers will find your Trip!</string>
