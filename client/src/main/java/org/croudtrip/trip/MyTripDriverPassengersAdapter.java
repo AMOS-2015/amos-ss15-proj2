@@ -39,6 +39,8 @@ import org.croudtrip.fragments.offer.MyTripDriverFragment;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 
@@ -295,10 +297,10 @@ public class MyTripDriverPassengersAdapter extends RecyclerView.Adapter<Recycler
         notifyDataSetChanged();
     }
 
-    private int getSpaceCount(){
+    private int getSpaceCount() {
         int spaceCount = 0;
 
-        if(pendingPassengers.size() > 0 && passengers.size() > 0){
+        if (pendingPassengers.size() > 0 && passengers.size() > 0) {
             spaceCount = 1;
         }
 
@@ -336,37 +338,6 @@ public class MyTripDriverPassengersAdapter extends RecyclerView.Adapter<Recycler
 
 
     /**
-     * Adds the given JoinTripRequest to the adapter.
-     *
-     * @param passengers new elements to add to the adapter
-     */
-    public void addPassengers(List<JoinTripRequest> passengers) {
-
-        if (passengers == null) {
-            return;
-        }
-
-        this.passengers.addAll(passengers);
-        this.notifyDataSetChanged();
-    }
-
-
-    /**
-     * Adds the given JoinTripRequest to the adapter.
-     *
-     * @param passenger new element to add to the adapter.
-     */
-    public void addPassenger(JoinTripRequest passenger) {
-
-        if (passenger == null) {
-            return;
-        }
-
-        passengers.add(passenger);
-        this.notifyDataSetChanged();
-    }
-
-    /**
      * Searches for a JoinTripRequest (pending passenger) with the same ID as additionalPendingPassenger
      * and replaces the request with the given one. If the request isn't in the list yet, it is
      * simply added.
@@ -397,11 +368,6 @@ public class MyTripDriverPassengersAdapter extends RecyclerView.Adapter<Recycler
 
         if (!requestFound) {
             pendingPassengers.add(new JoinMatch(additionalPendingPassenger));
-            requestFound = true;
-        }
-
-        if (requestFound) {
-            this.notifyDataSetChanged();
         }
     }
 
@@ -426,7 +392,6 @@ public class MyTripDriverPassengersAdapter extends RecyclerView.Adapter<Recycler
 
         if (foundRequest) {
             pendingPassengers.remove(index);
-            this.notifyDataSetChanged();
         }
     }
 
@@ -451,19 +416,7 @@ public class MyTripDriverPassengersAdapter extends RecyclerView.Adapter<Recycler
 
         if (foundRequest) {
             passengers.remove(index);
-            this.notifyDataSetChanged();
         }
-    }
-
-
-    /**
-     * Checks whether the given JoinTripRequest is in the adapter
-     *
-     * @param joinTripRequest the JoinTripRequest to search for
-     * @return true if the request is in the adapter, otherwise false
-     */
-    public boolean containsPassenger(JoinTripRequest joinTripRequest) {
-        return passengers.contains(joinTripRequest);
     }
 
 
@@ -499,12 +452,22 @@ public class MyTripDriverPassengersAdapter extends RecyclerView.Adapter<Recycler
 
         if (!requestFound) {
             passengers.add(request);
-            requestFound = true;
         }
+    }
 
-        if (requestFound) {
-            this.notifyDataSetChanged();
-        }
+
+    /**
+     * Sorts the entries in the adapter according to the order of the trip status in the enum. I.e.
+     * Passengers waiting to be picked up are first in the list, next up are passengers in the car,
+     * followed by passengers already dropped of. Other kinds of passengers should not be in the list.
+     */
+    public void maintainOrder() {
+        Collections.sort(passengers, new Comparator<JoinTripRequest>() {
+            @Override
+            public int compare(JoinTripRequest request, JoinTripRequest other) {
+                return request.getStatus().ordinal() - other.getStatus().ordinal();
+            }
+        });
     }
 
 

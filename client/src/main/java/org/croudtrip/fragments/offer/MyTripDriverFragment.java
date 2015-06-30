@@ -27,7 +27,6 @@ import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -80,7 +79,6 @@ import it.neokree.materialnavigationdrawer.elements.MaterialSection;
 import roboguice.inject.InjectView;
 import rx.Observable;
 import rx.Subscriber;
-import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
 import rx.functions.Func1;
@@ -374,16 +372,16 @@ public class MyTripDriverFragment extends SubscriptionFragment {
 
         // Ask the server for the diversion
         subscriptions.add(tripsResource
-                        .getDiversionInSecondsForJoinRequest(joinRequest.getId())
-                        .compose(new DefaultTransformer<Long>())
-                        .subscribe(new Action1<Long>() {
-                            @Override
-                            public void call(Long diversionInSeconds) {
-                                int diversionInMinutes = (int) (diversionInSeconds / 60);
-                                listener.onDiversionUpdate(joinRequest, textView, diversionInMinutes);
-                            }
+                .getDiversionInSecondsForJoinRequest(joinRequest.getId())
+                .compose(new DefaultTransformer<Long>())
+                .subscribe(new Action1<Long>() {
+                    @Override
+                    public void call(Long diversionInSeconds) {
+                        int diversionInMinutes = (int) (diversionInSeconds / 60);
+                        listener.onDiversionUpdate(joinRequest, textView, diversionInMinutes);
+                    }
 
-                        }, new CrashCallback(getActivity(), "failed to get diversion")));
+                }, new CrashCallback(getActivity(), "failed to get diversion")));
     }
 
 
@@ -638,7 +636,9 @@ public class MyTripDriverFragment extends SubscriptionFragment {
             // Dis-/Allow the driver to finish the trip
             finishButton.setEnabled(allowFinish);
             cancelButton.setEnabled(allowCancel);
-            adapter.updateEarnings();
+
+            adapter.maintainOrder();
+            adapter.updateEarnings();   // notifyDataSetChanged is called automatically
         }
 
         @Override
@@ -684,12 +684,11 @@ public class MyTripDriverFragment extends SubscriptionFragment {
             generalProgressBar.setVisibility(View.VISIBLE);
 
             // Don't allow other user clicks while the task is performed
-            //adapter.setOnRequestAcceptDeclineListener(null);
             recyclerView.setOnTouchListener(null);
 
             //Get a list of current Join trip requests from the server
             //and make sure that the request is still active (hasn't expired)
-            Subscription Jsubscription = tripsResource.getJoinRequests(true)
+            subscriptions.add(tripsResource.getJoinRequests(true)
                     .compose(new DefaultTransformer<List<JoinTripRequest>>())
                     .subscribe(new Action1<List<JoinTripRequest>>() {
                         @Override
@@ -705,7 +704,7 @@ public class MyTripDriverFragment extends SubscriptionFragment {
 
                                         if (accept) {
                                             requestUpdate = new JoinTripRequestUpdate(JoinTripRequestUpdateType.ACCEPT_PASSENGER);
-                                        }else {
+                                        } else {
                                             requestUpdate = new JoinTripRequestUpdate(JoinTripRequestUpdateType.DECLINE_PASSENGER);
                                         }
 
@@ -742,8 +741,10 @@ public class MyTripDriverFragment extends SubscriptionFragment {
                                 generalProgressBar.setVisibility(View.GONE);
 
                                 adapter.removePendingPassenger(request.getId());
-                                int numRequests = adapter.getItemCount();
                             }
+
+                            adapter.maintainOrder();
+                            adapter.notifyDataSetChanged();
 
                         }
                     }, new Action1<Throwable>() {
@@ -755,8 +756,7 @@ public class MyTripDriverFragment extends SubscriptionFragment {
                             recyclerView.setOnTouchListener(touchListener);
 
                         }
-                    });
-            subscriptions.add(Jsubscription);
+                    }));
         }
 
         @Override
@@ -813,8 +813,9 @@ public class MyTripDriverFragment extends SubscriptionFragment {
 
             // Everything worked out, so remove the request from the adapter
             adapter.removePendingPassenger(joinTripRequest.getId());
+            adapter.notifyDataSetChanged();
 
-            if(accept) {
+            if (accept) {
                 loadOffer();
             }
         }
