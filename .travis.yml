@@ -23,7 +23,7 @@ before_script:
   - sudo service x11-common stop || true
   - openssl aes-256-cbc -K $encrypted_2f0e027c7173_key -iv $encrypted_2f0e027c7173_iv -in keys.tar.enc -out ./keys.tar -d
   - tar xvf ./keys.tar
-  - mv ./client/keys.xml ./client/src/main/res/values/keys.xml
+  - mv ./client-android/keys.xml ./client-android/src/main/res/values/keys.xml
 
 install:
   - 'echo "Download Gradle Wrapper"; chmod +x ./gradlew; ls -l gradlew; ./gradlew -v'
@@ -39,7 +39,7 @@ deploy:
   provider: releases
   api_key:
     secure: DqSR0jOordroNccU1VUaGmRJgKQdM1L3Jr37/3FDftuQDpuYlLIOyP9nSFZtLfy480NiC+F9clCbYh9NLF339VbVhkdrwtNBAaDp3JVE8cg0ehi9H9XxjlaPFnnumt46uWB33PXVII9rjfLOtFhE1n6eH1ly1Gj4cRXCvx2D9G4=
-  file: ./client/build/outputs/apk/client-debug.apk
+  file: ./client-android/build/outputs/apk/client-android-debug.apk
   skip_cleanup: true
   on:
     repo: AMOS-2015/amos-ss15-proj2
