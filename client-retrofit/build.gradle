@@ -3,6 +3,7 @@ import de.bitdroid.jaxrs2retrofit.converter.IgnoreConverter
 import io.dropwizard.auth.Auth;
 
 apply plugin: 'java'
+apply plugin: 'idea'
 apply plugin: 'de.bitdroid.jaxrs2retrofit'
 
 
@@ -32,10 +33,15 @@ dependencies {
 // create retrofit interfaces from server resources
 jaxRs2Retrofit {
 	inputDir = file(project(':server').projectDir.toString() + '/' + mainSourcesDir)
-    outputDir = file('where/Retrofit/files/should/go') // e.g. file('src/main/java-gen')
-    packageName = 'your.package.name '
 	outputDir = file(generatedSourcesDir)
 	packageName = 'org.croudtrip.api'
 	paramConverterManager.registerConverter(ClassName.get(Auth.class), new IgnoreConverter())
 	excludedClassNamesRegex = 'AvatarsResource|UsersHeadResource|LogsResource'
+}
+
+// mark generated dir as source dir in intellij
+idea {
+    module {
+        sourceDirs += file(generatedSourcesDir)
+    }
 }

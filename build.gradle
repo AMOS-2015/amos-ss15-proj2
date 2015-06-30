@@ -36,6 +36,6 @@ subprojects {
     // setup generated sources
     ext {
         mainSourcesDir = 'src/main/java'
-        generatedSourcesDir = 'src/main/java-gen'
+        generatedSourcesDir = 'src/generated/java'
     }
 }
