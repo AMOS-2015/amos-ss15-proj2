@@ -44,6 +44,8 @@ import org.croudtrip.api.account.User;
 import org.croudtrip.fragments.ProfileFragment;
 import org.croudtrip.fragments.SettingsFragment;
 import org.croudtrip.fragments.join.JoinDispatchFragment;
+import org.croudtrip.fragments.join.JoinResultsFragment;
+import org.croudtrip.fragments.join.JoinSearchFragment;
 import org.croudtrip.fragments.offer.DispatchOfferTripFragment;
 import org.croudtrip.gcm.GcmManager;
 import org.croudtrip.location.LocationUpdater;
@@ -82,6 +84,7 @@ public class MainActivity extends AbstractRoboDrawerActivity {
     public final static String ACTION_SHOW_REQUEST_ACCEPTED = "SHOW_REQUEST_ACCEPTED";
     public final static String ACTION_SHOW_REQUEST_DECLINED = "SHOW_REQUEST_DECLINED";
     public final static String ACTION_SHOW_FOUND_MATCHES = "SHOW_FOUND_MATCHES";
+    public final static String ACTION_SHOW_JOIN_TRIP_FRAGMENT = "SHOW_JOIN_TRIP_FRAGMENT";
 
     @Inject private GcmManager gcmManager;
     @Inject private LocationUpdater locationUpdater;
@@ -356,6 +359,9 @@ public class MainActivity extends AbstractRoboDrawerActivity {
 
         }else if( action.equalsIgnoreCase(ACTION_SHOW_JOIN_TRIP_REQUESTS) ) {
             this.setDefaultSectionLoaded(1);    // Offer trip (My trip)
+        }
+        else if (action.equalsIgnoreCase(ACTION_SHOW_JOIN_TRIP_FRAGMENT)) {
+            this.setDefaultSectionLoaded(0);    //Join trip
         }
     }
 }

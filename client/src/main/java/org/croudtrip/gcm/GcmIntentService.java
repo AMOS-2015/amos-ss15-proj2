@@ -433,16 +433,27 @@ public class GcmIntentService extends RoboIntentService {
     }
 
     private void handleTripCanceledByDriver() {
-        Timber.d("Trip Canceled by Driver");
 
-        //Create a notification for the passengers who already joined the trip
-        Intent startingIntent = new Intent(getApplicationContext(), MainActivity.class);
-        startingIntent.setAction(MainActivity.ACTION_SHOW_JOIN_TRIP_REQUESTS);
+        if (LifecycleHandler.isApplicationInForeground()) {
+            Timber.d("Trip Canceled by Driver");
+        }
+        else
+        {
+            //Create a notification for the passengers who already joined the trip
+            Intent startingIntent = new Intent(getApplicationContext(), MainActivity.class);
+            startingIntent.setAction(MainActivity.ACTION_SHOW_JOIN_TRIP_FRAGMENT);
 
-        PendingIntent contentIntent = PendingIntent.getActivity(getApplicationContext(), 0, startingIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-        createNotification(getString(R.string.new_msg), getString(R.string.trip_canceled_msg),
-                GcmConstants.GCM_NOTIFICATION_TRIP_CANCELLED_ID, contentIntent);
-
+            PendingIntent contentIntent = PendingIntent.getActivity(getApplicationContext(), 0, startingIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+            createNotification(getString(R.string.new_msg), getString(R.string.trip_canceled_msg),
+                    GcmConstants.GCM_NOTIFICATION_TRIP_CANCELLED_ID, contentIntent);
+        }
+        //Change the status of Join trip flags
+        final SharedPreferences prefs = getApplicationContext().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putBoolean(Constants.SHARED_PREF_KEY_SEARCHING, false);
+        editor.putBoolean(Constants.SHARED_PREF_KEY_ACCEPTED, false);
+        editor.putLong(Constants.SHARED_PREF_KEY_QUERY_ID, -1);
+        editor.apply();
     }
 
     private void handleTripCanceledByPassenger() {
