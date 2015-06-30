@@ -15,14 +15,36 @@
 apply plugin: 'application'
 apply plugin: 'java'
 apply plugin: 'war'
+apply plugin: 'idea'
 
 sourceCompatibility = 1.7
 version = '1.0'
 
+// run java "main" method
 mainClassName = "org.croudtrip.app.CroudTripApplication"
-
 run() {
     args 'server', 'configuration.yml'
+}
+
+// integration tests
+def testSrcDir = file('src/integrationtest/java')
+sourceSets {
+    integrationTest {
+        java.srcDir testSrcDir
+        compileClasspath = sourceSets.main.output + configurations.testCompile + sourceSets.test.output
+        runtimeClasspath = output + compileClasspath
+    }
+}
+task integrationTest(type: Test) {
+    testClassesDir = sourceSets.integrationTest.output.classesDir
+    classpath = sourceSets.integrationTest.runtimeClasspath
+}
+
+// let intellij know about 'special' folders
+idea {
+    module {
+        testSourceDirs += testSrcDir
+    }
 }
 
 dependencies {
@@ -40,4 +62,5 @@ dependencies {
 
     testCompile 'junit:junit:4.11'
     testCompile 'org.jmockit:jmockit:1.13'
+    testCompile project(':client-retrofit')
 }
