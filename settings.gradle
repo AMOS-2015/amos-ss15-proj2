@@ -12,4 +12,4 @@
  *    If not, see http://www.gnu.org/licenses/.
  */
 
-include ':server', ':client', ':models'
+include ':server', ':client-android', ':client-retrofit', ':models'

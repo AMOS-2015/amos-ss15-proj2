@@ -1,0 +1,41 @@
+import com.squareup.javapoet.ClassName
+import de.bitdroid.jaxrs2retrofit.converter.IgnoreConverter
+import io.dropwizard.auth.Auth;
+
+apply plugin: 'java'
+apply plugin: 'de.bitdroid.jaxrs2retrofit'
+
+
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'de.bitdroid.jaxrs2retrofit:plugin:0.3.0'
+        classpath('io.dropwizard:dropwizard-auth:0.8.0') {
+            exclude group: 'com.google.guava'
+        }
+    }
+}
+
+
+dependencies {
+    compile project(':models')
+    compile 'com.squareup.retrofit:retrofit:1.9.0'
+    compile('com.squareup.retrofit:converter-jackson:1.9.0') {
+        exclude group: 'com.fasterxml.jackson.core'
+    }
+	compile 'io.reactivex:rxjava:1.0.8'
+}
+
+
+// create retrofit interfaces from server resources
+jaxRs2Retrofit {
+	inputDir = file(project(':server').projectDir.toString() + '/' + mainSourcesDir)
+    outputDir = file('where/Retrofit/files/should/go') // e.g. file('src/main/java-gen')
+    packageName = 'your.package.name '
+	outputDir = file(generatedSourcesDir)
+	packageName = 'org.croudtrip.api'
+	paramConverterManager.registerConverter(ClassName.get(Auth.class), new IgnoreConverter())
+	excludedClassNamesRegex = 'AvatarsResource|UsersHeadResource|LogsResource'
+}
