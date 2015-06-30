@@ -147,6 +147,11 @@ public class MyTripDriverPassengersAdapter extends RecyclerView.Adapter<Recycler
             if (joinRequest.getStatus() == JoinTripStatus.PASSENGER_AT_DESTINATION) {
                 color = R.color.my_trip_driver_passenger_destination_reached;
                 holder.checkmark.setVisibility(View.VISIBLE);
+
+            } else if(joinRequest.getStatus() == JoinTripStatus.PASSENGER_IN_CAR){
+                color = R.color.my_trip_driver_passenger_destination_reached;
+                holder.checkmark.setVisibility(View.GONE);
+
             } else {
                 color = R.color.my_trip_driver_passenger;
                 holder.checkmark.setVisibility(View.GONE);
