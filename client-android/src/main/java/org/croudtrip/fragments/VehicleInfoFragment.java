@@ -278,7 +278,7 @@ public class VehicleInfoFragment extends SubscriptionFragment {
         Button set = (Button) capacityDialog.findViewById(R.id.set);
         Button cancel = (Button) capacityDialog.findViewById(R.id.cancel);
         final NumberPicker capacityPicker = (NumberPicker) capacityDialog.findViewById(R.id.capacity_picker);
-        capacityPicker.setMaxValue(8);
+        capacityPicker.setMaxValue(4);
         capacityPicker.setMinValue(1);
         capacityPicker.setWrapSelectorWheel(false);
         capacityPicker.setValue(Integer.parseInt(capacityPickerButton.getText().toString()));
