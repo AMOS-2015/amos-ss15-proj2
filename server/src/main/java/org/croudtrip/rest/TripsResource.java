@@ -27,10 +27,12 @@ import org.croudtrip.api.trips.JoinTripStatus;
 import org.croudtrip.api.trips.RunningTripQuery;
 import org.croudtrip.api.trips.SuperTrip;
 import org.croudtrip.api.trips.SuperTripReservation;
+import org.croudtrip.api.trips.SuperTripSubQuery;
 import org.croudtrip.api.trips.TripOffer;
 import org.croudtrip.api.trips.TripOfferDescription;
 import org.croudtrip.api.trips.TripOfferStatus;
 import org.croudtrip.api.trips.TripOfferUpdate;
+import org.croudtrip.api.trips.TripQuery;
 import org.croudtrip.api.trips.TripQueryDescription;
 import org.croudtrip.api.trips.TripQueryResult;
 import org.croudtrip.api.trips.TripReservation;
@@ -144,6 +146,36 @@ public class TripsResource {
         return tripsNavigationManager.getNavigationResultForOffer(offer);
     }
 
+    /**
+     * Get the {@link org.croudtrip.api.directions.NavigationResult} for an offer containing a not
+     * yet accepted additionally provided {@link JoinTripRequest}. The result will contain a complete
+     * route visiting all the passengers pick-up and destination locations as well as a list of all
+     * the waypoints in the correct order of the current trip.
+     * @param offerId The offer the navigation result should be computed for
+     * @param joinRequestId the not yet accepted join trip request ({@link JoinTripStatus#PASSENGER_ACCEPTED})
+     *                      which should be included into the navigation result.
+     * @return A navigation result that contains the route and waypoints for all the passengers
+     * especially of the additionally provided request.
+     */
+    @GET
+    @Path(PATH_OFFERS + "/{offerId}/navigation/{joinRequestId}")
+    @UnitOfWork
+    public NavigationResult computePendingNavigationResultForOffer(@PathParam("offerId") long offerId, @PathParam("joinRequestId") long joinRequestId) throws RouteNotFoundException {
+        TripOffer offer = assertIsValidOfferId( offerId );
+
+        Optional<JoinTripRequest> request = tripsManager.findJoinRequest(joinRequestId);
+        if (!request.isPresent()) throw RestUtils.createNotFoundException();
+
+        if( request.get().getStatus() != JoinTripStatus.PASSENGER_ACCEPTED )
+            throw RestUtils.createJsonFormattedException("Request must have status PASSENGER_ACCEPTED.", 409);
+
+        SuperTripSubQuery subQuery = request.get().getSubQuery();
+        TripQuery origQuery = request.get().getSuperTrip().getQuery();
+
+        TripQuery query = new TripQuery( null, subQuery.getStartLocation(), subQuery.getDestinationLocation(), origQuery.getMaxWaitingTimeInSeconds(), origQuery.getCreationTimestamp(), origQuery.getPassenger() );
+
+        return tripsNavigationManager.getNavigationResultForOffer( offer, query );
+    }
 
     /**
      * Find all offers that belong to a particular driver.
