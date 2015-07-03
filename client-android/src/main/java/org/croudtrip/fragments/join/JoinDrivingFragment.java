@@ -29,7 +29,6 @@ import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -543,6 +542,8 @@ public class JoinDrivingFragment extends SubscriptionFragment {
                     @Override
                     public void call(JoinTripRequest joinTripRequest) {
                         Timber.d("update trip successfully called");
+
+                        adapter.updateRequest(joinTripRequest);
 
                         //hide loading indicator
                         if (progressBar != null) {

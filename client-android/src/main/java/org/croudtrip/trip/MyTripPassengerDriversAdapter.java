@@ -65,7 +65,7 @@ public class MyTripPassengerDriversAdapter extends RecyclerView.Adapter<Recycler
 
     //**************************** Methods *****************************//
 
-    public View getHeader(){
+    public View getHeader() {
         return header;
     }
 
@@ -124,10 +124,16 @@ public class MyTripPassengerDriversAdapter extends RecyclerView.Adapter<Recycler
 
                 color = R.color.my_trip_passenger_driver_accepted;
 
-            } else if(joinRequest.getStatus() == JoinTripStatus.DRIVER_DECLINED){
+            } else if (joinRequest.getStatus() == JoinTripStatus.DRIVER_DECLINED) {
                 color = R.color.my_trip_passenger_driver_declined;
             } else {
                 color = R.color.my_trip_passenger_driver_default;
+            }
+
+            if (joinRequest.getStatus() == JoinTripStatus.PASSENGER_AT_DESTINATION) {
+                holder.checkmark.setVisibility(View.VISIBLE);
+            } else {
+                holder.checkmark.setVisibility(View.GONE);
             }
 
             color = holder.card.getContext().getResources().getColor(color);
@@ -138,7 +144,6 @@ public class MyTripPassengerDriversAdapter extends RecyclerView.Adapter<Recycler
             holder.view = header;
         }
     }
-
 
 
     private void showPrice(TextView textView, int priceInCents) {
@@ -172,7 +177,7 @@ public class MyTripPassengerDriversAdapter extends RecyclerView.Adapter<Recycler
         return drivers.size() + 1;   // don't forget the header
     }
 
-    public int getNumDrivers(){
+    public int getNumDrivers() {
 
         if (drivers == null) {
             return 0;
@@ -298,7 +303,6 @@ public class MyTripPassengerDriversAdapter extends RecyclerView.Adapter<Recycler
     }
 
 
-
     private boolean isPositionHeader(int position) {
         return position == 0;
     }
@@ -326,6 +330,7 @@ public class MyTripPassengerDriversAdapter extends RecyclerView.Adapter<Recycler
         protected TextView tvDriverCar;
         protected TextView price;
         protected ImageView ivAvatar;
+        protected ImageView checkmark;
 
         protected CardView card;
 
@@ -340,6 +345,8 @@ public class MyTripPassengerDriversAdapter extends RecyclerView.Adapter<Recycler
                     view.findViewById(R.id.card_price);
             this.ivAvatar = (ImageView)
                     view.findViewById(R.id.card_icon);
+            this.checkmark = (ImageView)
+                    view.findViewById(R.id.iv_my_trip_passenger_drivers_left_car);
 
             this.card = (CardView)
                     view.findViewById(R.id.cv_my_trip_passenger_drivers);
