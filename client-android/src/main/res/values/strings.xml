@@ -25,7 +25,7 @@
     <string name="menu_edit_profile">Edit profile</string>
     <string name="menu_settings">Settings</string>
 
-    <string name="login_email">Login with email</string>
+    <string name="login_email">Login with E-mail</string>
     <string name="skip">Browse trips without logging in</string>
     <string name="hint_email">Your E-mail</string>
     <string name="hint_firstname">First name</string>
@@ -36,7 +36,7 @@
     <string name="registration_success">Registration success</string>
     <string name="registration_error_general">Sorry, there was an error, please retry</string>
     <string name="registration_error_conflict">Email has already been registered</string>
-    <string name="register_button">Sign up for CrowdTrip!</string>
+    <string name="register_button">Sign up for CroudTrip!</string>
     <string name="email_invalid">Please enter a real Email address</string>
     <string name="first_last_mandatory">First and Last names are mandatory fields</string>
 

@@ -16,9 +16,10 @@ package org.croudtrip.activities;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
+import android.graphics.PorterDuff;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.Window;
@@ -120,8 +121,8 @@ public class LoginActivity extends RoboActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        //Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        //setSupportActionBar(toolbar);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             Window window = getWindow();
@@ -129,9 +130,18 @@ public class LoginActivity extends RoboActionBarActivity {
             window.setStatusBarColor(getResources().getColor(R.color.primary_dark));
         }
 
+        Resources res = getResources();
+        registerFirstName.getBackground().setColorFilter(res.getColor(R.color.primary_light), PorterDuff.Mode.SRC_ATOP);
+        registerLastName.getBackground().setColorFilter(res.getColor(R.color.primary_light), PorterDuff.Mode.SRC_ATOP);
+        registerPassword.getBackground().setColorFilter(res.getColor(R.color.primary_light), PorterDuff.Mode.SRC_ATOP);
+        registerEmail.getBackground().setColorFilter(res.getColor(R.color.primary_light), PorterDuff.Mode.SRC_ATOP);
+        loginEmail.getBackground().setColorFilter(res.getColor(R.color.primary_light), PorterDuff.Mode.SRC_ATOP);
+        loginPassword.getBackground().setColorFilter(res.getColor(R.color.primary_light), PorterDuff.Mode.SRC_ATOP);
+
+
 
         // Animation to blend over from the login choice view to registerButton or login view
-        animationDuration = getResources().getInteger(android.R.integer.config_shortAnimTime);
+        animationDuration = res.getInteger(android.R.integer.config_shortAnimTime);
 
         // Remember the currently shown layout/view
         activeView = loginChoiceView;
