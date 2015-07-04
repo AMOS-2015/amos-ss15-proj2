@@ -435,7 +435,7 @@ public class JoinSearchFragment extends SubscriptionFragment implements GoogleAp
             specifiedLocation = l;
 
             btn_join.setEnabled(true);
-            loadLocationLayout.setVisibility(View.VISIBLE);
+            //loadLocationLayout.setVisibility(View.VISIBLE);
         } else {
             super.onActivityResult(requestCode, resultCode, data);
         }
