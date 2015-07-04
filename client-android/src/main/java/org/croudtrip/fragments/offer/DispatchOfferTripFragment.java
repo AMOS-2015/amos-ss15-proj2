@@ -15,6 +15,7 @@
 package org.croudtrip.fragments.offer;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -116,6 +117,16 @@ public class DispatchOfferTripFragment extends SubscriptionFragment {
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         menu.clear();
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        //Propagate event to child fragment
+        if (offerTripFragment != null) {
+            offerTripFragment.onActivityResult(requestCode, resultCode, data);
+        }
     }
 
 

@@ -145,7 +145,12 @@ public class JoinDispatchFragment extends SubscriptionFragment {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
 
+        //Propagate event to child fragment
+        if (searchFragment != null) {
+            searchFragment.onActivityResult(requestCode, resultCode, data);
+        }
     }
 
     @Override
