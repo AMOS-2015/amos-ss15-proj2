@@ -50,6 +50,7 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.pnikosis.materialishprogress.ProgressWheel;
 
@@ -156,8 +157,12 @@ public class JoinDrivingFragment extends SubscriptionFragment {
     private RecyclerView recyclerView;
 
     private ArrayList<Integer> colors;
+    private ArrayList<Integer> shadesOfGray;
     private int colorPosition = 0;
+    private int shadesOfGrayPosition = 0;
 
+
+    private final int DEFAULT_ZOOM_LEVEL = 2;
 
 
     //***************************** Methods *****************************//
@@ -191,6 +196,11 @@ public class JoinDrivingFragment extends SubscriptionFragment {
         colors.add(Color.GREEN);
         colors.add(Color.RED);
         colors.add(Color.YELLOW);
+
+        shadesOfGray = new ArrayList<>();
+        shadesOfGray.add(Color.GRAY);
+        shadesOfGray.add(Color.DKGRAY);
+        shadesOfGray.add(Color.LTGRAY);
     }
 
     @Override
@@ -416,80 +426,101 @@ public class JoinDrivingFragment extends SubscriptionFragment {
         googleMap.clear();
 
         for (final JoinTripRequest joinTripRequest : requests) {
-            subscriptions.add(tripsResource
-                    .computeNavigationResultForOffer(joinTripRequest.getOffer().getId())
-                    .subscribe(new Action1<NavigationResult>() {
-                        @Override
-                        public void call(final NavigationResult navigationResult) {
 
-                            //Update the view with the received data
-                            if (isAdded()) {
-                                getActivity().runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        try {
-                                            List<UserWayPoint> wayPoints = navigationResult.getUserWayPoints();
-                                            List<RouteLocation> polyline = navigationResult.getRoute()
-                                                    .getPolylineWaypointsForUser(
-                                                            joinTripRequest.getSuperTrip().getQuery().getPassenger(),
-                                                            wayPoints);
+            //get route for a driver who has not accepted yet -> draw it in gray
+            if (joinTripRequest.getStatus().equals(JoinTripStatus.PASSENGER_ACCEPTED)) {
+                subscriptions.add(tripsResource
+                        .computePendingNavigationResultForOffer(joinTripRequest.getOffer().getId(), joinTripRequest.getId())
+                        .subscribe(new Action1<NavigationResult>() {
+                            @Override
+                            public void call(final NavigationResult navigationResult) {
 
-                                            List<LatLng> polylinePoints = new ArrayList<LatLng>();
-                                            LatLng first = null;
-                                            LatLng last = null;
-                                            for (RouteLocation loc : polyline) {
+                                //Update the view with the received data
+                                if (isAdded()) {
+                                    getActivity().runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            try {
+                                                List<UserWayPoint> wayPoints = navigationResult.getUserWayPoints();
+                                                List<RouteLocation> polyline = navigationResult.getRoute()
+                                                        .getPolylineWaypointsForUser(
+                                                                joinTripRequest.getSuperTrip().getQuery().getPassenger(),
+                                                                wayPoints);
 
-                                                last = new LatLng(loc.getLat(), loc.getLng());
-                                                if (first == null) {
-                                                    first = last;
-                                                }
+                                                List<LatLng> polylinePoints = getPolylinePoints(polyline, false);
 
-                                                polylinePoints.add(last);
+                                                // Correct line color (alternating)
+                                                googleMap.addPolyline(new PolylineOptions().addAll(polylinePoints).color(shadesOfGray.get(shadesOfGrayPosition % shadesOfGray.size())));
+
+                                                shadesOfGrayPosition++;
+
+                                                // Show dots at different driver pick-up/drop-offs
+                                                addMarker(polylinePoints.get(0));
+                                                addMarker(polylinePoints.get(polylinePoints.size() - 1));
+
+                                            } catch (IllegalArgumentException ex) {
+                                                CrashPopup.show(getActivity(), ex);
                                             }
-
-                                            // Correct line color (alternating)
-                                            googleMap.addPolyline(new PolylineOptions()
-                                                    .addAll(polylinePoints).color(colors.get(colorPosition % colors.size())));
-                                            colorPosition++;
-
-                                            // Show dots at different driver pick-up/drop-offs
-                                            googleMap.addMarker(
-                                                    new MarkerOptions()
-                                                            .position(first)
-                                                            .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_marker))
-                                                            .anchor(0.5f, 0.5f)
-                                                            .flat(true)
-                                            );
-                                            googleMap.addMarker(
-                                                    new MarkerOptions()
-                                                            .position(last)
-                                                            .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_marker))
-                                                            .anchor(0.5f, 0.5f)
-                                                            .flat(true)
-                                            );
-
-                                        } catch (IllegalArgumentException ex) {
-                                            CrashPopup.show(getActivity(), ex);
                                         }
-                                    }
-                                });
-                            }
+                                    });
+                                }
 
-                        }
-                    }, new CrashCallback(getActivity(), "failed to get navigation")));
+                            }
+                        }, new CrashCallback(getActivity(), "failed to get navigation")));
+            }
+            //get route for a driver who has already accepted -> draw it in a "normal" color
+            else {
+                subscriptions.add(tripsResource
+                        .computeNavigationResultForOffer(joinTripRequest.getOffer().getId())
+                        .subscribe(new Action1<NavigationResult>() {
+                            @Override
+                            public void call(final NavigationResult navigationResult) {
+
+                                //Update the view with the received data
+                                if (isAdded()) {
+                                    getActivity().runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            try {
+                                                List<UserWayPoint> wayPoints = navigationResult.getUserWayPoints();
+                                                List<RouteLocation> polyline = navigationResult.getRoute()
+                                                        .getPolylineWaypointsForUser(
+                                                                joinTripRequest.getSuperTrip().getQuery().getPassenger(),
+                                                                wayPoints);
+
+                                                List<LatLng> polylinePoints = getPolylinePoints(polyline, false);
+
+                                                // Correct line color (alternating)
+                                                googleMap.addPolyline(new PolylineOptions()
+                                                        .addAll(polylinePoints).color(colors.get(colorPosition % colors.size())));
+                                                colorPosition++;
+
+                                                // Show dots at different driver pick-up/drop-offs
+                                                addMarker(polylinePoints.get(0));
+                                                addMarker(polylinePoints.get(polylinePoints.size() - 1));
+
+                                            } catch (IllegalArgumentException ex) {
+                                                CrashPopup.show(getActivity(), ex);
+                                            }
+                                        }
+                                    });
+                                }
+
+                            }
+                        }, new CrashCallback(getActivity(), "failed to get navigation")));
+            }
         }
 
         googleMap.setMyLocationEnabled(true);
+        progressBarMap.setVisibility(View.INVISIBLE);
 
         Location location = locationUpdater.getLastLocation();
         if (location == null)
             return;
 
         LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
-        CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(latLng, 10);
+        CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(latLng, DEFAULT_ZOOM_LEVEL);
         googleMap.animateCamera(cameraUpdate);
-
-        progressBarMap.setVisibility(View.INVISIBLE);
     }
 
     /*
@@ -769,6 +800,75 @@ public class JoinDrivingFragment extends SubscriptionFragment {
             loadRequest();
         }
     };
+
+    //*************************** Map Utils ********************************//
+
+    private List<LatLng> getPolylinePoints(List<RouteLocation> route, boolean dashed) {
+        List<LatLng> polylinePoints = new ArrayList<LatLng>();
+        LatLng first = null;
+        LatLng last = null;
+        for (RouteLocation loc : route) {
+
+            last = new LatLng(loc.getLat(), loc.getLng());
+            if (first == null) {
+                first = last;
+            } else if (dashed) {
+                createDashedLine(first, last, Color.GRAY);
+            }
+
+            polylinePoints.add(last);
+        }
+
+        return polylinePoints;
+    }
+
+    /**
+     * Add a marker on the map
+     * @param position
+     */
+    private void addMarker(LatLng position) {
+        googleMap.addMarker(
+                new MarkerOptions()
+                        .position(position)
+                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_marker))
+                        .anchor(0.5f, 0.5f)
+                        .flat(true)
+        );
+    }
+
+
+    /**
+     * Create a dashed polyline depending on the map zoom
+     * @param latLngOrig
+     * @param latLngDest
+     * @param color
+     */
+    private void createDashedLine(LatLng latLngOrig, LatLng latLngDest, int color){
+        double difLat = latLngDest.latitude - latLngOrig.latitude;
+        double difLng = latLngDest.longitude - latLngOrig.longitude;
+
+
+        double divLat = difLat / (DEFAULT_ZOOM_LEVEL * 2);
+        double divLng = difLng / (DEFAULT_ZOOM_LEVEL * 2);
+
+        LatLng tmpLatOri = latLngOrig;
+
+        for(int i = 0; i < (DEFAULT_ZOOM_LEVEL * 2); i++){
+            LatLng loopLatLng = tmpLatOri;
+
+            if(i > 0){
+                loopLatLng = new LatLng(tmpLatOri.latitude + (divLat * 0.25f), tmpLatOri.longitude + (divLng * 0.25f));
+            }
+
+            googleMap.addPolyline(new PolylineOptions()
+                    .add(loopLatLng)
+                    .add(new LatLng(tmpLatOri.latitude + divLat, tmpLatOri.longitude + divLng))
+                    .color(color)
+                    .width(5f));
+
+            tmpLatOri = new LatLng(tmpLatOri.latitude + divLat, tmpLatOri.longitude + divLng);
+        }
+    }
 
 
     //*************************** Inner classes ********************************//
