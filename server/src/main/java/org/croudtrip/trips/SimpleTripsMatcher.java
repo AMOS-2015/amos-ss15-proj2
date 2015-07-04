@@ -280,7 +280,7 @@ class SimpleTripsMatcher implements TripsMatcher {
 		// calculate final price
 		int pricePerKmInCents = lowestPricePerKmInCents;
 		if (secondLowestPricePerKmInCents != -1) pricePerKmInCents = secondLowestPricePerKmInCents;
-		int totalPriceInCents = (int) (pricePerKmInCents * query.getPassengerRoute().getDistanceInMeters() / 1000);
+		int totalPriceInCents = (int) (pricePerKmInCents * query.getRouteDistanceDuration().getDistanceInMeters() / 1000);
 
 
 

@@ -137,7 +137,7 @@ public class MyTripDriverPassengersAdapter extends RecyclerView.Adapter<Recycler
             }
 
             // Passenger location
-            showPassengerLocation(holder.tvPassengerLocation, query.getPassengerRoute().getWayPoints().get(0));
+            showPassengerLocation(holder.tvPassengerLocation, query.getStartLocation());
 
             // Earnings for driver
             showEarning(holder.tvEarnings, joinRequest.getTotalPriceInCents());

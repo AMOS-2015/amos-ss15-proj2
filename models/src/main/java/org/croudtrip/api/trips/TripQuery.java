@@ -20,6 +20,7 @@ import com.google.common.base.Objects;
 
 import org.croudtrip.api.account.User;
 import org.croudtrip.api.directions.Route;
+import org.croudtrip.api.directions.RouteDistanceDuration;
 import org.croudtrip.api.directions.RouteLocation;
 
 import javax.persistence.AttributeOverride;
@@ -38,7 +39,7 @@ public class TripQuery {
 	public static final long IGNORE_MAX_WAITING_TIME = -1;
 
 	@Embedded
-	private Route passengerRoute;
+	private RouteDistanceDuration routeDistanceDuration;
 
     @AttributeOverrides({
             @AttributeOverride(name= RouteLocation.COLUMN_LAT, column = @Column(name = "sLat")),
@@ -68,14 +69,14 @@ public class TripQuery {
 
 	@JsonCreator
 	public TripQuery(
-			@JsonProperty("passengerRoute") Route passengerRoute,
+			@JsonProperty("routeDistanceDuration") RouteDistanceDuration routeDistanceDuration,
             @JsonProperty("startLocation") RouteLocation startLocation,
             @JsonProperty("destinationLocation") RouteLocation destinationLocation,
 			@JsonProperty("maxWaitingTimeSeconds") long maxWaitingTimeInSeconds,
 			@JsonProperty("creationTimestamp") long creationTimestamp,
 			@JsonProperty("passenger") User passenger) {
 
-		this.passengerRoute = passengerRoute;
+		this.routeDistanceDuration = routeDistanceDuration;
         this.startLocation = startLocation;
         this.destinationLocation = destinationLocation;
 		this.maxWaitingTimeInSeconds = maxWaitingTimeInSeconds;
@@ -83,8 +84,8 @@ public class TripQuery {
 		this.passenger = passenger;
 	}
 
-	public Route getPassengerRoute() {
-		return passengerRoute;
+	public RouteDistanceDuration getRouteDistanceDuration() {
+		return routeDistanceDuration;
 	}
 
 	public long getMaxWaitingTimeInSeconds() {
@@ -112,27 +113,27 @@ public class TripQuery {
                 Objects.equal(creationTimestamp, tripQuery.creationTimestamp) &&
 				Objects.equal(startLocation, tripQuery.startLocation) &&
                 Objects.equal(destinationLocation, tripQuery.destinationLocation) &&
-				Objects.equal(passengerRoute, tripQuery.passengerRoute) &&
+				Objects.equal(routeDistanceDuration, tripQuery.routeDistanceDuration) &&
 				Objects.equal(passenger, tripQuery.passenger);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hashCode(passengerRoute, maxWaitingTimeInSeconds, creationTimestamp, passenger, startLocation, destinationLocation);
+		return Objects.hashCode(routeDistanceDuration, maxWaitingTimeInSeconds, creationTimestamp, passenger, startLocation, destinationLocation);
 	}
 
 
 	public static class Builder {
 
-		private Route passengerRoute;
+		private RouteDistanceDuration routeDistanceDuration;
 		private RouteLocation startLocation;
 		private RouteLocation destinationLocation;
 		private long maxWaitingTimeInSeconds;
 		private long creationTimestamp; // unix timestamp in seconds
 		private User passenger;
 
-		public Builder setPassengerRoute(Route passengerRoute) {
-			this.passengerRoute = passengerRoute;
+		public Builder setPasengerRouteDistanceDuration( RouteDistanceDuration routeDistanceDuration) {
+			this.routeDistanceDuration = routeDistanceDuration;
 			return this;
 		}
 
@@ -162,7 +163,7 @@ public class TripQuery {
 		}
 
 		public  TripQuery build() {
-			return new TripQuery(passengerRoute, startLocation, destinationLocation, maxWaitingTimeInSeconds, creationTimestamp, passenger);
+			return new TripQuery(routeDistanceDuration, startLocation, destinationLocation, maxWaitingTimeInSeconds, creationTimestamp, passenger);
 		}
 	}
 

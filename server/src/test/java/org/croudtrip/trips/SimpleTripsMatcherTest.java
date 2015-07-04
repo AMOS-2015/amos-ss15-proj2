@@ -7,6 +7,7 @@ import org.croudtrip.api.account.User;
 import org.croudtrip.api.account.Vehicle;
 import org.croudtrip.api.directions.NavigationResult;
 import org.croudtrip.api.directions.Route;
+import org.croudtrip.api.directions.RouteDistanceDuration;
 import org.croudtrip.api.directions.RouteLocation;
 import org.croudtrip.api.trips.JoinTripRequest;
 import org.croudtrip.api.trips.JoinTripStatus;
@@ -43,7 +44,7 @@ public class SimpleTripsMatcherTest {
 			driver = new User.Builder().setId(1).build();
 
 	private static final TripQuery query = new TripQuery(
-			new Route.Builder().distanceInMeters(2345).build(),
+			new RouteDistanceDuration(2345, 2345 ),
 			new RouteLocation(45, 45),
 			new RouteLocation(50, 50),
 			100,
@@ -242,7 +243,7 @@ public class SimpleTripsMatcherTest {
 				Lists.newArrayList(pm1, pm2, pm3, pm4));
 
 		Assert.assertEquals(2, reservations.size());
-		long totalPrice = offer3.getPricePerKmInCents() * query.getPassengerRoute().getDistanceInMeters() / 1000;
+		long totalPrice = offer3.getPricePerKmInCents() * query.getRouteDistanceDuration().getDistanceInMeters() / 1000;
 		Assert.assertEquals(totalPrice, reservations.get(0).getReservations().get(0).getTotalPriceInCents());
 		Assert.assertEquals(totalPrice, reservations.get(1).getReservations().get(0).getTotalPriceInCents());
 	}

@@ -190,10 +190,10 @@ class SuperTripsMatcher extends SimpleTripsMatcher {
             for( PotentialRecursiveSuperTrip recursiveSuperTrip : potentialRecursiveSuperTrips ){
 
                 // adjust passenger route from pickup to drop location
-                Route passengerRoute = directionsManager.getDirections( recursiveSuperTrip.getClosestPairResult().getPickupLocation(), recursiveSuperTrip.getClosestPairResult().getDropLocation() ).get(0);
+                RouteDistanceDuration passengerDistanceDuration = directionsManager.getDistanceAndDurationForDirection(recursiveSuperTrip.getClosestPairResult().getPickupLocation(), recursiveSuperTrip.getClosestPairResult().getDropLocation());
 
                 // pickup query
-                TripQuery pickupQuery = new TripQuery.Builder().setPassengerRoute( null )
+                TripQuery pickupQuery = new TripQuery.Builder()
                         .setPassenger( query.getPassenger() )
                         .setStartLocation(query.getStartLocation())
                         .setDestinationLocation(recursiveSuperTrip.getClosestPairResult().getPickupLocation())
@@ -214,7 +214,7 @@ class SuperTripsMatcher extends SimpleTripsMatcher {
                 long tripDurationInSeconds = pickupNavigationResult.getEstimatedTripDurationInSecondsForUser(pickupQuery.getPassenger());
 
                 // compute results from closest pickup point to closes drop point
-                TripQuery adaptedQuery = new TripQuery.Builder().setPassengerRoute( passengerRoute )
+                TripQuery adaptedQuery = new TripQuery.Builder().setPasengerRouteDistanceDuration( passengerDistanceDuration )
                         .setPassenger( query.getPassenger() )
                         .setStartLocation( recursiveSuperTrip.getClosestPairResult().getPickupLocation() )
                         .setDestinationLocation( recursiveSuperTrip.getClosestPairResult().getDropLocation() )
@@ -253,7 +253,7 @@ class SuperTripsMatcher extends SimpleTripsMatcher {
                     }
 
                     // drop query
-                    TripQuery dropQuery = new TripQuery.Builder().setPassengerRoute( null )
+                    TripQuery dropQuery = new TripQuery.Builder()
                             .setPassenger( query.getPassenger() )
                             .setStartLocation( recursiveSuperTrip.getClosestPairResult().getDropLocation())
                             .setDestinationLocation(query.getDestinationLocation())

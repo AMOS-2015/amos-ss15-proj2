@@ -126,7 +126,7 @@ public class JoinTripResultsAdapter extends RecyclerView.Adapter<JoinTripResults
 
 
         // Distance information
-        long distance = superTripReservation.getQuery().getPassengerRoute().getDistanceInMeters();
+        long distance = superTripReservation.getQuery().getRouteDistanceDuration().getDistanceInMeters();
 
         if(distance < 1000){
             holder.tvDistance.setText(context.getString(
@@ -138,7 +138,7 @@ public class JoinTripResultsAdapter extends RecyclerView.Adapter<JoinTripResults
         }
 
         // Duration info
-        holder.tvDuration.setText(getFormattedDuration(superTripReservation.getQuery().getPassengerRoute().getDurationInSeconds()));
+        holder.tvDuration.setText(getFormattedDuration(superTripReservation.getQuery().getRouteDistanceDuration().getDurationInSeconds()));
 
         holder.btJoin.setOnClickListener(new View.OnClickListener() {
             @Override

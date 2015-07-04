@@ -8,6 +8,7 @@ import org.croudtrip.api.account.User;
 import org.croudtrip.api.account.Vehicle;
 import org.croudtrip.api.directions.NavigationResult;
 import org.croudtrip.api.directions.Route;
+import org.croudtrip.api.directions.RouteDistanceDuration;
 import org.croudtrip.api.directions.RouteLocation;
 import org.croudtrip.api.trips.JoinTripRequest;
 import org.croudtrip.api.trips.JoinTripStatus;
@@ -141,12 +142,12 @@ public class TripsManagerTest {
         final User d4 = new User(4, "", "", "", "", true, new Date(0), "", "", 0);
         final User p = new User(10, "", "", "", "", true, new Date(0), "", "", 0);
 
-        final Route passengerRoute = new Route( Lists.newArrayList(tripStart, tripEnd), "", 12345, 12345, Lists.newArrayList(12345L), Lists.newArrayList(12345L), null, null, 0, null  );
+        final RouteDistanceDuration passengerRoute = new RouteDistanceDuration( 12345, 12345 );
         final TripQuery query = new TripQuery( passengerRoute, tripStart, tripEnd, 0, 0, p);
 
         new Expectations(){{
-            directionsManager.getDirections( tripStart, tripEnd );
-            result = Lists.newArrayList( passengerRoute );
+            directionsManager.getDistanceAndDurationForDirection( tripStart, tripEnd );
+            result = passengerRoute;
 
             tripOfferDAO.findAllActive();
             result = Lists.newArrayList(
@@ -194,7 +195,7 @@ public class TripsManagerTest {
         final RouteLocation passengerStart = new RouteLocation(2,2);
         final RouteLocation passengerEnd = new RouteLocation(3,3);
 
-        final Route passengerRoute = new Route( Lists.newArrayList(passengerStart, passengerEnd), "", 12345, 12345, Lists.newArrayList(12345L), Lists.newArrayList(12345L), null, null, 0, null  );
+        final RouteDistanceDuration passengerRoute = new RouteDistanceDuration( 12345, 12345 );
         final TripQuery query = new TripQuery( passengerRoute, passengerStart, passengerEnd, 0, 0, p);
 
         final TripOffer offer = new TripOffer(0, null, 0, tripStart, 10, 10, d, null, TripOfferStatus.ACTIVE, 0);

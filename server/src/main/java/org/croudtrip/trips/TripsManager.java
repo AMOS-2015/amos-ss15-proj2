@@ -22,6 +22,7 @@ import org.croudtrip.account.VehicleManager;
 import org.croudtrip.api.account.User;
 import org.croudtrip.api.account.Vehicle;
 import org.croudtrip.api.directions.Route;
+import org.croudtrip.api.directions.RouteDistanceDuration;
 import org.croudtrip.api.directions.RouteLocation;
 import org.croudtrip.api.gcm.GcmConstants;
 import org.croudtrip.api.trips.JoinTripRequest;
@@ -243,12 +244,13 @@ public class TripsManager {
      */
     public TripQueryResult queryOffers(User passenger, TripQueryDescription queryDescription) throws RouteNotFoundException {
         logManager.d("QUERY OFFER: User " + passenger.getId() + " (" + passenger.getFirstName() + " " + passenger.getLastName() + ") from " + queryDescription.getStart() + " to " + queryDescription.getEnd() + " with " + " max waiting time: " + queryDescription.getMaxWaitingTimeInSeconds());
-
+        System.out.println("QUERRY OFFER");
         // compute passenger route + query
-        List<Route> possiblePassengerRoutes = directionsManager.getDirections(queryDescription.getStart(), queryDescription.getEnd());
-        if (possiblePassengerRoutes.isEmpty()) throw new RouteNotFoundException();
+        RouteDistanceDuration possiblePassengerRoutes = directionsManager.getDistanceAndDurationForDirection(queryDescription.getStart(), queryDescription.getEnd());
         long queryCreationTimestamp = System.currentTimeMillis() / 1000;
-        TripQuery query = new TripQuery(possiblePassengerRoutes.get(0), queryDescription.getStart(), queryDescription.getEnd(), queryDescription.getMaxWaitingTimeInSeconds(), queryCreationTimestamp, passenger);
+        TripQuery query = new TripQuery(possiblePassengerRoutes, queryDescription.getStart(), queryDescription.getEnd(), queryDescription.getMaxWaitingTimeInSeconds(), queryCreationTimestamp, passenger);
+
+        System.out.println("QUERRY OFFER: before matching");
 
         // try finding match (regular + super)
         List<SuperTripReservation> reservations = tripMatcher.findPotentialTrips(tripOfferDAO.findAllActive(), query);
@@ -259,14 +261,19 @@ public class TripsManager {
             }
         }
 
+        System.out.println("QUERRY OFFER: after matching");
+
         // store all reservations in database
         for (SuperTripReservation reservation : reservations) superTripReservationDAO.save(reservation);
 
         // if no reservations start "background search"
         RunningTripQuery runningQuery = null;
+        System.out.println("QUERRY OFFER: running query");
         if (reservations.isEmpty()) {
             runningQuery = runningTripQueriesManager.startRunningQuery(query);
         }
+
+        System.out.println("QUERRY OFFER: after running query");
 
         return new TripQueryResult(reservations, runningQuery);
     }
