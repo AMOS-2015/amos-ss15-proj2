@@ -13,12 +13,56 @@
   ~    If not, see http://www.gnu.org/licenses/.
   -->
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/layout_root"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:orientation="vertical"
-    android:padding="10dp" >
-    
+    android:padding="20dp" >
 
-</LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="The CroudTrip! application aims at revolutionizing the car-ride-sharing market with its easy, user-friendly and highly automated way of organizing shared Trips. Copyright (C) 2015  Nazeeh Ammari, Philipp Eichhorn, Ricarda Hohn, Vanessa Lange, Alexander Popp, Frederik Simon, Michael Weber \nThis program is free software: you can redistribute it and/or modify  it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for more details. You should have received a copy of the GNU Affero General Public License along with this program. If not, see http://www.gnu.org/licenses/."/>
+
+        <TextView
+            android:layout_marginTop="@dimen/default_margin"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/used_libraries"/>
+
+        <TextView
+            android:layout_marginTop="@dimen/default_margin"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="
+Retrofit 1.9.0 (Apache v2.0) \n
+JaxRs2Retrofit 0.3.0 (Apache v2.0) \n
+ORMLite 4.48 (Creative Commons Attribution-Share Alike 3.0 License) \n
+Timber 3.0.1 (Apache v2.0) \n
+RxJava 1.0.8 (Apache v2.0) \n
+FloatingActionButton 1.9.0 (Apache v2.0) \n
+MaterialNavigationDrawer 1.3.3 (Apache v2.0) \n
+MaterialEditText 2.1.3 (Apache v2.0) \n
+RoboGuice 3.0.1 (Apache v2.0) \n
+Android ReactiveLocation 0.5 (Apache v2.0) \n
+HoloColorPicker 1.5 (Apache v2.0) \n
+Picasso	2.4.0 (Apache v2.0) \n
+MaterialDesign 1.5 (Apache v2.0) \n
+Material-ish Progress 1.5 (Apache v2.0) \n
+Espresso 2.2 (Apache v2.0) \n
+JUnit 4.11 (Eclipse Public License - v 1.0) \n
+JMockit 1.13 (MIT License) \n
+Crashlytics 2.3.2 \n
+Google Play Services v7.0 \n
+Google Maps Android API utility library	 \n
+Google Maps Services for Java"/>
+
+
+    </LinearLayout>
+
+</ScrollView>

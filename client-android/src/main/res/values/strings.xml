@@ -51,6 +51,8 @@
 
     <string name="logout">Logout</string>
     <string name="version_info">Version Info</string>
+    <string name="used_libraries">Below is a list of all currently used external libraries:</string>
+
 
 
     <string name="profile_edit">Edit profile</string>
