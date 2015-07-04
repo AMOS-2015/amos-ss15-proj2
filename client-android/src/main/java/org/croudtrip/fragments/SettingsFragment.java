@@ -15,7 +15,13 @@
 package org.croudtrip.fragments;
 
 import android.app.Fragment;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -23,7 +29,9 @@ import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.CheckBox;
 
+import org.croudtrip.Constants;
 import org.croudtrip.R;
 import org.croudtrip.account.AccountManager;
 import org.croudtrip.gcm.GcmManager;
@@ -33,6 +41,7 @@ import javax.inject.Inject;
 
 import it.neokree.materialnavigationdrawer.MaterialNavigationDrawer;
 import roboguice.fragment.RoboFragment;
+import roboguice.inject.InjectView;
 import rx.Subscription;
 import rx.functions.Action1;
 import timber.log.Timber;
@@ -45,6 +54,8 @@ public class SettingsFragment extends RoboFragment {
     //********************** Variables ***************************//
     @Inject
     GcmManager gcmManager;
+
+    private Button btnversionInfo;
 
 
     //************************ Methods ***************************//
@@ -62,6 +73,8 @@ public class SettingsFragment extends RoboFragment {
 
         setHasOptionsMenu(true);
         View view = inflater.inflate(R.layout.fragment_settings, container, false);
+
+        btnversionInfo = (Button) view.findViewById(R.id.settings_version_info);
 
         if(AccountManager.isUserLoggedIn(getActivity().getApplicationContext())) {
             Button logoutButton = (Button) view.findViewById(R.id.settings_logout);
@@ -90,6 +103,32 @@ public class SettingsFragment extends RoboFragment {
                 }
             });
         }
+
+        btnversionInfo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                AlertDialog.Builder adb = new AlertDialog.Builder(getActivity());
+                LayoutInflater adbInflater = LayoutInflater.from(getActivity());
+                View dialogLayout = adbInflater.inflate(R.layout.dialog_version_info, null);
+                adb.setView(dialogLayout);
+
+                String title = getResources().getString(R.string.version_info);
+                try {
+                    PackageInfo pInfo = getActivity().getPackageManager().getPackageInfo(getActivity().getPackageName(), 0);
+                    title = getResources().getString(R.string.version_info) + ": " + pInfo.versionName;
+                } catch (PackageManager.NameNotFoundException e) {
+                    e.printStackTrace();
+                }
+                adb.setTitle(title);
+                adb.setPositiveButton(getResources().getString(R.string.enable_gps_ok), new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+
+                adb.show();
+            }
+        });
 
         return view;
     }

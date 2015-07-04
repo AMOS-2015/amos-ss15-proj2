@@ -50,6 +50,8 @@
     <string name="login_google_description">Login via Google+</string>
 
     <string name="logout">Logout</string>
+    <string name="version_info">Version Info</string>
+
 
     <string name="profile_edit">Edit profile</string>
     <string name="profile_address">Address</string>
