@@ -15,6 +15,7 @@
 package org.croudtrip.rest;
 
 import com.google.common.base.Optional;
+import com.google.maps.model.LatLng;
 
 import org.croudtrip.account.VehicleManager;
 import org.croudtrip.api.account.User;
@@ -38,6 +39,8 @@ import org.croudtrip.api.trips.TripQueryResult;
 import org.croudtrip.api.trips.TripReservation;
 import org.croudtrip.directions.RouteNotFoundException;
 import org.croudtrip.logs.LogManager;
+import org.croudtrip.places.Place;
+import org.croudtrip.places.PlacesApiRequest;
 import org.croudtrip.trips.RunningTripQueriesManager;
 import org.croudtrip.trips.TripsManager;
 import org.croudtrip.trips.TripsNavigationManager;
@@ -395,7 +398,7 @@ public class TripsResource {
     @UnitOfWork
     @Path(PATH_SUPER_TRIP + "/active")
     public List<SuperTrip> getAllActiveTrips( @Auth User passenger ) {
-        return tripsManager.findAllActiveTrips( passenger );
+        return tripsManager.findAllActiveTrips(passenger);
     }
 
 
@@ -546,7 +549,7 @@ public class TripsResource {
     @UnitOfWork
     @Path(PATH_SUPER_TRIP + "/{superTripId}")
     public SuperTrip cancelSuperTrip( @Auth User passenger, @PathParam("superTripId") long superTripId ) {
-        SuperTrip superTrip = assertIsValidTripId( superTripId, passenger );
+        SuperTrip superTrip = assertIsValidTripId(superTripId, passenger);
 
         for( JoinTripRequest request : superTrip.getJoinRequests() ) {
             JoinTripStatus status = request.getStatus();
@@ -573,10 +576,9 @@ public class TripsResource {
                 assertUserIsPassenger(request, passenger);
             }
 
-            tripsManager.updateSuperTripPassengerCancel( superTrip );
+            tripsManager.updateSuperTripPassengerCancel(superTrip);
         }
     }
-
 
     private void assertUserIsPassenger(JoinTripRequest request, User user) {
         if (user.getId() != request.getSuperTrip().getQuery().getPassenger().getId()) {

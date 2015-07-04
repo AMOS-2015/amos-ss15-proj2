@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
 import com.fasterxml.jackson.databind.node.JsonNodeType;
+import com.google.inject.Inject;
 import com.google.maps.model.LatLng;
 
 import org.croudtrip.api.directions.RouteLocation;
@@ -28,16 +29,29 @@ import java.util.Map;
 
 import io.dropwizard.jackson.Jackson;
 
+/**
+ * A PlacesApiRequest provides the possibility to do a nearbysearch for places in the nearby surrounding.
+ * Use the provided methods to prepare the request call and start it by calling {@link #await()}.
+ */
 public class PlacesApiRequest {
+    public final static long RADIUS_5_KILOMETERS = 5_000;
+    public final static long RADIUS_10_KILOMETERS = 10_000;
+    public final static long RADIUS_20_KILOMETERS = 20_000;
+    public final static long RADIUS_50_KILOMETERS = 50_000;
+    public final static long RADIUS_100_KILOMETERS = 100_000;
+
     private final static String baseURL = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?";
-    private String apiKey;
+
+    private final PlacesApiContext context;
+
+    private int maxResultCount = -1;
 
     ObjectMapper objectMapper;
 
     HashMap<String, String> params = new HashMap<String, String>();
 
-    public PlacesApiRequest( String apiKey ) {
-        this.apiKey = apiKey;
+    public PlacesApiRequest( PlacesApiContext context ) {
+        this.context = context;
         this.objectMapper = new ObjectMapper();
     }
 
@@ -89,13 +103,18 @@ public class PlacesApiRequest {
         return this;
     }
 
+    public PlacesApiRequest limitResultCount( int maxResultCount ) {
+        this.maxResultCount = maxResultCount;
+        return this;
+    }
+
 
     public List<Place> await() {
         List<Place> places = new ArrayList<>();
         StringBuilder query = new StringBuilder();
 
         query.append(baseURL);
-        query.append("key=" + apiKey);
+        query.append("key=" + context.getGoogleApiKey());
         for (Map.Entry<String, String> param : params.entrySet()) {
             query.append('&').append(param.getKey()).append("=");
             try {
@@ -135,11 +154,14 @@ public class PlacesApiRequest {
             resultNodes = objectMapper.readTree(jsonResult.toString()).get("results");
 
             for( JsonNode resultNode : resultNodes ) {
-                String name = resultNode.get("name").toString();
+                String name = resultNode.get("name").asText();
                 JsonNode location = resultNode.get("geometry").get("location");
                 RouteLocation loc = objectMapper.readValue( location.toString(), RouteLocation.class );
 
                 places.add( new Place( name, loc ) );
+
+                if( maxResultCount >= 0 && places.size() >= maxResultCount )
+                    break;
             }
 
         } catch (IOException e) {

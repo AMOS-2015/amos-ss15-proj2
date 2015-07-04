@@ -1,6 +1,7 @@
 package org.croudtrip.trips;
 
 import com.google.common.base.Optional;
+import com.google.maps.model.LatLng;
 
 import org.croudtrip.api.directions.NavigationResult;
 import org.croudtrip.api.directions.Route;
@@ -18,6 +19,10 @@ import org.croudtrip.db.TripOfferDAO;
 import org.croudtrip.directions.DirectionsManager;
 import org.croudtrip.directions.RouteNotFoundException;
 import org.croudtrip.logs.LogManager;
+import org.croudtrip.places.Place;
+import org.croudtrip.places.PlaceRanking;
+import org.croudtrip.places.PlacesApiContext;
+import org.croudtrip.places.PlacesApiRequest;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -87,6 +92,7 @@ class SuperTripsMatcher extends SimpleTripsMatcher {
 
     private final ClosestPair closestPair;
 
+    private final PlacesApiContext placesApiContext;
 
     @Inject
     SuperTripsMatcher(
@@ -96,10 +102,12 @@ class SuperTripsMatcher extends SimpleTripsMatcher {
             DirectionsManager directionsManager,
             TripsUtils tripsUtils,
             ClosestPair closestPair,
+            PlacesApiContext placesApiContext,
             LogManager logManager) {
 
         super(joinTripRequestDAO, tripOfferDAO, tripsNavigationManager, directionsManager,  tripsUtils, logManager);
         this.closestPair = closestPair;
+        this.placesApiContext = placesApiContext;
     }
 
     @Override
@@ -306,9 +314,35 @@ class SuperTripsMatcher extends SimpleTripsMatcher {
 
     protected Optional<SuperTripReservation> isValidReservation(PotentialSuperTripMatch pickUpMatch, PotentialSuperTripMatch dropMatch, TripQuery query, ClosestPairResult closestPairResult) {
 
-        Optional<SuperTripReservation> reservationOptional = isValidReservationForConnectionPoint( query, closestPairResult.getDropLocation(), pickUpMatch, dropMatch );
-        if( reservationOptional.isPresent() )
+        List<Place> places = new PlacesApiRequest( placesApiContext )
+                .location( new LatLng( closestPairResult.getPickupLocation().getLat(), closestPairResult.getPickupLocation().getLng() ) )
+                .radius( PlacesApiRequest.RADIUS_5_KILOMETERS )
+                .limitResultCount( 3 )
+                .await();
+
+        places.addAll(
+                new PlacesApiRequest( placesApiContext )
+                        .location( new LatLng( closestPairResult.getDropLocation().getLat(), closestPairResult.getDropLocation().getLng() ) )
+                        .radius( PlacesApiRequest.RADIUS_5_KILOMETERS )
+                        .limitResultCount( 3 )
+                        .await()
+        );
+
+        for( Place place : places ) {
+            logManager.d("Check place: " + place.getName() + " at " + place.getLocation());
+
+            Optional<SuperTripReservation> reservationOptional = isValidReservationForConnectionPoint(query, place.getLocation(), pickUpMatch, dropMatch);
+            if( reservationOptional.isPresent() ) {
+                logManager.d( "Found a connection point at a place: " + place.getName() + " at location: " + place.getLocation() );
+                return reservationOptional;
+            }
+        }
+
+        Optional<SuperTripReservation> reservationOptional = isValidReservationForConnectionPoint(query, closestPairResult.getDropLocation(), pickUpMatch, dropMatch);
+        if( reservationOptional.isPresent() ) {
+            logManager.d( "Found a connection point at drop location: " + closestPairResult.getDropLocation() );
             return reservationOptional;
+        }
 
         return isValidReservationForConnectionPoint(query, closestPairResult.getPickupLocation(), pickUpMatch, dropMatch);
     }
