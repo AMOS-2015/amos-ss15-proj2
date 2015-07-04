@@ -1,10 +1,12 @@
 package org.croudtrip.trips;
 
 import com.google.common.base.Optional;
+import com.google.maps.DistanceMatrixApiRequest;
 import com.google.maps.model.LatLng;
 
 import org.croudtrip.api.directions.NavigationResult;
 import org.croudtrip.api.directions.Route;
+import org.croudtrip.api.directions.RouteDistanceDuration;
 import org.croudtrip.api.directions.RouteLocation;
 import org.croudtrip.api.trips.SuperTripReservation;
 import org.croudtrip.api.trips.SuperTripSubQuery;
@@ -348,7 +350,6 @@ class SuperTripsMatcher extends SimpleTripsMatcher {
     }
 
     private Optional<SuperTripReservation> isValidReservationForConnectionPoint(TripQuery query, RouteLocation connectionPoint, PotentialSuperTripMatch pickUpMatch, PotentialSuperTripMatch dropMatch) {
-
         // compute the time, when the first driver will be at his connection point and check if it's a valid match
         TripQuery adaptedQuery =  new TripQuery.Builder().setPassenger(query.getPassenger())
                 .setStartLocation(query.getStartLocation())
@@ -377,11 +378,13 @@ class SuperTripsMatcher extends SimpleTripsMatcher {
 
         long estimatedDropDuration = potentialMatch.get().getTotalRouteNavigationResult().getEstimatedTripDurationInSecondsForUser(query.getPassenger());
 
-        // expensive directions call but necessary, we need the adapted passenger routes to compute the total price per driver
-        Route passengerPickUpRoute = directionsManager.getDirections(query.getStartLocation(), adaptedQuery.getStartLocation()).get(0);
-        Route passengerDropRoute = directionsManager.getDirections(adaptedQuery.getStartLocation(), query.getDestinationLocation()).get(0);
-        int totalPickUpPriceInCents = (int) (pickUpMatch.getOffer().getPricePerKmInCents() * passengerPickUpRoute.getDistanceInMeters() / 1000);
-        int totalDropPriceInCents = (int) (dropMatch.getOffer().getPricePerKmInCents() * passengerDropRoute.getDistanceInMeters() / 1000);
+        // don't use direction calls here, but use distance matrix calls
+        RouteDistanceDuration passengerPickUp = directionsManager.getDistanceAndDurationForDirection(query.getStartLocation(), adaptedQuery.getStartLocation());
+        RouteDistanceDuration passengerDrop = directionsManager.getDistanceAndDurationForDirection(adaptedQuery.getStartLocation(), query.getDestinationLocation());
+        int totalPickUpPriceInCents = (int) (pickUpMatch.getOffer().getPricePerKmInCents() * passengerPickUp.getDistanceInMeters() / 1000);
+        int totalDropPriceInCents = (int) (dropMatch.getOffer().getPricePerKmInCents() * passengerDrop.getDistanceInMeters() / 1000);
+
+        logManager.d("SuperTripReservation: " + totalPickUpPriceInCents + "ct, " + totalDropPriceInCents + "ct");
 
         return Optional.of(
                 createSuperTripReservation( query,

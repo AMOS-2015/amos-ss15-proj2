@@ -9,6 +9,7 @@ import org.croudtrip.api.account.User;
 import org.croudtrip.api.account.Vehicle;
 import org.croudtrip.api.directions.NavigationResult;
 import org.croudtrip.api.directions.Route;
+import org.croudtrip.api.directions.RouteDistanceDuration;
 import org.croudtrip.api.directions.RouteLocation;
 import org.croudtrip.api.trips.SuperTripReservation;
 import org.croudtrip.api.trips.TripOffer;
@@ -21,6 +22,7 @@ import org.croudtrip.db.JoinTripRequestDAO;
 import org.croudtrip.db.TripOfferDAO;
 import org.croudtrip.directions.DirectionsManager;
 import org.croudtrip.logs.LogManager;
+import org.croudtrip.places.PlacesApiContext;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -54,12 +56,13 @@ public class SuperTripsMatcherTest extends TestCase {
 	@Injectable @Mocked DirectionsManager directionsManager;
 	@Injectable @Mocked TripsUtils tripsUtils;
 	@Injectable @Mocked LogManager logManager;
+	@Injectable @Mocked	PlacesApiContext placesApiContext;
 	@Mocked ClosestPair closestPair;
 
 	@Before
 	public void setupMatcher() {
 		superTripsMatcher = new SuperTripsMatcher(joinTripRequestDAO, tripOfferDAO, tripsNavigationManager, directionsManager,
-				tripsUtils, closestPair, logManager);
+				tripsUtils, closestPair, placesApiContext, logManager);
 	}
 
 
@@ -111,8 +114,8 @@ public class SuperTripsMatcherTest extends TestCase {
 							.addUserWayPoint(new UserWayPoint.Builder().setUser(passenger).build())
 							.build()));
 
-			directionsManager.getDirections((RouteLocation) any, (RouteLocation) any);
-			result = Lists.newArrayList(new Route.Builder().build());
+			directionsManager.getDistanceAndDurationForDirection( (RouteLocation) any, (RouteLocation) any );
+			result = new RouteDistanceDuration( 100, 200 );
 		}};
 
 

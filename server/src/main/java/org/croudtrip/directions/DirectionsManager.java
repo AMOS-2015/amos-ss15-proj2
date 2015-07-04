@@ -15,16 +15,21 @@
 package org.croudtrip.directions;
 
 import com.google.maps.DirectionsApi;
+import com.google.maps.DistanceMatrixApi;
 import com.google.maps.GeoApiContext;
 import com.google.maps.model.DirectionsLeg;
 import com.google.maps.model.DirectionsRoute;
 import com.google.maps.model.DirectionsStep;
+import com.google.maps.model.DistanceMatrix;
+import com.google.maps.model.DistanceMatrixRow;
 import com.google.maps.model.EncodedPolyline;
 import com.google.maps.model.LatLng;
 
 import org.croudtrip.api.directions.Route;
+import org.croudtrip.api.directions.RouteDistanceDuration;
 import org.croudtrip.api.directions.RouteLocation;
 import org.croudtrip.logs.LogManager;
+import org.croudtrip.utils.Pair;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -36,7 +41,6 @@ public class DirectionsManager {
 
 	private final GeoApiContext geoApiContext;
     private final LogManager logManager;
-    private int directionCalls;
 
     private static HashMap<CachingRouteKey, List<Route>> cachedRoutes = new HashMap<>();
 
@@ -63,7 +67,7 @@ public class DirectionsManager {
 
             CachingRouteKey that = (CachingRouteKey) o;
 
-            return waypoints.equals(that.waypoints) && Math.abs(creationTimestamp - that.creationTimestamp) < 60*1000;
+            return waypoints.equals(that.waypoints) && Math.abs(creationTimestamp - that.creationTimestamp) < 10 * 60*1000;
         }
 
         @Override
@@ -76,13 +80,26 @@ public class DirectionsManager {
 	DirectionsManager(GeoApiContext geoApiContext, LogManager logManager) {
 		this.geoApiContext = geoApiContext;
         this.logManager = logManager;
-        this.directionCalls = 0;
 	}
 
+    /**
+     * Find a simple route using GoogleDirectionAPI from a starting point to a destination
+     * @param startLocation the start of the directions query
+     * @param endLocation the destination of the query
+     * @return a list of possible routes to get to the given destination
+     */
 	public List<Route> getDirections(RouteLocation startLocation, RouteLocation endLocation) {
 		return getDirections(startLocation, endLocation, new ArrayList<RouteLocation>());
 	}
 
+    /**
+     * Find a route using Google's Directions API from a starting point to a destination with serveral
+     * given waypoints.
+     * @param startLocation the start of the directions query
+     * @param endLocation the destination of the query
+     * @param waypoints the waypoints that should be visited
+     * @return a list of possible routes to the given destination
+     */
     public List<Route> getDirections(RouteLocation startLocation, RouteLocation endLocation, List<RouteLocation> waypoints) {
         CachingRouteKey cachingRouteKey = new CachingRouteKey( startLocation, endLocation, waypoints );
         if( cachedRoutes.containsKey( cachingRouteKey ) ){
@@ -133,7 +150,6 @@ public class DirectionsManager {
                     .destination(destination)
                     .waypoints(stringWaypoints)
                     .await();
-            directionCalls++;
 
             for (DirectionsRoute googleRoute : googleRoutes) {
                     result.add(createRoute(allWaypoints, googleRoute));
@@ -147,6 +163,32 @@ public class DirectionsManager {
 		}
     }
 
+    /**
+     * Computes distance and duration for a given start and destination location using Google's Distance API Matrix
+     * @param startLocation the start of the directions query
+     * @param destinationLocation the destination of the query
+     * @return A {@link RouteDistanceDuration} that contains the distance and the duration of the trip from start to destination
+     */
+    public RouteDistanceDuration getDistanceAndDurationForDirection( RouteLocation startLocation, RouteLocation destinationLocation ){
+        LatLng origin = new LatLng(startLocation.getLat(), startLocation.getLng());
+        LatLng destination = new LatLng(destinationLocation.getLat(), destinationLocation.getLng());
+
+        try {
+            DistanceMatrix distanceMatrix = DistanceMatrixApi.newRequest( geoApiContext )
+                    .origins(origin)
+                    .destinations(destination)
+                    .await();
+
+            if( distanceMatrix.rows.length == 0 ||
+                    distanceMatrix.rows[0].elements.length == 0 )
+                throw new RuntimeException("No distance and duration found.");
+
+            return new RouteDistanceDuration( distanceMatrix.rows[0].elements[0].distance.inMeters, distanceMatrix.rows[0].elements[0].duration.inSeconds );
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
+    }
 
 	private Route createRoute(List<RouteLocation> waypoints, DirectionsRoute googleRoute) {
 
@@ -202,12 +244,4 @@ public class DirectionsManager {
 				System.currentTimeMillis()/1000,
                 polyline.getPolylineStringIndices());
 	}
-
-    public int getDirectionCalls() {
-        return directionCalls;
-    }
-
-    public void resetDirectionCalls() {
-        this.directionCalls = 0;
-    }
 }
