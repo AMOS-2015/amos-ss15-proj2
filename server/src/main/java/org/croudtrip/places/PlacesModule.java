@@ -8,15 +8,12 @@ import retrofit.RequestInterceptor;
 import retrofit.RestAdapter;
 import retrofit.converter.JacksonConverter;
 
-/**
- * Simple Module to provide {@link PlacesApiContext} via dependency injection
- */
 public class PlacesModule extends AbstractModule {
 
-    private final PlacesApiContext placesApiContext;
+    private final String googleApiKey;
 
     public PlacesModule(CroudTripConfig config) {
-        placesApiContext = new PlacesApiContext( config.getGoogleAPIKey() );
+        this.googleApiKey = config.getGoogleAPIKey();
     }
 
 
@@ -27,7 +24,7 @@ public class PlacesModule extends AbstractModule {
                 .setRequestInterceptor(new RequestInterceptor() {
                     @Override
                     public void intercept(RequestFacade request) {
-                        request.addQueryParam("key", placesApiContext.getGoogleApiKey());
+                        request.addQueryParam("key", googleApiKey);
                     }
                 })
                 .setConverter(new JacksonConverter())
