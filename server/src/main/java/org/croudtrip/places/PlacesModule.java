@@ -11,11 +11,11 @@ import retrofit.converter.JacksonConverter;
 /**
  * Simple Module to provide {@link PlacesApiContext} via dependency injection
  */
-public class PlaceModule extends AbstractModule {
+public class PlacesModule extends AbstractModule {
 
     private final PlacesApiContext placesApiContext;
 
-    public PlaceModule(CroudTripConfig config ) {
+    public PlacesModule(CroudTripConfig config) {
         placesApiContext = new PlacesApiContext( config.getGoogleAPIKey() );
     }
 

@@ -33,7 +33,7 @@ import org.croudtrip.db.DbModule;
 import org.croudtrip.directions.DirectionsModule;
 import org.croudtrip.gcm.GcmModule;
 import org.croudtrip.logs.LogEntry;
-import org.croudtrip.places.PlaceModule;
+import org.croudtrip.places.PlacesModule;
 import org.croudtrip.rest.AvatarsResource;
 import org.croudtrip.rest.GcmRegistrationResource;
 import org.croudtrip.rest.JsonExceptionMapper;
@@ -85,7 +85,7 @@ public final class CroudTripApplication extends Application<CroudTripConfig> {
                 new DirectionsModule(configuration),
 				new GcmModule(configuration.getGoogleAPIKey()),
 				new TripsModule(),
-				new PlaceModule( configuration ));
+				new PlacesModule( configuration ));
 
 		injector.getInstance(TripReservationGarbageCollectionExecutor.class).start();
 		injector.getInstance(RunningTripQueryGarbageCollectionExecutor.class).start();
