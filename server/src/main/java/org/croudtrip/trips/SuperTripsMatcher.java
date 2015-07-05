@@ -1,11 +1,9 @@
 package org.croudtrip.trips;
 
 import com.google.common.base.Optional;
-import com.google.maps.DistanceMatrixApiRequest;
 import com.google.maps.model.LatLng;
 
 import org.croudtrip.api.directions.NavigationResult;
-import org.croudtrip.api.directions.Route;
 import org.croudtrip.api.directions.RouteDistanceDuration;
 import org.croudtrip.api.directions.RouteLocation;
 import org.croudtrip.api.trips.SuperTripReservation;
@@ -22,9 +20,8 @@ import org.croudtrip.directions.DirectionsManager;
 import org.croudtrip.directions.RouteNotFoundException;
 import org.croudtrip.logs.LogManager;
 import org.croudtrip.places.Place;
-import org.croudtrip.places.PlaceRanking;
-import org.croudtrip.places.PlacesApiContext;
-import org.croudtrip.places.PlacesApiRequest;
+import org.croudtrip.places.PlacesApi;
+import org.croudtrip.places.PlacesManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -94,7 +91,7 @@ class SuperTripsMatcher extends SimpleTripsMatcher {
 
     private final ClosestPair closestPair;
 
-    private final PlacesApiContext placesApiContext;
+    private final PlacesManager placesManager;
 
     @Inject
     SuperTripsMatcher(
@@ -104,12 +101,12 @@ class SuperTripsMatcher extends SimpleTripsMatcher {
             DirectionsManager directionsManager,
             TripsUtils tripsUtils,
             ClosestPair closestPair,
-            PlacesApiContext placesApiContext,
+            PlacesManager placesManager,
             LogManager logManager) {
 
         super(joinTripRequestDAO, tripOfferDAO, tripsNavigationManager, directionsManager,  tripsUtils, logManager);
         this.closestPair = closestPair;
-        this.placesApiContext = placesApiContext;
+        this.placesManager = placesManager;
     }
 
     @Override
@@ -316,19 +313,17 @@ class SuperTripsMatcher extends SimpleTripsMatcher {
 
     protected Optional<SuperTripReservation> isValidReservation(PotentialSuperTripMatch pickUpMatch, PotentialSuperTripMatch dropMatch, TripQuery query, ClosestPairResult closestPairResult) {
 
-        List<Place> places = new PlacesApiRequest( placesApiContext )
-                .location( new LatLng( closestPairResult.getPickupLocation().getLat(), closestPairResult.getPickupLocation().getLng() ) )
-                .radius( PlacesApiRequest.RADIUS_5_KILOMETERS )
-                .limitResultCount( 3 )
-                .await();
+        List<Place> places = placesManager.getNearbyPlaces(
+                new LatLng(
+                        closestPairResult.getPickupLocation().getLat(),
+                        closestPairResult.getPickupLocation().getLng()),
+                PlacesApi.RADIUS_5_KILOMETERS, 3);
 
-        places.addAll(
-                new PlacesApiRequest( placesApiContext )
-                        .location( new LatLng( closestPairResult.getDropLocation().getLat(), closestPairResult.getDropLocation().getLng() ) )
-                        .radius( PlacesApiRequest.RADIUS_5_KILOMETERS )
-                        .limitResultCount( 3 )
-                        .await()
-        );
+        places.addAll(placesManager.getNearbyPlaces(
+                new LatLng(
+                        closestPairResult.getDropLocation().getLat(),
+                        closestPairResult.getDropLocation().getLng()),
+                PlacesApi.RADIUS_5_KILOMETERS, 3));
 
         for( Place place : places ) {
             logManager.d("Check place: " + place.getName() + " at " + place.getLocation());

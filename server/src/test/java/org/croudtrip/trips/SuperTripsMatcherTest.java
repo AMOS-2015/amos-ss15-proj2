@@ -22,7 +22,7 @@ import org.croudtrip.db.JoinTripRequestDAO;
 import org.croudtrip.db.TripOfferDAO;
 import org.croudtrip.directions.DirectionsManager;
 import org.croudtrip.logs.LogManager;
-import org.croudtrip.places.PlacesApiContext;
+import org.croudtrip.places.PlacesManager;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -56,13 +56,13 @@ public class SuperTripsMatcherTest extends TestCase {
 	@Injectable @Mocked DirectionsManager directionsManager;
 	@Injectable @Mocked TripsUtils tripsUtils;
 	@Injectable @Mocked LogManager logManager;
-	@Injectable @Mocked	PlacesApiContext placesApiContext;
+	@Injectable @Mocked PlacesManager placesManager;
 	@Mocked ClosestPair closestPair;
 
 	@Before
 	public void setupMatcher() {
 		superTripsMatcher = new SuperTripsMatcher(joinTripRequestDAO, tripOfferDAO, tripsNavigationManager, directionsManager,
-				tripsUtils, closestPair, placesApiContext, logManager);
+				tripsUtils, closestPair, placesManager, logManager);
 	}
 
 

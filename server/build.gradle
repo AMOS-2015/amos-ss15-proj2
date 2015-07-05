@@ -57,6 +57,10 @@ dependencies {
     compile 'org.postgresql:postgresql:9.4-1201-jdbc41'
     compile 'be.fluid-it.tools.dropwizard:wizard-in-a-box:0.8-1-1'
     compile 'com.google.maps:google-maps-services:0.1.6'
+    compile 'com.squareup.retrofit:retrofit:1.9.0'
+    compile('com.squareup.retrofit:converter-jackson:1.9.0') {
+        exclude group: 'com.fasterxml.jackson.core'
+    }
     compile project(':models')
 	compile fileTree(dir: 'libs', include: '*.jar')
 

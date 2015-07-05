@@ -15,7 +15,6 @@
 package org.croudtrip.rest;
 
 import com.google.common.base.Optional;
-import com.google.maps.model.LatLng;
 
 import org.croudtrip.account.VehicleManager;
 import org.croudtrip.api.account.User;
@@ -39,8 +38,6 @@ import org.croudtrip.api.trips.TripQueryResult;
 import org.croudtrip.api.trips.TripReservation;
 import org.croudtrip.directions.RouteNotFoundException;
 import org.croudtrip.logs.LogManager;
-import org.croudtrip.places.Place;
-import org.croudtrip.places.PlacesApiRequest;
 import org.croudtrip.trips.RunningTripQueriesManager;
 import org.croudtrip.trips.TripsManager;
 import org.croudtrip.trips.TripsNavigationManager;
