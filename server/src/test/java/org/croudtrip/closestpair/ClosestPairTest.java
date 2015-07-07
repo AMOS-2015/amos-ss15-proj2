@@ -1,15 +1,11 @@
-package org.croudtrip.trips;
+package org.croudtrip.closestpair;
 
 import com.google.common.collect.Lists;
-import com.google.maps.internal.PolylineEncoding;
-import com.google.maps.model.LatLng;
 
 import org.croudtrip.api.account.User;
 import org.croudtrip.api.directions.NavigationResult;
 import org.croudtrip.api.directions.Route;
 import org.croudtrip.api.directions.RouteLocation;
-import org.croudtrip.closestpair.ClosestPair;
-import org.croudtrip.closestpair.ClosestPairResult;
 import org.croudtrip.logs.LogManager;
 import org.junit.Assert;
 import org.junit.Before;
@@ -19,7 +15,6 @@ import org.junit.runner.RunWith;
 import java.util.List;
 
 import mockit.Expectations;
-import mockit.Mock;
 import mockit.Mocked;
 import mockit.integration.junit4.JMockit;
 
