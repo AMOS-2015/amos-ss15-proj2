@@ -8,6 +8,7 @@ import org.croudtrip.api.directions.RouteLocation;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 
@@ -25,7 +26,15 @@ public class PlacesManager {
 
 
 	public List<Place> getNearbyPlaces(LatLng location, long radiusInMeters, int maxResults) {
-		ObjectNode jsonResult = placesApi.getNearybyPlaces(location, radiusInMeters);
+		return getNearbyPlaces(
+				new PlacesApi.QueryMapBuilder().location( location ).radius(radiusInMeters).build(),
+				maxResults
+		);
+
+	}
+
+	public List<Place> getNearbyPlaces(Map<String, String> queryMap, int maxResults) {
+		ObjectNode jsonResult = placesApi.getNearybyPlaces(queryMap);
 		JsonNode jsonPlaces = jsonResult.path("results");
 
 		int count = 0;
@@ -38,8 +47,8 @@ public class PlacesManager {
 			Place place = new Place(
 					jsonPlace.path("name").asText(),
 					new RouteLocation(
-							jsonLocation.path("lat").asLong(),
-							jsonLocation.path("lng").asLong()));
+							jsonLocation.path("lat").asDouble(),
+							jsonLocation.path("lng").asDouble()));
 			places.add(place);
 		}
 

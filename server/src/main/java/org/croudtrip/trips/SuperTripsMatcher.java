@@ -20,11 +20,13 @@ import org.croudtrip.directions.DirectionsManager;
 import org.croudtrip.directions.RouteNotFoundException;
 import org.croudtrip.logs.LogManager;
 import org.croudtrip.places.Place;
+import org.croudtrip.places.PlaceRanking;
 import org.croudtrip.places.PlacesApi;
 import org.croudtrip.places.PlacesManager;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 
@@ -313,17 +315,19 @@ class SuperTripsMatcher extends SimpleTripsMatcher {
 
     protected Optional<SuperTripReservation> isValidReservation(PotentialSuperTripMatch pickUpMatch, PotentialSuperTripMatch dropMatch, TripQuery query, ClosestPairResult closestPairResult) {
 
-        List<Place> places = placesManager.getNearbyPlaces(
-                new LatLng(
-                        closestPairResult.getPickupLocation().getLat(),
-                        closestPairResult.getPickupLocation().getLng()),
-                PlacesApi.RADIUS_5_KILOMETERS, 3);
+        Map queryMap = new PlacesApi.QueryMapBuilder().location(new LatLng(closestPairResult.getPickupLocation().getLat(), closestPairResult.getPickupLocation().getLng()))
+                .rankBy(PlaceRanking.RANK_BY_DISTANCE)
+                .build();
 
-        places.addAll(placesManager.getNearbyPlaces(
-                new LatLng(
-                        closestPairResult.getDropLocation().getLat(),
-                        closestPairResult.getDropLocation().getLng()),
-                PlacesApi.RADIUS_5_KILOMETERS, 3));
+        List<Place> places = placesManager.getNearbyPlaces( queryMap, 3);
+
+        queryMap = new PlacesApi.QueryMapBuilder().location(new LatLng( closestPairResult.getDropLocation().getLat(),closestPairResult.getDropLocation().getLng()))
+                .rankBy(PlaceRanking.RANK_BY_DISTANCE)
+                .build();
+        places.addAll(placesManager.getNearbyPlaces(queryMap, 3));
+
+        logManager.d("Got Places next to: " + closestPairResult.getPickupLocation());
+        logManager.d("Got Places next to: " + closestPairResult.getDropLocation());
 
         for( Place place : places ) {
             logManager.d("Check place: " + place.getName() + " at " + place.getLocation());
