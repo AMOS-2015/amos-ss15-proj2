@@ -455,7 +455,8 @@ public class EditProfileFragment extends SubscriptionFragment {
                                        profileImageUrl = profileImageUrl.substring(0, 4) + "s" + profileImageUrl.substring(4, profileImageUrl.length());
                                        Timber.i(user.getAvatarUrl());
                                        Uri profileImageUri = data.getData();
-                                       profilePicture.setImageURI(profileImageUri);
+                                       //profilePicture.setImageURI(profileImageUri);
+                                       Picasso.with(getActivity()).load(profileImageUrl).error(R.drawable.background_drawer).into(profilePicture);
                                        Timber.i("Successfully uploaded a new picture ");
                                         }
                                },
