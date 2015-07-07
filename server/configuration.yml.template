@@ -42,3 +42,10 @@ server:
 
 # google server API key
 googleKey: DUMMY_API_KEY
+
+# 'default' users which should be able to access the server
+users:
+    - email: mail@domain.org
+      firstName: Mr
+      lastName: Me
+      password: amos

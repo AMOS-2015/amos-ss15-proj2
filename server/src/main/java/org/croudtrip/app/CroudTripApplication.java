@@ -19,7 +19,9 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 
 import org.croudtrip.account.Avatar;
+import org.croudtrip.account.UserManager;
 import org.croudtrip.api.account.User;
+import org.croudtrip.api.account.UserDescription;
 import org.croudtrip.api.account.Vehicle;
 import org.croudtrip.api.gcm.GcmRegistration;
 import org.croudtrip.api.trips.JoinTripRequest;
@@ -51,6 +53,9 @@ import org.croudtrip.trips.ExpireTripOffersExecutor;
 import org.croudtrip.trips.RunningTripQueryGarbageCollectionExecutor;
 import org.croudtrip.trips.TripReservationGarbageCollectionExecutor;
 import org.croudtrip.trips.TripsModule;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.context.internal.ManagedSessionContext;
 
 import io.dropwizard.Application;
 import io.dropwizard.auth.AuthFactory;
@@ -87,12 +92,14 @@ public final class CroudTripApplication extends Application<CroudTripConfig> {
 				new TripsModule(),
 				new PlacesModule( configuration ));
 
+		// start managed instances (manually since deployment via WAR file does not seem to work)
 		injector.getInstance(TripReservationGarbageCollectionExecutor.class).start();
 		injector.getInstance(RunningTripQueryGarbageCollectionExecutor.class).start();
 		injector.getInstance(DisableTripOffersExecutor.class).start();
         injector.getInstance(ExpireTripOffersExecutor.class).start();
 		injector.getInstance(ExpireJoinTripRequestsExecutor.class).start();
 
+		// setup REST api
         environment.jersey().register(injector.getInstance(UsersResource.class));
 		environment.jersey().register(injector.getInstance(UsersHeadResource.class));
 		environment.jersey().register(injector.getInstance(AvatarsResource.class));
@@ -108,6 +115,28 @@ public final class CroudTripApplication extends Application<CroudTripConfig> {
 				injector.getInstance(BasicAuthenticator.class),
 				"all secret",
 				User.class)));
+
+		// register a set of "default" users
+		SessionFactory sessionFactory = injector.getInstance(SessionFactory.class);
+		UserManager userManager = injector.getInstance(UserManager.class);
+
+		Session session = null;
+		try {
+			session = sessionFactory.openSession();
+			ManagedSessionContext.bind(session);
+			for (UserDescription user : configuration.getUsers()) {
+				if (!userManager.findUserByEmail(user.getEmail()).isPresent()) {
+					userManager.addUser(user);
+				}
+			}
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			if (session != null) {
+				session.flush();
+				session.close();
+			}
+		}
 	}
 
 

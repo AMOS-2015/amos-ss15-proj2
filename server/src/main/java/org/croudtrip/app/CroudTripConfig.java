@@ -17,6 +17,10 @@ package org.croudtrip.app;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import org.croudtrip.api.account.UserDescription;
+
+import java.util.List;
+
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
@@ -25,22 +29,34 @@ import io.dropwizard.db.DataSourceFactory;
 
 public class CroudTripConfig extends Configuration {
 
-	@NotNull @Valid DataSourceFactory database;
-    @NotNull @Valid String apiKey;
-
+	@NotNull @Valid private final DataSourceFactory database;
+    @NotNull @Valid private final String apiKey;
+	@NotNull @Valid private final List<UserDescription> users;
 
 	@JsonCreator
-	public CroudTripConfig(@JsonProperty("database") DataSourceFactory database, @JsonProperty("googleKey") String apiKey) {
+	public CroudTripConfig(
+			@JsonProperty("database") DataSourceFactory database,
+			@JsonProperty("googleKey") String apiKey,
+			@JsonProperty("users") List<UserDescription> users) {
+
 		this.database = database;
         this.apiKey = apiKey;
+		this.users = users;
 	}
 
 
 	public DataSourceFactory getDatabase() {
 		return database;
 	}
-    public String getGoogleAPIKey() {
+
+
+	public String getGoogleAPIKey() {
         return apiKey;
     }
+
+
+	public List<UserDescription> getUsers() {
+		return users;
+	}
 
 }
