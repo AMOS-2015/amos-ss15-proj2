@@ -25,6 +25,7 @@ public class PlacesModule extends AbstractModule {
                     @Override
                     public void intercept(RequestFacade request) {
                         request.addQueryParam("key", googleApiKey);
+                        request.addQueryParam("types", "bus_station|parking|train_station|store|gas_station");
                     }
                 })
                 .setConverter(new JacksonConverter())
