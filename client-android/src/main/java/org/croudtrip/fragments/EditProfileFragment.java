@@ -54,8 +54,13 @@ import org.croudtrip.utils.CrashCallback;
 import org.croudtrip.utils.CrashPopup;
 import org.croudtrip.utils.DefaultTransformer;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URL;
 import java.util.Calendar;
 import java.util.Date;
@@ -389,10 +394,57 @@ public class EditProfileFragment extends SubscriptionFragment {
                 int idx = cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA);
                 selectedImagePath = cursor.getString(idx);
             }
-            //Create the typedFile and upload the image to the server using the Retrofit interface
+
+
+            File uncompressedImage = new File(selectedImagePath);
+            File compressedImage = new File("/sdcard/pp.jpeg");
+            BitmapFactory.Options bmOptions = new BitmapFactory.Options();
+            Bitmap imageBitmap = BitmapFactory.decodeFile(selectedImagePath, bmOptions);
+
+            //Reduce the image resolution in case it's higher than 512x512
+            if (imageBitmap.getHeight() > 512 || imageBitmap.getWidth() > 512)
+            {
+                Timber.i("Image height is: "+imageBitmap.getHeight());
+                Timber.i("Image width is: "+imageBitmap.getWidth());
+                imageBitmap = getResizedBitmap(imageBitmap, 512);
+                Timber.i("New image height is: "+ imageBitmap.getHeight());
+                Timber.i("New image width is: "+ imageBitmap.getWidth());
+            }
+
+            ByteArrayOutputStream byteOutputStream = new ByteArrayOutputStream();
+            Timber.i("Uncompressed image length is: " + uncompressedImage.length());
+            //Check if the selected picture size is larger than 1MB, if yes, compress it until size is less than 1MB
+            if (uncompressedImage.length() > 1024*1024)
+            {
+                Timber.i("Image size is larger than 1MB");
+                //start quality with 100 (essentially no compression)
+                int quality = 100;
+                imageBitmap.compress(Bitmap.CompressFormat.JPEG, quality, byteOutputStream);
+                //Creates an exact copy of the picture in this specific directory (see method saveByteStreamtoFile)
+                compressedImage = saveByteStreamtoFile(byteOutputStream);
+                while (byteOutputStream.size() > 1024*1024)
+                {
+                    //Decrease quality (increase compression)
+                    byteOutputStream.reset();
+                    quality -= 30;
+                    Timber.i("compressing, current ratio: " + quality);
+                    imageBitmap = BitmapFactory.decodeFile("/sdcard/pp.jpeg", bmOptions);
+                    imageBitmap.compress(Bitmap.CompressFormat.JPEG, quality, byteOutputStream);
+                }
+                compressedImage.delete();
+                compressedImage = saveByteStreamtoFile(byteOutputStream);
+            }
+            else
+            compressedImage = uncompressedImage;
+
+
+            Timber.i("old image size = " + Integer.parseInt(String.valueOf(uncompressedImage.length() / 1024)));
+            Timber.i("new image size = " + Integer.parseInt(String.valueOf(compressedImage.length()/ 1024)));
+
+
+            //Create the typedFile and upload the compressed image to the server using the Retrofit interface
             Timber.d("Image path is: "+selectedImagePath);
-            File image = new File (selectedImagePath);
-            TypedFile typedFile = new TypedFile("multipart/form-data", image);
+            TypedFile typedFile = new TypedFile("multipart/form-data", compressedImage);
             avatarsUploadResource.uploadFile(typedFile)
             .compose(new DefaultTransformer<User>())
                     .subscribe(new Action1<User>() {
@@ -417,6 +469,43 @@ public class EditProfileFragment extends SubscriptionFragment {
             //Toast.makeText(getActivity(), "An error occurred while getting the picture, please try again", Toast.LENGTH_SHORT)
             //        .show();
         }
+    }
+
+    //This method saves the compressed image from the byteStream to a file that can be used
+    //to upload the picture to the server
+    private File saveByteStreamtoFile(ByteArrayOutputStream os){
+        FileOutputStream fos;
+        File compressedImage = null;
+        try {
+            fos = new FileOutputStream("/sdcard/pp.jpeg");
+            os.writeTo(fos);
+            os.flush();
+            fos.flush();
+            os.close();
+            fos.close();
+            compressedImage = new File("/sdcard/pp.jpeg");
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return compressedImage;
+    }
+
+    //This method resizes the image while keeping the same aspect ratio
+    public Bitmap getResizedBitmap(Bitmap image, int maxSize) {
+        int width = image.getWidth();
+        int height = image.getHeight();
+
+        float bitmapRatio = (float)width / (float) height;
+        if (bitmapRatio > 0) {
+            width = maxSize;
+            height = (int) (width / bitmapRatio);
+        } else {
+            height = maxSize;
+            width = (int) (height * bitmapRatio);
+        }
+        return Bitmap.createScaledBitmap(image, width, height, true);
     }
 
     @Override
