@@ -14,20 +14,24 @@
 
 package org.croudtrip.fragments.offer;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.os.Bundle;
+import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Html;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -133,6 +137,12 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
 
     private RecyclerView.LayoutManager layoutManager;
     private VehiclesListSelectAdapter carListAdapter;
+    private carSelectDialogFragment myCarSelectDialogFragment = new carSelectDialogFragment();
+    private static List<String> carArrayList = new ArrayList<String>();
+    private static List<Integer> carIdsArray = new ArrayList<Integer>();
+    private static int numberOfCars = 0;
+    private static int tempDefaultCarId = 0;
+    private static int defaultVehicleId = 0;
 
     public static OfferTripFragment get() {
         synchronized (OfferTripFragment.class) {
@@ -177,6 +187,7 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
     @Override
     public void onViewCreated( View view, Bundle savedInstanceState ) {
         super.onViewCreated(view, savedInstanceState);
+
 
         tv_destination.setOnItemClickListener(mAutocompleteClickListener);
         tv_destination.setThreshold(0);
@@ -282,10 +293,46 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
         myCar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                //Get a list of user vehicles and add it to the ArrayList
+                Subscription vListSubscription = vehicleResource.getVehicles()
+                        .compose(new DefaultTransformer<List<Vehicle>>())
+                        .subscribe(new Action1<List<Vehicle>>() {
+                            @Override
+                            public void call(List<Vehicle> vehicles) {
+                                carArrayList.clear();
+                                carIdsArray.clear();
+                                if (vehicles.size() > 0) {
+                                    for (int i = 0; i < vehicles.size(); i++) {
+                                        carArrayList.add(vehicles.get(i).getType());
+                                        carIdsArray.add((int) vehicles.get(i).getId());
+                                        Timber.i("Added " + carArrayList.get(i) + " with id: " + (int) vehicles.get(i).getId());
+                                        numberOfCars = vehicles.size();
+                                    }
+                                    myCarSelectDialogFragment.show(getFragmentManager(), "Car Select");
+                                }
+                                else
+                                    showCarPlateDialog();
+                            }
+                        }, new Action1<Throwable>() {
+                            @Override
+                            public void call(Throwable throwable) {
+                                Response response = ((RetrofitError) throwable).getResponse();
+                                if (response != null && response.getStatus() == 401) {  // Not Authorized
+                                } else {
+                                    Timber.e("error" + throwable.getMessage());
+                                }
+                                Timber.e("Couldn't get data" + throwable.getMessage());
+                            }
+                        });
+
+                subscriptions.add(vListSubscription);
                 //((MaterialNavigationDrawer) getActivity()).setFragmentChild(new VehicleSelectionFragment(), "Select a car as default");
-                showCarSelectionDialog();
+                //showCarSelectionDialog();
             }
         });
+
+
+
 
         // By clicking on the offer-trip-button the driver makes his choice public
         btn_offer.setOnClickListener(new View.OnClickListener() {
@@ -565,6 +612,7 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
         alert11.show();
     }
 
+    //Not being used at the moment
     public void showCarSelectionDialog() {
         final Dialog selectDialog = new Dialog(getActivity());
         selectDialog.setTitle(Html.fromHtml("<font color='#388e3c'>Select your default car</font>"));
@@ -654,6 +702,61 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
 
     }
 
+    //This class is used to show a list of available cars and enable the user to choose the default one
+    @SuppressLint("ValidFragment")
+    public class carSelectDialogFragment extends DialogFragment {
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState) {
+            //Get the default vehicle id from shared prefs
+            defaultVehicleId = (int) VehicleManager.getDefaultVehicleId(getActivity());
+            final String[] carList = new String[numberOfCars];
+            final int checkedCarIndex = carIdsArray.indexOf(defaultVehicleId);
+            Timber.i("Default vehicle id is: " + defaultVehicleId);
+            Timber.i("Checked car index is: "+ checkedCarIndex);
+
+            //Fill the array with data from the ArrayList that was obtained previously
+            for (int i=0;i<numberOfCars;i++) {
+                carList[i] = carArrayList.get(i);
+            }
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            // Set the dialog title
+            builder.setTitle(R.string.select_car)
+                    .setSingleChoiceItems(carList, checkedCarIndex, new DialogInterface.OnClickListener() {
+                        //Save the checked car in a temporary variable
+                        @Override
+                        public void onClick(DialogInterface arg0, int selectedId) {
+                            tempDefaultCarId = selectedId;
+                            DataHolder.getInstance().setVehicle_type(carList[selectedId]);
+                        }
+                    })
+                    //Save the selected car and set the button text
+                    .setPositiveButton("Save", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int id) {
+                            VehicleManager.saveDefaultVehicle(getActivity(), carIdsArray.get(tempDefaultCarId));
+                            Timber.i("Default car set to: " + carIdsArray.get(tempDefaultCarId));
+                            Toast.makeText(getActivity(), "Default car set!", Toast.LENGTH_SHORT).show();
+                            myCar.setText(DataHolder.getInstance().getVehicle_type());
+                        }
+            })
+
+                    .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int id) {
+                        }
+                    });
+            return builder.create();
+        }
+
+        @Override
+        public void onStart() {
+            //Todo fix the style of the dialog to match the rest of the theme
+            super.onStart();
+            ((AlertDialog) getDialog()).getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(Color.GREEN);
+            ((AlertDialog) getDialog()).getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(Color.GREEN);
+            //((AlertDialog) getDialog()).getButton(AlertDialog.BUTTON_NEGATIVE).setGravity(Gravity.LEFT);
+        }
+    }
 
 }
 
