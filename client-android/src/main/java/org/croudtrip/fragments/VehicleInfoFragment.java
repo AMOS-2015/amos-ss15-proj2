@@ -95,7 +95,7 @@ public class VehicleInfoFragment extends SubscriptionFragment {
         View view = inflater.inflate(R.layout.fragment_vehicle_info, container, false);
         progressBar = (ProgressWheel) view.findViewById(R.id.pb_add_vehicle);
 
-        if (vehicleId != -1)
+        if (vehicleId != -1 && vehicleId !=-2)
             getVehicle(vehicleId);   //Fetches vehicle info from the server and updates the corresponding local variables
 
         carTypeEdit = (EditText) view.findViewById(R.id.car_type);
