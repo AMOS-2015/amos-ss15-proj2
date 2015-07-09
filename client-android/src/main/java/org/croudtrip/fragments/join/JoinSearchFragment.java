@@ -81,6 +81,7 @@ import rx.Subscription;
 import rx.functions.Action1;
 import rx.functions.Func1;
 import rx.schedulers.Schedulers;
+import timber.log.Timber;
 
 /**
  * Created by alex on 22.04.15.
@@ -296,17 +297,19 @@ public class JoinSearchFragment extends SubscriptionFragment implements GoogleAp
                     specifiedLocation = null;
                 }
 
-                /*
-                Decode destination from string
-                 */
+                // get destination from string
                 LatLng destination = null;
                 try {
-                    List<Address> addresses = geocoder.getFromLocationName(tv_address.getText().toString(), 1);
-                    if (addresses.size() > 0)
+                    List<Address> addresses = null;
+                    if (tv_address.getText() == null || tv_address.getText().equals("")) {
+                        addresses = geocoder.getFromLocationName(tv_destination.getText().toString(), 1);
+                    } else {
+                        addresses = geocoder.getFromLocationName(tv_address.getText().toString(), 1);
+                    }
+                    if (addresses != null && addresses.size() > 0)
                         destination = new LatLng(addresses.get(0).getLatitude(), addresses.get(0).getLongitude());
                 } catch (IOException e) {
-                    CrashPopup.show(getActivity(), e);
-                    Toast.makeText(getActivity().getApplicationContext(), R.string.offer_trip_no_destination, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getActivity().getApplicationContext(), R.string.join_trip_no_destination, Toast.LENGTH_SHORT).show();
                     return;
                 }
                 // no destination received

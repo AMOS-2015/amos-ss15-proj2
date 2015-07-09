@@ -108,6 +108,7 @@
     <string name="join_trip_requests_diversion_loading">Div.: loading&#8230;</string>
     <string name="join_trip_requests_diversion_hmin">Div.: %1$s:%2$s h</string>
     <string name="join_trip_requests_diversion_min">Div.: %s min</string>
+    <string name="join_trip_no_destination">Join Trip failed: No destination location could be extracted.</string>
 
 
     <string name="offer_choose_destination">Specify start location</string>
