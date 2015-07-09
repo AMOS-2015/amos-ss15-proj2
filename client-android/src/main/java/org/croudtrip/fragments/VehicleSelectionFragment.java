@@ -87,7 +87,7 @@ public class VehicleSelectionFragment extends SubscriptionFragment {
                             adapter.addElements(vehicles);
                         }
                     }
-                }, new CrashCallback(getActivity(), "failed to get vehicles"));
+                }, new CrashCallback(getActivity(), "failed to get cars"));
         subscriptions.add(subscription);
 
 

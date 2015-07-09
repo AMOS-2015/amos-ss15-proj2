@@ -161,7 +161,7 @@ public class VehicleInfoFragment extends SubscriptionFragment {
                                                 //Notify the user if the vehicle is being used in any trip offers
                                                 if (tripOffers.get(i).getVehicle().getId() == vehicleId && userId == tripOffers.get(i).getDriver().getId()) {
                                                     Toast.makeText(getActivity(), getResources().getString(R.string.vehicle_in_use), Toast.LENGTH_SHORT).show();
-                                                    Timber.d("The targeted vehicle is in use with id: " + tripOffers.get(i).getVehicle().getId());
+                                                    Timber.d("The targeted car is in use with id: " + tripOffers.get(i).getVehicle().getId());
                                                     progressBar.setVisibility(View.GONE);
                                                 } else {
                                                     //Remove the vehicle if it's not being used in any of the trip offers
@@ -182,7 +182,7 @@ public class VehicleInfoFragment extends SubscriptionFragment {
                                     public void call(TripOffer offer) {
                                     }
 
-                                }, new CrashCallback(getActivity(), "failed to remove vehicle", new Action1<Throwable>() {
+                                }, new CrashCallback(getActivity(), "failed to remove car", new Action1<Throwable>() {
                                     @Override
                                     public void call(Throwable throwable) {
                                         progressBar.setVisibility(View.GONE);
@@ -350,7 +350,7 @@ public class VehicleInfoFragment extends SubscriptionFragment {
                         progressBar.setVisibility(View.GONE);
                     }
 
-                }, new CrashCallback(getActivity(), "failed to get vehicle", new Action1<Throwable>() {
+                }, new CrashCallback(getActivity(), "failed to get car", new Action1<Throwable>() {
                     @Override
                     public void call(Throwable throwable) {
                         progressBar.setVisibility(View.GONE);
@@ -370,15 +370,15 @@ public class VehicleInfoFragment extends SubscriptionFragment {
 
                     @Override
                     public void call(Vehicle vehicle) {
-                        Toast.makeText(getActivity(), "New vehicle added!", Toast.LENGTH_SHORT).show();
-                        Timber.v("New vehicle added!");
+                        Toast.makeText(getActivity(), "New car added!", Toast.LENGTH_SHORT).show();
+                        Timber.v("New car added!");
                         VehicleInfoFragment.this.getActivity().onBackPressed();
                         if (VehicleManager.getDefaultVehicleId(getActivity()) == -3)
                             VehicleManager.saveDefaultVehicle(getActivity(), vehicle.getId());
                         progressBar.setVisibility(View.GONE);
                     }
 
-                }, new CrashCallback(getActivity(), "failed to add vehicle", new Action1<Throwable>() {
+                }, new CrashCallback(getActivity(), "failed to add car", new Action1<Throwable>() {
                     @Override
                     public void call(Throwable throwable) {
                         progressBar.setVisibility(View.GONE);
@@ -398,7 +398,7 @@ public class VehicleInfoFragment extends SubscriptionFragment {
                     @Override
                     public void call(Response response) {
                         VehicleInfoFragment.this.getActivity().onBackPressed();
-                        Toast.makeText(getActivity(), "Vehicle removed!", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getActivity(), "Car removed!", Toast.LENGTH_SHORT).show();
                         //Set default to -3 if the user deletes the last available car
                         if (DataHolder.getInstance().getIsLast() == true)
                             VehicleManager.saveDefaultVehicle(getActivity(), -3);
@@ -406,7 +406,7 @@ public class VehicleInfoFragment extends SubscriptionFragment {
                         progressBar.setVisibility(View.GONE);
                     }
 
-                }, new CrashCallback(getActivity(), "failed to remove vehicle", new Action1<Throwable>() {
+                }, new CrashCallback(getActivity(), "failed to remove car", new Action1<Throwable>() {
                     @Override
                     public void call(Throwable throwable) {
                         progressBar.setVisibility(View.GONE);
@@ -427,12 +427,12 @@ public class VehicleInfoFragment extends SubscriptionFragment {
                     @Override
                     public void call(Vehicle vehicle) {
                         VehicleInfoFragment.this.getActivity().onBackPressed();
-                        Toast.makeText(getActivity(), "Updated vehicle info", Toast.LENGTH_SHORT).show();
-                        Timber.v("Updated vehicle info");
+                        Toast.makeText(getActivity(), "Updated car info", Toast.LENGTH_SHORT).show();
+                        Timber.v("Updated car info");
                         progressBar.setVisibility(View.GONE);
                     }
 
-                }, new CrashCallback(getActivity(), "failed to update vehicle", new Action1<Throwable>() {
+                }, new CrashCallback(getActivity(), "failed to update car", new Action1<Throwable>() {
                     @Override
                     public void call(Throwable throwable) {
                         progressBar.setVisibility(View.GONE);

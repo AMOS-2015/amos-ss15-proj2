@@ -31,7 +31,6 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Html;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -89,10 +88,8 @@ import pl.charmas.android.reactivelocation.ReactiveLocationProvider;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
 import roboguice.inject.InjectView;
-import rx.Observable;
 import rx.Subscription;
 import rx.functions.Action1;
-import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 import timber.log.Timber;
 
@@ -137,7 +134,7 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
 
     private RecyclerView.LayoutManager layoutManager;
     private VehiclesListSelectAdapter carListAdapter;
-    private carSelectDialogFragment myCarSelectDialogFragment = new carSelectDialogFragment();
+    private CarSelectDialogFragment myCarSelectDialogFragment = new CarSelectDialogFragment();
     private static List<String> carArrayList = new ArrayList<String>();
     private static List<Integer> carIdsArray = new ArrayList<Integer>();
     private static int numberOfCars = 0;
@@ -598,7 +595,7 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
                 new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         DataHolder.getInstance().setVehicle_id(-2);
-                        ((MaterialNavigationDrawer) getActivity()).setFragmentChild(new VehicleInfoFragment(), "Add new vehicle");
+                        ((MaterialNavigationDrawer) getActivity()).setFragmentChild(new VehicleInfoFragment(), getString(R.string.new_car));
                     }
                 });
         carPlateDialog.setNegativeButton(getString(R.string.no),
@@ -695,7 +692,7 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
             public void onClick(View v) {
                 selectDialog.hide();
                 DataHolder.getInstance().setVehicle_id(-2);
-                ((MaterialNavigationDrawer) getActivity()).setFragmentChild(new VehicleInfoFragment(), "Add new vehicle");
+                ((MaterialNavigationDrawer) getActivity()).setFragmentChild(new VehicleInfoFragment(), getString(R.string.new_car));
             }
         });
 
@@ -704,14 +701,14 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
 
     //This class is used to show a list of available cars and enable the user to choose the default one
     @SuppressLint("ValidFragment")
-    public class carSelectDialogFragment extends DialogFragment {
+    public class CarSelectDialogFragment extends DialogFragment {
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
             //Get the default vehicle id from shared prefs
             defaultVehicleId = (int) VehicleManager.getDefaultVehicleId(getActivity());
             final String[] carList = new String[numberOfCars];
             final int checkedCarIndex = carIdsArray.indexOf(defaultVehicleId);
-            Timber.i("Default vehicle id is: " + defaultVehicleId);
+            Timber.i("Default car id is: " + defaultVehicleId);
             Timber.i("Checked car index is: "+ checkedCarIndex);
 
             //Fill the array with data from the ArrayList that was obtained previously
