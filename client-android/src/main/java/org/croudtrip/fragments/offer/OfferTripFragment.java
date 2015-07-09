@@ -747,11 +747,7 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
 
         @Override
         public void onStart() {
-            //Todo fix the style of the dialog to match the rest of the theme
             super.onStart();
-            ((AlertDialog) getDialog()).getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(Color.GREEN);
-            ((AlertDialog) getDialog()).getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(Color.GREEN);
-            //((AlertDialog) getDialog()).getButton(AlertDialog.BUTTON_NEGATIVE).setGravity(Gravity.LEFT);
         }
     }
 

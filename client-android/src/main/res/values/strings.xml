@@ -154,7 +154,7 @@
     <string name="delete_vehicle_button">Delete This Car</string>
     <string name="vehicle_in_use">You cannot delete a car that you are currently having in your trip offer!</string>
     <string name="new_car">Add new car</string>
-    <string name="add_vehicle">Add a car!</string>
+    <string name="add_vehicle">Add a car</string>
     <string name="add_new_vehicle">Add to cars</string>
     <string name="vehicles_title">My Cars</string>
     <string name="no_car_plate_title">Add Car Info</string>
