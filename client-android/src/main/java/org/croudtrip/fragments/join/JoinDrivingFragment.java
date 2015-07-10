@@ -625,10 +625,16 @@ public class JoinDrivingFragment extends SubscriptionFragment {
                                                 final SharedPreferences prefs = getActivity().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
                                                 SharedPreferences.Editor editor = prefs.edit();
                                                 editor.putBoolean(Constants.SHARED_PREF_KEY_DRIVING, false);
-                                                editor.putLong(Constants.SHARED_PREF_KEY_TRIP_ID,  nextRequest.getId()); //will break
+                                                editor.putLong(Constants.SHARED_PREF_KEY_TRIP_ID, nextRequest.getId()); //will break
                                                 editor.apply();
 
+                                                LocalBroadcastManager.getInstance(getActivity()).registerReceiver(nfcScannedReceiver,
+                                                        new IntentFilter(Constants.EVENT_NFC_TAG_SCANNED));
+
                                                 //show correct ui elements
+                                                llWaiting.setVisibility(View.VISIBLE);
+                                                llDriving.setVisibility(View.GONE);
+
                                                 switchToNfcIfAvailable();
 
                                                 //change description and functionality of button back to "driver is here"
