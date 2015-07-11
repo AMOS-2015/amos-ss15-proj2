@@ -240,21 +240,23 @@
             android:layout_marginTop="@dimen/activity_vertical_margin"
 
             >
+
+
             <Button
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/save_changes"
-                android:id="@+id/save"
+                android:text="@string/discard_changes"
+                android:id="@+id/discard"
                 />
 
             <Button
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:text="@string/save_changes"
+                android:id="@+id/save"
+                android:layout_toRightOf="@+id/discard"
                 android:layout_marginLeft="@dimen/activity_vertical_margin"
-                android:text="@string/discard_changes"
-                android:id="@+id/discard"
-                android:layout_toRightOf="@+id/save"/>
-
+                />
         </LinearLayout>
     </LinearLayout>
 
