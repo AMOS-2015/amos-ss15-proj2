@@ -35,20 +35,22 @@ android:layout_height="match_parent" >
         android:layout_below="@id/year_picker"
         android:layout_marginTop="50dp">
 
-        <Button
-            android:id="@+id/set"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="30dp"
-            android:text="Set" />
+
 
         <Button
             android:id="@+id/cancel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="80dp"
-            android:layout_toRightOf="@id/set"
+            android:layout_marginLeft="30dp"
             android:text="Cancel" />
+
+        <Button
+            android:id="@+id/set"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="80dp"
+            android:layout_toRightOf="@id/cancel"
+            android:text="Set" />
 
         </LinearLayout>
 

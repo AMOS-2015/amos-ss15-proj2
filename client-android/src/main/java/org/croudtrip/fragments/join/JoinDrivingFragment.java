@@ -50,7 +50,6 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.pnikosis.materialishprogress.ProgressWheel;
 
@@ -714,16 +713,14 @@ public class JoinDrivingFragment extends SubscriptionFragment {
     Activate the given button and make it clickable
      */
     private void setButtonActive(Button button) {
-        button.setClickable(true);
-        button.setBackgroundColor(getResources().getColor(R.color.primary));
+        button.setEnabled(true);
     }
 
     /*
     Deactivate the given button and make it unclickable
      */
     private void setButtonInactive(Button button) {
-        button.setClickable(false);
-        button.setBackgroundColor(getResources().getColor(R.color.inactive));
+        button.setEnabled(false);
     }
 
 
