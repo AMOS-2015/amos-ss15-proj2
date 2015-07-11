@@ -18,16 +18,16 @@
 
     <string name="error">Please try it again. Something went wrong</string>
 
-    <string name="menu_join_trip">Join trip</string>
-    <string name="menu_my_trip">My trip</string>
-    <string name="menu_offer_trip">Offer trip</string>
+    <string name="menu_join_trip">Join Trip!</string>
+    <string name="menu_my_trip">My Trip!</string>
+    <string name="menu_offer_trip">Offer Trip!</string>
     <string name="menu_profile">My profile</string>
     <string name="menu_edit_profile">Edit profile</string>
     <string name="menu_settings">Settings</string>
 
-    <string name="login_email">Login with E-mail</string>
-    <string name="skip">Browse trips without logging in</string>
-    <string name="hint_email">Your E-mail</string>
+    <string name="login_email">Login with E-Mail</string>
+    <string name="skip">Browse Trips without logging in</string>
+    <string name="hint_email">Your E-Mail</string>
     <string name="hint_firstname">First name</string>
     <string name="hint_lastname">Last name</string>
     <string name="hint_password">Your Password</string>
@@ -35,9 +35,9 @@
     <string name="register">Create Account</string>
     <string name="registration_success">Registration success</string>
     <string name="registration_error_general">Sorry, there was an error, please retry</string>
-    <string name="registration_error_conflict">Email has already been registered</string>
+    <string name="registration_error_conflict">E-Mail has already been registered</string>
     <string name="register_button">Sign up for CroudTrip!</string>
-    <string name="email_invalid">Please enter a real Email address</string>
+    <string name="email_invalid">Please enter a real E-Mail address</string>
     <string name="first_last_mandatory">First and Last names are mandatory fields</string>
 
 
@@ -84,25 +84,25 @@
     <string name="join_trip_results_duration_min">%dmin</string>
     <string name="join_trip_results_duration_hmin">%1$dh %2$dmin</string>
     <string name="join_trip_results_error">An error occurred when sending your request to the server. Please try again.</string>
-    <string name="join_trip_results_waiting">We try our best to find trips for you! Hang in there!</string>
+    <string name="join_trip_results_waiting">We try our best to find Trips for you! Hang in there!</string>
     <string name="join_trip_results_join">i want to join!</string>
     <string name="join_trip_results_stop">Stop searching</string>
-    <string name="join_trip_results_canceled">Searching for trips stopped</string>
+    <string name="join_trip_results_canceled">Searching for Trips stopped</string>
     <string name="join_trip_results_sending">You have contacted the driver&#8230; waiting for response</string>
     <string name="join_trip_results_pickup">Driver picks you up at approx.</string>
-    <string name="join_trip_results_happy">Have a nice trip</string>
+    <string name="join_trip_results_happy">Have a nice Trip!</string>
     <string name="join_trip_results_driverArrival">My driver is here</string>
     <string name="join_trip_results_reached">I´ve reached my destination</string>
     <string name="join_trip_results_left_Car">Left the car</string>
     <string name="join_trip_results_report">Report driver</string>
-    <string name="join_trip_results_cancel">Cancel trip</string>
+    <string name="join_trip_results_cancel">Cancel Trip!</string>
     <plurals name="join_trip_results_my_drivers">
         <item quantity="one">My Driver</item>
         <item quantity="other">My Drivers</item>
     </plurals>
     <string name="join_trip_results_price">%1$s.%2$s €</string>
-    <string name="my_trip_passenger_error_no_trip">Error: You have currently no running trip.</string>
-    <string name="load_trip_passenger_failed">Loading your trip failed. Please try again.</string>
+    <string name="my_trip_passenger_error_no_trip">Error: You have currently no running Trip!</string>
+    <string name="load_trip_passenger_failed">Loading your Trip! failed. Please try again.</string>
 
     <string name="join_trip_requests_no_requests">There are no join requests at the moment.</string>
     <string name="join_trip_requests_error">An error occurred when looking up you passengers. Please try again.</string>
@@ -110,7 +110,7 @@
     <string name="join_trip_requests_diversion_loading">Div.: loading&#8230;</string>
     <string name="join_trip_requests_diversion_hmin">Div.: %1$s:%2$s h</string>
     <string name="join_trip_requests_diversion_min">Div.: %s min</string>
-    <string name="join_trip_no_destination">Join Trip failed: No destination location could be extracted.</string>
+    <string name="join_trip_no_destination">Join Trip! failed: No destination location could be extracted.</string>
 
 
     <string name="offer_choose_destination">Specify start location</string>
@@ -118,9 +118,9 @@
     <string name="offer_max_diversion">Max diversion (in km):</string>
     <string name="price">Price per km (in cent):</string>
 
-    <string name="offer_trip">Offer Trip</string>
-    <string name="offer_trip_no_location">Offer Trip failed: Your location is unknown.</string>
-    <string name="offer_trip_no_destination">Offer Trip failed: No destination location could be extracted.</string>
+    <string name="offer_trip">Offer Trip!</string>
+    <string name="offer_trip_no_location">Offer Trip! failed: Your location is unknown.</string>
+    <string name="offer_trip_no_destination">Offer Trip! failed: No destination location could be extracted.</string>
     <string name="duration_text">"Duration: %1$dh %2$dm %3$ds"</string>
     <string name="distance_text">"Distance: %1$.1fkm"</string>
 
@@ -150,12 +150,12 @@
 
     <string name="car_plate_hint">e.g 123456</string>
     <string name="car_type_hint">e.g Porsche 911</string>
-    <string name="ask_register">We found a driver for you. But unfortunately you need to register for joining that trip!</string>
+    <string name="ask_register">We found a driver for you. But unfortunately you need to register for joining that Trip!</string>
     <string name="car_type_side">Car Type: \u0020</string>
     <string name="car_plate_side">Car Plate: \u0020</string>
     <string name="car_capacity_side">Car Capacity: \u0020</string>
     <string name="delete_vehicle_button">Delete This Car</string>
-    <string name="vehicle_in_use">You cannot delete a car that you are currently having in your trip offer!</string>
+    <string name="vehicle_in_use">You cannot delete a car that you are currently having in your Trip! offer</string>
     <string name="new_car">Add new car</string>
     <string name="add_vehicle">Add a car</string>
     <string name="add_new_vehicle">Add to cars</string>
@@ -164,9 +164,9 @@
     <string name="no_car_plate_message">Your passengers cannot identify you without information about your car. Update information now?</string>
     <string name="no_vehicles_added">You have not added any cars</string>
     <string name="join_request_title">New join request!</string>
-    <string name="joint_request_msg">%1$s wants to join your trip.</string>
-    <string name="trip_canceled_msg">Oh no, apparently your trip was canceled!</string>
-    <string name="trip_canceled_by_passenger">Oh no, one of your passengers cancelled the trip!</string>
+    <string name="joint_request_msg">%1$s wants to join your Trip!</string>
+    <string name="trip_canceled_msg">Oh no, apparently your Trip! was canceled!</string>
+    <string name="trip_canceled_by_passenger">Oh no, one of your passengers cancelled the Trip!</string>
     <string name="new_msg">New Message</string>
     <string name="join_request_sent">Your request has been sent to the driver. We will inform you as soon as the driver answers your request.</string>
     <string name="join_request_sending_error">There was an error sending your request.</string>
@@ -175,13 +175,13 @@
     <string name="join_request_declined_msg">Your request was declined by the driver.</string>
     <string name="join_request_declined_title">Declined request!</string>
     <string name="found_matches_title">New Message</string>
-    <string name="found_matches_msg">There are new trips available!</string>
+    <string name="found_matches_msg">There are new Trips available!</string>
     <string name="navigation_error_no_offer">Error: You have currently no running offer.</string>
     <string name="error_position_update_title">No position update possible</string>
     <string name="error_position_update_message">Sorry, seems like we lost you. Once your connection is restored more passengers will find your Trip!</string>
-    <string name="success_position_update_message">Your position could be successfully uploaded. Your trip will be reenabled.</string>
-    <string name="success_position_update_title">Position update was successfull</string>
-    <string name="nfc_explanation_passenger">Tap the phone of your driver to start the trip</string>
+    <string name="success_position_update_message">Your position could be successfully uploaded. Your Trip! will be reenabled.</string>
+    <string name="success_position_update_title">Position update was successful</string>
+    <string name="nfc_explanation_passenger">Tap the phone of your driver to start the Trip!</string>
 
 
     <string name="my_trip_driver_cancel_trip">Cancel Trip!</string>
@@ -190,8 +190,8 @@
     <string name="my_trip_driver_my_earnings_title">My Earnings</string>
     <string name="my_trip_driver_my_earnings">%1$s.%2$s €</string>
     <string name="error_contacting_server">Something went wrong with contacting the server</string>
-    <string name="offer_trip_failed">Offering your trip failed. Please try again.</string>
-    <string name="load_trip_failed">Loading your trip failed. Please try again.</string>
+    <string name="offer_trip_failed">Offering your Trip! failed. Please try again.</string>
+    <string name="load_trip_failed">Loading your Trip! failed. Please try again.</string>
     <string name="load_route_failed">Loading your route failed. Please try again.</string>
     <string name="load_passengers_failed">Loading your passengers failed. Please try again.</string>
 
