@@ -49,7 +49,6 @@ import it.neokree.materialnavigationdrawer.MaterialNavigationDrawer;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
 import roboguice.inject.InjectView;
-import rx.Subscription;
 import rx.functions.Action1;
 import timber.log.Timber;
 
@@ -140,12 +139,14 @@ public class ProfileFragment extends SubscriptionFragment {
         recyclerView.setAdapter(adapter);
 
         //Get a list of user vehicles and add it to the RecyclerView
-        Subscription subscription = vehicleResource.getVehicles()
+        subscriptions.add(vehicleResource.getVehicles()
                 .compose(new DefaultTransformer<List<Vehicle>>())
                 .subscribe(new Action1<List<Vehicle>>() {
                     @Override
                     public void call(List<Vehicle> vehicles) {
+
                         if (vehicles.size() > 0) {
+                            profileHeaderView.findViewById(R.id.tv_profile_vehicles_title).setVisibility(View.VISIBLE);
                             adapter.addElements(vehicles);
                         }
                         //Check if this is the only vehicle the user has
@@ -166,12 +167,10 @@ public class ProfileFragment extends SubscriptionFragment {
                         }
                         Timber.e("Couldn't get data" + throwable.getMessage());
                         progressBar.setVisibility(View.GONE);
+                        profileHeaderView.findViewById(R.id.tv_profile_vehicles_title).setVisibility(View.GONE);
+                        adapter.notifyDataSetChanged();
                     }
-                });
-
-        subscriptions.add(subscription);
-
-        profileHeaderView = null;
+                }));
     }
 
     private void fillInUserInfo(User user, View headerView) {
@@ -205,9 +204,12 @@ public class ProfileFragment extends SubscriptionFragment {
         setTextViewContent(null, (TextView) headerView.findViewById(R.id.tv_profile_name), name);
         setTextViewContent(null, (TextView) headerView.findViewById(R.id.tv_profile_email), user.getEmail());
         setTextViewContent(null, (TextView) headerView.findViewById(R.id.tv_profile_phone), user.getPhoneNumber());
-        setTextViewContent(headerView.findViewById(R.id.tv_profile_address_title), (TextView) headerView.findViewById(R.id.tv_profile_address), user.getAddress());
-        setTextViewContent(headerView.findViewById(R.id.tv_profile_gender_title), (TextView) headerView.findViewById(R.id.tv_profile_gender), gender);
-        setTextViewContent(headerView.findViewById(R.id.tv_profile_birthyear_title), (TextView) headerView.findViewById(R.id.tv_profile_birthyear), birthYear);
+        setTextViewContent(headerView.findViewById(R.id.tv_profile_address_title),
+                (TextView) headerView.findViewById(R.id.tv_profile_address), user.getAddress());
+        setTextViewContent(headerView.findViewById(R.id.tv_profile_gender_title),
+                (TextView) headerView.findViewById(R.id.tv_profile_gender), gender);
+        setTextViewContent(headerView.findViewById(R.id.tv_profile_birthyear_title),
+                (TextView) headerView.findViewById(R.id.tv_profile_birthyear), birthYear);
 
 
         // Download avatar
@@ -229,13 +231,13 @@ public class ProfileFragment extends SubscriptionFragment {
             tv.setText(content);
             tv.setVisibility(View.VISIBLE);
 
-            if(view != null){
+            if (view != null) {
                 view.setVisibility(View.VISIBLE);
             }
-        }else{
+        } else {
             tv.setVisibility(View.GONE);
 
-            if(view != null){
+            if (view != null) {
                 view.setVisibility(View.GONE);
             }
         }

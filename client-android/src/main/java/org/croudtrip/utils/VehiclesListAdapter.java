@@ -149,10 +149,8 @@ public class VehiclesListAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
 
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder h, int position) {
-        Timber.d("FOUND ELEMENT!!!!!!!!!!!!!!");
 
         if (h instanceof CarViewHolder) {
-            Timber.d("Found car element");
             CarViewHolder holder = (CarViewHolder) h;
 
             //Set each vehicle's data to values fetched from the server
@@ -163,7 +161,6 @@ public class VehiclesListAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             holder.carColor.setBackgroundColor(Integer.parseInt(vehicle.getColor()));
 
         } else if (h instanceof VehiclesListAdapter.HeaderViewHolder) {
-            Timber.d("Found header element");
             VehiclesListAdapter.HeaderViewHolder holder = (VehiclesListAdapter.HeaderViewHolder) h;
             holder.header = header;
         }
