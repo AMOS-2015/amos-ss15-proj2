@@ -12,58 +12,62 @@
   ~    If not, see http://www.gnu.org/licenses/.
   -->
 
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:fab="http://schemas.android.com/apk/res-auto"
     xmlns:wheel="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    >
 
-    <LinearLayout
+    <ScrollView
+        android:paddingBottom="@dimen/activity_vertical_margin"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:paddingRight="@dimen/activity_horizontal_margin"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:weightSum="2"
-        android:orientation="vertical" >
+        android:layout_height="wrap_content"
+        android:padding="12dp"
+        android:scrollbars="none"
+        >
 
-        <RelativeLayout
-            android:layout_weight="0.8"
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="0dp">
-
-            <ImageView
-                android:id="@+id/profile_picture_edit"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:adjustViewBounds="true"
-                android:scaleType="centerCrop"
-                android:src="@drawable/background_drawer"
-                android:contentDescription="@string/profile_image_description"/>
-
-            <com.getbase.floatingactionbutton.FloatingActionButton
-                android:id="@+id/btn_edit_profile_image"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                fab:fab_icon="@android:drawable/ic_menu_edit"
-                fab:fab_colorNormal="@color/primary"
-                fab:fab_colorPressed="@color/primary_dark"
-                android:layout_alignParentBottom="true"
-                android:layout_alignParentRight="true"
-                android:layout_alignParentEnd="true" />
-        </RelativeLayout>
-
-
-        <ScrollView
-            android:id="@+id/scroll_view"
-            android:paddingBottom="@dimen/activity_vertical_margin"
-            android:paddingLeft="@dimen/activity_horizontal_margin"
-            android:paddingRight="@dimen/activity_horizontal_margin"
-            android:layout_width="wrap_content"
-            android:layout_height="0dp"
-            android:layout_weight="0.95"
-            android:layout_marginTop="5dp">
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            >
 
             <RelativeLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                >
+
+                <ImageView
+                    android:id="@+id/profile_picture_edit"
+                    android:layout_width="150dp"
+                    android:layout_height="150dp"
+                    android:layout_centerInParent="true"
+                    android:src="@drawable/profile"
+                    android:adjustViewBounds="true"
+                    android:scaleType="centerCrop"
+                    />
+
+                <com.getbase.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/btn_edit_profile_image"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentRight="true"
+                    fab:fab_icon="@android:drawable/ic_menu_edit"
+                    fab:fab_colorNormal="@color/primary"
+                    fab:fab_colorPressed="@color/primary_dark"
+                    />
+
+            </RelativeLayout>
+
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                >
 
                 <LinearLayout
                     android:id="@+id/name_layout_title"
@@ -129,8 +133,6 @@
 
                 </LinearLayout>
 
-
-
                 <EditText
                     android:id="@+id/edit_profile_phone"
                     android:layout_width="wrap_content"
@@ -145,7 +147,6 @@
                     android:drawableStart="@drawable/ic_call_18dp"
                     android:hint="@string/profile_unknown"
                     android:textAppearance="@android:style/TextAppearance.Medium"
-
                     />
 
                 <TextView
@@ -157,35 +158,29 @@
                     android:layout_marginTop="5dp"
                     style="?android:attr/listSeparatorTextViewStyle" />
 
+                <RadioGroup
+                    android:id="@+id/radioGender"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_below="@id/gender_title"
+                    >
 
-
-
-                    <RadioGroup
-                        android:id="@+id/radioGender"
+                    <RadioButton
+                        android:id="@+id/radio_male"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:layout_below="@id/gender_title"
-                        >
+                        android:text="Male"
+                        android:checked="true"/>
 
-                        <RadioButton
-                            android:id="@+id/radio_male"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Male"
-                            android:checked="true"/>
+                    <RadioButton
+                        android:id="@+id/radio_female"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Female"
+                        />
 
-                        <RadioButton
-                            android:id="@+id/radio_female"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Female"
-                            />
-
-                    </RadioGroup>
-
-
-
+                </RadioGroup>
 
                 <TextView
                     android:id="@+id/year_title"
@@ -202,7 +197,7 @@
                     android:layout_height="wrap_content"
                     android:layout_below="@id/year_title"
                     android:text="unknown"
-                     />
+                    />
 
                 <TextView
                     android:id="@+id/tv_profile_address_title"
@@ -226,37 +221,38 @@
 
                     />
 
-
             </RelativeLayout>
-        </ScrollView>
 
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="fill_parent"
-            android:layout_height="0dp"
-            android:gravity="center_horizontal"
-            android:layout_below="@id/scroll_view"
-            android:layout_weight="0.25"
-            android:layout_marginTop="@dimen/activity_vertical_margin"
-
-            >
-            <Button
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/save_changes"
-                android:id="@+id/save"
-                />
+                android:gravity="center_horizontal"
+                android:layout_marginTop="@dimen/activity_vertical_margin"
+                >
 
-            <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="@dimen/activity_vertical_margin"
-                android:text="@string/discard_changes"
-                android:id="@+id/discard"
-                android:layout_toRightOf="@+id/save"/>
+                <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/save_changes"
+                    android:id="@+id/save"
+                    />
+
+                <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/activity_vertical_margin"
+                    android:text="@string/discard_changes"
+                    android:id="@+id/discard"
+                    android:layout_toRightOf="@+id/save"
+                    />
+
+            </LinearLayout>
 
         </LinearLayout>
-    </LinearLayout>
+
+    </ScrollView>
+
 
     <com.pnikosis.materialishprogress.ProgressWheel
         android:id="@+id/pb_edit_profile"
@@ -265,5 +261,7 @@
         wheel:matProg_barColor="@color/primary_dark"
         wheel:matProg_progressIndeterminate="true"
         android:visibility="gone"
-        android:layout_gravity = "center_vertical|center_horizontal"/>
+        android:layout_gravity = "center_vertical|center_horizontal"
+        />
+
 </FrameLayout>
