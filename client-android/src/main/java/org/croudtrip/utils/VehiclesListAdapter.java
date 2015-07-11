@@ -88,7 +88,7 @@ public class VehiclesListAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
                 listener.onItemClicked(view, getPosition());
             }
 
-            Vehicle vehicle = vehicles.get(getPosition());
+            Vehicle vehicle = vehicles.get(getPosition()-1);
             long vehicleId = vehicle.getId();
 
             if (view == edit) {

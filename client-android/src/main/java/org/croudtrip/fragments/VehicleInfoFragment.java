@@ -173,7 +173,7 @@ public class VehicleInfoFragment extends SubscriptionFragment {
                                                 }
                                             }
                                         }
-                                        return Observable.just(tripOffers.get(0));
+                                        return null;
                                     }
 
                                 }).subscribe(new Action1<TripOffer>() {
