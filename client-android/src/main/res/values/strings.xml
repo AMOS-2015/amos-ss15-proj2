@@ -41,6 +41,8 @@
     <string name="first_last_mandatory">First and Last names are mandatory fields</string>
 
 
+    <string name="not_logged_in_register">Register</string>
+    <string name="not_logged_in_cancel">Cancel</string>
     <string name="login">Login</string>
     <string name="forgot_pwd">Forgot Your Password?</string>
     <string name="invalid_login">Invalid Login</string>

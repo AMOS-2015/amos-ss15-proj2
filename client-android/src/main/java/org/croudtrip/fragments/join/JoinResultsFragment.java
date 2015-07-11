@@ -14,13 +14,14 @@
 
 package org.croudtrip.fragments.join;
 
-import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -39,6 +40,7 @@ import com.pnikosis.materialishprogress.ProgressWheel;
 import org.croudtrip.Constants;
 import org.croudtrip.R;
 import org.croudtrip.account.AccountManager;
+import org.croudtrip.activities.LoginActivity;
 import org.croudtrip.api.TripsResource;
 import org.croudtrip.api.directions.RouteLocation;
 import org.croudtrip.api.trips.SuperTrip;
@@ -276,29 +278,25 @@ public class JoinResultsFragment extends SubscriptionFragment implements GoogleA
         subscriptions.add(subscription);
     }
 
+
     private void drawRegisterDialog() {
-        final Dialog registerDialog = new Dialog(getActivity());
-        registerDialog.setTitle("Register");
-        registerDialog.setContentView(R.layout.ask_to_register_dialog);
-        Button set = (Button) registerDialog.findViewById(R.id.register);
-        Button cancel = (Button) registerDialog.findViewById(R.id.cancel);
-        registerDialog.show();
 
-        set.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Toast.makeText(getActivity(), "Register view will be shown", Toast.LENGTH_SHORT).show();
-                registerDialog.hide();
-            }
-        });
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        builder.setTitle(R.string.register);
+        builder.setMessage(R.string.ask_register)
+                .setPositiveButton(R.string.not_logged_in_register, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        startActivity(new Intent(JoinResultsFragment.this.getActivity(), LoginActivity.class));
+                        dialog.dismiss();
+                    }
+                })
+                .setNegativeButton(R.string.not_logged_in_cancel, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.dismiss();
+                    }
+                });
 
-        cancel.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                registerDialog.hide();
-            }
-        });
-
+        builder.create().show();
     }
 
 
