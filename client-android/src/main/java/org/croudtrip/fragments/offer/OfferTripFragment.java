@@ -418,9 +418,39 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
 
 
                 if (VehicleManager.getDefaultVehicleId(getActivity()) == -3) {
-                    // User needs to add car info before he can offer a trip
-                    showCarPlateDialog();
+                    //Get a list of user vehicles and add it to the ArrayList
+                    Subscription vListSubscription = vehicleResource.getVehicles()
+                            .compose(new DefaultTransformer<List<Vehicle>>())
+                            .subscribe(new Action1<List<Vehicle>>() {
+                                @Override
+                                public void call(List<Vehicle> vehicles) {
+                                    carArrayList.clear();
+                                    carIdsArray.clear();
+                                    if (vehicles.size() > 0) {
+                                        for (int i = 0; i < vehicles.size(); i++) {
+                                            carArrayList.add(vehicles.get(i).getType());
+                                            carIdsArray.add((int) vehicles.get(i).getId());
+                                            Timber.i("Added " + carArrayList.get(i) + " with id: " + (int) vehicles.get(i).getId());
+                                            numberOfCars = vehicles.size();
+                                        }
+                                        myCarSelectDialogFragment.show(getFragmentManager(), "Car Select");
+                                    }
+                                    else
+                                        showCarPlateDialog();
+                                }
+                            }, new Action1<Throwable>() {
+                                @Override
+                                public void call(Throwable throwable) {
+                                    Response response = ((RetrofitError) throwable).getResponse();
+                                    if (response != null && response.getStatus() == 401) {  // Not Authorized
+                                    } else {
+                                        Timber.e("error" + throwable.getMessage());
+                                    }
+                                    Timber.e("Couldn't get data" + throwable.getMessage());
+                                }
+                            });
 
+                    subscriptions.add(vListSubscription);
                 }else {
                     if( currentLocation == null )
                     {

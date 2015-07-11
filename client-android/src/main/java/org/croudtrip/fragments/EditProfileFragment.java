@@ -435,7 +435,11 @@ public class EditProfileFragment extends SubscriptionFragment {
                 compressedImage = saveByteStreamtoFile(byteOutputStream);
             }
             else
-            compressedImage = uncompressedImage;
+            {
+                imageBitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteOutputStream);
+                compressedImage.delete();
+                compressedImage = saveByteStreamtoFile(byteOutputStream);
+            }
 
 
             Timber.i("old image size = " + Integer.parseInt(String.valueOf(uncompressedImage.length() / 1024)));
