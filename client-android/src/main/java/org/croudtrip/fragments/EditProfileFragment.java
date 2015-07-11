@@ -168,7 +168,6 @@ public class EditProfileFragment extends SubscriptionFragment {
             @Override
             public void onClick(View v) {
                 saveProfileChanges();
-                getActivity().onBackPressed();
             }
         });
 
@@ -455,9 +454,9 @@ public class EditProfileFragment extends SubscriptionFragment {
                         .subscribe(new Action1<User>() {
                             @Override
                             public void call(User user) {
-                                Timber.v("Updated user info");
                                 progressBar.setVisibility(View.GONE);
-                                EditProfileFragment.this.getActivity().onBackPressed();
+                                getActivity().onBackPressed();
+                                Toast.makeText(getActivity(), "Profile saved", Toast.LENGTH_SHORT).show();
                             }
 
                         }, new CrashCallback(getActivity(), "failed to update user", new Action1<Throwable>() {
