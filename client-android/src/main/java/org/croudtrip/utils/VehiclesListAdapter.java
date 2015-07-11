@@ -27,8 +27,8 @@ import org.croudtrip.R;
 import org.croudtrip.api.account.Vehicle;
 import org.croudtrip.fragments.VehicleInfoFragment;
 
+import java.util.ArrayList;
 import java.util.List;
-
 
 import it.neokree.materialnavigationdrawer.MaterialNavigationDrawer;
 import timber.log.Timber;
@@ -37,31 +37,37 @@ import timber.log.Timber;
  * This Adapter is used in the ProfilePageFragment to display the list of user owned cars.
  * Created by Nazeeh Ammari on 11.05.15.
  */
-public class VehiclesListAdapter extends RecyclerView.Adapter<VehiclesListAdapter.ViewHolder> {
+public class VehiclesListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     //************************** Variables ***************************//
+
+    private final static int ITEM_TYPE_HEADER = 0; // avatar etc. view
+    private final static int ITEM_TYPE_ITEM = 1;   // cars
+
     private final Context context;
     private List<Vehicle> vehicles;
+    private View header;
     protected OnItemClickListener listener;
 
     //************************** Inner classes ***************************//
 
-    public static interface OnItemClickListener {
-        public void onItemClicked(View view, int position);
+    public interface OnItemClickListener {
+        void onItemClicked(View view, int position);
     }
 
 
     /**
-     * Provides a reference to the views for each data item.
+     * Provides a reference to the car views for each data item.
      */
-    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
+    public class CarViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         protected TextView carType;
         protected TextView carPlate;
         protected TextView carCapacity;
         protected Button carColor;
         protected ImageButton edit;
-        public ViewHolder(View view) {
+
+        public CarViewHolder(View view) {
             super(view);
 
             this.carType = (TextView) view.findViewById(R.id.type);
@@ -73,70 +79,111 @@ public class VehiclesListAdapter extends RecyclerView.Adapter<VehiclesListAdapte
             view.setOnClickListener(this);
         }
 
-        //Listener to detect to edit button and start the VehicleInfoFragment (after setting vehicleId to the clicked vehicle in DataHolder)
+        // Listener to detect to edit button and start the VehicleInfoFragment
+        // (after setting vehicleId to the clicked vehicle in DataHolder)
         @Override
         public void onClick(View view) {
+
             if (listener != null) {
                 listener.onItemClicked(view, getPosition());
             }
-            Vehicle vehicle=vehicles.get(getPosition());
+
+            Vehicle vehicle = vehicles.get(getPosition());
             long vehicleId = vehicle.getId();
+
             if (view == edit) {
                 DataHolder.getInstance().setVehicle_id((int) vehicleId);
                 ((MaterialNavigationDrawer) context).setFragmentChild(new VehicleInfoFragment(), "Edit Vehicle Info");
-                Timber.v("button clicked for vehicle: " + vehicleId);
+                Timber.v("Clicked on vehicle " + vehicleId);
             }
+        }
+    }
 
+
+    /**
+     * Provides a reference to the header view
+     */
+    public class HeaderViewHolder extends RecyclerView.ViewHolder {
+
+        protected View header;
+
+        public HeaderViewHolder(View header) {
+            super(header);
+
+            this.header = header;
         }
     }
 
 
     //************************** Constructors ***************************//
 
-    public VehiclesListAdapter(Context context, List<Vehicle> vehicles) {
+    public VehiclesListAdapter(Context context, List<Vehicle> vehicles, View header) {
         this.context = context;
-        this.vehicles = vehicles;
+        this.header = header;
+
+        if (vehicles != null) {
+            this.vehicles = vehicles;
+        } else {
+            this.vehicles = new ArrayList<Vehicle>();
+        }
     }
 
 
     //**************************** Methods *****************************//
 
     @Override
-    public VehiclesListAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
 
         // Create new views (invoked by the layout manager)
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.cardview_vehicles_list, parent, false);
+        if (viewType == ITEM_TYPE_ITEM) {
+            return new CarViewHolder(LayoutInflater.from(parent.getContext())
+                    .inflate(R.layout.cardview_vehicles_list, parent, false));
 
-        return new ViewHolder(view);
+        } else if (viewType == ITEM_TYPE_HEADER) {
+            return new HeaderViewHolder(header);
+        }
+
+        throw new RuntimeException("There is no type that matches the type " + viewType);
     }
 
 
     @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
+    public void onBindViewHolder(RecyclerView.ViewHolder h, int position) {
+        Timber.d("FOUND ELEMENT!!!!!!!!!!!!!!");
 
-        //Set each vehicle's data to values fetched from the server
-        Vehicle vehicle = vehicles.get(position);
-        holder.carType.setText(context.getString(R.string.car_type_side) + vehicle.getType());
-        holder.carPlate.setText(context.getString(R.string.car_plate_side) + vehicle.getLicensePlate());
-        holder.carCapacity.setText(context.getString(R.string.car_capacity_side) + vehicle.getCapacity()+"");
-        holder.carColor.setBackgroundColor(Integer.parseInt(vehicle.getColor()));
+        if (h instanceof CarViewHolder) {
+            Timber.d("Found car element");
+            CarViewHolder holder = (CarViewHolder) h;
+
+            //Set each vehicle's data to values fetched from the server
+            Vehicle vehicle = vehicles.get(position - 1);   // -1 because of header
+            holder.carType.setText(context.getString(R.string.car_type_side) + vehicle.getType());
+            holder.carPlate.setText(context.getString(R.string.car_plate_side) + vehicle.getLicensePlate());
+            holder.carCapacity.setText(context.getString(R.string.car_capacity_side) + vehicle.getCapacity() + "");
+            holder.carColor.setBackgroundColor(Integer.parseInt(vehicle.getColor()));
+
+        } else if (h instanceof VehiclesListAdapter.HeaderViewHolder) {
+            Timber.d("Found header element");
+            VehiclesListAdapter.HeaderViewHolder holder = (VehiclesListAdapter.HeaderViewHolder) h;
+            holder.header = header;
+        }
     }
-
 
 
     /**
      * Adds the given items to the adapter.
+     *
      * @param additionalVehicles new elements to add to the adapter
      */
-    public void addElements(List<Vehicle> additionalVehicles){
+    public void addElements(List<Vehicle> additionalVehicles) {
 
-        if(additionalVehicles == null){
+        if (additionalVehicles == null) {
             return;
         }
 
-        if(vehicles == null){
+        if (vehicles == null) {
             vehicles = additionalVehicles;
-        }else{
+        } else {
             vehicles.addAll(additionalVehicles);
         }
 
@@ -144,30 +191,21 @@ public class VehiclesListAdapter extends RecyclerView.Adapter<VehiclesListAdapte
     }
 
 
+    @Override
+    public int getItemCount() {
+        return vehicles.size() + 1; // header
+    }
 
 
     @Override
-    public int getItemCount() {
+    public int getItemViewType(int position) {
 
-        if (vehicles == null) {
-            return 0;
+        if (position == 0) {
+            return ITEM_TYPE_HEADER;
+
         }
 
-        return vehicles.size();
+        return ITEM_TYPE_ITEM;
     }
 
-    public void setOnItemClickListener(final OnItemClickListener listener) {
-        this.listener = listener;
-    }
-
-
-
-    public Vehicle getItem(int position){
-
-        if(position < 0 || position >= vehicles.size()){
-            return null;
-        }
-
-        return vehicles.get(position);
-    }
 }

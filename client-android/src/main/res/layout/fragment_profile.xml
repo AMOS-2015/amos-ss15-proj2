@@ -13,211 +13,33 @@
   -->
 
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:fab="http://schemas.android.com/apk/res-auto"
     xmlns:wheel="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:layout_marginTop="2dp"
+    android:layout_marginLeft="@dimen/activity_horizontal_margin"
+    android:layout_marginRight="@dimen/activity_horizontal_margin">
 
-
-
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:weightSum="2"
-        android:orientation="vertical" >
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal">
 
-
-        <RelativeLayout
-            android:layout_weight="0.7"
-            android:layout_width="match_parent"
-            android:layout_height="0dp">
-
-            <ImageView
-                android:id="@+id/tv_profile_image"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:src="@drawable/background_drawer"
-                android:adjustViewBounds="true"
-                android:scaleType="centerCrop"
-                android:contentDescription="@string/profile_image_description"/>
-
-            <com.getbase.floatingactionbutton.FloatingActionButton
-                android:id="@+id/btn_edit_profile"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                fab:fab_icon="@android:drawable/ic_menu_edit"
-                fab:fab_colorNormal="@color/primary"
-                fab:fab_colorPressed="@color/primary_dark"
-                android:layout_alignParentBottom="true"
-                android:layout_alignParentRight="true"
-                android:layout_alignParentEnd="true" />
-        </RelativeLayout>
-
-        <ScrollView
-            android:paddingBottom="@dimen/activity_vertical_margin"
-            android:paddingLeft="@dimen/activity_horizontal_margin"
-            android:paddingRight="@dimen/activity_horizontal_margin"
-            android:layout_weight="0.7"
-            android:layout_height="0dp"
+        <Button
+            android:id="@+id/add_new_vehicle"
             android:layout_width="wrap_content"
-            android:layout_marginBottom="10dp"
-            >
+            android:layout_height="wrap_content"
+            android:text="@string/add_vehicle"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true" />
 
-        <RelativeLayout
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/vehicles_list"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="match_parent"
+            android:layout_above="@id/add_new_vehicle"/>
 
-            <TextView
-                android:id="@+id/tv_profile_name"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:drawablePadding="5dp"
-                android:layout_marginBottom="10dp"
-                android:textAppearance="@android:style/TextAppearance.Large"
-                android:text="@string/profile_unknown"
-                />
-
-            <TextView
-                android:id="@+id/tv_profile_email"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:layout_below="@id/tv_profile_name"
-                android:drawableLeft="@drawable/ic_email_18dp"
-                android:drawableStart="@drawable/ic_email_18dp"
-                android:drawablePadding="5dp"
-                android:textAppearance="@android:style/TextAppearance.Medium"
-                android:layout_marginBottom="5dp"
-                android:text="@string/profile_unknown"
-                />
-
-
-            <TextView
-                android:id="@+id/tv_profile_phone"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:layout_below="@id/tv_profile_email"
-                android:drawableLeft="@drawable/ic_call_18dp"
-                android:drawableStart="@drawable/ic_call_18dp"
-                android:drawablePadding="5dp"
-                android:textAppearance="@android:style/TextAppearance.Medium"
-                android:layout_marginBottom="10dp"
-                android:text="@string/profile_unknown"
-                />
-
-            <TextView
-                android:id="@+id/tv_profile_gender_title"
-                android:layout_below="@id/tv_profile_phone"
-                android:layout_height="wrap_content"
-                android:layout_width="match_parent"
-                android:text="@string/profile_gender"
-                style="?android:attr/listSeparatorTextViewStyle"
-                />
-
-            <TextView
-                android:id="@+id/tv_profile_gender"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:layout_below="@id/tv_profile_gender_title"
-                android:text="@string/profile_unknown"
-                />
-
-            <TextView
-                android:id="@+id/tv_profile_birthyear_title"
-                android:layout_below="@id/tv_profile_gender"
-                android:layout_height="wrap_content"
-                android:layout_width="match_parent"
-                android:text="@string/profile_birthyear"
-                android:layout_marginBottom="10dp"
-                style="?android:attr/listSeparatorTextViewStyle"/>
-
-            <TextView
-                android:id="@+id/tv_profile_birthyear"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:layout_below="@id/tv_profile_birthyear_title"
-                android:text="@string/profile_unknown"
-                />
-
-            <TextView
-                android:id="@+id/tv_profile_address_title"
-                android:layout_below="@id/tv_profile_birthyear"
-                android:layout_height="wrap_content"
-                android:layout_width="match_parent"
-                android:text="@string/profile_address"
-                android:layout_marginBottom="10dp"
-                style="?android:attr/listSeparatorTextViewStyle"/>
-
-            <TextView
-                android:id="@+id/tv_profile_address"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:layout_below="@id/tv_profile_address_title"
-                android:text="@string/profile_unknown"
-                />
-
-
-
-
-        </RelativeLayout>
-        </ScrollView>
-
-        <RelativeLayout
-            android:layout_weight="0.1"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:gravity="center_horizontal">
-
-
-            <TextView
-                android:id="@+id/vehicles_title"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="15dp"
-                android:text="@string/vehicles_title"
-                android:gravity="center"
-                android:background="@color/white"
-                />
-
-
-
-        </RelativeLayout>
-
-        <RelativeLayout
-            android:layout_weight="0.3"
-            android:layout_width="match_parent"
-            android:layout_height="40dp">
-
-            <android.support.v7.widget.RecyclerView
-                android:id="@+id/vehicles_list"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-
-        </RelativeLayout>
-
-        <RelativeLayout
-            android:layout_weight="0.2"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:gravity="center_horizontal">
-
-
-            <Button
-                android:id="@+id/add_new_vehicle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/add_vehicle"
-                />
-
-
-
-        </RelativeLayout>
-
-    </LinearLayout>
+    </RelativeLayout>
 
     <com.pnikosis.materialishprogress.ProgressWheel
         android:id="@+id/pb_profile"

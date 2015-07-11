@@ -15,7 +15,6 @@
 package org.croudtrip.fragments;
 
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -70,13 +69,13 @@ public class ProfileFragment extends SubscriptionFragment {
     @InjectView(R.id.pb_profile)
     private ProgressWheel progressBar;
 
-    //@InjectView(R.id.tv_profile_image) private ImageView profileImage;
-    private ImageView profileImage;
     @Inject
     private VehicleResource vehicleResource;
 
     private RecyclerView.LayoutManager layoutManager;
     private VehiclesListAdapter adapter;
+
+    private View profileHeaderView;
 
     //************************* Methods *****************************//
 
@@ -90,110 +89,40 @@ public class ProfileFragment extends SubscriptionFragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-
         setHasOptionsMenu(true);
-        final Fragment _this = this;
+
+        // Profile wrapper with cars, includes profile header later
         final View view = inflater.inflate(R.layout.fragment_profile, container, false);
         Button addNewVehicle = (Button) view.findViewById(R.id.add_new_vehicle);
-        profileImage = (ImageView) view.findViewById(R.id.tv_profile_image);
+
         // Restore user from SharedPref file
         User user = AccountManager.getLoggedInUser(this.getActivity().getApplicationContext());
 
-        if (user != null) {
-            //  Fill in the profile views
-            String name = null;
-            if (user.getFirstName() != null && user.getLastName() != null) {
-                name = user.getFirstName() + " " + user.getLastName();
-            } else if (user.getFirstName() != null) {
-                name = user.getFirstName();
-            } else if (user.getLastName() != null) {
-                name = user.getLastName();
+        // Top view of profile (avatar, user info etc.), combined with other profileView in onViewCreated
+        profileHeaderView = inflater.inflate(R.layout.fragment_profile_header, container, false);
+        fillInUserInfo(user, profileHeaderView);
+
+
+        // Add car button
+        addNewVehicle.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                DataHolder.getInstance().setVehicle_id(-1);
+                ((MaterialNavigationDrawer) ProfileFragment.this.getActivity())
+                        .setFragmentChild(new VehicleInfoFragment(), "Add car");
             }
+        });
 
-            String birthYear = null;
-            if (user.getBirthday() != null) {
-                Calendar calendar = Calendar.getInstance();
-                calendar.setTime(user.getBirthday());
-                birthYear = calendar.get(Calendar.YEAR) + "";
+
+        // Edit profile button
+        FloatingActionButton editProfile = (FloatingActionButton) profileHeaderView.findViewById(R.id.btn_edit_profile);
+        editProfile.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ((MaterialNavigationDrawer) ProfileFragment.this.getActivity())
+                        .setFragmentChild(new EditProfileFragment(), getString(R.string.profile_edit));
             }
-
-            String gender = null;
-            if (user.getIsMale() != null) {
-                if (user.getIsMale()) {
-                    gender = getString(R.string.profile_male);
-                } else if (!user.getIsMale()) {
-                    gender = getString(R.string.profile_female);
-                }
-            }
-
-            setTextViewContent((TextView) view.findViewById(R.id.tv_profile_name), name);
-            setTextViewContent((TextView) view.findViewById(R.id.tv_profile_email), user.getEmail());
-            setTextViewContent((TextView) view.findViewById(R.id.tv_profile_phone), user.getPhoneNumber());
-            setTextViewContent((TextView) view.findViewById(R.id.tv_profile_address), user.getAddress());
-            setTextViewContent((TextView) view.findViewById(R.id.tv_profile_gender), gender);
-            setTextViewContent((TextView) view.findViewById(R.id.tv_profile_birthyear), birthYear);
-
-            addNewVehicle.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    // ((MaterialNavigationDrawer) getActivity()).getCurrentSection().setTarget(new VehicleInfoFragment());
-                    //((MaterialNavigationDrawer) getActivity()).getCurrentSection().setTitle("Add new vehicle");
-                    DataHolder.getInstance().setVehicle_id(-1);
-                    ((MaterialNavigationDrawer) _this.getActivity()).setFragmentChild(new VehicleInfoFragment(), "Add car");
-                }
-            });
-            // Edit profile button
-            FloatingActionButton editProfile = (FloatingActionButton) view.findViewById(R.id.btn_edit_profile);
-            editProfile.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    ((MaterialNavigationDrawer) _this.getActivity()).setFragmentChild(new EditProfileFragment(), getString(R.string.profile_edit));
-                }
-            });
-
-
-            // download avatar
-            String avatarUrl = user.getAvatarUrl();
-            if (avatarUrl != null) {
-                Timber.i(avatarUrl);
-                Picasso.with(getActivity()).load(avatarUrl).error(R.drawable.background_drawer).into(profileImage);
-                /*
-                Subscription subscription = Observable
-                        .defer(new Func0<Observable<Bitmap>>() {
-                            @Override
-                            public Observable<Bitmap> call() {
-                                try {
-                                    URL url = new URL(avatarUrl);
-                                    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                                    connection.setDoInput(true);
-                                    connection.connect();
-                                    InputStream input = connection.getInputStream();
-                                    return Observable.just(BitmapFactory.decodeStream(input));
-                                } catch (Exception e) {
-                                    return Observable.error(e);
-                                }
-                            }
-                        })
-                        .compose(new DefaultTransformer<Bitmap>())
-                        .subscribe(new Action1<Bitmap>() {
-                            @Override
-                            public void call(Bitmap avatar) {
-                                if (avatar != null) {
-                                    ((ImageView) view.findViewById(R.id.tv_profile_image)).setImageBitmap(avatar);
-                                } else {
-                                    Timber.d("Profile avatar is null");
-                                }
-                            }
-                        }, new CrashCallback(getActivity()));
-
-                subscriptions.add(subscription);
-                */
-            }
-            else
-            {
-                Timber.i("Avatar url is null");
-            }
-        }
+        });
 
         return view;
     }
@@ -203,13 +132,11 @@ public class ProfileFragment extends SubscriptionFragment {
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        User user = AccountManager.getLoggedInUser(this.getActivity().getApplicationContext());
-
         // Use a linear layout manager to use the RecyclerView
         layoutManager = new LinearLayoutManager(getActivity());
         recyclerView.setLayoutManager(layoutManager);
 
-        adapter = new VehiclesListAdapter(getActivity(), null);
+        adapter = new VehiclesListAdapter(getActivity(), null, profileHeaderView);
         recyclerView.setAdapter(adapter);
 
         //Get a list of user vehicles and add it to the RecyclerView
@@ -244,12 +171,73 @@ public class ProfileFragment extends SubscriptionFragment {
 
         subscriptions.add(subscription);
 
+        profileHeaderView = null;
+    }
+
+    private void fillInUserInfo(User user, View headerView) {
+
+        //  Fill in the profile views
+        String name = null;
+        if (user.getFirstName() != null && user.getLastName() != null) {
+            name = user.getFirstName() + " " + user.getLastName();
+        } else if (user.getFirstName() != null) {
+            name = user.getFirstName();
+        } else if (user.getLastName() != null) {
+            name = user.getLastName();
         }
 
+        String birthYear = null;
+        if (user.getBirthday() != null) {
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(user.getBirthday());
+            birthYear = calendar.get(Calendar.YEAR) + "";
+        }
 
-    private void setTextViewContent(TextView tv, String content) {
+        String gender = null;
+        if (user.getIsMale() != null) {
+            if (user.getIsMale()) {
+                gender = getString(R.string.profile_male);
+            } else if (!user.getIsMale()) {
+                gender = getString(R.string.profile_female);
+            }
+        }
+
+        setTextViewContent(null, (TextView) headerView.findViewById(R.id.tv_profile_name), name);
+        setTextViewContent(null, (TextView) headerView.findViewById(R.id.tv_profile_email), user.getEmail());
+        setTextViewContent(null, (TextView) headerView.findViewById(R.id.tv_profile_phone), user.getPhoneNumber());
+        setTextViewContent(headerView.findViewById(R.id.tv_profile_address_title), (TextView) headerView.findViewById(R.id.tv_profile_address), user.getAddress());
+        setTextViewContent(headerView.findViewById(R.id.tv_profile_gender_title), (TextView) headerView.findViewById(R.id.tv_profile_gender), gender);
+        setTextViewContent(headerView.findViewById(R.id.tv_profile_birthyear_title), (TextView) headerView.findViewById(R.id.tv_profile_birthyear), birthYear);
+
+
+        // Download avatar
+        String avatarUrl = user.getAvatarUrl();
+        if (avatarUrl != null) {
+            Timber.i(avatarUrl);
+            Picasso.with(getActivity())
+                    .load(avatarUrl)
+                    .error(R.drawable.background_drawer)
+                    .into((ImageView) headerView.findViewById(R.id.tv_profile_image));
+        } else {
+            Timber.i("Avatar url is null");
+        }
+    }
+
+
+    private void setTextViewContent(View view, TextView tv, String content) {
         if (content != null && !content.equals("")) {
             tv.setText(content);
+            tv.setVisibility(View.VISIBLE);
+
+            if(view != null){
+                view.setVisibility(View.VISIBLE);
+            }
+        }else{
+            tv.setVisibility(View.GONE);
+
+            if(view != null){
+                view.setVisibility(View.GONE);
+            }
         }
     }
 

@@ -21,6 +21,8 @@
         <item name="colorControlActivated">@color/primary</item>
         <item name="colorButtonNormal">@color/primary</item>
         <item name="singleAccount">true</item>
+        <!--<item name="android:textColorPrimary">#FFFFFF</item>-->
+        <!--<item name="android:textColor">@android:color/primary_text_light</item>-->
         <!--<item name="drawerType">@integer/DRAWERTYPE_IMAGE</item>-->
     </style>
 

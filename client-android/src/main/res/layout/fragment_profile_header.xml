@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ The CroudTrip! application aims at revolutionizing the car-ride-sharing market with its easy,
+  ~ user-friendly and highly automated way of organizing shared Trips. Copyright (C) 2015  Nazeeh Ammari,
+  ~  Philipp Eichhorn, Ricarda Hohn, Vanessa Lange, Alexander Popp, Frederik Simon, Michael Weber
+  ~ This program is free software: you can redistribute it and/or modify  it under the terms of the GNU
+  ~  Affero General Public License as published by the Free Software Foundation, either version 3 of the
+  ~   License, or (at your option) any later version.
+  ~  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+  ~  even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~   GNU Affero General Public License for more details.
+  ~  You should have received a copy of the GNU Affero General Public License along with this program.
+  ~    If not, see http://www.gnu.org/licenses/.
+  -->
+
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:fab="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="10dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center">
+
+            <ImageView
+                android:id="@+id/tv_profile_image"
+                android:layout_width="150dp"
+                android:layout_height="150dp"
+                android:src="@drawable/profile"
+                android:adjustViewBounds="true"
+                android:scaleType="centerCrop"
+                android:layout_gravity="center_horizontal|top"
+                android:contentDescription="@string/profile_image_description"
+                android:layout_centerVertical="true"
+                android:layout_centerHorizontal="true" />
+
+            <com.getbase.floatingactionbutton.FloatingActionButton
+                android:id="@+id/btn_edit_profile"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                fab:fab_icon="@android:drawable/ic_menu_edit"
+                fab:fab_colorNormal="@color/primary"
+                fab:fab_colorPressed="@color/primary_dark"
+                android:layout_alignParentRight="true"
+                android:layout_gravity="right|top" />
+        </RelativeLayout>
+
+        <TextView
+            android:id="@+id/tv_profile_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="10dp"
+            android:drawablePadding="5dp"
+            android:layout_gravity="center_horizontal"
+            android:textAppearance="@android:style/TextAppearance.Large" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tv_profile_email"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="2dp"
+                android:drawableLeft="@drawable/ic_email_18dp"
+                android:drawablePadding="5dp"
+                android:drawableStart="@drawable/ic_email_18dp"
+                android:gravity="center_vertical"
+                android:textAppearance="@android:style/TextAppearance.Medium" />
+
+
+            <TextView
+                android:id="@+id/tv_profile_phone"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
+                android:drawableLeft="@drawable/ic_call_18dp"
+                android:drawablePadding="5dp"
+                android:drawableStart="@drawable/ic_call_18dp"
+                android:gravity="center_vertical"
+                android:textAppearance="@android:style/TextAppearance.Medium" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tv_profile_gender_title"
+            style="?android:attr/listSeparatorTextViewStyle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/profile_gender" />
+
+        <TextView
+            android:id="@+id/tv_profile_gender"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="10dp"
+            />
+
+        <TextView
+            android:id="@+id/tv_profile_birthyear_title"
+            style="?android:attr/listSeparatorTextViewStyle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/profile_birthyear" />
+
+        <TextView
+            android:id="@+id/tv_profile_birthyear"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="10dp"
+            />
+
+        <TextView
+            android:id="@+id/tv_profile_address_title"
+            style="?android:attr/listSeparatorTextViewStyle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:text="@string/profile_address" />
+
+        <TextView
+            android:id="@+id/tv_profile_address"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="10dp"
+            />
+
+        <TextView
+            android:id="@+id/tv_profile_vehicles_title"
+            style="?android:attr/listSeparatorTextViewStyle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/vehicles_title" />
+    </LinearLayout>
+
+</RelativeLayout>
