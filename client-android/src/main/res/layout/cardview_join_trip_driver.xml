@@ -32,6 +32,7 @@
             android:layout_width="70dp"
             android:layout_height="match_parent"
             android:src="@drawable/profile"
+            android:adjustViewBounds="true"
             android:scaleType="centerCrop"/>
 
         <TextView
