@@ -43,10 +43,11 @@ public class VehiclesListAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
 
     private final static int ITEM_TYPE_HEADER = 0; // avatar etc. view
     private final static int ITEM_TYPE_ITEM = 1;   // cars
+    private final static int ITEM_TYPE_FOOTER = 2;   // footer
 
     private final Context context;
     private List<Vehicle> vehicles;
-    private View header;
+    private View header, footer;
     protected OnItemClickListener listener;
 
     //************************** Inner classes ***************************//
@@ -101,30 +102,30 @@ public class VehiclesListAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
 
 
     /**
-     * Provides a reference to the header view
+     * Provides a reference to the header or footer view
      */
-    public class HeaderViewHolder extends RecyclerView.ViewHolder {
+    public class HeaderFooterViewHolder extends RecyclerView.ViewHolder {
 
-        protected View header;
+        private View view;
 
-        public HeaderViewHolder(View header) {
-            super(header);
-
-            this.header = header;
+        public HeaderFooterViewHolder(View view) {
+            super(view);
+            this.view = view;
         }
     }
 
 
     //************************** Constructors ***************************//
 
-    public VehiclesListAdapter(Context context, List<Vehicle> vehicles, View header) {
+    public VehiclesListAdapter(Context context, List<Vehicle> vehicles, View header, View footer) {
         this.context = context;
         this.header = header;
+        this.footer = footer;
 
         if (vehicles != null) {
             this.vehicles = vehicles;
         } else {
-            this.vehicles = new ArrayList<Vehicle>();
+            this.vehicles = new ArrayList<>();
         }
     }
 
@@ -133,14 +134,15 @@ public class VehiclesListAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
 
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-
         // Create new views (invoked by the layout manager)
         if (viewType == ITEM_TYPE_ITEM) {
             return new CarViewHolder(LayoutInflater.from(parent.getContext())
                     .inflate(R.layout.cardview_vehicles_list, parent, false));
 
         } else if (viewType == ITEM_TYPE_HEADER) {
-            return new HeaderViewHolder(header);
+            return new HeaderFooterViewHolder(header);
+        } else if (viewType == ITEM_TYPE_FOOTER) {
+            return new HeaderFooterViewHolder(footer);
         }
 
         throw new RuntimeException("There is no type that matches the type " + viewType);
@@ -160,9 +162,12 @@ public class VehiclesListAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             holder.carCapacity.setText(context.getString(R.string.car_capacity_side) + vehicle.getCapacity() + "");
             holder.carColor.setBackgroundColor(Integer.parseInt(vehicle.getColor()));
 
-        } else if (h instanceof VehiclesListAdapter.HeaderViewHolder) {
-            VehiclesListAdapter.HeaderViewHolder holder = (VehiclesListAdapter.HeaderViewHolder) h;
-            holder.header = header;
+        } else if (h instanceof HeaderFooterViewHolder && position == 0) {
+            HeaderFooterViewHolder holder = (HeaderFooterViewHolder) h;
+            holder.view = header;
+        } else if (h instanceof HeaderFooterViewHolder) {
+            HeaderFooterViewHolder holder = (HeaderFooterViewHolder) h;
+            holder.view = footer;
         }
     }
 
@@ -190,16 +195,16 @@ public class VehiclesListAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
 
     @Override
     public int getItemCount() {
-        return vehicles.size() + 1; // header
+        return vehicles.size() + 2; // header + footer
     }
 
 
     @Override
     public int getItemViewType(int position) {
-
         if (position == 0) {
             return ITEM_TYPE_HEADER;
-
+        } else if (position == getItemCount() - 1) {
+            return ITEM_TYPE_FOOTER;
         }
 
         return ITEM_TYPE_ITEM;

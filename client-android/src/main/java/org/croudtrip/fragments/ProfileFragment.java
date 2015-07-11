@@ -17,10 +17,7 @@ package org.croudtrip.fragments;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -74,25 +71,13 @@ public class ProfileFragment extends SubscriptionFragment {
     private RecyclerView.LayoutManager layoutManager;
     private VehiclesListAdapter adapter;
 
-    private View profileHeaderView;
+    private View profileHeaderView, profileFooterView;
 
     //************************* Methods *****************************//
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        // Setup the navigation drawer
-        Toolbar toolbar = ((MaterialNavigationDrawer) this.getActivity()).getToolbar();
-    }
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        setHasOptionsMenu(true);
-
         // Profile wrapper with cars, includes profile header later
         final View view = inflater.inflate(R.layout.fragment_profile, container, false);
-        Button addNewVehicle = (Button) view.findViewById(R.id.add_new_vehicle);
 
         // Restore user from SharedPref file
         User user = AccountManager.getLoggedInUser(this.getActivity().getApplicationContext());
@@ -101,8 +86,9 @@ public class ProfileFragment extends SubscriptionFragment {
         profileHeaderView = inflater.inflate(R.layout.fragment_profile_header, container, false);
         fillInUserInfo(user, profileHeaderView);
 
-
         // Add car button
+        profileFooterView = inflater.inflate(R.layout.fragment_profile_footer, container, false);
+        Button addNewVehicle = (Button) profileFooterView.findViewById(R.id.add_new_vehicle);
         addNewVehicle.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -135,7 +121,7 @@ public class ProfileFragment extends SubscriptionFragment {
         layoutManager = new LinearLayoutManager(getActivity());
         recyclerView.setLayoutManager(layoutManager);
 
-        adapter = new VehiclesListAdapter(getActivity(), null, profileHeaderView);
+        adapter = new VehiclesListAdapter(getActivity(), null, profileHeaderView, profileFooterView);
         recyclerView.setAdapter(adapter);
 
         //Get a list of user vehicles and add it to the RecyclerView
@@ -242,14 +228,5 @@ public class ProfileFragment extends SubscriptionFragment {
             }
         }
     }
-
-
-    @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        super.onCreateOptionsMenu(menu, inflater);
-        menu.clear();
-        //inflater.inflate(R.menu.menu_main, menu);
-    }
-
 
 }

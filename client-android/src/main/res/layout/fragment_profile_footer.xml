@@ -1,4 +1,4 @@
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ The CroudTrip! application aims at revolutionizing the car-ride-sharing market with its easy,
   ~ user-friendly and highly automated way of organizing shared Trips. Copyright (C) 2015  Nazeeh Ammari,
   ~  Philipp Eichhorn, Ricarda Hohn, Vanessa Lange, Alexander Popp, Frederik Simon, Michael Weber
@@ -11,26 +11,19 @@
   ~  You should have received a copy of the GNU Affero General Public License along with this program.
   ~    If not, see http://www.gnu.org/licenses/.
   -->
-
-<FrameLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:wheel="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="12dp"
     >
 
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/vehicles_list"
-        android:layout_width="match_parent"
+    <Button
+        android:id="@+id/add_new_vehicle"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:text="@string/add_vehicle"
+        android:layout_centerInParent="true"
         />
 
-    <com.pnikosis.materialishprogress.ProgressWheel
-        android:id="@+id/pb_profile"
-        android:layout_width="60dp"
-        android:layout_height="60dp"
-        wheel:matProg_barColor="@color/primary_dark"
-        wheel:matProg_progressIndeterminate="true"
-        android:layout_gravity = "center_vertical|center_horizontal"/>
-
-</FrameLayout>
+</RelativeLayout>

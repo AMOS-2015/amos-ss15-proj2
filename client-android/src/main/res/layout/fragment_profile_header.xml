@@ -13,11 +13,13 @@
   -->
 
 
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:fab="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginTop="10dp">
+    android:padding="12dp"
+    >
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -145,6 +147,7 @@
             android:layout_height="wrap_content"
             android:visibility="gone"
             android:text="@string/vehicles_title" />
+
     </LinearLayout>
 
 </RelativeLayout>
