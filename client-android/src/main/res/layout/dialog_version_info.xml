@@ -62,6 +62,11 @@ Google Play Services v7.0 \n
 Google Maps Android API utility library	 \n
 Google Maps Services for Java"/>
 
+        <TextView
+            android:layout_marginTop="@dimen/default_margin"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/used_artwork"/>
 
     </LinearLayout>
 

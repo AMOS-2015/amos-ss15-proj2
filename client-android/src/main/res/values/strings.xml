@@ -69,6 +69,12 @@
         4.0 International license (CC BY-NC-SA 4.0). See https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode
         for more details.
     </string>
+    <string name="used_artwork">
+        In addition this project uses artwork provided by:\n\n
+        Google Material Icons with some modifications (https://www.google.com/design/icons/)\n
+        Android Holo Colors Generator (http://android-holo-colors.com/)\n
+        The NFC Logo from Wikipedia with some modifications (https://de.wikipedia.org/wiki/Near_Field_Communication)
+    </string>
 
 
     <string name="profile_edit">Edit profile</string>
