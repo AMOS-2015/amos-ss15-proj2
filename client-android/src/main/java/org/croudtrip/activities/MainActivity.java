@@ -30,7 +30,6 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AlertDialog;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.CheckBox;
@@ -45,8 +44,6 @@ import org.croudtrip.api.account.User;
 import org.croudtrip.fragments.ProfileFragment;
 import org.croudtrip.fragments.SettingsFragment;
 import org.croudtrip.fragments.join.JoinDispatchFragment;
-import org.croudtrip.fragments.join.JoinResultsFragment;
-import org.croudtrip.fragments.join.JoinSearchFragment;
 import org.croudtrip.fragments.offer.DispatchOfferTripFragment;
 import org.croudtrip.gcm.GcmManager;
 import org.croudtrip.location.LocationUpdater;
@@ -340,7 +337,7 @@ public class MainActivity extends AbstractRoboDrawerActivity {
         if(AccountManager.isUserLoggedIn(this)) {
             // Only logged-in users can view their profile
             this.addSection(newSection(getString(R.string.menu_profile),
-                    R.drawable.profile_icon,
+                    R.drawable.ic_person_black_36dp,
                     new ProfileFragment()));
         }
 
