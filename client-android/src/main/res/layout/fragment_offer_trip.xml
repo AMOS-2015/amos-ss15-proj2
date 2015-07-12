@@ -64,13 +64,6 @@
         </LinearLayout>
 
         <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textColor="@color/text"
-            android:id="@+id/attributions"
-            android:layout_gravity="center_horizontal"/>
-
-        <TextView
             android:id="@+id/diversion"
             android:textColor="@color/text"
             android:layout_marginTop="@dimen/default_margin"

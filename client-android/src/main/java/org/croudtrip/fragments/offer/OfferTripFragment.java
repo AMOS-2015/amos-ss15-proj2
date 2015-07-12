@@ -27,7 +27,6 @@ import android.location.Location;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -68,7 +67,6 @@ import org.croudtrip.location.MyAutoCompleteTextView;
 import org.croudtrip.location.PlaceAutocompleteAdapter;
 import org.croudtrip.utils.DataHolder;
 import org.croudtrip.utils.DefaultTransformer;
-import org.croudtrip.utils.VehiclesListSelectAdapter;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -108,7 +106,6 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
 
     private org.croudtrip.db.Place lastSelected;
 
-    @InjectView(R.id.attributions) private TextView tv_attributions;
     @InjectView(R.id.address) private TextView tv_address;
     @InjectView(R.id.destination) private MyAutoCompleteTextView tv_destination;
     @InjectView(R.id.slider_diversion) private Slider slider_diversion;
@@ -128,9 +125,6 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
     @Inject VehicleResource vehicleResource;
     private Geocoder geocoder;
 
-
-    private RecyclerView.LayoutManager layoutManager;
-    private VehiclesListSelectAdapter carListAdapter;
     private CarSelectDialogFragment myCarSelectDialogFragment = new CarSelectDialogFragment();
     private static List<String> carArrayList = new ArrayList<String>();
     private static List<Integer> carIdsArray = new ArrayList<Integer>();
