@@ -83,7 +83,7 @@
     <string name="profile_birthyear">Birth Year</string>
     <string name="profile_male">Male</string>
     <string name="profile_female">Female</string>
-    <string name="profile_unknown"><i>unknown</i></string>
+    <string name="profile_unknown">unknown</string>
     <string name="profile_image_description">Profile image</string>
     <string name="profile_error_general">Your profile could not be loaded</string>
 
