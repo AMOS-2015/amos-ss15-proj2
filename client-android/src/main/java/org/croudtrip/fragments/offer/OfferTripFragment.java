@@ -29,8 +29,6 @@ import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
@@ -126,10 +124,8 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
 
     @Inject LocationUpdater locationUpdater;
 
-    @Inject
-    TripsResource tripsResource;
-    @Inject
-    VehicleResource vehicleResource;
+    @Inject TripsResource tripsResource;
+    @Inject VehicleResource vehicleResource;
     private Geocoder geocoder;
 
 
@@ -161,10 +157,8 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
-        setHasOptionsMenu(true);
 
         if (googleApiClient == null) {
             googleApiClient = new GoogleApiClient.Builder(getActivity().getApplicationContext())
@@ -542,11 +536,6 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
         }
     }
 
-    @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        super.onCreateOptionsMenu(menu, inflater);
-        menu.clear();
-    }
 
     private AdapterView.OnItemClickListener mAutocompleteClickListener = new AdapterView.OnItemClickListener() {
         @Override
