@@ -21,16 +21,13 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Color;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -97,6 +94,10 @@ import timber.log.Timber;
  * Created by alex on 22.04.15.
  */
 public class OfferTripFragment extends SubscriptionFragment implements GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks {
+
+    private static final String
+            SHARED_PREF_KEY_RESOLVED_ADDRESS = "resolvedAddress",
+            SHARED_PREF_KEY_ADDRESS = "address";
 
     private static OfferTripFragment instance;
 
@@ -234,18 +235,24 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
         subscriptions.add(subscription);
 
 
-        final SharedPreferences prefs = getActivity().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
+        SharedPreferences prefs = getActivity().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
 
-        //get max diversion from shared preferences and update textview as well as the slider
+        // get max diversion from shared preferences and update textview as well as the slider
         int savedMaxDiversion = prefs.getInt(Constants.SHARED_PREF_KEY_DIVERSION, 3);
         tv_diversion.setText(getString(R.string.offer_max_diversion) + " " + savedMaxDiversion);
         slider_diversion.setValue(savedMaxDiversion);
 
-        //get price per km from shared preferences and update textview as well as the slider
+        // get price per km from shared preferences and update textview as well as the slider
         int savedPrice = prefs.getInt(Constants.SHARED_PREF_KEY_PRICE, 26);
         tv_price.setText(getString(R.string.price) + " " + savedPrice);
         slider_price.setValue(savedPrice);
 
+        // restore previous address
+        String address = prefs.getString(SHARED_PREF_KEY_ADDRESS, "");
+        String resolvedAddress = prefs.getString(SHARED_PREF_KEY_RESOLVED_ADDRESS, "");
+        tv_destination.setText(address);
+        tv_address.setText(resolvedAddress);
+        tv_destination.setSelectAllOnFocus(true);
 
         slider_diversion.setOnValueChangedListener(new Slider.OnValueChangedListener() {
             @Override
@@ -335,10 +342,7 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
         btn_offer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                SharedPreferences.Editor editor = prefs.edit();
-                editor.putInt(Constants.SHARED_PREF_KEY_DIVERSION, slider_diversion.getValue());
-                editor.putInt(Constants.SHARED_PREF_KEY_PRICE, slider_price.getValue());
-                editor.apply();
+                saveState();
 
                 org.croudtrip.db.Place tempPlace = lastSelected;
                 lastSelected = null;
@@ -522,6 +526,7 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
         }
     }
 
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_PLACE_PICKER && resultCode == Activity.RESULT_OK) {
@@ -616,7 +621,7 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
         adapter.setGoogleApiClient(null);
     }
 
-    public void showCarPlateDialog () {
+    private void showCarPlateDialog () {
         AlertDialog.Builder carPlateDialog = new AlertDialog.Builder(getActivity());
         carPlateDialog.setTitle(R.string.no_car_plate_title);
         carPlateDialog.setMessage(R.string.no_car_plate_message);
@@ -625,6 +630,7 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
                 new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         DataHolder.getInstance().setVehicle_id(-2);
+                        saveState();
                         ((MaterialNavigationDrawer) getActivity()).setFragmentChild(new VehicleInfoFragment(), getString(R.string.new_car));
                     }
                 });
@@ -639,99 +645,19 @@ public class OfferTripFragment extends SubscriptionFragment implements GoogleApi
         alert11.show();
     }
 
-    //Not being used at the moment
-    public void showCarSelectionDialog() {
-        final Dialog selectDialog = new Dialog(getActivity());
-        selectDialog.setTitle(Html.fromHtml("<font color='#388e3c'>Select your default car</font>"));
-        selectDialog.setContentView(R.layout.fragment_vehicle_select);
-        RecyclerView recyclerView = (RecyclerView) selectDialog.findViewById(R.id.vehicles_list_select);
-        final Button selectButton = (Button) selectDialog.findViewById(R.id.select);
-        final TextView no_vehicle = (TextView) selectDialog.findViewById(R.id.no_vehicles_text);
-        int selectedVehicleId = 0;
-        Button select = (Button) selectDialog.findViewById(R.id.select);
-        final Button cancel = (Button) selectDialog.findViewById(R.id.cancel);
-        final Button ok = (Button) selectDialog.findViewById(R.id.ok);
-
-        // Use a linear layout manager to use the RecyclerView
-        layoutManager = new LinearLayoutManager(getActivity());
-        recyclerView.setLayoutManager(layoutManager);
-
-        carListAdapter = new VehiclesListSelectAdapter(getActivity(), null);
-        recyclerView.setAdapter(carListAdapter);
-
-        //Get a list of user vehicles and add it to the RecyclerView
-        Subscription subscription = vehicleResource.getVehicles()
-                .compose(new DefaultTransformer<List<Vehicle>>())
-                .subscribe(new Action1<List<Vehicle>>() {
-                    @Override
-                    public void call(List<Vehicle> vehicles) {
-                        if (vehicles.size() > 0) {
-                            carListAdapter.addElements(vehicles);
-                        }
-                        else
-                        {
-                            ok.setVisibility(View.VISIBLE);
-                            no_vehicle.setVisibility(View.VISIBLE);
-                            selectButton.setVisibility(View.GONE);
-                            cancel.setVisibility(View.GONE);
-                        }
-                    }
-                }, new Action1<Throwable>() {
-                    @Override
-                    public void call(Throwable throwable) {
-                        Response response = ((RetrofitError) throwable).getResponse();
-                        if (response != null && response.getStatus() == 401) {  // Not Authorized
-                        } else {
-                            Timber.e("error" + throwable.getMessage());
-                        }
-                        Timber.e("Couldn't get data" + throwable.getMessage());
-                    }
-                });
-
-        subscriptions.add(subscription);
-        selectDialog.show();
-
-        //Change divider line color
-        int titleDividerId = getResources().getIdentifier("titleDivider", "id", "android");
-        View titleDivider = selectDialog.findViewById(titleDividerId);
-        if (titleDivider != null)
-            titleDivider.setBackgroundColor(getResources().getColor(R.color.primary));
-
-        select.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                int vehicleId = DataHolder.getInstance().getVehicle_id();
-                long vehicleIdLong = ((long) vehicleId);
-                VehicleManager.saveDefaultVehicle(getActivity(), vehicleIdLong);
-                Toast.makeText(getActivity(), "Default car set!", Toast.LENGTH_SHORT).show();
-                //Set MyCars button text to default car type
-                if (DataHolder.getInstance().getVehicle_type() != null)
-                    myCar.setText(DataHolder.getInstance().getVehicle_type());
-                selectDialog.hide();
-            }
-        });
-
-        cancel.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                selectDialog.hide();
-            }
-        });
-        ok.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                selectDialog.hide();
-                DataHolder.getInstance().setVehicle_id(-2);
-                ((MaterialNavigationDrawer) getActivity()).setFragmentChild(new VehicleInfoFragment(), getString(R.string.new_car));
-            }
-        });
-
-
+    private void saveState() {
+        SharedPreferences prefs = getActivity().getSharedPreferences(Constants.SHARED_PREF_FILE_PREFERENCES, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putInt(Constants.SHARED_PREF_KEY_DIVERSION, slider_diversion.getValue());
+        editor.putInt(Constants.SHARED_PREF_KEY_PRICE, slider_price.getValue());
+        editor.putString(SHARED_PREF_KEY_ADDRESS, tv_destination.getText().toString());
+        editor.putString(SHARED_PREF_KEY_RESOLVED_ADDRESS, tv_address.getText().toString());
+        editor.apply();
     }
 
     //This class is used to show a list of available cars and enable the user to choose the default one
     @SuppressLint("ValidFragment")
-    public class CarSelectDialogFragment extends DialogFragment {
+    private class CarSelectDialogFragment extends DialogFragment {
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
             //Get the default vehicle id from shared prefs
