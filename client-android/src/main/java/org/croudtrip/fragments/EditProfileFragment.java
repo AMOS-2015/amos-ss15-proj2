@@ -24,7 +24,9 @@ import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.text.Editable;
 import android.text.Html;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -96,6 +98,12 @@ public class EditProfileFragment extends SubscriptionFragment {
     @InjectView(R.id.profile_picture_edit) ImageView profilePicture;
     private String profileImageUrl;
 
+    // if true the respective field has been edited
+    private boolean
+            isFirstNameDirty = false,
+            isLastNameDirty = false,
+            isPhoneNumberDirty = false,
+            isAddressDirty = false;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -130,10 +138,38 @@ public class EditProfileFragment extends SubscriptionFragment {
 
 		// set user details
 		if (user.getFirstName() != null) firstNameEdit.setText(user.getFirstName());
+        firstNameEdit.addTextChangedListener(new DirtyFlagWatcher() {
+            @Override
+            public void onTextChanged() {
+                isFirstNameDirty = true;
+            }
+        });
+
 		if (user.getLastName() != null) lastNameEdit.setText(user.getLastName());
+        lastNameEdit.addTextChangedListener(new DirtyFlagWatcher() {
+            @Override
+            public void onTextChanged() {
+                isLastNameDirty = true;
+            }
+        });
+
 		if (user.getPhoneNumber() != null) phoneNumberEdit.setText(user.getPhoneNumber());
+        phoneNumberEdit.addTextChangedListener(new DirtyFlagWatcher() {
+            @Override
+            public void onTextChanged() {
+                isPhoneNumberDirty = true;
+            }
+        });
+
 		if (user.getAddress() != null) addressEdit.setText(user.getAddress());
-		if (user.getIsMale() != null) {
+        addressEdit.addTextChangedListener(new DirtyFlagWatcher() {
+            @Override
+            public void onTextChanged() {
+                isAddressDirty = true;
+            }
+        });
+
+        if (user.getIsMale() != null) {
 			if (user.getIsMale()) {
 				genderRadio.check(R.id.radio_male);
 			} else {
@@ -312,10 +348,10 @@ public class EditProfileFragment extends SubscriptionFragment {
         progressBar.setVisibility(View.VISIBLE);
 
         User user = AccountManager.getLoggedInUser(getActivity());
-        String firstName = (firstNameEdit.getText().toString().isEmpty()) ? user.getFirstName() : firstNameEdit.getText().toString();
-        String lastName = (lastNameEdit.getText().toString().isEmpty()) ? user.getLastName() : lastNameEdit.getText().toString();
-        String phone = (phoneNumberEdit.getText().toString().isEmpty()) ? user.getPhoneNumber() : phoneNumberEdit.getText().toString();
-        String address = (addressEdit.getText().toString().isEmpty()) ? user.getAddress() : addressEdit.getText().toString();
+        String firstName = (!isFirstNameDirty) ? user.getFirstName() : firstNameEdit.getText().toString();
+        String lastName = (!isLastNameDirty) ? user.getLastName() : lastNameEdit.getText().toString();
+        String phone = (!isPhoneNumberDirty) ? user.getPhoneNumber() : phoneNumberEdit.getText().toString();
+        String address = (!isAddressDirty) ? user.getAddress() : addressEdit.getText().toString();
         profileImageUrl = (profileImageUrl == null) ? user.getAvatarUrl() : profileImageUrl;
         Boolean isMale = user.getIsMale();
         if (genderRadio.getCheckedRadioButtonId() != - 1) isMale = (genderRadio.getCheckedRadioButtonId() == R.id.radio_male);
@@ -468,6 +504,26 @@ public class EditProfileFragment extends SubscriptionFragment {
                         })));
     }
 
+
+    /**
+     * Helper class for toggeling dirty flags once text has changed.
+     */
+    private static abstract class DirtyFlagWatcher implements TextWatcher {
+
+        @Override
+        public final void beforeTextChanged(CharSequence s, int start, int count, int after) {  }
+
+        @Override
+        public final void onTextChanged(CharSequence s, int start, int before, int count) {
+            onTextChanged();
+        }
+
+        @Override
+        public final void afterTextChanged(Editable s) {  }
+
+        public abstract void onTextChanged();
+
+    }
 }
 
 
