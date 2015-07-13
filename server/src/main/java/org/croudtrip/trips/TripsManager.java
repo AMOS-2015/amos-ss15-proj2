@@ -538,6 +538,9 @@ public class TripsManager {
      */
     public JoinTripRequest updateJoinRequestPassengerCancel(JoinTripRequest joinRequest) {
         JoinTripStatus oldStatus = joinRequest.getStatus();
+        if( oldStatus.equals( JoinTripStatus.DRIVER_DECLINED ) || oldStatus.equals( JoinTripStatus.PASSENGER_CANCELLED ))
+            return joinRequest;
+
         JoinTripRequest updatedRequest = new JoinTripRequest(joinRequest, JoinTripStatus.PASSENGER_CANCELLED);
         joinTripRequestDAO.update(updatedRequest);
 
