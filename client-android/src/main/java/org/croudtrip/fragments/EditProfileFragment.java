@@ -20,6 +20,7 @@ import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
@@ -252,6 +253,12 @@ public class EditProfileFragment extends SubscriptionFragment {
             imageBitmap = getResizedBitmap(imageBitmap, 512);
             Timber.i("New image height is: " + imageBitmap.getHeight());
             Timber.i("New image width is: " + imageBitmap.getWidth());
+        }
+        else
+        {
+            Timber.i("Image was not rescaled");
+            Timber.i("Image height is: " + imageBitmap.getHeight());
+            Timber.i("Image width is: " + imageBitmap.getWidth());
         }
 
         ByteArrayOutputStream byteOutputStream = new ByteArrayOutputStream();
