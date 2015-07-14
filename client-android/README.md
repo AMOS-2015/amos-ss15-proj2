@@ -12,11 +12,11 @@ Developer Console console at: APIs & auth -> Credentials -> Edit allowed Android
 ### 2. Copy your keystore
 Since we had to create a keystore for the travis build it was necessary to tell the gradle
 build file which key should be used. So you have to copy your debug.keystore from ~/.android to
-./client/debug.keystore. Just paste the file there and gradle should be able to build your project.
+./client-android/debug.keystore. Just paste the file there and gradle should be able to build your project.
 
 ### 3. Add the Google API-Key to your project
 To be able to use the google-services in your own project you have to add the API-Key manually
-by copying "./client/src/main/templates/keys.xml.template" to "./client/src/main/res/values/keys.xml"
+by copying "./client-android/src/main/templates/keys.xml.template" to "./client-android/src/main/res/values/keys.xml"
 and replace the dummy key with the real key that you get from the Developers Console.
 
 ### 4. Add the Google project number
